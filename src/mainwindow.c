@@ -1865,7 +1865,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Tags", "Configuration/Tags", GTK_UI_MANAGER_MENUITEM)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Separator2", "Configuration/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Plugins", "Configuration/Plugins", GTK_UI_MANAGER_MENUITEM)
 
 /* Help menu */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Help", "Manual", "Help/Manual", GTK_UI_MANAGER_MENUITEM)

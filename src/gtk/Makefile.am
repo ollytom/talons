@@ -3,7 +3,6 @@
 # terms of the General Public License version 3 (or later).
 # See COPYING file for license details.
 
-PLUGINDIR = $(pkglibdir)/plugins/
 DOCDIR = $(docdir)
 
 noinst_LTLIBRARIES = libclawsgtk.la
@@ -81,7 +80,6 @@ AM_CPPFLAGS = \
 	-I$(builddir)/.. \
 	$(GTK_CFLAGS) \
 	$(ENCHANT_CFLAGS) \
-	-DPLUGINDIR=\"$(PLUGINDIR)\" \
 	-DDOCDIR=\"$(DOCDIR)\"
 
 libclawsgtk_la_LIBADD = \

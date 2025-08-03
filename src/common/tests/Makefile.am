@@ -6,7 +6,6 @@ common_ldadd = \
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	-DLOCALEDIR=\""$(localedir)"\" \
-	-DPLUGINDIR=\"$(PLUGINDIR)\" \
 	-I$(top_srcdir)/src \
 	-I..
 

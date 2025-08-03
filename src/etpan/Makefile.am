@@ -3,8 +3,6 @@
 # terms of the General Public License version 3 (or later).
 # See COPYING file for license details.
 
-PLUGINDIR = $(pkglibdir)/plugins/
-
 noinst_LTLIBRARIES = libclawsetpan.la
 
 libclawsetpan_la_SOURCES = \

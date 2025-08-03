@@ -122,7 +122,6 @@
 #include "socket.h"
 #include "log.h"
 #include "prefs_toolbar.h"
-#include "plugin.h"
 #include "mh_gtk.h"
 #include "imap_gtk.h"
 #include "news_gtk.h"
@@ -451,54 +450,6 @@ backup_mode:
 		}
 	}
 	return (r == 0);
-}
-
-static int migrate_common_rc(const gchar *old_rc, const gchar *new_rc)
-{
-	FILE *oldfp, *newfp;
-	gchar *plugin_path, *old_plugin_path, *new_plugin_path;
-	gchar buf[BUFFSIZE];
-	gboolean err = FALSE;
-
-	oldfp = claws_fopen(old_rc, "r");
-	if (!oldfp)
-		return -1;
-	newfp = claws_fopen(new_rc, "w");
-	if (!newfp) {
-		claws_fclose(oldfp);
-		return -1;
-	}
-
-	plugin_path = g_strdup(get_plugin_dir());
-	new_plugin_path = g_strdup(plugin_path);
-
-	if (strstr(plugin_path, "/claws-mail/")) {
-		gchar *end = g_strdup(strstr(plugin_path, "/claws-mail/")+strlen("/claws-mail/"));
-		*(strstr(plugin_path, "/claws-mail/")) = '\0';
-		old_plugin_path = g_strconcat(plugin_path, "/sylpheed-claws/", end, NULL);
-		g_free(end);
-	} else {
-		old_plugin_path = g_strdup(new_plugin_path);
-	}
-	debug_print("replacing %s with %s\n", old_plugin_path, new_plugin_path);
-	while (claws_fgets(buf, sizeof(buf), oldfp)) {
-		if (STRNCMP(buf, old_plugin_path)) {
-			err |= (claws_fputs(buf, newfp) == EOF);
-		} else {
-			debug_print("->replacing %s\n", buf);
-			debug_print("  with %s%s\n", new_plugin_path, buf+strlen(old_plugin_path));
-			err |= (claws_fputs(new_plugin_path, newfp) == EOF);
-			err |= (claws_fputs(buf+strlen(old_plugin_path), newfp) == EOF);
-		}
-	}
-	g_free(plugin_path);
-	g_free(new_plugin_path);
-	g_free(old_plugin_path);
-	claws_fclose(oldfp);
-	if (claws_safe_fclose(newfp) == EOF)
-		err = TRUE;
-
-	return (err ? -1:0);
 }
 
 #ifdef HAVE_LIBSM
@@ -1110,17 +1061,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
-	if (!is_file_exist(RC_DIR G_DIR_SEPARATOR_S COMMON_RC) &&
-	    is_file_exist(RC_DIR G_DIR_SEPARATOR_S OLD_COMMON_RC)) {
-	    	/* post 2.6 name change */
-		migrate_common_rc(RC_DIR G_DIR_SEPARATOR_S OLD_COMMON_RC,
-			  RC_DIR G_DIR_SEPARATOR_S COMMON_RC);
-	}
-
-	if (!cmd.exit)
-		plugin_load_all("Common");
-
 	userrc = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, "gtkrc-2.0", NULL);
 	gtk_rc_parse(userrc);
 	g_free(userrc);
@@ -1407,46 +1347,13 @@ int main(int argc, char *argv[])
 
 	num_folder_class = g_list_length(folder_get_list());
 
-	plugin_load_all("GTK3");
-
 	if (g_list_length(folder_get_list()) != num_folder_class) {
 		debug_print("new folders loaded, reloading processing rules\n");
 		prefs_matcher_read_config();
 	}
 
-	if ((plug_list = plugin_get_unloaded_list()) != NULL) {
-		GSList *cur;
-		gchar *list = NULL;
-		gint num_plugins = 0;
-		for (cur = plug_list; cur; cur = cur->next) {
-			Plugin *plugin = (Plugin *)cur->data;
-			gchar *tmp = g_strdup_printf("%s\n%s",
-				list? list:"",
-				plugin_get_name(plugin));
-			g_free(list);
-			list = tmp;
-			num_plugins++;
-		}
-		main_window_cursor_normal(mainwin);
-		main_window_popup(mainwin);
-		mainwin_shown = TRUE;
-		alertpanel_warning(ngettext(
-				     "The following plugin failed to load. "
-				     "Check the Plugins configuration "
-				     "for more information:\n%s",
-				     "The following plugins failed to load. "
-				     "Check the Plugins configuration "
-				     "for more information:\n%s",
-				     num_plugins),
-				     list);
-		main_window_cursor_wait(mainwin);
-		g_free(list);
-		g_slist_free(plug_list);
-	}
-
 	if (never_ran) {
 		prefs_common_write_config();
-	 	plugin_load_standard_plugins ();
 	}
 
 	/* if not crashed, show window now */
@@ -1672,8 +1579,6 @@ static void exit_claws(MainWindow *mainwin)
 
 	main_window_destroy_all();
 
-	plugin_unload_all("GTK3");
-
 	matcher_done();
 	prefs_toolbar_done();
 	avatars_done();
@@ -1702,7 +1607,6 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_spelling_done();
 	gtkaspell_checkers_quit();
 #endif
-	plugin_unload_all("Common");
 #ifdef G_OS_WIN32
 	win32_close_log();
 #endif

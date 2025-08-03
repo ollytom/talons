@@ -409,7 +409,6 @@ const gchar *get_news_cache_dir		(void);
 const gchar *get_imap_cache_dir		(void);
 const gchar *get_mime_tmp_dir		(void);
 const gchar *get_template_dir		(void);
-const gchar *get_plugin_dir             (void);
 const gchar *get_tmp_dir		(void);
 const gchar *get_locale_dir		(void);
 gchar *get_tmp_file			(void);

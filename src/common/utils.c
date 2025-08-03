@@ -1859,32 +1859,6 @@ const gchar *get_desktop_file(void)
 #endif
 }
 
-/* Return the default directory for Plugins. */
-const gchar *get_plugin_dir(void)
-{
-#ifdef G_OS_WIN32
-	static gchar *plugin_dir = NULL;
-
-	if (!plugin_dir)
-		plugin_dir = g_strconcat(w32_get_module_dir(),
-					 "\\lib\\claws-mail\\plugins\\",
-					 NULL);
-	return plugin_dir;
-#else
-	if (is_dir_exist(PLUGINDIR))
-		return PLUGINDIR;
-	else {
-		static gchar *plugin_dir = NULL;
-		if (!plugin_dir)
-			plugin_dir = g_strconcat(get_rc_dir(),
-				G_DIR_SEPARATOR_S, "plugins",
-				G_DIR_SEPARATOR_S, NULL);
-		return plugin_dir;
-	}
-#endif
-}
-
-
 #ifdef G_OS_WIN32
 /* Return the default directory for Themes. */
 const gchar *w32_get_themes_dir(void)

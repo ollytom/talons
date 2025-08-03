@@ -28,7 +28,6 @@ libclawscommon_la_SOURCES = $(arch_sources) \
 	md5.c \
 	mgutils.c \
 	passcrypt.c \
-	plugin.c \
 	prefs.c \
 	progressindicator.c \
 	proxy.c \
@@ -60,7 +59,6 @@ clawscommoninclude_HEADERS = $(arch_headers) \
 	md5.h \
 	mgutils.h \
 	passcrypt.h \
-	plugin.h \
 	prefs.h \
 	progressindicator.h \
 	proxy.h \

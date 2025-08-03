@@ -178,9 +178,6 @@ static void toolbar_print_cb			(GtkWidget	*widget,
 
 static void toolbar_actions_execute_cb	   	(GtkWidget     	*widget,
 				  	    	 gpointer      	 data);
-static void toolbar_plugins_execute_cb      (GtkWidget      *widget,
-                             gpointer        data);
-
 
 static void toolbar_send_cb			(GtkWidget	*widget,
 					 	 gpointer	 data);
@@ -280,7 +277,6 @@ struct {
 	{ "A_CANCEL_ALL",       N_("Cancel receiving/sending")             },
 	{ "A_CLOSE",            N_("Close window")                         },
 	{ "A_SEPARATOR",     	N_("Separator")                            },
-	{ "A_CLAWS_PLUGINS",    N_("Claws Mail Plugins")                   }
 };
 
 /* migration table: support reading toolbar configuration files with
@@ -352,7 +348,7 @@ static gboolean toolbar_is_duplicate(gint action, ToolbarType source)
 {
 	GSList *cur;
 
-	if ((action == A_SEPARATOR) || (action == A_CLAWS_ACTIONS) || (action == A_CLAWS_PLUGINS))
+	if ((action == A_SEPARATOR) || (action == A_CLAWS_ACTIONS))
 		return FALSE;
 
 	for (cur = toolbar_config[source].item_list; cur != NULL; cur = cur->next) {
@@ -2012,11 +2008,6 @@ static void toolbar_actions_execute_cb(GtkWidget *widget, gpointer data)
 	toolbar_action_execute(widget, action_list, parent, toolbar_item->type);
 }
 
-static void toolbar_plugins_execute_cb(GtkWidget *widget, gpointer data)
-{
-	ToolbarItem *toolbar_item = data;
-}
-
 static MainWindow *get_mainwin(gpointer data)
 {
 	ToolbarItem *toolbar_item = (ToolbarItem*)data;
@@ -2127,7 +2118,6 @@ static void toolbar_buttons_cb(GtkWidget   *widget,
 		{ A_CANCEL_INC,			toolbar_cancel_inc_cb		},
 		{ A_CANCEL_SEND,		toolbar_cancel_send_cb		},
 		{ A_CANCEL_ALL,			toolbar_cancel_all_cb		},
-		{ A_CLAWS_PLUGINS,  	toolbar_plugins_execute_cb	},
 	};
 
 	num_items = sizeof(callbacks)/sizeof(callbacks[0]);
@@ -2606,9 +2596,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 		case A_CANCEL_ALL:
 			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,_("Cancel receiving/sending"));
 			toolbar_data->cancel_all_btn = item;
-			break;
-		case A_CLAWS_PLUGINS:
-			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text, toolbar_item->text);
 			break;
 		default:
 			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,

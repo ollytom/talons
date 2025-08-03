@@ -324,10 +324,6 @@ AC_ARG_ENABLE(more-addressbook-debug,
         [  --enable-more-addressbook-debug Build with additional addressbook debug calls],
         [enable_more_addressbook_debug=$enableval], [enable_more_addressbook_debug=no])
 
-AC_ARG_ENABLE(more-archive-debug,
-        [  --enable-more-archive-debug     Build with additional debug calls in archive plugin],
-        [enable_more_archive_debug=$enableval], [enable_more_archive_debug=no])
-
 AC_ARG_ENABLE(timing-debug,
         [  --enable-timing-debug     Build with timing debug calls],
         [enable_timing_debug=$enableval], [enable_timing_debug=no])
@@ -1173,43 +1169,6 @@ fi
 AC_SUBST(YTNEF_CFLAGS)
 AC_SUBST(YTNEF_LIBS)
 
-AM_CONDITIONAL(BUILD_ACPI_NOTIFIER_PLUGIN,	test x"$enable_acpi_notifier_plugin" != xno)
-AM_CONDITIONAL(BUILD_ADDRESS_KEEPER_PLUGIN,	test x"$enable_address_keeper_plugin" != xno)
-AM_CONDITIONAL(BUILD_ARCHIVE_PLUGIN,		test x"$enable_archive_plugin" != xno)
-AM_CONDITIONAL(BUILD_ATT_REMOVER_PLUGIN,	test x"$enable_att_remover_plugin" != xno)
-AM_CONDITIONAL(BUILD_ATTACHWARNER_PLUGIN,	test x"$enable_attachwarner_plugin" != xno)
-AM_CONDITIONAL(BUILD_BOGOFILTER_PLUGIN,		test x"$enable_bogofilter_plugin" != xno)
-AM_CONDITIONAL(BUILD_BSFILTER_PLUGIN,		test x"$enable_bsfilter_plugin" != xno)
-AM_CONDITIONAL(BUILD_CLAMD_PLUGIN,		test x"$enable_clamd_plugin" != xno)
-AM_CONDITIONAL(BUILD_DEMO_PLUGIN,		test x"$enable_demo_plugin" != xno)
-AM_CONDITIONAL(BUILD_DILLO_PLUGIN,		test x"$enable_dillo_plugin" != xno)
-AM_CONDITIONAL(BUILD_FANCY_PLUGIN,		test x"$enable_fancy_plugin" != xno)
-AM_CONDITIONAL(BUILD_FETCHINFO_PLUGIN,		test x"$enable_fetchinfo_plugin" != xno)
-AM_CONDITIONAL(BUILD_KEYWORD_WARNER_PLUGIN,	test x"$enable_keyword_warner_plugin" != xno)
-AM_CONDITIONAL(BUILD_LIBRAVATAR_PLUGIN,		test x"$enable_libravatar_plugin" != xno)
-AM_CONDITIONAL(BUILD_LITEHTML_VIEWER_PLUGIN,	test x"$enable_litehtml_viewer_plugin" != xno)
-AM_CONDITIONAL(BUILD_MAILMBOX_PLUGIN,		test x"$enable_mailmbox_plugin" != xno)
-AM_CONDITIONAL(BUILD_MANAGESIEVE_PLUGIN,	test x"$enable_managesieve_plugin" != xno)
-AM_CONDITIONAL(BUILD_NEWMAIL_PLUGIN,		test x"$enable_newmail_plugin" != xno)
-AM_CONDITIONAL(BUILD_NOTIFICATION_PLUGIN,	test x"$enable_notification_plugin" != xno)
-AM_CONDITIONAL(BUILD_HOTKEYS,			test x"$enable_notification_plugin" != xno -a x"$HAVE_HOTKEYS" = xyes)
-AM_CONDITIONAL(BUILD_PDF_VIEWER_PLUGIN,		test x"$enable_pdf_viewer_plugin" != xno)
-AM_CONDITIONAL(BUILD_PERL_PLUGIN,		test x"$enable_perl_plugin" != xno)
-AM_CONDITIONAL(BUILD_PYTHON_PLUGIN,		test x"$enable_python_plugin" != xno)
-AM_CONDITIONAL(BUILD_PGPCORE_PLUGIN,		test x"$enable_pgpcore_plugin" != xno)
-AM_CONDITIONAL(BUILD_PGPMIME_PLUGIN,		test x"$enable_pgpmime_plugin" != xno)
-AM_CONDITIONAL(BUILD_PGPINLINE_PLUGIN,		test x"$enable_pgpinline_plugin" != xno)
-AM_CONDITIONAL(BUILD_RSSYL_PLUGIN,		test x"$enable_rssyl_plugin" != xno)
-AM_CONDITIONAL(BUILD_SMIME_PLUGIN,		test x"$enable_smime_plugin" != xno)
-AM_CONDITIONAL(BUILD_SPAMASSASSIN_PLUGIN,	test x"$enable_spamassassin_plugin" != xno)
-AM_CONDITIONAL(BUILD_SPAM_REPORT_PLUGIN,	test x"$enable_spam_report_plugin" != xno)
-AM_CONDITIONAL(BUILD_TNEF_PARSE_PLUGIN,		test x"$enable_tnef_parse_plugin" != xno)
-AM_CONDITIONAL(BUILD_VCALENDAR_PLUGIN,		test x"$enable_vcalendar_plugin" != xno)
-
-
-dnl ****************************
-dnl ** Final configure output **
-dnl ****************************
 
 AC_CONFIG_FILES([
 Makefile
@@ -1267,36 +1226,6 @@ if test -n "$more_debug_output_modules"; then
 	done
 fi
 
-echo "Plugins"
-echo "   Built:"
-for plugin in $PLUGINS; do
-echo "            - $plugin"
-if test x"$plugin" = xnotification; then
-	echo "                Features:"
-	for notif_feature in $notification_features; do
-		echo "                    $notif_feature"
-	done;
-	if test "x$notification_missing_dependencies" != x; then
-		echo "                Disabled due to missing dependencies:"
-		for notif_miss_dep in $notification_missing_dependencies; do
-			echo "                    $notif_miss_dep"
-		done;
-	fi
-fi
-done;
-if test "x$DISABLED_PLUGINS" != x; then
-echo "   Disabled:"
-for plugin in $DISABLED_PLUGINS; do
-echo "            - $plugin"
-done;
-fi
-
-if test "x$MISSING_DEPS_PLUGINS" != x; then
-echo "   Disabled due to missing dependencies:"
-for plugin in $MISSING_DEPS_PLUGINS; do
-echo "            - $plugin"
-done;
-fi
 echo ""
 echo "The binary will be installed in $prefix/bin"
 echo ""

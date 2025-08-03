@@ -28,20 +28,20 @@ typedef struct _ToolbarItem ToolbarItem;
 typedef struct _ToolbarClawsActions ToolbarClawsActions;
 
 typedef enum {
-	TOOLBAR_MAIN = 0,	
+	TOOLBAR_MAIN = 0,
 	TOOLBAR_COMPOSE,
 	TOOLBAR_MSGVIEW
 } ToolbarType;
 
 #define NUM_TOOLBARS	3
 
-typedef enum 
+typedef enum
 {
 	COMPOSEBUTTON_MAIL,
  	COMPOSEBUTTON_NEWS
 } ComposeButtonType;
 
-typedef enum 
+typedef enum
 {
 	LEARN_SPAM,
  	LEARN_HAM
@@ -65,7 +65,7 @@ struct _Toolbar {
 	GtkWidget *replylist_btn;
 
 	GtkWidget *fwd_btn;
-	
+
 	GtkWidget *trash_btn;
 	GtkWidget *delete_btn;
 	GtkWidget *delete_dup_btn;
@@ -77,11 +77,11 @@ struct _Toolbar {
 	GtkWidget *learn_spam_btn;
 	GtkWidget *learn_spam_icon;
 	GtkWidget *learn_ham_icon;
-	
+
 	GtkWidget *cancel_inc_btn;
 	GtkWidget *cancel_send_btn;
 	GtkWidget *cancel_all_btn;
-	
+
 	ComposeButtonType compose_btn_type;
 	LearnButtonType learn_btn_type;
 
@@ -216,8 +216,6 @@ enum {
 
 	A_SEPARATOR,
 
-	A_CLAWS_PLUGINS,
-
 	N_ACTION_VAL
 };
 
@@ -236,19 +234,19 @@ void	toolbar_set_default		(ToolbarType	 source);
 void	toolbar_clear_list		(ToolbarType	 source);
 
 GSList	*toolbar_get_list		(ToolbarType	 source);
-void	toolbar_set_list_item		(ToolbarItem	*t_item, 
+void	toolbar_set_list_item		(ToolbarItem	*t_item,
 					 ToolbarType	 source);
 
 gint	toolbar_ret_val_from_descr	(const gchar	*descr);
 gchar	*toolbar_ret_descr_from_val	(gint		 val);
 
 void	toolbar_main_set_sensitive	(gpointer	 data);
-void 	toolbar_comp_set_sensitive	(gpointer	 data, 
+void 	toolbar_comp_set_sensitive	(gpointer	 data,
 					 gboolean	 sensitive);
 
 /* invoked by mainwindow entries and toolbar actions */
-void 	delete_msgview_cb		(gpointer	 data, 
-					 guint		 action, 
+void 	delete_msgview_cb		(gpointer	 data,
+					 guint		 action,
 					 GtkWidget 	*widget);
 void	inc_mail_cb			(gpointer	 data,
 					 guint		 action,
@@ -259,19 +257,19 @@ void 	inc_all_account_mail_cb		(gpointer	 data,
 void 	send_queue_cb			(gpointer	 data,
 					 guint		 action,
 					 GtkWidget	*widget);
-void 	compose_mail_cb			(gpointer	data, 
+void 	compose_mail_cb			(gpointer	data,
 					 guint		 action,
 					 GtkWidget	*widget);
-void 	compose_news_cb			(gpointer	 data, 
+void 	compose_news_cb			(gpointer	 data,
 					 guint 		 action,
 					 GtkWidget      *widget);
 /* END */
 
 void 	toolbar_toggle			(guint		 action,
 					 gpointer 	 data);
-void 	toolbar_update			(ToolbarType 	 type, 
-					gpointer 	 data);        
-Toolbar *toolbar_create			(ToolbarType	 type, 
+void 	toolbar_update			(ToolbarType 	 type,
+					gpointer 	 data);
+Toolbar *toolbar_create			(ToolbarType	 type,
 					 GtkWidget	*container,
 					 gpointer 	 data);
 void	toolbar_set_style		(GtkWidget	*toolbar_wid,
@@ -280,7 +278,7 @@ void	toolbar_set_style		(GtkWidget	*toolbar_wid,
 void 	toolbar_destroy			(Toolbar	*toolbar);
 void 	toolbar_item_destroy		(ToolbarItem	*toolbar_item);
 
-void toolbar_set_learn_button		(Toolbar	*toolbar, 
+void toolbar_set_learn_button		(Toolbar	*toolbar,
 					 LearnButtonType  learn_btn_type);
 const gchar *toolbar_get_short_text	(int action);
 int	     toolbar_get_icon		(int action);

@@ -38,7 +38,6 @@
 #endif
 
 #include "common/passcrypt.h"
-#include "common/plugin.h"
 #include "common/pkcs5_pbkdf2.h"
 #include "common/timing.h"
 #include "common/utils.h"
