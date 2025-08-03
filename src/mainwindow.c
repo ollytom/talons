@@ -82,7 +82,6 @@
 #include "ssl_manager.h"
 #include "sslcertwindow.h"
 #include "prefs_gtk.h"
-#include "pluginwindow.h"
 #include "hooks.h"
 #include "progressindicator.h"
 #include "localfolder.h"
@@ -397,10 +396,8 @@ static void account_compose_menu_cb	 (GtkMenuItem	*menuitem,
 #endif
 static void prefs_open_cb	(GtkAction	*action,
 				  gpointer	 data);
-static void plugins_open_cb	(GtkAction	*action,
-				  gpointer	 data);
 
-static void online_switch_clicked(GtkButton     *btn, 
+static void online_switch_clicked(GtkButton     *btn,
 				  gpointer data);
 
 static void manual_open_cb	 (GtkAction	*action,
@@ -419,7 +416,7 @@ static void set_default_client_cb (GtkAction	*action,
 static void scan_tree_func	 (Folder	*folder,
 				  FolderItem	*item,
 				  gpointer	 data);
-				  
+
 static void toggle_work_offline_cb(GtkAction	*action,
 				  gpointer	 data);
 
@@ -437,13 +434,13 @@ static void forget_session_passwords_cb	(GtkAction	*action,
 static void forget_primary_passphrase_cb	(GtkAction	*action,
 					 gpointer	 data );
 #endif
-static gboolean mainwindow_focus_in_event	(GtkWidget	*widget, 
+static gboolean mainwindow_focus_in_event	(GtkWidget	*widget,
 						 GdkEventFocus	*focus,
 						 gpointer	 data);
-static gboolean mainwindow_visibility_event_cb	(GtkWidget	*widget, 
+static gboolean mainwindow_visibility_event_cb	(GtkWidget	*widget,
 						 GdkEventVisibility	*state,
 						 gpointer	 data);
-static gboolean mainwindow_state_event_cb	(GtkWidget	*widget, 
+static gboolean mainwindow_state_event_cb	(GtkWidget	*widget,
 						 GdkEventWindowState	*state,
 						 gpointer	 data);
 static void main_window_reply_cb			(GtkAction	*action,
@@ -543,14 +540,14 @@ static GtkActionEntry mainwin_entries[] =
 	{"File/PageSetup",              NULL, N_("Page setup..."), NULL, NULL, G_CALLBACK(page_setup_cb) },
 	{"File/Print",                  NULL, N_("_Print..."), "<control>P", NULL, G_CALLBACK(print_cb) },
 	/* {"File/---",                 NULL, "---", NULL, NULL, NULL }, */
-	{"File/SynchroniseFolders",     NULL, N_("Synchronise folders"), "<shift><control>S", NULL, G_CALLBACK(sync_cb) }, 
+	{"File/SynchroniseFolders",     NULL, N_("Synchronise folders"), "<shift><control>S", NULL, G_CALLBACK(sync_cb) },
 	/* {"File/---",                 NULL, "---", NULL, NULL, NULL }, */
-	{"File/Exit",                   NULL, N_("E_xit"), "<control>Q", NULL, G_CALLBACK(app_exit_cb) }, 
+	{"File/Exit",                   NULL, N_("E_xit"), "<control>Q", NULL, G_CALLBACK(app_exit_cb) },
 
 /* Edit menu */
-	{"Edit/Copy",                   NULL, N_("_Copy"), "<control>C", NULL, G_CALLBACK(copy_cb) }, 
-	{"Edit/SelectAll",              NULL, N_("Select _all"), "<control>A", NULL, G_CALLBACK(allsel_cb) }, 
-	{"Edit/SelectThread",           NULL, N_("Select _thread"), NULL, NULL, G_CALLBACK(select_thread_cb) }, 
+	{"Edit/Copy",                   NULL, N_("_Copy"), "<control>C", NULL, G_CALLBACK(copy_cb) },
+	{"Edit/SelectAll",              NULL, N_("Select _all"), "<control>A", NULL, G_CALLBACK(allsel_cb) },
+	{"Edit/SelectThread",           NULL, N_("Select _thread"), NULL, NULL, G_CALLBACK(select_thread_cb) },
 	{"Edit/---",                    NULL, "---", NULL, NULL, NULL },
 	{"Edit/Find",                   NULL, N_("_Find in current message..."), "<control>F", NULL, G_CALLBACK(search_cb) },
 	{"Edit/SearchFolder",			NULL, N_("_Search folder..."), "<shift><control>F", NULL, G_CALLBACK(search_folder_cb) },
@@ -570,11 +567,11 @@ static GtkActionEntry mainwin_entries[] =
 	{"View/Layout",                 NULL, N_("La_yout"), NULL, NULL, NULL },
 #endif
 	{"View/Sort",                   NULL, N_("_Sort"), NULL, NULL, NULL },
-	{"View/Sort/---",               NULL, "---", NULL, NULL, NULL }, 
-	{"View/Sort/AttractSubj",		NULL, N_("_Attract by subject"), NULL, NULL, G_CALLBACK(attract_by_subject_cb) }, 
+	{"View/Sort/---",               NULL, "---", NULL, NULL, NULL },
+	{"View/Sort/AttractSubj",		NULL, N_("_Attract by subject"), NULL, NULL, G_CALLBACK(attract_by_subject_cb) },
 
-	{"View/ExpandThreads",			NULL, N_("E_xpand all threads"), NULL, NULL, G_CALLBACK(expand_threads_cb) }, 
-	{"View/CollapseThreads",		NULL, N_("Co_llapse all threads"), NULL, NULL, G_CALLBACK(collapse_threads_cb) }, 
+	{"View/ExpandThreads",			NULL, N_("E_xpand all threads"), NULL, NULL, G_CALLBACK(expand_threads_cb) },
+	{"View/CollapseThreads",		NULL, N_("Co_llapse all threads"), NULL, NULL, G_CALLBACK(collapse_threads_cb) },
 
 	{"View/Goto",                   NULL, N_("_Go to"), NULL, NULL, NULL },
 	{"View/Goto/Prev",              NULL, N_("_Previous message"), "P", NULL, G_CALLBACK(prev_cb) },
@@ -644,7 +641,7 @@ static GtkActionEntry mainwin_entries[] =
 #endif
 	/* {"View/---",                 NULL, "---", NULL, NULL, NULL }, */
 
-	{"View/Quotes",                 NULL, N_("Quotes"), NULL, NULL, NULL }, 
+	{"View/Quotes",                 NULL, N_("Quotes"), NULL, NULL, NULL },
 	/* {"View/---",                 NULL, "---", NULL, NULL, NULL }, */
 	{"View/UpdateSummary",          NULL, N_("Refresh message list"), "<control><alt>U", NULL, G_CALLBACK(update_summary_cb) },
 
@@ -664,7 +661,7 @@ static GtkActionEntry mainwin_entries[] =
 	{"Message/ComposeNews",                          NULL, N_("Write a news message"), NULL, NULL, G_CALLBACK(mw_compose_news_cb) },
 
 	{"Message/Reply",                                NULL, N_("_Reply"), "<control>R", NULL, G_CALLBACK(main_window_reply_cb) }, /* COMPOSE_REPLY */
-	{"Message/ReplyTo",                              NULL, N_("Repl_y to"), NULL, NULL, NULL }, 
+	{"Message/ReplyTo",                              NULL, N_("Repl_y to"), NULL, NULL, NULL },
 	{"Message/ReplyTo/All",                          NULL, N_("_All"), "<shift><control>R", NULL, G_CALLBACK(main_window_reply_cb) }, /* COMPOSE_REPLY_TO_ALL */
 	{"Message/ReplyTo/Sender",                       NULL, N_("_Sender"), NULL, NULL, G_CALLBACK(main_window_reply_cb) }, /* COMPOSE_REPLY_TO_SENDER */
 	{"Message/ReplyTo/List",                         NULL, N_("Mailing _list"), "<control>L", NULL, G_CALLBACK(main_window_reply_cb) }, /* COMPOSE_REPLY_TO_LIST */
@@ -675,18 +672,18 @@ static GtkActionEntry mainwin_entries[] =
 	{"Message/ForwardAtt",                           NULL, N_("For_ward as attachment"), NULL, NULL, G_CALLBACK(main_window_reply_cb) }, /* COMPOSE_FORWARD_AS_ATTACH */
 	{"Message/Redirect",                             NULL, N_("Redirec_t"), NULL, NULL, G_CALLBACK(main_window_reply_cb) }, /* COMPOSE_REDIRECT */
 
-	{"Message/MailingList",                          NULL, N_("Mailing-_List"), NULL, NULL, NULL }, 
-	{"Message/MailingList/Post",                     NULL, N_("Post"), NULL, NULL, NULL }, 
+	{"Message/MailingList",                          NULL, N_("Mailing-_List"), NULL, NULL, NULL },
+	{"Message/MailingList/Post",                     NULL, N_("Post"), NULL, NULL, NULL },
 	{"Message/MailingList/Post/PlaceHolder",         NULL, "Placeholder", NULL, NULL, G_CALLBACK(mainwindow_nothing_cb) },
-	{"Message/MailingList/Help",                     NULL, N_("Help"), NULL, NULL, NULL }, 
+	{"Message/MailingList/Help",                     NULL, N_("Help"), NULL, NULL, NULL },
 	{"Message/MailingList/Help/PlaceHolder",         NULL, "Placeholder", NULL, NULL, G_CALLBACK(mainwindow_nothing_cb) },
-	{"Message/MailingList/Subscribe",                NULL, N_("Subscribe"), NULL, NULL, NULL }, 
+	{"Message/MailingList/Subscribe",                NULL, N_("Subscribe"), NULL, NULL, NULL },
 	{"Message/MailingList/Subscribe/PlaceHolder",    NULL, "Placeholder", NULL, NULL, G_CALLBACK(mainwindow_nothing_cb) },
-	{"Message/MailingList/Unsubscribe",              NULL, N_("Unsubscribe"), NULL, NULL, NULL }, 
+	{"Message/MailingList/Unsubscribe",              NULL, N_("Unsubscribe"), NULL, NULL, NULL },
 	{"Message/MailingList/Unsubscribe/PlaceHolder",  NULL, "Placeholder", NULL, NULL, G_CALLBACK(mainwindow_nothing_cb) },
-	{"Message/MailingList/ViewArchive",              NULL, N_("View archive"), NULL, NULL, NULL }, 
+	{"Message/MailingList/ViewArchive",              NULL, N_("View archive"), NULL, NULL, NULL },
 	{"Message/MailingList/ViewArchive/PlaceHolder",  NULL, "Placeholder", NULL, NULL, G_CALLBACK(mainwindow_nothing_cb) },
-	{"Message/MailingList/ContactOwner",             NULL, N_("Contact owner"), NULL, NULL, NULL }, 
+	{"Message/MailingList/ContactOwner",             NULL, N_("Contact owner"), NULL, NULL, NULL },
 	{"Message/MailingList/ContactOwner/PlaceHolder", NULL, "Placeholder", NULL, NULL, G_CALLBACK(mainwindow_nothing_cb) },
 	/* separation */
 
@@ -694,8 +691,8 @@ static GtkActionEntry mainwin_entries[] =
 	{"Message/Copy",                             NULL, N_("_Copy..."), "<shift><control>O", NULL, G_CALLBACK(copy_to_cb) },
 	{"Message/Trash",                            NULL, N_("Move to _trash"), "<control>D", NULL, G_CALLBACK(delete_trash_cb) },
 	{"Message/Delete",                           NULL, N_("_Delete..."), NULL, NULL, G_CALLBACK(delete_cb) },
-	{"Message/TrashThread",                      NULL, N_("Move thread to tr_ash"), NULL, NULL, G_CALLBACK(trash_thread_cb) }, 
-	{"Message/DeleteThread",                     NULL, N_("Delete t_hread"), NULL, NULL, G_CALLBACK(delete_thread_cb) }, 
+	{"Message/TrashThread",                      NULL, N_("Move thread to tr_ash"), NULL, NULL, G_CALLBACK(trash_thread_cb) },
+	{"Message/DeleteThread",                     NULL, N_("Delete t_hread"), NULL, NULL, G_CALLBACK(delete_thread_cb) },
 	{"Message/CancelNews",                       NULL, N_("Cancel a news message"), NULL, NULL, G_CALLBACK(cancel_cb) },
 	/* separation */
 	{"Message/Marks",                            NULL, N_("_Marks"), NULL, NULL, NULL },
@@ -733,17 +730,17 @@ static GtkActionEntry mainwin_entries[] =
 
 /* Tools menu */
 
-	{"Tools/AddressBook",                        NULL, N_("_Address book"), "<shift><control>A", NULL, G_CALLBACK(addressbook_open_cb) }, 
-	{"Tools/AddSenderToAB",                      NULL, N_("Add sender to address boo_k"), NULL, NULL, G_CALLBACK(add_address_cb) }, 
+	{"Tools/AddressBook",                        NULL, N_("_Address book"), "<shift><control>A", NULL, G_CALLBACK(addressbook_open_cb) },
+	{"Tools/AddSenderToAB",                      NULL, N_("Add sender to address boo_k"), NULL, NULL, G_CALLBACK(add_address_cb) },
 
-	{"Tools/CollectAddresses",                   NULL, N_("C_ollect addresses"), NULL, NULL, NULL }, 
-	{"Tools/CollectAddresses/FromFolder",        NULL, N_("From current _folder..."), NULL, NULL, G_CALLBACK(addr_harvest_cb) }, 
-	{"Tools/CollectAddresses/FromSelected",      NULL, N_("From selected _messages..."), NULL, NULL, G_CALLBACK(addr_harvest_msg_cb) }, 
+	{"Tools/CollectAddresses",                   NULL, N_("C_ollect addresses"), NULL, NULL, NULL },
+	{"Tools/CollectAddresses/FromFolder",        NULL, N_("From current _folder..."), NULL, NULL, G_CALLBACK(addr_harvest_cb) },
+	{"Tools/CollectAddresses/FromSelected",      NULL, N_("From selected _messages..."), NULL, NULL, G_CALLBACK(addr_harvest_msg_cb) },
 	{"Tools/---",                                NULL, "---", NULL, NULL, NULL },
 
-	{"Tools/FilterFolder",                       NULL, N_("_Filter all messages in folder"), NULL, NULL, G_CALLBACK(filter_cb) }, 
-	{"Tools/FilterSelected",                     NULL, N_("Filter _selected messages"), NULL, NULL, G_CALLBACK(filter_list_cb) }, 
-	{"Tools/RunProcessing",                      NULL, N_("Run folder pr_ocessing rules"), NULL, NULL, G_CALLBACK(process_cb) }, 
+	{"Tools/FilterFolder",                       NULL, N_("_Filter all messages in folder"), NULL, NULL, G_CALLBACK(filter_cb) },
+	{"Tools/FilterSelected",                     NULL, N_("Filter _selected messages"), NULL, NULL, G_CALLBACK(filter_list_cb) },
+	{"Tools/RunProcessing",                      NULL, N_("Run folder pr_ocessing rules"), NULL, NULL, G_CALLBACK(process_cb) },
 
 	{"Tools/CreateFilterRule",                   NULL, N_("_Create filter rule"), NULL, NULL, NULL },
 	{"Tools/CreateFilterRule/Automatically",     NULL, N_("_Automatically"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_AUTO */
@@ -753,51 +750,51 @@ static GtkActionEntry mainwin_entries[] =
 	{"Tools/CreateFilterRule/BySender",          NULL, N_("By S_ender"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_SENDER */
 
 	{"Tools/CreateProcessingRule",               NULL, N_("Create processing rule"), NULL, NULL, NULL },
-	{"Tools/CreateProcessingRule/Automatically", NULL, N_("_Automatically"), NULL, NULL, G_CALLBACK(create_processing_cb) }, 
-	{"Tools/CreateProcessingRule/ByFrom",        NULL, N_("By _From"), NULL, NULL, G_CALLBACK(create_processing_cb) }, 
-	{"Tools/CreateProcessingRule/ByTo",          NULL, N_("By _To"), NULL, NULL, G_CALLBACK(create_processing_cb) }, 
-	{"Tools/CreateProcessingRule/BySubject",     NULL, N_("By _Subject"), NULL, NULL, G_CALLBACK(create_processing_cb) }, 
+	{"Tools/CreateProcessingRule/Automatically", NULL, N_("_Automatically"), NULL, NULL, G_CALLBACK(create_processing_cb) },
+	{"Tools/CreateProcessingRule/ByFrom",        NULL, N_("By _From"), NULL, NULL, G_CALLBACK(create_processing_cb) },
+	{"Tools/CreateProcessingRule/ByTo",          NULL, N_("By _To"), NULL, NULL, G_CALLBACK(create_processing_cb) },
+	{"Tools/CreateProcessingRule/BySubject",     NULL, N_("By _Subject"), NULL, NULL, G_CALLBACK(create_processing_cb) },
 	{"Tools/CreateProcessingRule/BySender",      NULL, N_("By S_ender"), NULL, NULL, G_CALLBACK(create_processing_cb) },
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 
-	{"Tools/ListUrls",                           NULL, N_("List _URLs..."), "<shift><control>U", NULL, G_CALLBACK(open_urls_cb) }, 
+	{"Tools/ListUrls",                           NULL, N_("List _URLs..."), "<shift><control>U", NULL, G_CALLBACK(open_urls_cb) },
 
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/Actions",                            NULL, N_("Actio_ns"), NULL, NULL, NULL },
 	{"Tools/Actions/PlaceHolder",                NULL, "Placeholder", NULL, NULL, G_CALLBACK(mainwindow_nothing_cb) },
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 
-	{"Tools/CheckNewMessages",                   NULL, N_("Ch_eck for new messages in all folders"), NULL, NULL, G_CALLBACK(update_folderview_cb) }, 
+	{"Tools/CheckNewMessages",                   NULL, N_("Ch_eck for new messages in all folders"), NULL, NULL, G_CALLBACK(update_folderview_cb) },
 	{"Tools/DeleteDuplicates",                   NULL, N_("Delete du_plicated messages"), NULL, NULL, NULL },
 	{"Tools/DeleteDuplicates/SelFolder",         NULL, N_("In selected folder"), NULL, NULL, G_CALLBACK(delete_duplicated_cb) },
 	{"Tools/DeleteDuplicates/AllFolders",        NULL, N_("In all folders"), NULL, NULL, G_CALLBACK(delete_duplicated_all_cb) },
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 
-	{"Tools/Execute",                            NULL, N_("E_xecute"), "X", NULL, G_CALLBACK(execute_summary_cb) }, 
-	{"Tools/Expunge",                            NULL, N_("Exp_unge"), "<control>E", NULL, G_CALLBACK(expunge_summary_cb) }, 
+	{"Tools/Execute",                            NULL, N_("E_xecute"), "X", NULL, G_CALLBACK(execute_summary_cb) },
+	{"Tools/Expunge",                            NULL, N_("Exp_unge"), "<control>E", NULL, G_CALLBACK(expunge_summary_cb) },
 #ifdef USE_GNUTLS
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
-	{"Tools/TLSCertificates",                    NULL, N_("TLS cer_tificates"), NULL, NULL, G_CALLBACK(ssl_manager_open_cb) }, 
+	{"Tools/TLSCertificates",                    NULL, N_("TLS cer_tificates"), NULL, NULL, G_CALLBACK(ssl_manager_open_cb) },
 #endif
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
-	{"Tools/FilteringLog",                       NULL, N_("Filtering Lo_g"), NULL, NULL, G_CALLBACK(filtering_debug_window_show_cb) }, 
-	{"Tools/NetworkLog",                         NULL, N_("Network _Log"), "<shift><control>L", NULL, G_CALLBACK(log_window_show_cb) }, 
+	{"Tools/FilteringLog",                       NULL, N_("Filtering Lo_g"), NULL, NULL, G_CALLBACK(filtering_debug_window_show_cb) },
+	{"Tools/NetworkLog",                         NULL, N_("Network _Log"), "<shift><control>L", NULL, G_CALLBACK(log_window_show_cb) },
 #ifdef G_OS_WIN32
 	{"Tools/DebugLog",                           NULL, N_("Debug _Log"), NULL, NULL, G_CALLBACK(debug_log_show_cb) },
 #endif
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
-	{"Tools/ForgetSessionPasswords",             NULL, N_("_Forget all session passwords"), NULL, NULL, G_CALLBACK(forget_session_passwords_cb) }, 
+	{"Tools/ForgetSessionPasswords",             NULL, N_("_Forget all session passwords"), NULL, NULL, G_CALLBACK(forget_session_passwords_cb) },
 #ifndef PASSWORD_CRYPTO_OLD
 	{"Tools/ForgetPrimaryPassphrase",             NULL, N_("Forget _primary passphrase"), NULL, NULL, G_CALLBACK(forget_primary_passphrase_cb) },
 #endif
 
-/* Configuration menu */	
+/* Configuration menu */
 	{"Configuration/ChangeAccount",              NULL, N_("C_hange current account"), NULL, NULL, NULL },
 	{"Configuration/ChangeAccount/PlaceHolder",  NULL, "Placeholder", NULL, NULL, G_CALLBACK(mainwindow_nothing_cb) },
 	{"Configuration/AccountPrefs",               NULL, N_("_Preferences for current account..."), NULL, NULL, G_CALLBACK(prefs_account_open_cb) },
 	{"Configuration/CreateAccount",              NULL, N_("Create _new account..."), NULL, NULL, G_CALLBACK(new_account_cb) },
 	{"Configuration/EditAccounts",               NULL, N_("_Edit accounts..."), NULL, NULL, G_CALLBACK(account_edit_open) },
-	{"Configuration/---",                        NULL, "---", NULL, NULL, NULL }, 
+	{"Configuration/---",                        NULL, "---", NULL, NULL, NULL },
 
 	{"Configuration/Preferences",                NULL, N_("P_references..."), NULL, NULL, G_CALLBACK(prefs_open_cb) },
 	{"Configuration/PreProcessing",              NULL, N_("Pre-pr_ocessing..."), NULL, NULL, G_CALLBACK(prefs_pre_processing_open_cb) },
@@ -806,18 +803,16 @@ static GtkActionEntry mainwin_entries[] =
 	{"Configuration/Templates",                  NULL, N_("_Templates..."), NULL, NULL, G_CALLBACK(prefs_template_open_cb) },
 	{"Configuration/Actions",                    NULL, N_("_Actions..."), NULL, NULL, G_CALLBACK(prefs_actions_open_cb) },
 	{"Configuration/Tags",                       NULL, N_("Tag_s..."), NULL, NULL, G_CALLBACK(prefs_tags_open_cb) },
-	/* {"Configuration/---",                     NULL, "---", NULL, NULL, NULL }, */
-	{"Configuration/Plugins",                    NULL, N_("Plu_gins..."), NULL, NULL, G_CALLBACK(plugins_open_cb) },
 
 /* Help menu */
-	{"Help/Manual",                              NULL, N_("_Manual"), NULL, NULL, G_CALLBACK(manual_open_cb) }, 
-	{"Help/FAQ",                                 NULL, N_("_Online User-contributed FAQ"), NULL, NULL, G_CALLBACK(manual_faq_open_cb) }, 
-	{"Help/IconLegend",                          NULL, N_("Icon _Legend"), NULL, NULL, G_CALLBACK(legend_open_cb) }, 
+	{"Help/Manual",                              NULL, N_("_Manual"), NULL, NULL, G_CALLBACK(manual_open_cb) },
+	{"Help/FAQ",                                 NULL, N_("_Online User-contributed FAQ"), NULL, NULL, G_CALLBACK(manual_faq_open_cb) },
+	{"Help/IconLegend",                          NULL, N_("Icon _Legend"), NULL, NULL, G_CALLBACK(legend_open_cb) },
 #ifdef G_OS_WIN32
-	{"Help/SetDefault",                          NULL, N_("Set as default client"), NULL, NULL, G_CALLBACK(set_default_client_cb) }, 
+	{"Help/SetDefault",                          NULL, N_("Set as default client"), NULL, NULL, G_CALLBACK(set_default_client_cb) },
 #endif
-	{"Help/---",                                 NULL, "---", NULL, NULL, NULL }, 
-	{"Help/About",                               NULL, N_("_About"), NULL, NULL, G_CALLBACK(about_cb) }, 
+	{"Help/---",                                 NULL, "---", NULL, NULL, NULL },
+	{"Help/About",                               NULL, N_("_About"), NULL, NULL, G_CALLBACK(about_cb) },
 };
 
 static GtkToggleActionEntry mainwin_toggle_entries[] = {
@@ -1050,7 +1045,7 @@ static void mainwindow_tags_menu_item_activate_item_cb(GtkMenuItem *menu_item,
 				"tag_id"));
 			gtk_check_menu_item_set_active
 				(GTK_CHECK_MENU_ITEM(cur->data), FALSE);
-				
+
 			g_hash_table_insert(menu_table, GINT_TO_POINTER(id), GTK_CHECK_MENU_ITEM(cur->data));
 			g_hash_table_insert(menu_allsel_table, GINT_TO_POINTER(id), GINT_TO_POINTER(0));
 		}
@@ -1135,7 +1130,7 @@ void mainwin_accel_changed_cb (GtkAccelGroup *accelgroup, guint keyval, GdkModif
 		if (closure == cur->data) {
 			GtkLabel *label = g_object_get_data(G_OBJECT(item), "accel_label");
 			gchar *new_accel;
-			
+
 			if (keyval == GDK_KEY_Delete) {
 				const gchar *accel_path;
 				accel_path = gtk_menu_item_get_accel_path(item);
@@ -1165,7 +1160,7 @@ static void mainwindow_colorlabel_menu_create(MainWindow *mainwin, gboolean refr
 	gtk_widget_show(label_menuitem);
 
 	menu = gtk_menu_new();
-	gtk_menu_set_accel_group (GTK_MENU (menu), 
+	gtk_menu_set_accel_group (GTK_MENU (menu),
 		gtk_ui_manager_get_accel_group(mainwin->ui_manager));
 
 	/* create sub items. for the menu item activation callback we pass the
@@ -1202,7 +1197,7 @@ static void mainwindow_colorlabel_menu_create(MainWindow *mainwin, gboolean refr
 		if (i < 9)
 			gtk_accel_map_add_entry(accel_path, GDK_KEY_1+i, GDK_CONTROL_MASK);
 		g_free(accel_path);
-		g_signal_connect (gtk_ui_manager_get_accel_group(mainwin->ui_manager), 
+		g_signal_connect (gtk_ui_manager_get_accel_group(mainwin->ui_manager),
 			"accel-changed", G_CALLBACK (mainwin_accel_changed_cb), item);
 
 
@@ -1224,7 +1219,7 @@ static void mainwindow_tags_menu_item_apply_tags_activate_cb(GtkWidget *widget,
 	if (g_object_get_data(G_OBJECT(mainwin->tags_menu),
 				"dont_toggle"))
 		return;
-	
+
 	tags_window_open(summary_get_selection(mainwin->summaryview));
 }
 
@@ -1234,14 +1229,14 @@ static gint mainwin_tag_cmp_list(gconstpointer a, gconstpointer b)
 	gint id_b = GPOINTER_TO_INT(b);
 	const gchar *tag_a = tags_get_tag(id_a);
 	const gchar *tag_b = tags_get_tag(id_b);
-	
- 		
+
+
  	if (tag_a == NULL)
  		return tag_b == NULL ? 0:1;
- 	
+
  	if (tag_b == NULL)
  		return 1;
- 
+
  	return g_utf8_collate(tag_a, tag_b);
 }
 
@@ -1264,7 +1259,7 @@ static void mainwindow_tags_menu_create(MainWindow *mainwin, gboolean refresh)
 	gtk_widget_show(label_menuitem);
 
 	menu = gtk_menu_new();
-	gtk_menu_set_accel_group (GTK_MENU (menu), 
+	gtk_menu_set_accel_group (GTK_MENU (menu),
 		gtk_ui_manager_get_accel_group(mainwin->ui_manager));
 
 	/* create tags menu items */
@@ -1363,7 +1358,7 @@ static gboolean mainwindow_key_pressed (GtkWidget *widget, GdkEventKey *event,
 {
 	MainWindow *mainwin = (MainWindow*) data;
 
-	if (!mainwin || !event) 
+	if (!mainwin || !event)
 		return FALSE;
 
 	if (quicksearch_has_focus(mainwin->summaryview->quicksearch))
@@ -1390,10 +1385,10 @@ static gboolean mainwindow_key_pressed (GtkWidget *widget, GdkEventKey *event,
 		if (gtk_window_is_active(GTK_WINDOW(mainwin->window))) {
 			if (mainwin->folderview != NULL && mainwin->summaryview != NULL
 			    && ((!mainwin->summaryview->displayed
-		        	&& !mainwin->summaryview->selected) 
+		        	&& !mainwin->summaryview->selected)
 				|| (mainwin->summaryview->folder_item
 				    && mainwin->summaryview->folder_item->total_msgs == 0))) {
-				g_signal_stop_emission_by_name(G_OBJECT(widget), 
+				g_signal_stop_emission_by_name(G_OBJECT(widget),
                                 	       "key_press_event");
 				folderview_select_next_with_flag(mainwin->folderview, MSG_UNREAD);
 			}
@@ -1470,7 +1465,7 @@ MainWindow *main_window_create()
 
 	gtk_widget_realize(window);
 	gtk_widget_add_events(window, GDK_KEY_PRESS_MASK|GDK_KEY_RELEASE_MASK);
-	
+
 
 	gtkut_widget_set_app_icon(window);
 
@@ -1820,7 +1815,7 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySubject", "Tools/CreateProcessingRule/BySubject", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySender", "Tools/CreateProcessingRule/BySender", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator2", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
-	
+
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "ListUrls", "Tools/ListUrls", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator3", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 
@@ -1903,9 +1898,9 @@ MainWindow *main_window_create()
 	/* link window to mainwin->window to avoid gdk warnings */
 	mainwin->window       = window;
 	mainwin_list = g_list_append(mainwin_list, mainwin);
-	
-	mainwin->toolbar = toolbar_create(TOOLBAR_MAIN, 
-					  handlebox, 
+
+	mainwin->toolbar = toolbar_create(TOOLBAR_MAIN,
+					  handlebox,
 					  (gpointer)mainwin);
 	toolbar_set_learn_button
 		(mainwin->toolbar,
@@ -1926,9 +1921,9 @@ MainWindow *main_window_create()
 			     gtk_image_new_from_icon_name("dialog-warning-symbolic", GTK_ICON_SIZE_BUTTON));
 	CLAWS_SET_TIP(warning_btn,
 			     _("Some error(s) happened. Click here to view log."));
-	
+
 	mainwin->warning_btn      = warning_btn;
-	
+
 	g_signal_connect(G_OBJECT(warning_btn), "clicked",
 			 G_CALLBACK(warning_btn_pressed), mainwin);
 	g_signal_connect(G_OBJECT(warning_btn), "motion-notify-event",
@@ -1955,10 +1950,10 @@ MainWindow *main_window_create()
 	offline_pixmap = stock_pixmap_widget(STOCK_PIXMAP_OFFLINE);
 	online_switch = gtk_button_new ();
 	gtk_widget_set_can_focus(online_switch, FALSE);
-	CLAWS_SET_TIP(online_switch, 
+	CLAWS_SET_TIP(online_switch,
 			     _("You are online. Click the icon to go offline"));
 	offline_switch = gtk_button_new ();
-	CLAWS_SET_TIP(offline_switch, 
+	CLAWS_SET_TIP(offline_switch,
 			     _("You are offline. Click the icon to go online"));
 	gtk_container_add (GTK_CONTAINER(online_switch), online_pixmap);
 	gtk_button_set_relief (GTK_BUTTON(online_switch), GTK_RELIEF_NONE);
@@ -1968,7 +1963,7 @@ MainWindow *main_window_create()
 	gtk_button_set_relief (GTK_BUTTON(offline_switch), GTK_RELIEF_NONE);
 	g_signal_connect (G_OBJECT(offline_switch), "clicked", G_CALLBACK(online_switch_clicked), mainwin);
 	gtk_box_pack_start (GTK_BOX(hbox_stat), offline_switch, FALSE, FALSE, 0);
-	
+
 	statuslabel = gtk_label_new("");
 	gtk_box_pack_start(GTK_BOX(hbox_stat), statuslabel, FALSE, FALSE, 0);
 
@@ -2073,7 +2068,7 @@ MainWindow *main_window_create()
 	mainwin->ac_button      = NULL;
 	mainwin->ac_label       = NULL;
 #endif
-	
+
 	/* allocate colors for summary view and folder view */
 	summaryview->color_marked.red = summaryview->color_marked.green = 0;
 	summaryview->color_marked.blue = (guint16)65535;
@@ -2116,15 +2111,15 @@ MainWindow *main_window_create()
 	}
 	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem), TRUE);
 
-	toolbar_set_style(mainwin->toolbar->toolbar, 
-			  mainwin->handlebox, 
+	toolbar_set_style(mainwin->toolbar->toolbar,
+			  mainwin->handlebox,
 			  prefs_common.toolbar_style);
 #ifndef GENERIC_UMPC
 	gtk_widget_hide(mainwin->hbox_stat);
 	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/View/ShowHide/StatusBar");
 	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem),
 				       prefs_common.show_statusbar);
-#endif	
+#endif
 	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/View/ShowHide/ColumnHeaders");
 	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem),
 				       prefs_common.show_col_headers);
@@ -2146,7 +2141,7 @@ MainWindow *main_window_create()
 		 gtk_ui_manager_get_accel_group(gtkut_ui_manager()));
 
 	ADD_MENU_ACCEL_GROUP_TO_WINDOW(summaryview->popupmenu, mainwin->window);
-	
+
 	g_signal_connect(G_OBJECT(window), "window_state_event",
 			 G_CALLBACK(mainwindow_state_event_cb), mainwin);
 	g_signal_connect(G_OBJECT(window), "visibility_notify_event",
@@ -2155,10 +2150,10 @@ MainWindow *main_window_create()
 
 	if (prefs_common.layout_mode == VERTICAL_LAYOUT ||
 	    prefs_common.layout_mode == SMALL_LAYOUT) {
-		summary_relayout(mainwin->summaryview);	
+		summary_relayout(mainwin->summaryview);
 	}
 	summary_update_unread(mainwin->summaryview, NULL);
-	
+
 	/* initialize views */
 	folderview_init(folderview);
 	summary_init(summaryview);
@@ -2188,13 +2183,13 @@ MainWindow *main_window_create()
 	mainwindow_tags_menu_create(mainwin, FALSE);
 
 	if (prefs_common.mainwin_fullscreen) {
-		cm_toggle_menu_set_active_full(mainwin->ui_manager, 
+		cm_toggle_menu_set_active_full(mainwin->ui_manager,
 			"Menu/View/FullScreen",
 			TRUE);
 	}
 	if (prefs_common.mainwin_menubar)
 		cm_toggle_menu_set_active_full(mainwin->ui_manager,"Menu/View/ShowHide/MenuBar", TRUE);
-	
+
 	return mainwin;
 }
 
@@ -2213,7 +2208,7 @@ void main_window_cursor_wait(MainWindow *mainwin)
 		gdk_window_set_cursor(gtk_widget_get_window(mainwin->window), watch_cursor);
 		textview_cursor_wait(mainwin->messageview->mimeview->textview);
 	}
-	
+
 	mainwin->cursor_count++;
 
 	gdk_display_flush(display);
@@ -2277,7 +2272,7 @@ void main_window_reflect_prefs_all(void)
 	main_window_reflect_prefs_all_real(FALSE);
 }
 
-static gboolean reflect_prefs_timeout_cb(gpointer data) 
+static gboolean reflect_prefs_timeout_cb(gpointer data)
 {
 	gboolean pixmap_theme_changed = GPOINTER_TO_INT(data);
 	GList *cur;
@@ -2306,13 +2301,13 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 #endif
 #ifndef GENERIC_UMPC
 			pixmap = stock_pixmap_widget(STOCK_PIXMAP_ONLINE);
-			gtk_container_remove(GTK_CONTAINER(mainwin->online_switch), 
+			gtk_container_remove(GTK_CONTAINER(mainwin->online_switch),
 					     mainwin->online_pixmap);
 			gtk_container_add (GTK_CONTAINER(mainwin->online_switch), pixmap);
 			gtk_widget_show(pixmap);
 			mainwin->online_pixmap = pixmap;
 			pixmap = stock_pixmap_widget(STOCK_PIXMAP_OFFLINE);
-			gtk_container_remove(GTK_CONTAINER(mainwin->offline_switch), 
+			gtk_container_remove(GTK_CONTAINER(mainwin->offline_switch),
 					     mainwin->offline_pixmap);
 			gtk_container_add (GTK_CONTAINER(mainwin->offline_switch), pixmap);
 			gtk_widget_show(pixmap);
@@ -2360,7 +2355,7 @@ void main_window_reflect_prefs_custom_colors(MainWindow *mainwin)
 	children = gtk_container_get_children(GTK_CONTAINER(menu));
 	for (cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
 		g_signal_handlers_disconnect_matched
-			 (gtk_ui_manager_get_accel_group(mainwin->ui_manager), 
+			 (gtk_ui_manager_get_accel_group(mainwin->ui_manager),
 			 G_SIGNAL_MATCH_DATA|G_SIGNAL_MATCH_FUNC,
 			 0, 0, NULL, mainwin_accel_changed_cb, cur->data);
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(cur->data), NULL);
@@ -2393,7 +2388,7 @@ static gboolean main_window_reflect_tags_changes_real(gpointer data)
 	g_list_free(children);
 	mainwindow_tags_menu_create(mainwin, TRUE);
 	summary_reflect_tags_changes(mainwin->summaryview);
-	
+
 	tags_tag = 0;
 	return FALSE;
 }
@@ -2401,7 +2396,7 @@ static gboolean main_window_reflect_tags_changes_real(gpointer data)
 void main_window_reflect_tags_changes(MainWindow *mainwin)
 {
 	if (tags_tag == 0) {
-		tags_tag = g_timeout_add(100, main_window_reflect_tags_changes_real, 
+		tags_tag = g_timeout_add(100, main_window_reflect_tags_changes_real,
 						mainwin);
 	}
 }
@@ -2409,7 +2404,7 @@ void main_window_reflect_tags_changes(MainWindow *mainwin)
 void main_window_reflect_prefs_all_real(gboolean pixmap_theme_changed)
 {
 	if (prefs_tag == 0) {
-		prefs_tag = g_timeout_add(100, reflect_prefs_timeout_cb, 
+		prefs_tag = g_timeout_add(100, reflect_prefs_timeout_cb,
 						GINT_TO_POINTER(pixmap_theme_changed));
 	}
 }
@@ -2446,7 +2441,7 @@ static void main_window_set_account_selector_menu(MainWindow *mainwin,
 	gchar *accel_path;
 
 	menu = gtk_menu_new();
-	gtk_menu_set_accel_group (GTK_MENU (menu), 
+	gtk_menu_set_accel_group (GTK_MENU (menu),
 		gtk_ui_manager_get_accel_group(mainwin->ui_manager));
 
 	for (cur_ac = account_list; cur_ac != NULL; cur_ac = cur_ac->next) {
@@ -2638,7 +2633,7 @@ static void main_window_separation_change(MainWindow *mainwin, LayoutType layout
 	GtkWidget *summary_wid = GTK_WIDGET_PTR(mainwin->summaryview);
 	GtkWidget *message_wid = mainwin->messageview->vbox;
 
-	if (layout_mode == prefs_common.layout_mode) 
+	if (layout_mode == prefs_common.layout_mode)
 		return;
 
 	debug_print("Changing window separation type from %d to %d\n",
@@ -2813,7 +2808,7 @@ void main_window_get_size(MainWindow *mainwin)
 		prefs_common.folderview_width  = allocation.width;
 		prefs_common.folderview_height = allocation.height;
 	}
-	
+
 	gtk_widget_get_allocation(GTK_WIDGET_PTR(mainwin->messageview), &allocation);
 	if (allocation.width > 1 && allocation.height > 1) {
 		prefs_common.msgview_width = allocation.width;
@@ -2863,7 +2858,7 @@ gboolean main_window_empty_trash(MainWindow *mainwin, gboolean confirm, gboolean
 {
 	if (confirm && procmsg_have_trashed_mails_fast()) {
 		AlertValue val;
-		
+
 		if (for_quit)
 			val = alertpanel(_("Empty trash"),
 			       _("Delete all messages in trash folders?"),
@@ -2911,8 +2906,8 @@ static void main_window_add_mailbox(MainWindow *mainwin)
 		g_free(path);
 		return;
 	}
-	folder = folder_new(folder_get_class_from_string("mh"), 
-			    !strcmp(path, "Mail") ? _("Mailbox") : 
+	folder = folder_new(folder_get_class_from_string("mh"),
+			    !strcmp(path, "Mail") ? _("Mailbox") :
 			    g_path_get_basename(path), path);
 	g_free(path);
 
@@ -2936,7 +2931,7 @@ SensitiveCondMask main_window_get_current_state(MainWindow *mainwin)
 	FolderItem *item = mainwin->summaryview->folder_item;
 	GList *account_list = account_get_list();
 	GSList *tmp;
-	
+
 	selection = summary_get_selection_type(mainwin->summaryview);
 
 #define UPDATE_STATE(...) \
@@ -2966,7 +2961,7 @@ SensitiveCondMask main_window_get_current_state(MainWindow *mainwin)
 		if ((selection == SUMMARY_NONE && item->hide_read_threads)
 		    || selection != SUMMARY_NONE)
 			UPDATE_STATE(M_HIDE_READ_THREADS);
-	}		
+	}
 	if (mainwin->summaryview->threaded)
 		UPDATE_STATE(M_THREADED);
 	else
@@ -3009,7 +3004,7 @@ SensitiveCondMask main_window_get_current_state(MainWindow *mainwin)
 		UPDATE_STATE(M_ALLOW_REEDIT);
 	if (cur_account)
 		UPDATE_STATE(M_HAVE_ACCOUNT);
-	
+
 	if (cur_account && cur_account->protocol != A_NONE)
 		UPDATE_STATE(M_HAVE_RETRIEVABLE_ACCOUNT);
 
@@ -3032,7 +3027,7 @@ SensitiveCondMask main_window_get_current_state(MainWindow *mainwin)
 			break;
 		}
 	}
-	
+
 	if (procmsg_spam_can_learn() &&
 	    (mainwin->summaryview->folder_item &&
 	     mainwin->summaryview->folder_item->folder->klass->type != F_UNKNOWN &&
@@ -3101,7 +3096,7 @@ SensitiveCondMask main_window_get_mask(SensitiveCond cond, ...)
 
 	value = 0;
 
-	va_start(args, cond); 
+	va_start(args, cond);
 	for (i = (gint) cond; i >= 0 && i < M_MAX_RESERVED; i = va_arg(args, gint))
 		value |= SensitiveCond_table[i];
 	va_end(args);
@@ -3326,7 +3321,7 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/Goto/NextHistory",
 		messageview_nav_has_next(mainwin->messageview));
 
-	if (mainwin->messageview 
+	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimepart_selected = !mimeview_tree_is_empty(mainwin->messageview->mimeview);
 
@@ -3334,7 +3329,7 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/Goto/NextPart", mimepart_selected);
 	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/Goto/PrevPart", mimepart_selected);
 	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/Part", mimepart_selected);
-	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/Message/CheckSignature", 
+	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/Message/CheckSignature",
 				   mimepart_selected && mainwin->messageview->mimeview->signed_part);
 
 	sensitive = TRUE;
@@ -3355,8 +3350,8 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 void main_create_mailing_list_menu (MainWindow *mainwin, MsgInfo *msginfo)
 {
 	gint is_menu = 0;
-	
-	if (msginfo) 
+
+	if (msginfo)
 		is_menu = mailing_list_create_submenu (mainwin, msginfo);
 	if (is_menu)
 		cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/Message/MailingList", TRUE);
@@ -3368,7 +3363,7 @@ static gint mailing_list_create_submenu (MainWindow *mainwin, MsgInfo *msginfo)
 {
 	gint menu_nb = 0;
 	GtkWidget *menuitem;
-	
+
 	if (!msginfo || !msginfo->extradata) {
 		cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/Message/MailingList/Post", FALSE);
 		cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/Message/MailingList/Help", FALSE);
@@ -3378,41 +3373,41 @@ static gint mailing_list_create_submenu (MainWindow *mainwin, MsgInfo *msginfo)
 		cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/Message/MailingList/ContactOwner", FALSE);
 		return 0;
 	}
-		
+
 	/* Mailing list post */
 	if (!g_strcmp0 (msginfo->extradata->list_post, "NO")) {
 		g_free(msginfo->extradata->list_post);
 		msginfo->extradata->list_post = g_strdup (_("No posting allowed"));
  	}
  	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/Message/MailingList/Post");
- 		
+
  	menu_nb += mailing_list_populate_submenu (menuitem, msginfo->extradata->list_post);
- 
+
  	/* Mailing list help */
 	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/Message/MailingList/Help");
-	
+
 	menu_nb += mailing_list_populate_submenu (menuitem, msginfo->extradata->list_help);
 
 	/* Mailing list subscribe */
 	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/Message/MailingList/Subscribe");
-	
+
 	menu_nb += mailing_list_populate_submenu (menuitem, msginfo->extradata->list_subscribe);
-		
+
 	/* Mailing list unsubscribe */
 	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/Message/MailingList/Unsubscribe");
-	
+
 	menu_nb += mailing_list_populate_submenu (menuitem, msginfo->extradata->list_unsubscribe);
-	
+
 	/* Mailing list view archive */
 	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/Message/MailingList/ViewArchive");
-	
+
 	menu_nb += mailing_list_populate_submenu (menuitem, msginfo->extradata->list_archive);
-	
+
 	/* Mailing list contact owner */
 	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/Message/MailingList/ContactOwner");
-	
+
 	menu_nb += mailing_list_populate_submenu (menuitem, msginfo->extradata->list_owner);
-	
+
 	return menu_nb;
 }
 
@@ -3423,9 +3418,9 @@ static gint mailing_list_populate_submenu (GtkWidget *menuitem, const gchar * li
 	gchar url_decoded[BUFFSIZE];
 	GList *children, *amenu;
 	gint menu_nb = 0;
-	
+
 	menu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menuitem));
-	
+
 	/* First delete old submenu */
 	/* FIXME: we can optimize this, and only change/add/delete necessary items */
 	children = gtk_container_get_children(GTK_CONTAINER(menu));
@@ -3451,7 +3446,7 @@ static gint mailing_list_populate_submenu (GtkWidget *menuitem, const gchar * li
 				g_signal_connect(G_OBJECT(item), "activate",
 						 G_CALLBACK(mailing_list_open_uri),
 						 NULL);
-			} 
+			}
 			if (item) {
 				gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
 				gtk_widget_show (item);
@@ -3463,7 +3458,7 @@ static gint mailing_list_populate_submenu (GtkWidget *menuitem, const gchar * li
 		gtk_widget_set_sensitive (menuitem, TRUE);
 	else
 		gtk_widget_set_sensitive (menuitem, FALSE);
-		
+
 
 	return menu_nb;
 }
@@ -3485,7 +3480,7 @@ static void get_url_part (const gchar **buffer, gchar *url_decoded)
 	for (;*buf == ' ' || *buf == '(' || *buf == '\t'; buf++)
 		if (*buf == '(')
 			for (;*buf != ')' && *buf != 0x00; buf++);
-	
+
 	/* First non space and non comment must be a < */
 	if (*buf =='<' ) {
 		buf++;
@@ -3506,10 +3501,10 @@ static void get_url_part (const gchar **buffer, gchar *url_decoded)
 		*url_decoded = '\0';
 		return;
 	}
-	
+
 	*url_decoded = '\0';
 	*buffer = NULL;
-	
+
 	if (i == BUFFSIZE) {
 		return;
 	}
@@ -3521,7 +3516,7 @@ static void get_url_part (const gchar **buffer, gchar *url_decoded)
 	for (;buf && *buf && (*buf == ' ' || *buf == '(' || *buf == '\t'); buf++)
 		if (*buf == '(')
 			for (;*buf != ')' && *buf != 0x00; buf++);
-			
+
 	if (!buf || !*buf) {
 		*buffer = NULL;
 		return;
@@ -3534,7 +3529,7 @@ static void get_url_part (const gchar **buffer, gchar *url_decoded)
 		buf++;
 	*buffer = buf;
 }
-	
+
 static void mailing_list_compose (GtkWidget *w, gpointer *data)
 {
 	const gchar *mailto;
@@ -3552,17 +3547,17 @@ static void mailing_list_compose (GtkWidget *w, gpointer *data)
 	if (mailto)
 		compose_new_with_folderitem(account, folder_item, mailto+7);
 }
- 
+
  static void mailing_list_open_uri (GtkWidget *w, gpointer *data)
 {
- 
+
  	const gchar *mailto;
- 
+
 	mailto = gtk_label_get_text(GTK_LABEL (gtk_bin_get_child(GTK_BIN((w)))));
 	if (mailto)
  		open_uri (mailto, prefs_common_get_uri_cmd());
-} 
-	
+}
+
 static void fix_folderview_scroll(MainWindow *mainwin)
 {
 	static gboolean fix_done = FALSE;
@@ -3643,7 +3638,7 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 			gtk_widget_destroy(mainwin->hpaned);
 	}
 
-	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/ShowHide/MessageView", 
+	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/ShowHide/MessageView",
 		(layout_mode != WIDE_MSGLIST_LAYOUT && layout_mode != SMALL_LAYOUT));
 	switch (layout_mode) {
 	case VERTICAL_LAYOUT:
@@ -3705,7 +3700,7 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 
 		if (messageview_is_visible(mainwin->messageview)) {
 			gtk_paned_add2(GTK_PANED(vpaned),
-			       GTK_WIDGET_PTR(mainwin->messageview));	
+			       GTK_WIDGET_PTR(mainwin->messageview));
 		} else {
 			g_object_ref(GTK_WIDGET_PTR(mainwin->messageview));
 		}
@@ -3734,7 +3729,7 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 
 		if (messageview_is_visible(mainwin->messageview)) {
 			gtk_paned_add2(GTK_PANED(hpaned),
-			       GTK_WIDGET_PTR(mainwin->messageview));	
+			       GTK_WIDGET_PTR(mainwin->messageview));
 		} else {
 			g_object_ref(GTK_WIDGET_PTR(mainwin->messageview));
 		}
@@ -3758,7 +3753,7 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 	if (layout_mode == SMALL_LAYOUT) {
 		if (mainwin->messageview->visible)
 			main_window_toggle_message_view(mainwin);
-	} 
+	}
 
 	if (layout_mode == SMALL_LAYOUT && first_set) {
 		gtk_widget_realize(mainwin->window);
@@ -3770,7 +3765,7 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 		gtk_window_set_default_size(GTK_WINDOW(mainwin->window),
 				    prefs_common.mainwin_width,
 				    prefs_common.mainwin_height);
-	} 
+	}
 	/* remove headerview if not in prefs */
 	headerview_set_visibility(mainwin->messageview->headerview,
 				  prefs_common.display_header_pane);
@@ -3788,18 +3783,18 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 
 	/* CLAWS: previous "gtk_widget_show_all" makes noticeview
 	 * and mimeview icon list/ctree lose track of their visibility states */
-	if (!noticeview_is_visible(mainwin->messageview->noticeview)) 
+	if (!noticeview_is_visible(mainwin->messageview->noticeview))
 		gtk_widget_hide(GTK_WIDGET_PTR(mainwin->messageview->noticeview));
-	if (!noticeview_is_visible(mainwin->messageview->mimeview->siginfoview)) 
+	if (!noticeview_is_visible(mainwin->messageview->mimeview->siginfoview))
 		gtk_widget_hide(GTK_WIDGET_PTR(mainwin->messageview->mimeview->siginfoview));
 	if (mainwin->messageview->mimeview->ctree_mode)
 		gtk_widget_hide(mainwin->messageview->mimeview->icon_mainbox);
-	else 
+	else
 		gtk_widget_hide(mainwin->messageview->mimeview->ctree_mainbox);
 
 	prefs_common.layout_mode = layout_mode;
 
-	cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/View/ShowHide/MessageView", 
+	cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/View/ShowHide/MessageView",
 		 messageview_is_visible(mainwin->messageview));
 
 #ifndef GENERIC_UMPC
@@ -3852,7 +3847,7 @@ void main_window_destroy_all(void)
 		mainwin->summaryview->mainwin = NULL;
 		mainwin->messageview->mainwin = NULL;
 
-		g_free(mainwin->toolbar);		
+		g_free(mainwin->toolbar);
 		mainwin_list = g_list_remove(mainwin_list, mainwin);
 		g_free(mainwin);
 	}
@@ -3866,11 +3861,11 @@ static gboolean ac_label_button_pressed(GtkWidget *widget, GdkEventButton *event
 {
 	MainWindow *mainwin = (MainWindow *)data;
 	GtkWidget *menu = NULL;
-	
+
 	if (!event) return FALSE;
 
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NORMAL);
-	
+
 	menu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(mainwin->ac_menu));
 
 	gtk_menu_popup_at_widget(GTK_MENU(menu), widget, 3, 3, NULL);
@@ -4097,7 +4092,7 @@ static void toggle_col_headers_cb(GtkAction *gaction, gpointer data)
 	} else {
 		gtk_cmclist_column_titles_hide(GTK_CMCLIST(folderview->ctree));
 		gtk_cmclist_column_titles_hide(GTK_CMCLIST(summaryview->ctree));
-   		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mimeview->ctree), FALSE);		
+   		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mimeview->ctree), FALSE);
 		prefs_common.show_col_headers = FALSE;
 	}
 }
@@ -4127,11 +4122,11 @@ static void set_layout_cb(GtkAction *action, GtkRadioAction *current, gpointer d
 	if (!gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (current))) {
 		return;
 	}
-	
+
 	if (layout_mode == prefs_common.layout_mode) {
 		return;
 	}
-	
+
 	if (!mainwin->messageview->visible && layout_mode != SMALL_LAYOUT)
 		main_window_toggle_message_view(mainwin);
 	else if (mainwin->messageview->visible && layout_mode == SMALL_LAYOUT)
@@ -4148,7 +4143,7 @@ static void set_layout_cb(GtkAction *action, GtkRadioAction *current, gpointer d
 		mainwin_paned_show_first(GTK_PANED(mainwin->hpaned));
 		mainwindow_exit_folder(mainwin);
 	}
-	summary_relayout(mainwin->summaryview);	
+	summary_relayout(mainwin->summaryview);
 	summary_update_unread(mainwin->summaryview, NULL);
 }
 #endif
@@ -4192,13 +4187,13 @@ static gboolean any_folder_want_synchronise(void)
 			return TRUE;
 		}
 	}
-	
+
 	return FALSE;
 }
 
 static void mainwindow_check_synchronise(MainWindow *mainwin, gboolean ask)
 {
-	
+
 	if (!any_folder_want_synchronise())
 		return;
 
@@ -4207,26 +4202,26 @@ static void mainwindow_check_synchronise(MainWindow *mainwin, gboolean ask)
 			NULL, _("_No"), NULL, _("_Synchronise"), NULL, NULL,
 			ALERTFOCUS_SECOND) != G_ALERTALTERNATE)
 		return;
-	
+
 	if (offline_ask_sync)
 		folder_synchronise(NULL);
 }
 
-static void online_switch_clicked (GtkButton *btn, gpointer data) 
+static void online_switch_clicked (GtkButton *btn, gpointer data)
 {
 	MainWindow *mainwin;
 	gboolean have_connectivity;
 
 #ifdef HAVE_NETWORKMANAGER_SUPPORT
-	have_connectivity = networkmanager_is_online(NULL); 
+	have_connectivity = networkmanager_is_online(NULL);
 #else
 	have_connectivity = TRUE;
 #endif
 
 	mainwin = (MainWindow *) data;
-	
+
 	cm_return_if_fail(mainwin != NULL);
-	
+
 	if (btn == GTK_BUTTON(mainwin->online_switch)) {
 #ifndef GENERIC_UMPC
 		gtk_widget_hide (mainwin->online_switch);
@@ -4235,7 +4230,7 @@ static void online_switch_clicked (GtkButton *btn, gpointer data)
 		cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/File/OfflineMode", TRUE);
 
 		inc_autocheck_timer_remove();
-			
+
 		/* go offline */
 		if (prefs_common.work_offline)
 			return;
@@ -4268,7 +4263,7 @@ static void addressbook_open_cb(GtkAction *action, gpointer data)
 	addressbook_open(NULL);
 #else
 	GError* error = NULL;
-	
+
 	addressbook_dbus_open(FALSE, &error);
 	if (error) {
 		g_warning("failed to open address book: %s", error->message);
@@ -4374,7 +4369,7 @@ static void show_all_header_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 	if (mainwin->menu_lock_count) return;
-	prefs_common.show_all_headers = 
+	prefs_common.show_all_headers =
 			gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
 	summary_display_msg_selected(mainwin->summaryview,
 				     gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action)));
@@ -4525,7 +4520,7 @@ static void open_urls_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 	if (!mainwin->summaryview->displayed && mainwin->summaryview->selected) {
-		summary_display_msg_selected(mainwin->summaryview, 
+		summary_display_msg_selected(mainwin->summaryview,
 					     prefs_common.show_all_headers);
 	}
 	messageview_list_urls(mainwin->messageview);
@@ -4545,13 +4540,13 @@ static void set_charset_cb(GtkAction *action, GtkRadioAction *current, gpointer 
 
 	if (gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (current))) {
 		str = conv_get_charset_str((CharSet)value);
-		
+
 		g_free(mainwin->messageview->forced_charset);
 		mainwin->messageview->forced_charset = str ? g_strdup(str) : NULL;
 		procmime_force_charset(str);
-		
+
 		summary_redisplay_msg(mainwin->summaryview);
-		
+
 		debug_print("forced charset: %s\n", str ? str : "Auto-Detect");
 	}
 }
@@ -4562,9 +4557,9 @@ static void set_decode_cb(GtkAction *action, GtkRadioAction *current, gpointer d
 	gint value = gtk_radio_action_get_current_value (GTK_RADIO_ACTION (current));
 	if (gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (current))) {
 		mainwin->messageview->forced_encoding = (EncodingType)value;
-		
+
 		summary_redisplay_msg(mainwin->summaryview);
-		
+
 		debug_print("forced encoding: %d\n", value);
 	}
 }
@@ -4614,11 +4609,11 @@ static void thread_cb(GtkAction *action, gpointer data)
 
 	threaded = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
 
-	mainwin->summaryview->folder_item->threaded = threaded; 
+	mainwin->summaryview->folder_item->threaded = threaded;
 
 	mainwin->summaryview->threaded = threaded;
 
-	summary_show(mainwin->summaryview, 
+	summary_show(mainwin->summaryview,
 			mainwin->summaryview->folder_item, FALSE);
 	summary_select_by_msgnum(mainwin->summaryview, selected_msgnum, FALSE);
 
@@ -4732,7 +4727,7 @@ static void deldup_all(FolderItem *item, gpointer _data)
 {
 	struct DelDupsData *data = _data;
 	gint result;
-	
+
 	result = folderutils_delete_duplicates(item, DELETE_DUPLICATES_REMOVE);
 	if (result >= 0) {
 		data->dups += result;
@@ -4782,11 +4777,11 @@ static void filter_list_cb(GtkAction *action, gpointer data)
 static void process_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
-	FolderItem *item = mainwin->summaryview->folder_item;	
+	FolderItem *item = mainwin->summaryview->folder_item;
 	cm_return_if_fail(item != NULL);
 
 	item->processing_pending = TRUE;
-	folder_item_apply_processing(item);	
+	folder_item_apply_processing(item);
 	item->processing_pending = FALSE;
 }
 
@@ -5084,7 +5079,7 @@ static void account_selector_menu_cb(GtkMenuItem *menuitem, gpointer data)
 {
 	FolderItem *item = NULL;
 	cur_account = (PrefsAccount *)data;
-	
+
 	if (!mainwindow_get_mainwindow())
 		return;
 	main_window_show_cur_account(mainwindow_get_mainwindow());
@@ -5096,7 +5091,7 @@ static void account_selector_menu_cb(GtkMenuItem *menuitem, gpointer data)
 	if (item) {
 		toolbar_set_compose_button
 			(mainwindow_get_mainwindow()->toolbar,
-			 FOLDER_TYPE(item->folder) == F_NEWS ? 
+			 FOLDER_TYPE(item->folder) == F_NEWS ?
 			 COMPOSEBUTTON_NEWS : COMPOSEBUTTON_MAIL);
 	}
 }
@@ -5119,11 +5114,6 @@ static void account_compose_menu_cb(GtkMenuItem *menuitem, gpointer data)
 static void prefs_open_cb(GtkAction *action, gpointer data)
 {
 	prefs_gtk_open();
-}
-
-static void plugins_open_cb(GtkAction *action, gpointer data)
-{
-	pluginwindow_create();
 }
 
 static void manual_open_cb(GtkAction *action, gpointer data)
@@ -5162,7 +5152,7 @@ static void set_default_client_cb(GtkAction *action, gpointer data)
 		"Software\\Clients\\Mail",
 		"",
 		"Claws Mail");
-	
+
 	r = write_w32_registry_string(HKEY_CURRENT_USER,
 		"Software\\Clients\\Mail\\Claws Mail",
 		"",
@@ -5207,7 +5197,7 @@ static void set_default_client_cb(GtkAction *action, gpointer data)
 			"Software\\Clients\\Mail\\Claws Mail\\shell\\open\\command",
 			"",
 			binary_run);
-	
+
 	if (r)
 		r = write_w32_registry_string(HKEY_CURRENT_USER,
 			"Software\\Classes\\mailto",
@@ -5238,7 +5228,7 @@ static void set_default_client_cb(GtkAction *action, gpointer data)
 			"Software\\Classes\\mailto\\shell\\open\\command",
 			"",
 			binary_compose);
-	
+
 	if (r) {
 		SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)"Software\\Clients\\Mail");
 		alertpanel_notice(_("Claws Mail has been registered as default client."));
@@ -5281,7 +5271,7 @@ static gboolean mainwindow_focus_in_event(GtkWidget *widget, GdkEventFocus *focu
 	summary = ((MainWindow *)data)->summaryview;
 	cm_return_val_if_fail(summary, FALSE);
 
-	if (GTK_CMCLIST(summary->ctree)->selection && 
+	if (GTK_CMCLIST(summary->ctree)->selection &&
 	    g_list_length(GTK_CMCLIST(summary->ctree)->selection) > 1)
 		return FALSE;
 
@@ -5306,7 +5296,7 @@ static gboolean mainwindow_state_event_cb(GtkWidget *widget, GdkEventWindowState
 			hooks_invoke(MAIN_WINDOW_GOT_ICONIFIED, NULL);
 		iconified_count++;
 	} else if (!claws_is_starting()) {
-		prefs_common.mainwin_maximised = 
+		prefs_common.mainwin_maximised =
 			((state->new_window_state&GDK_WINDOW_STATE_MAXIMIZED) != 0);
 	}
 	if (state->new_window_state == 0)
@@ -5365,7 +5355,7 @@ static gboolean mainwindow_progressindicator_hook(gpointer source, gpointer user
 	case PROGRESS_COMMAND_SET_PERCENTAGE:
 		gtk_progress_bar_set_fraction
 			(GTK_PROGRESS_BAR(mainwin->progressbar), data->value);
-		break;		
+		break;
 	}
 	while (gtk_events_pending()) gtk_main_iteration ();
 
@@ -5403,7 +5393,7 @@ static void forget_session_passwords_cb(GtkAction *action, gpointer data)
 	main_window_unlock(mainwin);
 	alertpanel_notice(ngettext("Forgotten %d password in %d accounts.\n",
 				   "Forgotten %d passwords in %d accounts.\n",
-				   fgtn), fgtn, accs);	
+				   fgtn), fgtn, accs);
 }
 
 #ifndef PASSWORD_CRYPTO_OLD
@@ -5431,7 +5421,7 @@ void mainwindow_jump_to(const gchar *target, gboolean popup)
 	gchar *from_uri = NULL;
 	if (!target)
 		return;
-		
+
 	if (!mainwin) {
 		g_print("not initialized\n");
 		return;
@@ -5452,7 +5442,7 @@ void mainwindow_jump_to(const gchar *target, gboolean popup)
 		g_free(tmp);
 		return;
 	}
-	
+
 	msg = strrchr(tmp, '/');
 	if (msg) {
 		*msg++ = '\0';
@@ -5494,7 +5484,7 @@ void mainwindow_jump_to(const gchar *target, gboolean popup)
 	} else {
 		g_print("'%s' not found\n", tmp);
 	}
-	
+
 	g_free(tmp);
 }
 
@@ -5520,7 +5510,7 @@ static void save_part_as_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 
-	if (mainwin->messageview 
+	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimeview_save_as(mainwin->messageview->mimeview);
 }
@@ -5529,7 +5519,7 @@ static void view_part_as_text_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 
-	if (mainwin->messageview 
+	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimeview_display_as_text(mainwin->messageview->mimeview);
 }
@@ -5538,7 +5528,7 @@ static void open_part_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 
-	if (mainwin->messageview 
+	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimeview_launch(mainwin->messageview->mimeview, NULL);
 }
@@ -5547,7 +5537,7 @@ static void open_part_with_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 
-	if (mainwin->messageview 
+	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimeview_open_with(mainwin->messageview->mimeview);
 }
@@ -5556,7 +5546,7 @@ static void check_signature_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 
-	if (mainwin->messageview 
+	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimeview_check_signature(mainwin->messageview->mimeview);
 }
@@ -5565,7 +5555,7 @@ static void goto_next_part_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 
-	if (mainwin->messageview 
+	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimeview_select_next_part(mainwin->messageview->mimeview);
 }
@@ -5574,7 +5564,7 @@ static void goto_prev_part_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 
-	if (mainwin->messageview 
+	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimeview_select_prev_part(mainwin->messageview->mimeview);
 }

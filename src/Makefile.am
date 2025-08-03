@@ -11,7 +11,7 @@ etpan_dir =
 etpan_library =
 endif
 
-SUBDIRS = common gtk $(etpan_dir) . plugins
+SUBDIRS = common gtk $(etpan_dir) .
 if BUILD_TESTS
 include $(top_srcdir)/tests.mk
 SUBDIRS += tests
@@ -57,13 +57,8 @@ orig_abook_source = \
 	pine.c \
 	vcard.c
 
-if BUILD_ALTADDRBOOK
-abook_source = $(alt_abook_source)
-abook_extra = $(orig_abook_source)
-else
 abook_source = $(orig_abook_source)
 abook_extra = $(alt_abook_source)
-endif
 
 abook_headers = \
 	addressbook-dbus.h \
@@ -336,9 +331,6 @@ BUILT_SOURCES = \
 	client-bindings.h
 
 client-bindings.h: claws-contacts.xml
-if BUILD_ALTADDRBOOK
-	dbus-binding-tool --prefix=abook --mode=glib-client --output=$@ claws-contacts.xml
-endif
 
 CLEANFILES = \
 	     $(BUILT_SOURCES)

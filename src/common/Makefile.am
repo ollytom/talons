@@ -8,7 +8,6 @@ include $(top_srcdir)/tests.mk
 SUBDIRS = . tests
 endif
 
-PLUGINDIR = $(pkglibdir)/plugins/
 DESKTOPFILEPATH=$(datadir)/applications/claws-mail.desktop
 
 noinst_LTLIBRARIES = libclawscommon.la
@@ -17,8 +16,8 @@ if OS_WIN32
 arch_sources = w32_reg.c
 arch_headers = w32_reg.h
 else
-arch_files = 
-arch_header = 
+arch_files =
+arch_header =
 endif
 
 libclawscommon_la_SOURCES = $(arch_sources) \
@@ -90,7 +89,6 @@ AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(VALGRIND_CFLAGS) \
 	-DLOCALEDIR=\""$(localedir)"\" \
-	-DPLUGINDIR=\"$(PLUGINDIR)\" \
 	-DDATAROOTDIR=\""$(datarootdir)"\" \
 	-DDESKTOPFILEPATH=\"$(DESKTOPFILEPATH)\" \
 	-DGTK_DISABLE_DEPRECATED

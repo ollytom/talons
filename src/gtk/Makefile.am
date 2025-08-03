@@ -37,7 +37,6 @@ libclawsgtk_la_SOURCES = \
 	logwindow.c \
 	manage_window.c \
 	menu.c \
-	pluginwindow.c \
 	prefswindow.c \
 	progressdialog.c \
 	quicksearch.c \
@@ -64,7 +63,6 @@ clawsgtkinclude_HEADERS = \
 	logwindow.h \
 	manage_window.h \
 	menu.h \
-	pluginwindow.h \
 	prefswindow.h \
 	progressdialog.h \
 	quicksearch.h \
@@ -84,14 +82,14 @@ AM_CPPFLAGS = \
 	$(GTK_CFLAGS) \
 	$(ENCHANT_CFLAGS) \
 	-DPLUGINDIR=\"$(PLUGINDIR)\" \
-	-DDOCDIR=\"$(DOCDIR)\" 
+	-DDOCDIR=\"$(DOCDIR)\"
 
 libclawsgtk_la_LIBADD = \
 	../common/libclawscommon.la \
 	$(GTK_LIBS) \
 	$(ENCHANT_LIBS)
 
-BUILT_SOURCES=claws-marshal.c claws-marshal.h 
+BUILT_SOURCES=claws-marshal.c claws-marshal.h
 
 claws-marshal.h: claws-marshal.list
 	$(GLIB_GENMARSHAL) $< --header --prefix=claws_marshal > $@
