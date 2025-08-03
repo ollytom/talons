@@ -54,10 +54,8 @@
 #include "pixmaps/group.xpm"
 #include "pixmaps/insert_file.xpm"
 #include "pixmaps/interface.xpm"
-#include "pixmaps/jpilot.xpm"
 #include "pixmaps/key.xpm"
 #include "pixmaps/key_gpg_signed.xpm"
-#include "pixmaps/ldap.xpm"
 #include "pixmaps/linewrap.xpm"
 #include "pixmaps/linewrapcurrent.xpm"
 #include "pixmaps/mark.xpm"
@@ -336,10 +334,8 @@ static StockPixmapData pixmaps[] =
     {inbox_open_hrm_mark_xpm          , NULL, NULL, "inbox_open_hrm_mark", NULL, NULL},
     {insert_file_xpm                  , NULL, NULL, "insert_file", NULL, NULL},
     {interface_xpm                    , NULL, NULL, "interface", NULL, NULL},
-    {jpilot_xpm                       , NULL, NULL, "jpilot", NULL, NULL},
     {key_xpm                          , NULL, NULL, "key", NULL, NULL},
     {key_gpg_signed_xpm               , NULL, NULL, "key_gpg_signed", NULL, NULL},
-    {ldap_xpm                         , NULL, NULL, "ldap", NULL, NULL},
     {linewrapcurrent_xpm              , NULL, NULL, "linewrapcurrent", NULL, NULL},
     {linewrap_xpm                     , NULL, NULL, "linewrap", NULL, NULL},
     {locked_xpm                       , NULL, NULL, "locked", NULL, NULL},

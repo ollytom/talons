@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __COMPOSE_H__
@@ -119,7 +119,7 @@ struct _Compose
 	/* Toolbar handlebox */
 	GtkWidget *handlebox;
 	Toolbar *toolbar;
-	
+
 	GtkWidget *vbox2;
 
 	/* Header */
@@ -204,11 +204,11 @@ struct _Compose
 	gboolean modified;
 
 	gboolean sending;
-	
+
 	gboolean return_receipt;
 
 	gboolean batch;
-	
+
 	GSList *to_list;
 	GSList *newsgroup_list;
 
@@ -230,11 +230,11 @@ struct _Compose
  	gint priority;
 
 	gchar *redirect_filename;
-	
+
 	gboolean remove_references;
 
 	gint64 draft_timeout_tag;
-	
+
 	GtkTextTag *no_wrap_tag;
 	GtkTextTag *no_join_tag;
 	GtkTextTag *signature_tag;
@@ -262,12 +262,6 @@ struct _Compose
         /* GNU/aspell spell checker */
         GtkAspell *gtkaspell;
 	GtkWidget *aspell_options_menu;
-#endif
-
-#ifdef USE_LDAP
-	/* List of addressbook ifaces which we disabled, and will
-	 * enable in compose_destroy. */
-	GSList *passworded_ldap_servers;
 #endif
 };
 
@@ -332,13 +326,13 @@ void compose_reflect_prefs_pixmap_theme	(void);
 
 void compose_destroy_all                (void);
 gboolean compose_draft	                (gpointer data, guint action);
-void compose_toolbar_cb			(gint 		action, 
+void compose_toolbar_cb			(gint 		action,
 					 gpointer 	data);
 void compose_reply_to_address		(MessageView	*msgview,
 					 MsgInfo	*msginfo,
 					 const gchar	*address);
-void compose_reply_from_messageview	(MessageView 	*msgview, 
-					 GSList 	*msginfo_list, 
+void compose_reply_from_messageview	(MessageView 	*msgview,
+					 GSList 	*msginfo_list,
 					 guint 		 action);
 void compose_action_cb			(void 		*data);
 
@@ -351,8 +345,8 @@ gboolean compose_search_string_backward	(Compose	*compose,
 						 const gchar	*str,
 						 gboolean	 case_sens);
 ComposeQueueResult compose_queue	(Compose *compose,
-					 gint *msgnum, 
-					 FolderItem **item, 
+					 gint *msgnum,
+					 FolderItem **item,
 					 gchar **msgpath,
 					 gboolean remove_reedit_target);
 gboolean compose_close			(Compose *compose);

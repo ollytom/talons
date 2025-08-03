@@ -176,7 +176,7 @@ static SnDisplay *sn_display = NULL;
 static gint lock_socket = -1;
 static gint lock_socket_tag = 0;
 
-typedef enum 
+typedef enum
 {
 	ONLINE_MODE_DONT_CHANGE,
  	ONLINE_MODE_ONLINE,
@@ -218,7 +218,7 @@ static struct RemoteCmd {
 SessionStats session_stats;
 
 static void reset_statistics(void);
-		
+
 static void parse_cmd_opt(int argc, char *argv[]);
 
 static gint prohibit_duplicate_launch	(int		*argc,
@@ -313,7 +313,7 @@ static void startup_notification_complete(gboolean with_window)
 }
 #endif /* HAVE_STARTUP_NOTIFICATION */
 
-static void claws_gtk_idle(void) 
+static void claws_gtk_idle(void)
 {
 	while(gtk_events_pending()) {
 		gtk_main_iteration();
@@ -362,7 +362,7 @@ static gboolean defer_jump(void *data)
 		defer_check_all(GINT_TO_POINTER(TRUE));
 	} else if (cmd.receive) {
 		defer_check(NULL);
-	} 
+	}
 	mainwindow_jump_to(data, FALSE);
 	if (sc_starting) {
 		sc_starting = FALSE;
@@ -405,7 +405,7 @@ static gboolean migrate_old_config(const gchar *old_cfg_dir, const gchar *new_cf
 			       "cached IMAP or News data, and will take some extra "
 			       "room on your disk."));
 
-	g_signal_connect(G_OBJECT(keep_backup_chk), "toggled", 
+	g_signal_connect(G_OBJECT(keep_backup_chk), "toggled",
 			G_CALLBACK(chk_update_val), &backup);
 
 	if (alertpanel_full(_("Migration of configuration"), message,
@@ -413,7 +413,7 @@ static gboolean migrate_old_config(const gchar *old_cfg_dir, const gchar *new_cf
 			FALSE, keep_backup_chk, ALERT_QUESTION) != G_ALERTALTERNATE) {
 		return FALSE;
 	}
-	
+
 	/* we can either do a fast migration requiring not any extra disk
 	 * space, or a slow one that copies the old configuration and leaves
 	 * it in place. */
@@ -421,10 +421,10 @@ static gboolean migrate_old_config(const gchar *old_cfg_dir, const gchar *new_cf
 backup_mode:
 		window = label_window_create(_("Copying configuration... This may take a while..."));
 		GTK_EVENTS_FLUSH();
-		
+
 		r = copy_dir(old_cfg_dir, new_cfg_dir);
 		label_window_destroy(window);
-		
+
 		/* if copy failed, we'll remove the partially copied
 		 * new directory */
 		if (r != 0) {
@@ -439,10 +439,10 @@ backup_mode:
 	} else {
 		window = label_window_create(_("Migrating configuration..."));
 		GTK_EVENTS_FLUSH();
-		
+
 		r = g_rename(old_cfg_dir, new_cfg_dir);
 		label_window_destroy(window);
-		
+
 		/* if g_rename failed, we'll try to copy */
 		if (r != 0) {
 			FILE_OP_ERROR(new_cfg_dir, "g_rename");
@@ -468,10 +468,10 @@ static int migrate_common_rc(const gchar *old_rc, const gchar *new_rc)
 		claws_fclose(oldfp);
 		return -1;
 	}
-	
+
 	plugin_path = g_strdup(get_plugin_dir());
 	new_plugin_path = g_strdup(plugin_path);
-	
+
 	if (strstr(plugin_path, "/claws-mail/")) {
 		gchar *end = g_strdup(strstr(plugin_path, "/claws-mail/")+strlen("/claws-mail/"));
 		*(strstr(plugin_path, "/claws-mail/")) = '\0';
@@ -497,7 +497,7 @@ static int migrate_common_rc(const gchar *old_rc, const gchar *new_rc)
 	claws_fclose(oldfp);
 	if (claws_safe_fclose(newfp) == EOF)
 		err = TRUE;
-	
+
 	return (err ? -1:0);
 }
 
@@ -628,8 +628,8 @@ static void sc_session_manager_connect(MainWindow *mainwin)
 		sc_ice_installed_handler = NULL;
 
 	IceAddConnectionWatch (new_ice_connection, NULL);
-      
-      
+
+
       	callbacks.save_yourself.callback      = sc_save_yourself_callback;
 	callbacks.die.callback                = sc_die_callback;
 	callbacks.save_complete.callback      = sc_save_complete_callback;
@@ -838,7 +838,7 @@ static void win32_close_log(void)
 		CloseHandle(win32_debug_log);
 		win32_debug_log = NULL;
 	}
-}		
+}
 #endif
 
 static void main_dump_features_list(gboolean show_debug_only)
@@ -863,7 +863,7 @@ static void main_dump_features_list(gboolean show_debug_only)
 		g_print("buildtime GTK %d.%d.%d / GLib %d.%d.%d\n",
 			   GTK_MAJOR_VERSION, GTK_MINOR_VERSION, GTK_MICRO_VERSION,
 			   GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION);
-	
+
 	if (show_debug_only)
 		debug_print("Compiled-in features:\n");
 	else
@@ -897,18 +897,6 @@ static void main_dump_features_list(gboolean show_debug_only)
 		debug_print(" iconv\n");
 	else
 		g_print(" iconv\n");
-#endif
-#if USE_JPILOT
-	if (show_debug_only)
-		debug_print(" JPilot\n");
-	else
-		g_print(" JPilot\n");
-#endif
-#if USE_LDAP
-	if (show_debug_only)
-		debug_print(" LDAP\n");
-	else
-		g_print(" LDAP\n");
 #endif
 #if HAVE_LIBETPAN
 	if (show_debug_only)
@@ -1023,19 +1011,19 @@ int main(int argc, char *argv[])
 	install_basic_sighandlers();
 
 	if (cmd.status || cmd.status_full || cmd.search ||
-		cmd.statistics || cmd.reset_statistics || 
+		cmd.statistics || cmd.reset_statistics ||
 		cmd.cancel_receiving || cmd.cancel_sending ||
 		cmd.debug) {
 		puts("0 Claws Mail not running.");
 		lock_socket_remove();
 		return 0;
 	}
-	
+
 	if (cmd.exit)
 		return 0;
 
 	reset_statistics();
-	
+
 	gtk_init(&argc, &argv);
 
 #ifdef HAVE_NETWORKMANAGER_SUPPORT
@@ -1076,13 +1064,13 @@ int main(int argc, char *argv[])
 #else
 	CHDIR_RETURN_VAL_IF_FAIL(get_home_dir(), 1);
 #endif
-	
+
 	/* no config dir exists. See if we can migrate an old config. */
 	if (!is_dir_exist(get_rc_dir())) {
 		prefs_destroy_cache();
 		gboolean r = FALSE;
-		
-		/* if one of the old dirs exist, we'll ask if the user 
+
+		/* if one of the old dirs exist, we'll ask if the user
 		 * want to migrates, and r will be TRUE if he said yes
 		 * and migration succeeded, and FALSE otherwise.
 		 */
@@ -1102,9 +1090,9 @@ int main(int argc, char *argv[])
 			r = migrate_old_config(SYLPHEED_RC_DIR, get_rc_dir(), "Sylpheed");
 			asked_for_migration = TRUE;
 		}
-		
+
 		/* If migration failed or the user didn't want to do it,
-		 * we create a new one (and we'll hit wizard later). 
+		 * we create a new one (and we'll hit wizard later).
 		 */
 		if (r == FALSE && !is_dir_exist(get_rc_dir())) {
 #ifdef G_OS_UNIX
@@ -1121,7 +1109,7 @@ int main(int argc, char *argv[])
 #endif
 		}
 	}
-	
+
 
 	if (!is_file_exist(RC_DIR G_DIR_SEPARATOR_S COMMON_RC) &&
 	    is_file_exist(RC_DIR G_DIR_SEPARATOR_S OLD_COMMON_RC)) {
@@ -1299,7 +1287,7 @@ int main(int argc, char *argv[])
 	imap_main_init(prefs_common.skip_ssl_cert_check);
 	imap_main_set_timeout(prefs_common.io_timeout_secs);
 	nntp_main_init(prefs_common.skip_ssl_cert_check);
-#endif	
+#endif
 	/* If we can't read a folder list or don't have accounts,
 	 * it means the configuration's not done. Either this is
 	 * a brand new install, a failed/refused migration,
@@ -1308,7 +1296,7 @@ int main(int argc, char *argv[])
 	if ((ret = folder_read_list()) < 0) {
 		debug_print("Folderlist read failed (%d)\n", ret);
 		prefs_destroy_cache();
-		
+
 		if (ret == -2) {
 			/* config_version update failed in folder_read_list(). We
 			 * do not want to run the wizard, just exit. */
@@ -1354,7 +1342,7 @@ int main(int argc, char *argv[])
 		never_ran = TRUE;
 	}
 
-	
+
 	toolbar_main_set_sensitive(mainwin);
 	main_window_set_menu_sensitive(mainwin);
 
@@ -1425,7 +1413,7 @@ int main(int argc, char *argv[])
 		debug_print("new folders loaded, reloading processing rules\n");
 		prefs_matcher_read_config();
 	}
-	
+
 	if ((plug_list = plugin_get_unloaded_list()) != NULL) {
 		GSList *cur;
 		gchar *list = NULL;
@@ -1448,8 +1436,8 @@ int main(int argc, char *argv[])
 				     "for more information:\n%s",
 				     "The following plugins failed to load. "
 				     "Check the Plugins configuration "
-				     "for more information:\n%s", 
-				     num_plugins), 
+				     "for more information:\n%s",
+				     num_plugins),
 				     list);
 		main_window_cursor_wait(mainwin);
 		g_free(list);
@@ -1500,7 +1488,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 	}
-	
+
 	static_mainwindow = mainwin;
 
 #ifdef HAVE_STARTUP_NOTIFICATION
@@ -1557,14 +1545,14 @@ int main(int argc, char *argv[])
 	if (cmd.send) {
 		send_queue();
 	}
-	
+
 	if (cmd.target) {
 		start_done = FALSE;
 		g_timeout_add(500, defer_jump, (gpointer)cmd.target);
 	}
 
 	prefs_destroy_cache();
-	
+
 	compose_reopen_exit_drafts();
 
 	if (start_done) {
@@ -1662,7 +1650,7 @@ static void exit_claws(MainWindow *mainwin)
 	close_log_file(LOG_DEBUG_FILTERING);
 
 #ifdef HAVE_NETWORKMANAGER_SUPPORT
-	have_connectivity = networkmanager_is_online(NULL); 
+	have_connectivity = networkmanager_is_online(NULL);
 #else
 	have_connectivity = TRUE;
 #endif
@@ -1683,7 +1671,7 @@ static void exit_claws(MainWindow *mainwin)
 #endif
 
 	main_window_destroy_all();
-	
+
 	plugin_unload_all("GTK3");
 
 	matcher_done();
@@ -1710,7 +1698,7 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_logging_done();
 	prefs_send_done();
 	tags_write_tags();
-#ifdef USE_ENCHANT       
+#ifdef USE_ENCHANT
 	prefs_spelling_done();
 	gtkaspell_checkers_quit();
 #endif
@@ -1749,7 +1737,7 @@ static void parse_cmd_compose_from_file(const gchar *fn, GString *body)
 	}
 
 	while (claws_fgets(fb, sizeof(fb), fp)) {
-		gchar *tmp;	
+		gchar *tmp;
 		strretchomp(fb);
 		if (*fb == '\0')
 			break;
@@ -1854,7 +1842,7 @@ static void parse_cmd_opt(int argc, char *argv[])
 		    } else {
                 parse_cmd_opt_error(_("Missing uri argument for option %s"), argv[i]);
 			}
-		} else if (!strcmp(argv[i], "--attach") || 
+		} else if (!strcmp(argv[i], "--attach") ||
                 !strcmp(argv[i], "--insert")) {
 		    if (i+1 < argc) {
 				const gchar *p = argv[i+1];
@@ -1905,7 +1893,7 @@ static void parse_cmd_opt(int argc, char *argv[])
 			exit(0);
  		} else if (!strcmp(argv[i], "--status-full")) {
  			const gchar *p = (i+1 < argc)?argv[i+1]:NULL;
- 
+
  			cmd.status_full = TRUE;
  			while (p && *p != '\0' && *p != '-') {
  				if (!cmd.status_full_folders) {
@@ -1919,7 +1907,7 @@ static void parse_cmd_opt(int argc, char *argv[])
  			}
   		} else if (!strcmp(argv[i], "--status")) {
  			const gchar *p = (i+1 < argc)?argv[i+1]:NULL;
- 
+
   			cmd.status = TRUE;
  			while (p && *p != '\0' && *p != '-') {
  				if (!cmd.status_folders)
@@ -2008,7 +1996,7 @@ static void parse_cmd_opt(int argc, char *argv[])
  			                  "                         show the status of each folder"));
  			g_print("%s\n", _("  --statistics           show session statistics"));
  			g_print("%s\n", _("  --reset-statistics     reset session statistics"));
-			g_print("%s\n", _("  --select folder[/msg]  jump to the specified folder/message\n" 
+			g_print("%s\n", _("  --select folder[/msg]  jump to the specified folder/message\n"
 					  "                         folder is a folder id like 'folder/subfolder', a file:// uri or an absolute path"));
 			g_print("%s\n", _("  --import-mbox file     import the specified mbox file\n"));
 			g_print("%s\n", _("  --online               switch to online mode"));
@@ -2117,9 +2105,9 @@ static void initial_processing(FolderItem *item, gpointer data)
 	gchar *buf;
 
 	cm_return_if_fail(item);
-	buf = g_strdup_printf(_("Processing (%s)..."), 
-			      item->path 
-			      ? item->path 
+	buf = g_strdup_printf(_("Processing (%s)..."),
+			      item->path
+			      ? item->path
 			      : _("top level folder"));
 	g_free(buf);
 
@@ -2135,7 +2123,7 @@ static void initial_processing(FolderItem *item, gpointer data)
 static gboolean draft_all_messages(void)
 {
 	const GList *compose_list = NULL;
-	
+
 	compose_clear_exit_drafts();
 	compose_list = compose_get_compose_list();
 	while (compose_list != NULL) {
@@ -2155,13 +2143,13 @@ gboolean clean_quit(gpointer data)
 	}
 	firstrun = FALSE;
 
-	/*!< Good idea to have the main window stored in a 
+	/*!< Good idea to have the main window stored in a
 	 *   static variable so we can check that variable
 	 *   to see if we're really allowed to do things
-	 *   that actually the spawner is supposed to 
+	 *   that actually the spawner is supposed to
 	 *   do (like: sending mail, composing messages).
 	 *   Because, really, if we're the spawnee, and
-	 *   we touch GTK stuff, we're hosed. See the 
+	 *   we touch GTK stuff, we're hosed. See the
 	 *   next fixme. */
 
 	/* FIXME: Use something else to signal that we're
@@ -2170,7 +2158,7 @@ gboolean clean_quit(gpointer data)
 	if (!static_mainwindow) {
 		return FALSE;
 	}
-		
+
 	draft_all_messages();
 	emergency_exit = TRUE;
 	exit_claws(static_mainwindow);
@@ -2182,7 +2170,7 @@ gboolean clean_quit(gpointer data)
 void app_will_exit(GtkWidget *widget, gpointer data)
 {
 	MainWindow *mainwin = data;
-	
+
 	if (gtk_main_level() == 0) {
 		debug_print("not even started\n");
 		return;
@@ -2430,11 +2418,11 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
  		const gchar *command;
  		GPtrArray *folders;
  		gchar *folder;
- 
+
  		command = cmd.status_full ? "status-full\n" : "status\n";
  		folders = cmd.status_full ? cmd.status_full_folders :
  			cmd.status_folders;
- 
+
  		CM_FD_WRITE_ALL(command);
  		for (i = 0; folders && i < folders->len; ++i) {
  			folder = g_ptr_array_index(folders, i);
@@ -2630,7 +2618,7 @@ static void lock_socket_input_cb(gpointer data,
 			files = g_list_append(files, ainfo);
 		}
 		open_compose_new(mailto, files);
-		
+
 		curr = g_list_first(files);
 		while (curr != NULL) {
 			ainfo = (AttachInfo *)curr->data;
@@ -2657,7 +2645,7 @@ static void lock_socket_input_cb(gpointer data,
  		   !STRNCMP(buf, "status")) {
  		gchar *status;
  		GPtrArray *folders;
- 
+
  		folders = get_folder_item_list(sock);
  		status = folder_get_status
  			(folders, !STRNCMP(buf, "status-full"));
@@ -2739,13 +2727,13 @@ static void lock_socket_input_cb(gpointer data,
 		AdvancedSearch *search;
 		gboolean recursive;
 		AdvancedSearchType searchType = ADVANCED_SEARCH_EXTENDED;
-		
+
 		search = advsearch_new();
 
 		folder_name = g_strdup(buf+7);
 		strretchomp(folder_name);
 
-		if (fd_gets(sock, buf, sizeof(buf) - 1) <= 0) 
+		if (fd_gets(sock, buf, sizeof(buf) - 1) <= 0)
 			goto search_exit;
 		buf[sizeof(buf) - 1] = '\0';
 
@@ -2758,7 +2746,7 @@ static void lock_socket_input_cb(gpointer data,
 		case 'E': searchType = ADVANCED_SEARCH_EXTENDED; break;
 		}
 
-		if (fd_gets(sock, buf, sizeof(buf) - 1) <= 0) 
+		if (fd_gets(sock, buf, sizeof(buf) - 1) <= 0)
 			goto search_exit;
 
 		buf[sizeof(buf) - 1] = '\0';
@@ -2847,7 +2835,7 @@ static void send_queue(void)
 			if (res) {
 				folder_item_scan(folder->queue);
 			}
-			
+
 			if (res < 0)
 				error = TRUE;
 		}
@@ -2898,10 +2886,10 @@ static void install_basic_sighandlers()
 #endif
 #ifdef SIGINT
 	sigaction(SIGINT, &act, 0);
-#endif	
+#endif
 #ifdef SIGHUP
 	sigaction(SIGHUP, &act, 0);
-#endif	
+#endif
 
 	sigprocmask(SIG_UNBLOCK, &mask, 0);
 #endif /* !G_OS_WIN32 */
@@ -2918,7 +2906,7 @@ static void networkmanager_state_change_cb(DBusGProxy *proxy, gchar *dev,
 		mainWin = static_mainwindow;
 	else if (data)
 		mainWin = (MainWindow*)data;
-	
+
 	if (!prefs_common.use_networkmanager)
 		return;
 

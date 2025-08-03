@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -38,8 +38,6 @@ typedef enum {
 	ADDR_IF_NONE,
 	ADDR_IF_BOOK,
 	ADDR_IF_VCARD,
-	ADDR_IF_JPILOT,
-	ADDR_IF_LDAP,
 	ADDR_IF_COMMON,
 	ADDR_IF_PERSONAL
 } AddressIfType;
@@ -159,8 +157,8 @@ gint addrindex_setup_static_search	( AddressDataSource *ds,
 
 gboolean addrindex_start_search		( const gint queryID );
 void addrindex_stop_search		( const gint queryID );
-gint addrindex_setup_explicit_search	( AddressDataSource *ds, 
-					  const gchar *searchTerm, 
+gint addrindex_setup_explicit_search	( AddressDataSource *ds,
+					  const gchar *searchTerm,
 					  ItemFolder *folder,
 					  void *callBackEnd,
 					  void *callBackEntry );
@@ -169,7 +167,7 @@ void addrindex_remove_results		( AddressDataSource *ds,
 
 gboolean addrindex_load_completion(
 		gint (*callBackFunc)
-			( const gchar *, const gchar *, 
+			( const gchar *, const gchar *,
 			  const gchar *, const gchar *, GList * ),
 			gchar *folderpath );
 
@@ -179,11 +177,7 @@ gboolean addrindex_load_person_attribute( const gchar *attr,
 
 gboolean addrindex_load_person_ds( gint (*callBackFunc)
 			( ItemPerson *, AddressDataSource * ) );
-gchar *addrindex_get_picture_file(const gchar *emailaddr);		
-
-#ifdef USE_LDAP
-GSList *addrindex_get_password_protected_ldap_servers();
-#endif
+gchar *addrindex_get_picture_file(const gchar *emailaddr);
 
 #endif /* __ADDRINDEX_H__ */
 

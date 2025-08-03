@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -28,10 +28,6 @@
 
 #include "defs.h"
 
-#ifdef USE_LDAP
-#include "ldapserver.h"
-#include "ldapupdate.h"
-#endif
 #include "addrbook.h"
 #include "addressbook.h"
 #include "addressitem.h"
@@ -147,13 +143,6 @@ static void addrmerge_do_merge(struct AddrMergePage *page)
 	addrbook_set_dirty( page->abf, TRUE );
 	addressbook_export_to_file();
 
-#ifdef USE_LDAP
-	if (page->ds && page->ds->type == ADDR_IF_LDAP) {
-		LdapServer *server = page->ds->rawDataSource;
-		ldapsvr_set_modified(server, TRUE);
-		ldapsvr_update_book(server, NULL);
-	}
-#endif
 	gtk_cmclist_thaw(GTK_CMCLIST(page->clist));
 
 	addrmerge_done(page);
@@ -190,7 +179,7 @@ static void addrmerge_picture_selected(GtkTreeView *treeview,
 	GList *list;
 	ItemPerson *pictureTarget;
 
-	/* Get selected picture target */ 
+	/* Get selected picture target */
 	model = gtk_icon_view_get_model(GTK_ICON_VIEW(page->iconView));
 	list = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(page->iconView));
 	page->target = NULL;

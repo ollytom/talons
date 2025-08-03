@@ -41,8 +41,6 @@
 	#include "addritem.h"
 	#include "addrbook.h"
 	#include "addrindex.h"
-	#include "ldapserver.h"
-	#include "ldapupdate.h"
 #else
 	#include "addressbook-dbus.h"
 #endif
@@ -196,7 +194,7 @@ static void addressadd_create( void ) {
 			  G_CALLBACK(addressadd_key_pressed), NULL );
 	g_signal_connect(G_OBJECT(window), "size_allocate",
 			 G_CALLBACK(addressadd_size_allocate_cb), NULL);
-	
+
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -224,7 +222,7 @@ static void addressadd_create( void ) {
 	entry_name = gtk_entry_new();
 	gtk_widget_set_size_request(entry_name, 150, -1);
 	gtk_entry_set_text (GTK_ENTRY(entry_name),"");
-	
+
 	gtk_grid_attach(GTK_GRID(table), entry_name, 1, 0, 1, 1);
 	gtk_widget_set_hexpand(entry_name, TRUE);
 	gtk_widget_set_halign(entry_name, GTK_ALIGN_FILL);
@@ -410,8 +408,7 @@ static void addressadd_load_data( AddressIndex *addrIndex ) {
 	list = addrindex_get_interface_list( addrIndex );
 	while( list ) {
 		AddressInterface *ainterface = list->data;
-		if( ainterface->type == ADDR_IF_BOOK || 
-				ainterface->type == ADDR_IF_LDAP ) {
+		if(ainterface->type == ADDR_IF_BOOK) {
 			nodeDS = ainterface->listSource;
 			while( nodeDS ) {
 				ds = nodeDS->data;
@@ -475,15 +472,15 @@ static void addressadd_load_data() {
 }
 #endif
 
-#ifndef USE_ALT_ADDRBOOK 
-gboolean addressadd_selection( AddressIndex *addrIndex, const gchar *name, 
+#ifndef USE_ALT_ADDRBOOK
+gboolean addressadd_selection( AddressIndex *addrIndex, const gchar *name,
 		const gchar *address, const gchar *remarks, GdkPixbuf *picture ) {
 #else
 gboolean addressadd_selection(const gchar *name, const gchar *address,
 							  const gchar *remarks, GdkPixbuf *picture ) {
 #endif
 	gboolean retVal = FALSE;
-#ifndef USE_ALT_ADDRBOOK 
+#ifndef USE_ALT_ADDRBOOK
 	ItemPerson *person = NULL;
 #endif
 	FolderInfo *fi = NULL;
@@ -529,19 +526,19 @@ gboolean addressadd_selection(const gchar *name, const gchar *address,
 			returned_remarks = gtk_editable_get_chars( GTK_EDITABLE(addressadd_dlg.entry_remarks), 0, -1 );
 
 			fi = addressadd_dlg.fiSelected;
-			
+
 #ifndef USE_ALT_ADDRBOOK
-			person = addrbook_add_contact( fi->book, fi->folder, 
-							returned_name, 
-							address, 
+			person = addrbook_add_contact( fi->book, fi->folder,
+							returned_name,
+							address,
 							returned_remarks);
-			
+
 			if (person != NULL) {
 				person->status = ADD_ENTRY;
 
 				if (picture) {
 					GError *error = NULL;
-					gchar *name = g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S, ADDRBOOK_DIR, G_DIR_SEPARATOR_S, 
+					gchar *name = g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S, ADDRBOOK_DIR, G_DIR_SEPARATOR_S,
 								ADDRITEM_ID(person), ".png", NULL );
 					gdk_pixbuf_save(picture, name, "png", &error, NULL);
 					if (error) {
@@ -555,18 +552,18 @@ gboolean addressadd_selection(const gchar *name, const gchar *address,
 #else
 			ContactData* contact = g_new0(ContactData, 1);
 			GError* error = NULL;
-			
+
 			if (returned_name)
 				contact->cn = g_strdup(returned_name);
 			else
 				contact->cn = g_strdup(address);
-			
+
 			contact->name = g_strdup(returned_name);
 			contact->email = g_strdup(address);
 			contact->remarks = g_strdup(returned_remarks);
 			contact->book = g_strdup(fi->book);
 			contact->picture = picture;
-			
+
             if (addressbook_dbus_add_contact(contact, &error) == 0) {
 				debug_print("Added to addressbook:\n%s\n%s\n%s\n%s\n",
 							 returned_name, address, returned_remarks, fi->book);
@@ -587,20 +584,6 @@ gboolean addressadd_selection(const gchar *name, const gchar *address,
 				}
 			}
 			contact_data_free(&contact);
-#endif
-#ifdef USE_LDAP
-			if (person != NULL && fi->book->type == ADBOOKTYPE_LDAP) {
-				LdapServer *server = (LdapServer *) fi->book;
-				ldapsvr_set_modified(server, TRUE);
-				ldapsvr_update_book(server, person);
-				if (server->retVal != LDAPRC_SUCCESS) {
-					alertpanel( _("Add address(es)"),
-						_("Can't add the specified address"),
-						"window-close", _("_Close"), NULL, NULL,
-						NULL, NULL, ALERTFOCUS_FIRST );
-					return server->retVal;
-				}
-			}
 #endif
 			g_free(returned_name);
 			g_free(returned_remarks);

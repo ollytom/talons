@@ -55,20 +55,20 @@
 #include "manage_window.h"
 
 /*
- * NOTE: the crash dialog is called when claws is not 
+ * NOTE: the crash dialog is called when claws is not
  * initialized, so do not assume settings are available.
- * for example, loading / creating pixmaps seems not 
+ * for example, loading / creating pixmaps seems not
  * to be possible.
  */
 
 /***/
 
-static GtkWidget	*crash_dialog_show		(const gchar *text, 
+static GtkWidget	*crash_dialog_show		(const gchar *text,
 							 const gchar *debug_output);
 static void		 crash_create_debugger_file	(void);
 static void		 crash_save_crash_log		(GtkButton *, const gchar *);
 static void		 crash_create_bug_report	(GtkButton *, const gchar *);
-static void		 crash_debug			(unsigned long crash_pid, 
+static void		 crash_debug			(unsigned long crash_pid,
 							 gchar   *exe_image,
 							 GString *debug_output);
 static gchar		*get_compiled_in_features   (void);
@@ -89,7 +89,7 @@ static const gchar *DEBUG_SCRIPT = "thread all apply\nbt full\nkill\nq";
  */
 void crash_install_handlers(void)
 {
-#if CRASH_DIALOG 
+#if CRASH_DIALOG
 	sigset_t mask;
 
 	if (!is_crash_dialog_allowed()) return;
@@ -100,7 +100,7 @@ void crash_install_handlers(void)
 	signal(SIGSEGV, crash_handler);
 	sigaddset(&mask, SIGSEGV);
 #endif
-	
+
 #ifdef SIGFPE
 	signal(SIGFPE, crash_handler);
 	sigaddset(&mask, SIGFPE);
@@ -117,17 +117,17 @@ void crash_install_handlers(void)
 #endif
 
 	sigprocmask(SIG_UNBLOCK, &mask, 0);
-#endif /* CRASH_DIALOG */	
+#endif /* CRASH_DIALOG */
 }
 
 /***/
 
 /*!
- *\brief	crash dialog entry point 
+ *\brief	crash dialog entry point
  */
-void crash_main(const char *arg) 
+void crash_main(const char *arg)
 {
-#if CRASH_DIALOG 
+#if CRASH_DIALOG
 	gchar *text;
 	gchar **tokens;
 	unsigned long pid;
@@ -140,7 +140,7 @@ void crash_main(const char *arg)
 	text = g_strdup_printf(_("Claws Mail process (%ld) received signal %ld"),
 			       pid, atol(tokens[1]));
 
-	output = g_string_new("");     
+	output = g_string_new("");
 	crash_debug(pid, tokens[2], output);
 
 	/*
@@ -152,7 +152,7 @@ void crash_main(const char *arg)
 	g_string_free(output, TRUE);
 	g_free(text);
 	g_strfreev(tokens);
-#endif /* CRASH_DIALOG */	
+#endif /* CRASH_DIALOG */
 }
 
 /*!
@@ -182,7 +182,7 @@ static GtkWidget *crash_dialog_show(const gchar *text, const gchar *debug_output
 	GtkTextIter iter;
 	gchar *features = get_compiled_in_features();
 	gchar *os = get_operating_system();
-	gchar *lversion = get_lib_version();    
+	gchar *lversion = get_lib_version();
 
 	window1 = gtkut_window_new(GTK_WINDOW_TOPLEVEL, "crash");
 	gtk_container_set_border_width(GTK_CONTAINER(window1), 5);
@@ -266,7 +266,7 @@ static GtkWidget *crash_dialog_show(const gchar *text, const gchar *debug_output
 	gtk_widget_show(button5);
 	gtk_container_add(GTK_CONTAINER(hbuttonbox4), button5);
 	gtk_widget_set_can_default(button5, TRUE);
-	
+
 	g_signal_connect(G_OBJECT(window1), "delete_event",
 			 G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(G_OBJECT(button3),   "clicked",
@@ -287,13 +287,13 @@ static GtkWidget *crash_dialog_show(const gchar *text, const gchar *debug_output
 
 /*!
  *\brief	create debugger script file in claws directory.
- *		all the other options (creating temp files) looked too 
+ *		all the other options (creating temp files) looked too
  *		convoluted.
  */
 static void crash_create_debugger_file(void)
 {
 	gchar *filespec = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, DEBUGGERRC, NULL);
-	
+
 	str_write_to_file(DEBUG_SCRIPT, filespec, TRUE);
 	g_free(filespec);
 }
@@ -315,11 +315,11 @@ static void crash_save_crash_log(GtkButton *button, const gchar *text)
 	if (NULL != (filename = filesel_select_file_save(_("Save crash information"), buf))
 	&&  *filename)
 		str_write_to_file(text, filename, TRUE);
-	g_free(filename);	
+	g_free(filename);
 }
 
 /*!
- *\brief	create bug report (goes to Claws Mail bug tracker)	
+ *\brief	create bug report (goes to Claws Mail bug tracker)
  */
 static void crash_create_bug_report(GtkButton *button, const gchar *data)
 {
@@ -329,7 +329,7 @@ static void crash_create_bug_report(GtkButton *button, const gchar *data)
 /*!
  *\brief	launches debugger and attaches it to crashed claws
  */
-static void crash_debug(unsigned long crash_pid, 
+static void crash_debug(unsigned long crash_pid,
 			gchar *exe_image,
 			GString *debug_output)
 {
@@ -354,7 +354,7 @@ static void crash_debug(unsigned long crash_pid,
 		/*
 		 * setup debugger to attach to crashed claws
 		 */
-		*argptr++ = "gdb"; 
+		*argptr++ = "gdb";
 		*argptr++ = "--nw";
 		*argptr++ = "--nx";
 		*argptr++ = "--quiet";
@@ -372,12 +372,12 @@ static void crash_debug(unsigned long crash_pid,
 		if (dup(choutput[1]) < 0)
 			perror("dup");
 		close(choutput[0]);
-		if (-1 == execvp("gdb", argp)) 
+		if (-1 == execvp("gdb", argp))
 			perror("execvp");
 	} else {
 		char buf[100];
 		int r;
-	
+
 		waitpid(pid, NULL, 0);
 
 		/*
@@ -396,14 +396,14 @@ static void crash_debug(unsigned long crash_pid,
 				g_string_append(debug_output, buf);
 			}
 		} while (r > 0);
-		
+
 		close(choutput[0]);
 		close(choutput[1]);
-		
+
 		/*
 		 * kill the process we attached to
 		 */
-		kill(crash_pid, SIGCONT); 
+		kill(crash_pid, SIGCONT);
 	}
 }
 
@@ -426,12 +426,6 @@ static gchar *get_compiled_in_features(void)
 #endif
 #if USE_GNUTLS
 		   " GnuTLS"
-#endif
-#if USE_LDAP
-		   " LDAP"
-#endif
-#if USE_JPILOT
-		   " JPilot"
 #endif
 #if USE_ENCHANT
 		   " GNU/aspell"
@@ -477,7 +471,7 @@ static gchar *get_operating_system(void)
 			       utsbuf.machine);
 #else
 	return g_strdup(_("Unknown"));
-	
+
 #endif
 }
 
@@ -493,7 +487,7 @@ static gboolean is_crash_dialog_allowed(void)
 }
 
 /*!
- *\brief	this handler will probably evolve into 
+ *\brief	this handler will probably evolve into
  *		something better.
  */
 static void crash_handler(int sig)
@@ -509,7 +503,7 @@ static void crash_handler(int sig)
 
 
 	/*
-	 * besides guarding entrancy it's probably also better 
+	 * besides guarding entrancy it's probably also better
 	 * to mask off signals
 	 */
 	if (crashed_) return;
@@ -517,7 +511,7 @@ static void crash_handler(int sig)
 	crashed_++;
 
 #ifdef SIGTERM
-	if (sig == SIGTERM) 
+	if (sig == SIGTERM)
 		clean_quit(NULL);
 #endif
 
@@ -531,13 +525,13 @@ static void crash_handler(int sig)
 	if (0 == (pid = fork())) {
 		char buf[50];
 		char *args[5];
-	
+
 		/*
 		 * probably also some other parameters (like GTK ones).
 		 * also we pass the full startup dir and the real command
 		 * line typed in (argv0)
 		 */
-		args[0] = argv0; 
+		args[0] = argv0;
 		args[1] = "--debug";
 		args[2] = "--crash";
 		sprintf(buf, "%d,%d,%s", getppid(), sig, argv0);

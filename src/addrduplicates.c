@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -28,10 +28,6 @@
 
 #include "defs.h"
 
-#ifdef USE_LDAP
-#include "ldapserver.h"
-#include "ldapupdate.h"
-#endif
 #include "addrduplicates.h"
 #include "addrbook.h"
 #include "addressbook.h"
@@ -689,7 +685,7 @@ static void detail_row_activated(GtkTreeView       *tree_view,
 	gtk_tree_model_get(model, &iter, COL_ITEM, &person, COL_DS, &ds, -1);
 
 
-	if(!((ds->type == ADDR_IF_BOOK) || ds->type == ADDR_IF_LDAP)) {
+	if(!(ds->type == ADDR_IF_BOOK)) {
 		debug_print("Unsupported address datasource type for editing\n");
 		return;
 	}
@@ -848,16 +844,6 @@ gboolean addrduplicates_delete_item_person(ItemPerson *item, AddressDataSource *
 
 	item->status = DELETE_ENTRY;
 	item = addrbook_remove_person(abf, item);
-
-#ifdef USE_LDAP
-
-	if (ds && ds->type == ADDR_IF_LDAP) {
-		LdapServer *server = ds->rawDataSource;
-		ldapsvr_set_modified(server, TRUE);
-		ldapsvr_update_book(server, item);
-	}
-
-#endif
 
 	if(item) {
 		addritem_person_remove_picture(item);

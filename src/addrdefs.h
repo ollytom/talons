@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -27,7 +27,6 @@
 /* Query types */
 typedef enum {
 	ADDRQUERY_NONE,
-	ADDRQUERY_LDAP
 } AddrQueryType;
 
 /* Search type */

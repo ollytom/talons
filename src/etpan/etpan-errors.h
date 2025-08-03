@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef ETPAN_ERRORS_H
@@ -56,7 +56,6 @@ enum {
   ERROR_IMAP_CREATE,
   ERROR_PRIVACY,
   ERROR_DIRECTORY_NOT_FOUND,
-  ERROR_LDAP_SEARCH,
   ERROR_NOT_SUPPORTED,
   ERROR_COULD_NOT_POSTPONE,
   ERROR_NO_FROM,

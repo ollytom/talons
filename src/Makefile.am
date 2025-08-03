@@ -8,7 +8,7 @@ etpan_dir = etpan
 etpan_library = etpan/libclawsetpan.la
 else
 etpan_dir =
-etpan_library = 
+etpan_library =
 endif
 
 SUBDIRS = common gtk $(etpan_dir) . plugins
@@ -44,30 +44,15 @@ orig_abook_source = \
 	addrselect.c \
 	addrduplicates.c \
 	addrmerge.c \
-	browseldap.c \
 	editaddress.c \
 	editaddress_other_attributes_ldap.c \
 	editbook.c \
 	editgroup.c \
-	editjpilot.c \
-	editldap_basedn.c \
-	editldap.c \
 	editvcard.c \
 	exphtmldlg.c \
-	expldifdlg.c \
 	exporthtml.c \
-	exportldif.c \
-	importldif.c \
 	importmutt.c \
 	importpine.c \
-	jpilot.c \
-	ldapctrl.c \
-	ldaplocate.c \
-	ldapquery.c \
-	ldapserver.c \
-	ldapupdate.c \
-	ldaputil.c \
-	ldif.c \
 	mutt.c \
 	pine.c \
 	vcard.c
@@ -93,31 +78,16 @@ abook_headers = \
 	addrselect.h \
 	addrduplicates.h \
 	addrmerge.h \
-	browseldap.h \
 	editaddress.h \
 	editaddress_other_attributes_ldap.h \
 	editbook.h \
 	editgroup.h \
-	editjpilot.h \
-	editldap_basedn.h \
-	editldap.h \
 	editvcard.h \
 	exphtmldlg.h \
-	expldifdlg.h \
 	exporthtml.h \
-	exportldif.h \
 	file_checker.h \
-	importldif.h \
 	importmutt.h \
 	importpine.h \
-	jpilot.h \
-	ldapctrl.h \
-	ldaplocate.h \
-	ldapquery.h \
-	ldapserver.h \
-	ldapupdate.h \
-	ldaputil.h \
-	ldif.h \
 	mutt.h \
 	pine.h \
 	vcard.h
@@ -446,11 +416,9 @@ EXTRA_DIST = \
 	pixmaps/inbox_close_mark.xpm \
 	pixmaps/interface.xpm \
 	pixmaps/insert_file.xpm \
-	pixmaps/jpilot.xpm \
 	pixmaps/key.xpm \
 	pixmaps/key_gpg_signed.xpm \
 	pixmaps/last_arrow.xpm \
-	pixmaps/ldap.xpm \
 	pixmaps/left_arrow.xpm \
 	pixmaps/linewrap.xpm \
 	pixmaps/linewrapcurrent.xpm \
@@ -594,11 +562,9 @@ claws_mail_LDADD = \
 	$(ENCHANT_LIBS) \
 	$(INTLLIBS) \
 	$(GTK_LIBS) \
-	$(LDAP_LIBS) \
 	$(GNUTLS_LIBS) \
 	$(NETTLE_LIBS) \
 	$(COMPFACE_LIBS) \
-	$(JPILOT_LIBS) \
 	$(PTHREAD_LIBS) \
 	$(SM_LIBS) \
 	$(LIBICONV) \
@@ -642,7 +608,7 @@ quote_fmt_lex.$(OBJEXT) : AM_CFLAGS += -Wno-unused-function
 AM_YFLAGS = -d
 
 if CYGWIN
-claws-mail$(EXEEXT): $(claws_mail_OBJECTS) $(claws_mail_DEPENDENCIES) 
+claws-mail$(EXEEXT): $(claws_mail_OBJECTS) $(claws_mail_DEPENDENCIES)
 	@rm -f claws-mail$(EXEEXT)
 	@rm -f claws-mail.def claws-mail.base claws-mail.exp libclaws-mail.a .libs/libclaws-mail.a
 	$(LINK) -shared $(claws_mailLDFLAGS) -Wl,--out-implib=libclaws-mail.a -Wl,--export-all-symbols,--exclude-symbols,main $(claws_mail_OBJECTS) -Wl,--no-whole-archive $(claws_mail_LDADD) $(LIBS)
@@ -653,7 +619,7 @@ claws-mail$(EXEEXT): $(claws_mail_OBJECTS) $(claws_mail_DEPENDENCIES)
 	$(LINK) $(claws_mail_LDFLAGS) -Wl,claws-mail.exp $(claws_mail_OBJECTS) $(claws_mail_LDADD) $(LIBS)
 	@cp libclaws-mail.a .libs/libclaws-mail.a
 else
-#claws-mail$(EXEEXT): $(claws_mail_OBJECTS) $(claws_mail_DEPENDENCIES) 
+#claws-mail$(EXEEXT): $(claws_mail_OBJECTS) $(claws_mail_DEPENDENCIES)
 #	@rm -f claws-mail$(EXEEXT)
 #	$(LINK) $(claws_mail_LDFLAGS) $(claws_mail_OBJECTS) $(claws_mail_LDADD) $(LIBS)
 endif

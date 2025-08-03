@@ -51,18 +51,6 @@
 
 #include "vcard.h"
 
-#ifdef USE_JPILOT
-#include "jpilot.h"
-#endif
-
-#ifdef USE_LDAP
-#include "ldapserver.h"
-#include "ldapctrl.h"
-#include "ldapquery.h"
-#include "ldapupdate.h"
-#include "ldaputil.h"
-#endif
-
 #ifdef G_OS_WIN32
 #undef interface
 #endif
@@ -71,13 +59,9 @@
 
 #define TAG_IF_ADDRESS_BOOK  "book_list"
 #define TAG_IF_VCARD         "vcard_list"
-#define TAG_IF_JPILOT        "jpilot_list"
-#define TAG_IF_LDAP          "ldap_list"
 
 #define TAG_DS_ADDRESS_BOOK  "book"
 #define TAG_DS_VCARD         "vcard"
-#define TAG_DS_JPILOT        "jpilot"
-#define TAG_DS_LDAP          "server"
 
 /* XML Attribute names */
 #define ATTAG_BOOK_NAME       "name"
@@ -86,40 +70,10 @@
 #define ATTAG_VCARD_NAME      "name"
 #define ATTAG_VCARD_FILE      "file"
 
-#define ATTAG_JPILOT_NAME     "name"
-#define ATTAG_JPILOT_FILE     "file"
-#define ATTAG_JPILOT_CUSTOM_1 "custom-1"
-#define ATTAG_JPILOT_CUSTOM_2 "custom-2"
-#define ATTAG_JPILOT_CUSTOM_3 "custom-3"
-#define ATTAG_JPILOT_CUSTOM_4 "custom-4"
-#define ATTAG_JPILOT_CUSTOM   "custom-"
-
-#define ATTAG_LDAP_NAME       "name"
-#define ATTAG_LDAP_HOST       "host"
-#define ATTAG_LDAP_PORT       "port"
-#define ATTAG_LDAP_BASE_DN    "base-dn"
-#define ATTAG_LDAP_BIND_DN    "bind-dn"
-#define ATTAG_LDAP_BIND_PASS  "bind-pass"
-#define ATTAG_LDAP_CRITERIA   "criteria"
-#define ATTAG_LDAP_MAX_ENTRY  "max-entry"
-#define ATTAG_LDAP_TIMEOUT    "timeout"
-#define ATTAG_LDAP_MAX_AGE    "max-age"
-#define ATTAG_LDAP_DYN_SEARCH "dyn-search"
-#define ATTAG_LDAP_MATCH_OPT  "match-opt"
-#define ATTAG_LDAP_ENABLE_TLS "enable-tls"
-#define ATTAG_LDAP_ENABLE_SSL "enable-ssl"
-
-#define ELTAG_LDAP_ATTR_SRCH  "attribute"
-#define ATTAG_LDAP_ATTR_NAME  "name"
-
 /* Attribute values */
 #define ATVAL_BOOLEAN_YES         "yes"
 #define ATVAL_BOOLEAN_NO          "no"
-#define ATVAL_LDAP_MATCH_BEGIN    "begin-with"
-#define ATVAL_LDAP_MATCH_CONTAINS "contains"
 
-/* New attributes */
-#define ATTAG_LDAP_DEFAULT    "default"
 
 #define DISP_NEW_COMMON       _("Common addresses")
 #define DISP_NEW_PERSONAL     _("Personal addresses")
@@ -245,7 +199,7 @@ static void addrindex_build_if_list( AddressIndex *addrIndex ) {
 	iface->setAccessFlag = ( void * ) addrbook_set_accessed;
 	iface->searchOrder   = 0;
 
-	/* Add to list of interfaces in address book */	
+	/* Add to list of interfaces in address book */
 	addrIndex->interfaceList =
 		g_list_append( addrIndex->interfaceList, iface );
 	ADDRITEM_PARENT(iface) = ADDRITEM_OBJECT(addrIndex);
@@ -265,61 +219,6 @@ static void addrindex_build_if_list( AddressIndex *addrIndex ) {
 	iface->getName       = ( void * ) vcard_get_name;
 	iface->setAccessFlag = ( void * ) vcard_set_accessed;
 	iface->searchOrder   = 0;
-	addrIndex->interfaceList =
-		g_list_append( addrIndex->interfaceList, iface );
-	ADDRITEM_PARENT(iface) = ADDRITEM_OBJECT(addrIndex);
-
-	/* Create JPilot interface */
-	iface = addrindex_create_interface(
-			ADDR_IF_JPILOT, "J-Pilot", TAG_IF_JPILOT,
-			TAG_DS_JPILOT );
-#ifdef USE_JPILOT
-	iface->haveLibrary = jpilot_test_pilot_lib();
-	iface->useInterface = iface->haveLibrary;
-	iface->getModifyFlag = ( void * ) jpilot_get_modified;
-	iface->getAccessFlag = ( void * ) jpilot_get_accessed;
-	iface->getReadFlag   = ( void * ) jpilot_get_read_flag;
-	iface->getStatusCode = ( void * ) jpilot_get_status;
-	iface->getReadData   = ( void * ) jpilot_read_data;
-	iface->getRootFolder = ( void * ) jpilot_get_root_folder;
-	iface->getListFolder = ( void * ) jpilot_get_list_folder;
-	iface->getListPerson = ( void * ) jpilot_get_list_person;
-	iface->getAllPersons = ( void * ) jpilot_get_all_persons;
-	iface->getName       = ( void * ) jpilot_get_name;
-	iface->setAccessFlag = ( void * ) jpilot_set_accessed;
-	iface->searchOrder   = 0;
-#else
-	iface->useInterface = FALSE;
-	iface->haveLibrary = FALSE;
-#endif
-	addrIndex->interfaceList =
-		g_list_append( addrIndex->interfaceList, iface );
-	ADDRITEM_PARENT(iface) = ADDRITEM_OBJECT(addrIndex);
-
-	/* Create LDAP interface */
-	iface = addrindex_create_interface(
-			ADDR_IF_LDAP, "LDAP", TAG_IF_LDAP, TAG_DS_LDAP );
-#ifdef USE_LDAP
-	iface->readOnly = FALSE;
-	/* iface->haveLibrary = ldapsvr_test_ldap_lib(); */
-	iface->haveLibrary = ldaputil_test_ldap_lib();
-	iface->useInterface = iface->haveLibrary;
-	iface->getModifyFlag = ( void * ) ldapsvr_get_modified;
-	iface->getAccessFlag = ( void * ) ldapsvr_get_accessed;
-	iface->getReadFlag   = ( void * ) ldapsvr_get_read_flag;
-	iface->getStatusCode = ( void * ) ldapsvr_get_status;
-	iface->getReadData   = ( void * ) ldapsvr_read_data;
-	iface->getRootFolder = ( void * ) ldapsvr_get_root_folder;
-	iface->getListFolder = ( void * ) ldapsvr_get_list_folder;
-	iface->getListPerson = ( void * ) ldapsvr_get_list_person;
-	iface->getName       = ( void * ) ldapsvr_get_name;
-	iface->setAccessFlag = ( void * ) ldapsvr_set_accessed;
-	iface->externalQuery = TRUE;
-	iface->searchOrder   = 1;
-#else
-	iface->useInterface = FALSE;
-	iface->haveLibrary = FALSE;
-#endif
 	addrIndex->interfaceList =
 		g_list_append( addrIndex->interfaceList, iface );
 	ADDRITEM_PARENT(iface) = ADDRITEM_OBJECT(addrIndex);
@@ -420,22 +319,7 @@ void addrindex_free_datasource( AddressDataSource *ds ) {
 					VCardFile *vcf = ds->rawDataSource;
 					vcard_free( vcf );
 				}
-#ifdef USE_JPILOT
-				else if( iface->type == ADDR_IF_JPILOT ) {
-					JPilotFile *jpf = ds->rawDataSource;
-					jpilot_free( jpf );
-				}
-#endif
-#ifdef USE_LDAP
-				else if( iface->type == ADDR_IF_LDAP ) {
-					LdapServer *server = ds->rawDataSource;
-					ldapsvr_free( server );
-				}
-#endif
-				else {
-				}
-			}
-			else {
+			} else {
 				AddressIfFragment *fragment = ds->rawDataSource;
 				addrindex_free_fragment( fragment );
 			}
@@ -720,7 +604,7 @@ void addrindex_free_index( AddressIndex *addrIndex ) {
 	g_free( addrIndex->filePath );
 	g_free( addrIndex->fileName );
 
-	/* Clear pointers */	
+	/* Clear pointers */
 	ADDRITEM_TYPE(addrIndex) = ITEMTYPE_NONE;
 	ADDRITEM_ID(addrIndex) = NULL;
 	ADDRITEM_NAME(addrIndex) = NULL;
@@ -735,7 +619,7 @@ void addrindex_free_index( AddressIndex *addrIndex ) {
 	addrIndex->lastType = ADDR_IF_NONE;
 	addrIndex->dirtyFlag = FALSE;
 
-	/* Free up interfaces */	
+	/* Free up interfaces */
 	node = addrIndex->interfaceList;
 	while( node ) {
 		AddressInterface *iface = node->data;
@@ -807,7 +691,7 @@ static AddressInterface *addrindex_get_interface(
  *
  * \param  addrIndex Address index.
  * \param ifType     Interface type to add.
- * \param dataSource Actual raw data source to add. 
+ * \param dataSource Actual raw data source to add.
  * \return Data source added, or NULL if invalid interface type.
  */
 AddressDataSource *addrindex_index_add_datasource(
@@ -837,7 +721,7 @@ AddressDataSource *addrindex_index_add_datasource(
 /**
  * Remove specified data source from index.
  * \param  addrIndex Address index.
- * \param  dataSource Data source to add. 
+ * \param  dataSource Data source to add.
  * \return Reference to data source if removed, or NULL if data source was not
  *         found in index. Note the this object must still be freed.
  */
@@ -937,7 +821,7 @@ static AddressInterface *addrindex_tag_get_datasource(
  */
 static int addrindex_write_elem_s( FILE *fp, const gint lvl, const gchar *name ) {
 	gint i;
-	for( i = 0; i < lvl; i++ ) 
+	for( i = 0; i < lvl; i++ )
 		if (claws_fputs( "  ", fp ) == EOF)
 			return -1;
 	if (claws_fputs( "<", fp ) == EOF)
@@ -955,7 +839,7 @@ static int addrindex_write_elem_s( FILE *fp, const gint lvl, const gchar *name )
  */
 static int addrindex_write_elem_e( FILE *fp, const gint lvl, const gchar *name ) {
 	gint i;
-	for( i = 0; i < lvl; i++ ) 
+	for( i = 0; i < lvl; i++ )
 		if (claws_fputs( "  ", fp ) == EOF)
 			return -1;
 	if (claws_fputs( "</", fp ) == EOF)
@@ -987,118 +871,6 @@ static int addrindex_write_attr( FILE *fp, const gchar *name, const gchar *value
 	return 0;
 }
 
-#if !defined(USE_LDAP) || !defined(USE_JPILOT)
-/**
- * Return DOM fragment for current XML tag from file.
- * \param  file XML file being processed.
- * \return Fragment representing DOM fragment for configuration element.
- */
-static AddressIfFragment *addrindex_read_fragment( XMLFile *file ) {
-	AddressIfFragment *fragment;
-	AddressIfFragment *child;
-	AddressIfAttrib *nv;
-	XMLTag *xtag;
-	GList *list;
-	GList *attr;
-	gchar *name;
-	gchar *value;
-	guint prevLevel;
-	gint rc;
-
-	/* g_print( "addrindex_read_fragment\n" ); */
-
-	prevLevel = file->level;
-
-	/* Get current tag name */
-	xtag = xml_get_current_tag( file );
-
-	/* Create new fragment */
-	fragment = g_new0( AddressIfFragment, 1 );
-	fragment->type = ADBOOKTYPE_NONE;
-	fragment->addressCache = NULL;
-	fragment->name = g_strdup( xtag->tag );
-	fragment->children = NULL;
-	fragment->attributes = NULL;
-
-	/* Read attributes */
-	list = NULL;
-	attr = xml_get_current_tag_attr( file );
-	while( attr ) {
-		name = ((XMLAttr *)attr->data)->name;
-		value = ((XMLAttr *)attr->data)->value;
-		nv = g_new0( AddressIfAttrib, 1 );
-		nv->name = g_strdup( name );
-		nv->value = g_strdup( value );
-		list = g_list_append( list, nv );
-		attr = g_list_next( attr );
-	}
-	fragment->attributes = list;
-
-	/* Now read the children */
-	while( TRUE ) {
-		rc = xml_parse_next_tag( file );
-		if( rc != 0 ) {
-			/* End of file? */
-			break;
-		}
-		if( file->level < prevLevel ) {
-			/* We must be above level we start at */
-			break;
-		}
-		child = addrindex_read_fragment( file );
-		fragment->children = g_list_append( fragment->children, child );
-	}
-
-	return fragment;
-}
-
-/**
- * Write DOM fragment to file.
- * \param fp       File to write.
- * \param fragment DOM fragment for configuration element.
- * \param lvl      Indent level.
- */
-static int addrindex_write_fragment(
-		FILE *fp, const AddressIfFragment *fragment, const gint lvl )
-{
-	GList *node;
-
-	if( fragment ) {
-		if (addrindex_write_elem_s( fp, lvl, fragment->name ) < 0)
-			return -1;
-		node = fragment->attributes;
-		while( node ) {
-			AddressIfAttrib *nv = node->data;
-			if (addrindex_write_attr( fp, nv->name, nv->value ) < 0)
-				return -1;
-			node = g_list_next( node );
-		}
-		if( fragment->children ) {
-			if (claws_fputs(" >\n", fp) == EOF)
-				return -1;
-
-			/* Output children */
-			node = fragment->children;
-			while( node ) {
-				AddressIfFragment *child = node->data;
-				if (addrindex_write_fragment( fp, child, 1+lvl ) < 0)
-					return -1;
-				node = g_list_next( node );
-			}
-
-			/* Output closing tag */
-			if (addrindex_write_elem_e( fp, lvl, fragment->name ) < 0)
-				return -1;
-		}
-		else {
-			if (claws_fputs(" />\n", fp) == EOF)
-				return -1;
-		}
-	}
-	
-	return 0;
-}
-#endif
 /**
  * Read/parse address index file, creating a data source for a regular
  * intrinsic XML addressbook.
@@ -1181,393 +953,6 @@ static int addrindex_write_vcard( FILE *fp, AddressDataSource *ds, gint lvl ) {
 	return 0;
 }
 
-#ifdef USE_JPILOT
-static AddressDataSource *addrindex_parse_jpilot( XMLFile *file ) {
-	AddressDataSource *ds;
-	JPilotFile *jpf;
-	GList *attr;
-
-	ds = addrindex_create_datasource( ADDR_IF_JPILOT );
-	jpf = jpilot_create();
-	attr = xml_get_current_tag_attr( file );
-	while( attr ) {
-		gchar *name = ((XMLAttr *)attr->data)->name;
-		gchar *value = ((XMLAttr *)attr->data)->value;
-		if( strcmp( name, ATTAG_JPILOT_NAME ) == 0 ) {
-			jpilot_set_name( jpf, value );
-		}
-		else if( strcmp( name, ATTAG_JPILOT_FILE ) == 0 ) {
-			jpilot_set_file( jpf, value );
-		}
-		else if( strcmp( name, ATTAG_JPILOT_CUSTOM_1 ) == 0 ) {
-			jpilot_add_custom_label( jpf, value );
-		}
-		else if( strcmp( name, ATTAG_JPILOT_CUSTOM_2 ) == 0 ) {
-			jpilot_add_custom_label( jpf, value );
-		}
-		else if( strcmp( name, ATTAG_JPILOT_CUSTOM_3 ) == 0 ) {
-			jpilot_add_custom_label( jpf, value );
-		}
-		else if( strcmp( name, ATTAG_JPILOT_CUSTOM_4 ) == 0 ) {
-			jpilot_add_custom_label( jpf, value );
-		}
-		attr = g_list_next( attr );
-	}
-	ds->rawDataSource = jpf;
-	return ds;
-}
-
-static int addrindex_write_jpilot( FILE *fp,AddressDataSource *ds, gint lvl ) {
-	JPilotFile *jpf = ds->rawDataSource;
-	if( jpf ) {
-		gint ind;
-		GList *node;
-		GList *customLbl = jpilot_get_custom_labels( jpf );
-		if (addrindex_write_elem_s( fp, lvl, TAG_DS_JPILOT ) < 0)
-			return -1;
-		if (addrindex_write_attr( fp, ATTAG_JPILOT_NAME, jpilot_get_name( jpf ) ) < 0)
-			return -1;
-		if (addrindex_write_attr( fp, ATTAG_JPILOT_FILE, jpf->path ) < 0)
-			return -1;
-		node = customLbl;
-		ind = 1;
-		while( node ) {
-			gchar name[256];
-			g_snprintf( name, sizeof(name), "%s%d",
-				    ATTAG_JPILOT_CUSTOM, ind );
-			if (addrindex_write_attr( fp, name, node->data ) < 0)
-				return -1;
-			ind++;
-			node = g_list_next( node );
-		}
-		if (claws_fputs( " />\n", fp ) == EOF)
-			return -1;
-	}
-	return 0;
-}
-
-#else
-/*
- * Just read/write DOM fragments (preserve data found in file).
- */
-static AddressDataSource *addrindex_parse_jpilot( XMLFile *file ) {
-	AddressDataSource *ds;
-
-	ds = addrindex_create_datasource( ADDR_IF_JPILOT );
-	ds->rawDataSource = addrindex_read_fragment( file );
-	return ds;
-}
-
-static int addrindex_write_jpilot( FILE *fp, AddressDataSource *ds, gint lvl ) {
-	AddressIfFragment *fragment = ds->rawDataSource;
-	if( fragment ) {
-		if (addrindex_write_fragment( fp, fragment, lvl ) < 0)
-			return -1;
-	}
-	return 0;
-}
-#endif
-
-#ifdef USE_LDAP
-/**
- * Parse LDAP criteria attribute data from XML file.
- * \param file Index file.
- * \param ctl  LDAP control object to populate.
- */
-static void addrindex_parse_ldap_attrlist( XMLFile *file, LdapControl *ctl ) {
-	guint prevLevel;
-	XMLTag *xtag;
-	XMLTag *xtagPrev;
-	gint rc;
-	GList *attr;
-	GList *list;
-	GList *node;
-
-	if( file == NULL ) {
-		return;
-	}
-
-	list = NULL;
-	prevLevel = file->level;
-	xtagPrev = xml_get_current_tag( file );
-	while( TRUE ) {
-		rc = xml_parse_next_tag( file );
-		if( rc != 0 ) {
-			/* Terminate prematurely */
-			g_list_free_full( list, g_free );
-			list = NULL;
-			return;
-		}
-		if( file->level < prevLevel ) {
-			/* We must be above level we start at */
-			break;
-		}
-
-		/* Get a tag (element) */
-		xtag = xml_get_current_tag( file );
-		if( strcmp( xtag->tag, ELTAG_LDAP_ATTR_SRCH ) == 0 ) {
-			/* LDAP criteria attribute */
-			attr = xml_get_current_tag_attr( file );
-			while( attr ) {
-				gchar *name = ((XMLAttr *)attr->data)->name;
-				gchar *value = ((XMLAttr *)attr->data)->value;
-				if( strcmp( name, ATTAG_LDAP_ATTR_NAME ) == 0 ) {
-					if( value && strlen( value ) > 0 ) {
-						list = g_list_append(
-							list, g_strdup( value ) );
-					}
-				}
-				attr = g_list_next( attr );
-			}
-		}
-		else {
-			if( xtag != xtagPrev ) {
-				/* Found a new tag */
-				break;
-			}
-		}
-	}
-
-	/* Build list of search attributes */
-	ldapctl_criteria_list_clear( ctl );
-	node = list;
-	while( node ) {
-		ldapctl_criteria_list_add( ctl, node->data );
-		g_free( node->data );
-		node->data = NULL;
-		node = g_list_next( node );
-	}
-	g_list_free( list );
-	list = NULL;
-
-}
-
-void ldapsvr_set_control( LdapServer *server, LdapControl *ctl );
-/**
- * Parse LDAP control data from XML file.
- * \param  file Index file.
- * \return Initialized data soruce object.
- */
-static AddressDataSource *addrindex_parse_ldap( XMLFile *file ) {
-	AddressDataSource *ds;
-	LdapServer *server;
-	LdapControl *ctl;
-	GList *attr;
-	gchar *serverName = NULL;
-	gchar *criteria = NULL;
-	gboolean bDynSearch;
-	gboolean bTLS, bSSL;
-	gint iMatch;
-	gchar *password = NULL;
-
-	/* g_print( "addrindex_parse_ldap\n" ); */
-	/* Set up some defaults */
-	bDynSearch = FALSE;
-	bTLS = FALSE;
-	bSSL = FALSE;
-	iMatch = LDAPCTL_MATCH_BEGINWITH;
-
-	ds = addrindex_create_datasource( ADDR_IF_LDAP );
-	ctl = ldapctl_create();
-	attr = xml_get_current_tag_attr( file );
-	while( attr ) {
-		gchar *name = ((XMLAttr *)attr->data)->name;
-		gchar *value = ((XMLAttr *)attr->data)->value;
-		gint ivalue = atoi( value );
-
-		if( strcmp( name, ATTAG_LDAP_NAME ) == 0 ) {
-			g_free( serverName );
-			serverName = g_strdup( value );
-		}
-		else if( strcmp( name, ATTAG_LDAP_HOST ) == 0 ) {
-			ldapctl_set_host( ctl, value );
-		}
-		else if( strcmp( name, ATTAG_LDAP_PORT ) == 0 ) {
-			ldapctl_set_port( ctl, ivalue );
-		}
-		else if( strcmp( name, ATTAG_LDAP_BASE_DN ) == 0 ) {
-			ldapctl_set_base_dn( ctl, value );
-		}
-		else if( strcmp( name, ATTAG_LDAP_BIND_DN ) == 0 ) {
-			ldapctl_set_bind_dn( ctl, value );
-		}
-		else if( strcmp( name, ATTAG_LDAP_BIND_PASS ) == 0 ) {
-			password = value;
-		}
-		else if( strcmp( name, ATTAG_LDAP_CRITERIA ) == 0 ) {
-			g_free( criteria );
-			criteria = g_strdup( value );
-			g_print("criteria %s\n", criteria);
-		}
-		else if( strcmp( name, ATTAG_LDAP_MAX_ENTRY ) == 0 ) {
-			ldapctl_set_max_entries( ctl, ivalue );
-		}
-		else if( strcmp( name, ATTAG_LDAP_TIMEOUT ) == 0 ) {
-			ldapctl_set_timeout( ctl, ivalue );
-		}
-		else if( strcmp( name, ATTAG_LDAP_MAX_AGE ) == 0 ) {
-			ldapctl_set_max_query_age( ctl, ivalue );
-		}
-		else if( strcmp( name, ATTAG_LDAP_DYN_SEARCH ) == 0 ) {
-			bDynSearch = FALSE;
-			if( strcmp( value, ATVAL_BOOLEAN_YES ) == 0 ) {
-				bDynSearch = TRUE;
-			}
-		}
-		else if( strcmp( name, ATTAG_LDAP_MATCH_OPT ) == 0 ) {
-			iMatch = LDAPCTL_MATCH_BEGINWITH;
-			if( strcmp( value, ATVAL_LDAP_MATCH_CONTAINS ) == 0 ) {
-				iMatch = LDAPCTL_MATCH_CONTAINS;
-			}
-		}
-		else if( strcmp( name, ATTAG_LDAP_ENABLE_TLS ) == 0 ) {
-			bTLS = FALSE;
-			if( strcmp( value, ATVAL_BOOLEAN_YES ) == 0 ) {
-				bTLS = TRUE;
-			}
-		}
-		else if( strcmp( name, ATTAG_LDAP_ENABLE_SSL ) == 0 ) {
-			bSSL = FALSE;
-			if( strcmp( value, ATVAL_BOOLEAN_YES ) == 0 ) {
-				bSSL = TRUE;
-			}
-		}
-		attr = g_list_next( attr );
-	}
-
-	if (password != NULL)
-		passwd_store_set(PWS_CORE, "LDAP", ctl->hostName, password, TRUE);
-
-	server = ldapsvr_create_noctl();
-	ldapsvr_set_name( server, serverName );
-	ldapsvr_set_search_flag( server, bDynSearch );
-	ldapctl_set_matching_option( ctl, iMatch );
-	ldapctl_set_tls( ctl, bTLS );
-	ldapctl_set_ssl( ctl, bSSL );
-	g_free( serverName );
-	ldapsvr_set_control( server, ctl );
-	ds->rawDataSource = server;
-
-	addrindex_parse_ldap_attrlist( file, ctl );
-	/*
-	 * If criteria have been specified and no attributes were listed, then
-	 * convert old style criteria into an attribute list. Any criteria will
-	 * be dropped when saving data.
-	 */
-	if( criteria ) {
-		if( ! ldapctl_get_criteria_list( ctl ) ) {
-			ldapctl_parse_ldap_search( ctl, criteria );
-		}
-		g_free( criteria );
-	}
-#ifdef DEBUG_LDAP
-	ldapsvr_print_data( server, stdout );
-#endif
-
-	return ds;
-}
-
-static int addrindex_write_ldap( FILE *fp, AddressDataSource *ds, gint lvl ) {
-	LdapServer *server = ds->rawDataSource;
-	LdapControl *ctl = NULL;
-	GList *node;
-	gchar value[256];
-
-	if( server ) {
-		ctl = server->control;
-	}
-	if( ctl == NULL ) return 0;
-
-	/* Output start element with attributes */
-	if (addrindex_write_elem_s( fp, lvl, TAG_DS_LDAP ) < 0)
-		return -1;
-	if (addrindex_write_attr( fp, ATTAG_LDAP_NAME, ldapsvr_get_name( server ) ) < 0)
-		return -1;
-	if (addrindex_write_attr( fp, ATTAG_LDAP_HOST, ctl->hostName ) < 0)
-		return -1;
-
-	sprintf( value, "%d", ctl->port );	
-	if (addrindex_write_attr( fp, ATTAG_LDAP_PORT, value ) < 0)
-		return -1;
-
-	if (addrindex_write_attr( fp, ATTAG_LDAP_BASE_DN, ctl->baseDN ) < 0)
-		return -1;
-	if (addrindex_write_attr( fp, ATTAG_LDAP_BIND_DN, ctl->bindDN ) < 0)
-		return -1;
-
-	sprintf( value, "%d", ctl->maxEntries );
-	if (addrindex_write_attr( fp, ATTAG_LDAP_MAX_ENTRY, value ) < 0)
-		return -1;
-	sprintf( value, "%d", ctl->timeOut );
-	if (addrindex_write_attr( fp, ATTAG_LDAP_TIMEOUT, value ) < 0)
-		return -1;
-	sprintf( value, "%d", ctl->maxQueryAge );
-	if (addrindex_write_attr( fp, ATTAG_LDAP_MAX_AGE, value ) < 0)
-		return -1;
-
-	if (addrindex_write_attr( fp, ATTAG_LDAP_DYN_SEARCH,
-			server->searchFlag ?
-			ATVAL_BOOLEAN_YES : ATVAL_BOOLEAN_NO ) < 0)
-		return -1;
-
-	if (addrindex_write_attr( fp, ATTAG_LDAP_MATCH_OPT,
-		( ctl->matchingOption == LDAPCTL_MATCH_CONTAINS ) ?
-		ATVAL_LDAP_MATCH_CONTAINS : ATVAL_LDAP_MATCH_BEGIN ) < 0)
-		return -1;
-
-	if (addrindex_write_attr( fp, ATTAG_LDAP_ENABLE_TLS,
-			ctl->enableTLS ?
-			ATVAL_BOOLEAN_YES : ATVAL_BOOLEAN_NO ) < 0)
-		return -1;
-	if (addrindex_write_attr( fp, ATTAG_LDAP_ENABLE_SSL,
-			ctl->enableSSL ?
-			ATVAL_BOOLEAN_YES : ATVAL_BOOLEAN_NO ) < 0)
-		return -1;
-
-	if (claws_fputs(" >\n", fp) == EOF)
-		return -1;
-
-	/* Output attributes */
-	node = ldapctl_get_criteria_list( ctl );
-	while( node ) {
-		if (addrindex_write_elem_s( fp, 1+lvl, ELTAG_LDAP_ATTR_SRCH ) < 0)
-			return -1;
-		if (addrindex_write_attr( fp, ATTAG_LDAP_ATTR_NAME, node->data ) < 0)
-			return -1;
-		if (claws_fputs(" />\n", fp) == EOF)
-			return -1;
-		node = g_list_next( node );
-	}
-
-	/* End of element */	
-	if (addrindex_write_elem_e( fp, lvl, TAG_DS_LDAP ) < 0)
-		return -1;
-	
-	return 0;
-}
-
-#else
-/*
- * Just read/write DOM fragments (preserve data found in file).
- */
-static AddressDataSource *addrindex_parse_ldap( XMLFile *file ) {
-	AddressDataSource *ds;
-
-	ds = addrindex_create_datasource( ADDR_IF_LDAP );
-	ds->rawDataSource = addrindex_read_fragment( file );
-	return ds;
-}
-
-static int addrindex_write_ldap( FILE *fp, AddressDataSource *ds, gint lvl ) {
-	AddressIfFragment *fragment = ds->rawDataSource;
-	if( fragment ) {
-		if (addrindex_write_fragment( fp, fragment, lvl ) < 0)
-			return -1;
-	}
-	return 0;
-}
-#endif
-
 /* **********************************************************************
 * Address index I/O functions.
 * ***********************************************************************
@@ -1612,12 +997,6 @@ static void addrindex_read_index( AddressIndex *addrIndex, XMLFile *file ) {
 				}
 				else if( addrIndex->lastType == ADDR_IF_VCARD ) {
 					ds = addrindex_parse_vcard( file );
-				}
-				else if( addrIndex->lastType == ADDR_IF_JPILOT ) {
-					ds = addrindex_parse_jpilot( file );
-				}
-				else if( addrIndex->lastType == ADDR_IF_LDAP ) {
-					ds = addrindex_parse_ldap( file );
 				}
 				if( ds ) {
 					ds->interface = dsIFace;
@@ -1726,14 +1105,6 @@ static int addrindex_write_index( AddressIndex *addrIndex, FILE *fp ) {
 						if (addrindex_write_vcard( fp, ds, lvlItem ) < 0)
 							return -1;
 					}
-					if( iface->type == ADDR_IF_JPILOT ) {
-						if (addrindex_write_jpilot( fp, ds, lvlItem ) < 0)
-							return -1;
-					}
-					if( iface->type == ADDR_IF_LDAP ) {
-						if (addrindex_write_ldap( fp, ds, lvlItem ) < 0)
-							return -1;
-					}
 				}
 				nodeDS = g_list_next( nodeDS );
 			}
@@ -1811,45 +1182,8 @@ fail:
 * return: Status code, from addrIndex->retVal.
 */
 gint addrindex_save_data( AddressIndex *addrIndex ) {
-#ifdef USE_LDAP
-	GList *nodeIf;
-	GList *nodeDS;
-#endif
-	
 	cm_return_val_if_fail( addrIndex != NULL, -1 );
 
-#ifdef USE_LDAP
-	nodeIf = addrIndex->interfaceList;
-	/* save LDAP interfaces */
-	while ( nodeIf ) {
-		AddressInterface *iface = nodeIf->data;
-		if( iface->type == ADDR_IF_LDAP ) {
-			nodeDS = iface->listSource;
-			while( nodeDS ) {
-				AddressDataSource *ds = nodeDS->data;
-				LdapServer *abf = ds->rawDataSource;
-				if( ldapsvr_get_read_flag( abf ) ) {
-					if( ldapsvr_get_modified( abf ) ) {
-						ldapsvr_update_book( abf, NULL );
-						if( abf->retVal != LDAPRC_SUCCESS ) {
-							alertpanel( _("Address(es) update"),
-								_("Update failed. Changes not written to Directory."),
-								"window-close", _("_Close"), NULL, NULL,
-								NULL, NULL, ALERTFOCUS_FIRST );
-						}
-						else {
-							abf->retVal = MGU_SUCCESS;
-							ldapsvr_set_modified( abf, FALSE );
-						}
-					}
-				}
-				nodeDS = g_list_next( nodeDS );
-			}
-			break;
-		}
-		nodeIf = g_list_next( nodeIf );
-	}
-#endif
 	addrIndex->retVal = MGU_NO_FILE;
 	if( addrIndex->fileName == NULL || *addrIndex->fileName == '\0' ) return addrIndex->retVal;
 	if( addrIndex->filePath == NULL || *addrIndex->filePath == '\0' ) return addrIndex->retVal;
@@ -2560,20 +1894,6 @@ gint addrindex_setup_search(
 	return queryID;
 }
 
-#ifdef USE_LDAP
-
-/*
- * Function prototypes (not in header file or circular reference errors are
- * encountered!)
- */
-LdapQuery *ldapsvr_new_dynamic_search( 
-		LdapServer *server, QueryRequest *req );
-LdapQuery *ldapsvr_new_explicit_search(
-		LdapServer *server, QueryRequest *req, ItemFolder *folder );
-void ldapsvr_execute_query( LdapServer *server, LdapQuery *qry );
-
-#endif
-
 /**
  * Execute the previously registered dynamic search.
  *
@@ -2606,26 +1926,6 @@ static gboolean addrindex_start_dynamic( QueryRequest *req ) {
 		while( nodeDS ) {
 			ds = nodeDS->data;
 			nodeDS = g_list_next( nodeDS );
-#ifdef USE_LDAP
-			if( type == ADDR_IF_LDAP ) {
-				LdapServer *server;
-				LdapQuery *qry;
-
-				server = ds->rawDataSource;
-				if( ! server->searchFlag ) {
-					continue;
-				}
-				if( ldapsvr_reuse_previous( server, req ) ) {
-					continue;
-				}
-
-				/* Start a new dynamic search */
-				qry = ldapsvr_new_dynamic_search( server, req );
-				if( qry ) {
-					ldapsvr_execute_query( server, qry );
-				}
-			}
-#endif
 		}
 	}
 	return TRUE;
@@ -2652,12 +1952,6 @@ void addrindex_stop_search( const gint queryID ){
 	node = req->queryList;
 	while( node ) {
 		aqo = node->data;
-#ifdef USE_LDAP
-		if( aqo->queryType == ADDRQUERY_LDAP ) {
-			LdapQuery *qry = ( LdapQuery * ) aqo;
-			ldapqry_set_stop_flag( qry, TRUE );
-		}
-#endif
 		node->data = NULL;
 		node = g_list_next( node );
 	}
@@ -2694,7 +1988,7 @@ gint addrindex_setup_explicit_search(
 		mySearch = g_strdup("*@");
 	else
 		mySearch = g_strdup(searchTerm);
-	
+
 	req = qrymgr_add_request( mySearch, callBackEnd, callBackEntry );
 
 	g_free(mySearch);
@@ -2702,52 +1996,11 @@ gint addrindex_setup_explicit_search(
 	qryreq_set_search_type( req, ADDRSEARCH_EXPLICIT );
 	queryID = req->queryID;
 
-	if( ds->type == ADDR_IF_LDAP ) {
-#ifdef USE_LDAP
-		LdapServer *server;
-
-		server = ds->rawDataSource;
-		ldapsvr_new_explicit_search( server, req, folder );
-#endif
-	}
-	else {
-		qrymgr_delete_request( queryID );
-		queryID = 0;
-	}
+	qrymgr_delete_request( queryID );
+	queryID = 0;
 	g_free( name );
 
 	return queryID;
-}
-
-/**
- * Execute the previously registered explicit search.
- *
- * \param  req Address query request object to execute.
- * \return <i>TRUE</i> if search started successfully, or <i>FALSE</i> if
- *         failed.
- */
-static gboolean addrindex_start_explicit( QueryRequest *req ) {
-	gboolean retVal;
-	AddrQueryObject *aqo;
-
-	retVal = FALSE;
-
-	/* Note: there should only be one query in the list. */
-	aqo = req->queryList->data;
-#ifdef USE_LDAP
-	if( aqo->queryType == ADDRQUERY_LDAP ) {
-		LdapServer *server;
-		LdapQuery *qry;
-
-		qry = ( LdapQuery * ) aqo;
-		server = qry->server;
-
-		/* Start the search */
-		retVal = TRUE;
-		ldapsvr_execute_query( server, qry );
-	}
-#endif
-	return retVal;
 }
 
 /**
@@ -2774,7 +2027,7 @@ gboolean addrindex_start_search( const gint queryID ) {
 		retVal = addrindex_start_dynamic( req );
 	}
 	else if( searchType == ADDRSEARCH_EXPLICIT ) {
-		retVal = addrindex_start_explicit( req );
+		retVal = FALSE;
 	}
 
 	return retVal;
@@ -2800,31 +2053,6 @@ void addrindex_remove_results( AddressDataSource *ds, ItemFolder *folder ) {
 	/* Hide folder to prevent re-display */
 	addritem_folder_set_hidden( folder, TRUE );
 
-	if( ds->type == ADDR_IF_LDAP ) {
-#ifdef USE_LDAP
-		LdapQuery *qry;
-		gboolean  delFlag;
-
-		qry = ( LdapQuery * ) folder->folderData;
-		queryID = ADDRQUERY_ID(qry);
-		/* g_print( "calling ldapquery_remove_results...queryID=%d\n", queryID ); */
-		delFlag = ldapquery_remove_results( qry );
-		if (delFlag) {
-			ldapqry_free( qry );
-		}
-		/* g_print( "calling ldapquery_remove_results...done\n" ); */
-		/*
-		if( delFlag ) {
-			g_print( "delFlag IS-TRUE\n" );
-		}
-		else {
-			g_print( "delFlag IS-FALSE\n" );
-		}
-		*/
-#endif
-	}
-	/* g_print( "addrindex_remove_results/end\n" ); */
-
 	/* Delete query request */
 	if( queryID > 0 ) {
 		qrymgr_delete_request( queryID );
@@ -2837,7 +2065,7 @@ void addrindex_remove_results( AddressDataSource *ds, ItemFolder *folder ) {
 */
 
 static void addrindex_load_completion_load_persons(
-		gint (*callBackFunc) ( const gchar *, const gchar *, 
+		gint (*callBackFunc) ( const gchar *, const gchar *,
 				       const gchar *, const gchar *, GList * ),
 		AddressDataSource *ds)
 {
@@ -2889,7 +2117,7 @@ static void addrindex_load_completion_load_persons(
 		while( nodeM ) {
 			ItemEMail *email = nodeM->data;
 
-			callBackFunc( sName, email->address, person->nickName, 
+			callBackFunc( sName, email->address, person->nickName,
 				      ADDRITEM_NAME(email), NULL );
 
 			nodeM = g_list_next( nodeM );
@@ -2899,7 +2127,7 @@ static void addrindex_load_completion_load_persons(
 
 	/* Free up the list */
 	g_list_free( listP );
-}		
+}
 
 /**
  * This function is used by the address completion function to load
@@ -2913,7 +2141,7 @@ static void addrindex_load_completion_load_persons(
  */
 
 gboolean addrindex_load_completion(
-		gint (*callBackFunc) ( const gchar *, const gchar *, 
+		gint (*callBackFunc) ( const gchar *, const gchar *,
 				       const gchar *, const gchar *, GList * ),
 		gchar *folderpath )
 {
@@ -2927,7 +2155,7 @@ gboolean addrindex_load_completion(
 		   subpath against the book/folder structure in order and restrict loading of
 		   addresses to that subpart (if matches). book/folder path must exist and
 		   folderpath must not be empty or NULL */
-		
+
 		if( ! addressbook_peek_folder_exists( folderpath, &book, &folder ) ) {
 			g_warning("addrindex_load_completion: folder path '%s' doesn't exist", folderpath);
 			return FALSE;
@@ -2958,7 +2186,7 @@ gboolean addrindex_load_completion(
 				while( nodeM ) {
 					ItemEMail *email = nodeM->data;
 
-					callBackFunc( sName, email->address, person->nickName, 
+					callBackFunc( sName, email->address, person->nickName,
 							  ADDRITEM_NAME(email), NULL );
 
 					nodeM = g_list_next( nodeM );
@@ -3070,7 +2298,7 @@ gboolean addrindex_load_person_attribute(
 					/* Process each User Attribute */
 				        while( nodeA ) {
 						UserAttribute *attrib = nodeA->data;
-						if( attrib->name && 
+						if( attrib->name &&
 						    !strcmp( attrib->name,attr ) ) {
 							callBackFunc(person, cur_bname);
 						}
@@ -3150,7 +2378,7 @@ gchar *addrindex_get_picture_file(const gchar *emailaddr)
 	gboolean found = FALSE;
 	gchar *filename = NULL;
 	gchar *raw_addr = NULL;
-	
+
 	if (!emailaddr)
 		return NULL;
 
@@ -3190,8 +2418,8 @@ gchar *addrindex_get_picture_file(const gchar *emailaddr)
 					ItemEMail *email = nodeM->data;
 					if (email->address && !strcasecmp(raw_addr, email->address)) {
 						found = TRUE;
-						filename = g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S, 
-							ADDRBOOK_DIR, G_DIR_SEPARATOR_S, 
+						filename = g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S,
+							ADDRBOOK_DIR, G_DIR_SEPARATOR_S,
 							person->picture, ".png", NULL );
 						break;
 					}
@@ -3208,52 +2436,6 @@ gchar *addrindex_get_picture_file(const gchar *emailaddr)
 
 	return filename;
 }
-
-#ifdef USE_LDAP
-GSList *addrindex_get_password_protected_ldap_servers()
-{
-	AddressInterface *iface;
-	AddressDataSource *ds;
-	GList *nodeIf;
-	GList *nodeDS;
-	GSList *list = NULL;
-	LdapServer *server;
-	LdapControl *ctl;
-
-	nodeIf = _addressIndex_->searchOrder;
-	while (nodeIf) {
-		iface = nodeIf->data;
-		nodeIf = g_list_next(nodeIf);
-
-		if (!iface->useInterface)
-			continue;
-		if (!iface->externalQuery)
-			continue;
-		if (iface->type != ADDR_IF_LDAP)
-			continue;
-
-		nodeDS = iface->listSource;
-		while (nodeDS) {
-			ds = nodeDS->data;
-			nodeDS = g_list_next(nodeDS);
-			server = ds->rawDataSource;
-			if (!server->searchFlag)
-				continue;
-
-			ctl = server->control;
-
-			if (!ctl)
-				continue;
-
-			if (ctl->bindDN != NULL && strlen(ctl->bindDN)) {
-				list = g_slist_append(list, server);
-			}
-		}
-	}
-
-	return list;
-}
-#endif /* USE_LDAP */
 
 /*
  * End of Source.

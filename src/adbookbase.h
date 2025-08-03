@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -32,8 +32,6 @@ typedef enum {
 	ADBOOKTYPE_NONE,
 	ADBOOKTYPE_BOOK,
 	ADBOOKTYPE_VCARD,
-	ADBOOKTYPE_JPILOT,
-	ADBOOKTYPE_LDAP
 } AddressBookType;
 
 /*

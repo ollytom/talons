@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -77,39 +77,5 @@ struct _PersonEdit_dlg {
 	gboolean read_only;
 	gboolean ldap;
 };
-
-#ifdef USE_LDAP
-
-static const char *ATTRIBUTE[] = {
-	"telephoneNumber",
-	/*"description (Remarks)",*/
-	"title",
-	"telexNumber",
-	"facsimileTelephoneNumber",
-	"street",
-	"postOfficeBox",
-	"postalCode",
-	"postalAddress",
-	"st", /* state or province */
-	"l", /* locality Name */
-	"departmentNumber",
-	"homePhone",
-	"homePostalAddress",
-	"initials",
-	"labeledURI",
-	"mobile",
-	"pager",
-	"roomNumber",
-	"jpegPhoto",
-	NULL
-};
-
-static const int ATTRIBUTE_SIZE = (sizeof(ATTRIBUTE) / sizeof(*ATTRIBUTE)) - 1;
-
-/* Function proto types */
-void addressbook_edit_person_page_attrib_ldap(PersonEditDlg *personEditDlg, gint pageNum, gchar *pageLbl);
-int get_attribute_index(const gchar *string_literal);
-
-#endif	/* USE_LDAP */
 
 #endif /* __EDITADDRESS_OTHER_ATTRIBUTES_LDAP_H__ */

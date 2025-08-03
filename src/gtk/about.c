@@ -82,7 +82,7 @@ void about_show(void)
 		about_update_stats();
 		gtk_window_present(GTK_WINDOW(window));
 	}
-	
+
 }
 
 #define ADD_TEXT(text) gtk_text_buffer_insert(buffer, &iter, text, -1)
@@ -429,7 +429,7 @@ static GtkWidget *about_create_child_page_features(void)
 #endif
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" compface "), -1,
 						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter, 
+	gtk_text_buffer_insert(buffer, &iter,
 		(gchar *)C_("compface", "adds support for the X-Face header\n"), -1);
 
 #if USE_ENCHANT
@@ -439,7 +439,7 @@ static GtkWidget *about_create_child_page_features(void)
 #endif
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" Enchant "), -1,
 						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter, 
+	gtk_text_buffer_insert(buffer, &iter,
 		(gchar *)C_("Enchant", "adds support for spell checking\n"), -1);
 
 #if USE_GNUTLS
@@ -449,7 +449,7 @@ static GtkWidget *about_create_child_page_features(void)
 #endif
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" GnuTLS "), -1,
 						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter, 
+	gtk_text_buffer_insert(buffer, &iter,
 		(gchar *)C_("GnuTLS", "adds support for encrypted connections to servers\n"), -1);
 
 #if HAVE_ICONV
@@ -469,28 +469,8 @@ static GtkWidget *about_create_child_page_features(void)
 #endif
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" IPv6 "), -1,
 						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter, 
+	gtk_text_buffer_insert(buffer, &iter,
 		(gchar *)C_("IPv6", "adds support for IPv6 addresses\n"), -1);
-
-#if USE_JPILOT
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
-#else
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, inactive_pixbuf);
-#endif
-	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" JPilot "), -1,
-						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter, 
-		(gchar *)C_("JPilot", "adds support for PalmOS addressbooks\n"), -1);
-
-#if USE_LDAP
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
-#else
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, inactive_pixbuf);
-#endif
-	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" LDAP "), -1,
-						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter, 
-		(gchar *)C_("LDAP", "adds support for LDAP shared addressbooks\n"), -1);
 
 #if HAVE_LIBETPAN
 	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
@@ -499,7 +479,7 @@ static GtkWidget *about_create_child_page_features(void)
 #endif
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" libetpan "), -1,
 						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter, 
+	gtk_text_buffer_insert(buffer, &iter,
 		(gchar *)C_("libetpan", "adds support for IMAP and NNTP servers\n"), -1);
 
 #if HAVE_SVG
@@ -519,7 +499,7 @@ static GtkWidget *about_create_child_page_features(void)
 #endif
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" libSM "), -1,
 						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter, 
+	gtk_text_buffer_insert(buffer, &iter,
 		(gchar *)C_("libSM", "adds support for session handling\n"), -1);
 
 #if HAVE_NETWORKMANAGER_SUPPORT
@@ -600,7 +580,7 @@ static GtkWidget *about_create_child_page_license(void)
 	gtk_text_buffer_insert(buffer, &iter, g_strconcat(
 		_("You should have received a copy of the GNU General Public License "
 		  "along with this program. If not, see "), "<", NULL), -1);
-	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, 
+	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter,
 		"http://www.gnu.org/licenses/", -1,
 		"link", NULL);
 	gtk_text_buffer_insert(buffer, &iter, ">. \n\n", -1);
@@ -791,7 +771,7 @@ static void about_update_stats(void)
 					 session_stats.forwarded));
 		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter, buf, -1,
 				"indented-list-item", "bold", NULL);
-	} 
+	}
 }
 
 static void notebook_append_page(GtkWidget *notebook, GtkWidget *scrolledwin, const gchar *label_text)
@@ -838,7 +818,7 @@ static void about_create(void)
 			 G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	g_signal_connect(G_OBJECT(window), "key_press_event",
 			 G_CALLBACK(key_pressed), NULL);
-	
+
 	if (!geometry.min_width) {
 		geometry.min_width = 450;
 		geometry.min_height = 500;
@@ -847,8 +827,8 @@ static void about_create(void)
 	gtk_window_set_geometry_hints(GTK_WINDOW(window), NULL, &geometry,
 				      GDK_HINT_MIN_SIZE);
 	gtk_window_set_default_size(GTK_WINDOW(window), prefs_common.aboutwin_width,
-				    prefs_common.aboutwin_height);	
-	
+				    prefs_common.aboutwin_height);
+
 	gtk_widget_realize(window);
 
 	grid1 = gtk_grid_new();
@@ -1027,7 +1007,7 @@ static void about_textview_uri_update(GtkWidget *textview, gint x, gint y)
 	GtkTextIter start_iter, end_iter;
 	gchar *uri = NULL;
 	gboolean same;
-	
+
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
 
 	if (x != -1 && y != -1) {
@@ -1035,8 +1015,8 @@ static void about_textview_uri_update(GtkWidget *textview, gint x, gint y)
 		GtkTextIter iter;
 		GSList *tags;
 		GSList *cur;
-	    
-		gtk_text_view_window_to_buffer_coords(GTK_TEXT_VIEW(textview), 
+
+		gtk_text_view_window_to_buffer_coords(GTK_TEXT_VIEW(textview),
 				GTK_TEXT_WINDOW_WIDGET,
 				x, y, &bx, &by);
 		gtk_text_view_get_iter_at_location(GTK_TEXT_VIEW(textview),
@@ -1076,7 +1056,7 @@ static void about_textview_uri_update(GtkWidget *textview, gint x, gint y)
 					&uri_hover_start_iter,
 					&uri_hover_end_iter);
 		}
-		    
+
 		uri_hover = uri;
 		if (uri) {
 			uri_hover_start_iter = start_iter;
@@ -1087,7 +1067,7 @@ static void about_textview_uri_update(GtkWidget *textview, gint x, gint y)
 					&start_iter,
 					&end_iter);
 		}
-		
+
 		window = gtk_text_view_get_window(GTK_TEXT_VIEW(textview),
 						GTK_TEXT_WINDOW_TEXT);
 		if (!hand_cursor)

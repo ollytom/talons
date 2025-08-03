@@ -292,10 +292,6 @@ AC_ARG_ENABLE(dbus,
 		[  --disable-dbus                  Do not build DBUS support],
 		[enable_dbus=$enableval], [enable_dbus=yes])
 
-AC_ARG_ENABLE(ldap,
-		[  --disable-ldap                  Do not build LDAP support],
-		[enable_ldap=$enableval], [enable_ldap=yes])
-
 AC_ARG_ENABLE(jpilot,
 		[  --disable-jpilot                Do not build JPilot support],
 		[enable_jpilot=$enableval], [enable_jpilot=yes])
@@ -327,10 +323,6 @@ AC_ARG_ENABLE(tests,
 AC_ARG_ENABLE(more-addressbook-debug,
         [  --enable-more-addressbook-debug Build with additional addressbook debug calls],
         [enable_more_addressbook_debug=$enableval], [enable_more_addressbook_debug=no])
-
-AC_ARG_ENABLE(more-ldap-debug,
-        [  --enable-more-ldap-debug        Build with additional LDAP debug calls],
-        [enable_more_ldap_debug=$enableval], [enable_more_ldap_debug=no])
 
 AC_ARG_ENABLE(more-archive-debug,
         [  --enable-more-archive-debug     Build with additional debug calls in archive plugin],
@@ -609,13 +601,6 @@ dnl enchant is used for spell checking
 AC_MSG_CHECKING([whether to use enchant])
 AC_MSG_RESULT($enable_enchant)
 if test $enable_enchant = yes; then
-	PKG_CHECK_MODULES(ENCHANT, enchant >= 1.4.0,
-	[
-		AC_DEFINE(USE_ENCHANT, 1, enchant)
-		echo "Building with enchant"
-		enable_enchant=yes
-	],
-	[
 		PKG_CHECK_MODULES(ENCHANT, enchant-2 >= 2.0.0,
 		[
 			AC_DEFINE(USE_ENCHANT, 1, enchant-2)
@@ -626,7 +611,6 @@ if test $enable_enchant = yes; then
 			echo "Building without enchant-notification"
 			enable_enchant=no
 		])
-	])
 	AC_SUBST(ENCHANT_CFLAGS)
 	AC_SUBST(ENCHANT_LIBS)
 fi
@@ -789,117 +773,6 @@ else
 fi
 
 dnl #######################################################################
-dnl # Check for old address book support
-dnl #######################################################################
-if test x"$enable_alternate_addressbook" = xno; then
-	dnl for LDAP support in addressbook
-	dnl no check for libraries; dynamically loaded
-	AC_MSG_CHECKING([whether to use LDAP])
-	if test x"$enable_ldap" = xno; then
-		AC_MSG_RESULT(no)
-	elif test x"$enable_ldap" = xyes -a x"$enable_pthread" = xno; then
-		AC_MSG_RESULT(no - LDAP support needs pthread support)
-
-		enable_ldap=no
-	elif test x"$platform_win32" = xyes; then
-		AC_MSG_RESULT(yes)
-		AC_DEFINE(USE_LDAP, 1, Define if you want LDAP support in addressbook.)
-		LDAP_LIBS="-lwldap32"
-		AC_SUBST(LDAP_LIBS)
-	else
-		AC_MSG_RESULT(yes)
-
-		dnl check for available libraries, and pull them in
-		AC_CHECK_LIB(resolv, res_query, LDAP_LIBS="$LDAP_LIBS -lresolv")
-		AC_CHECK_LIB(socket, bind, LDAP_LIBS="$LDAP_LIBS -lsocket")
-		AC_CHECK_LIB(nsl, gethostbyaddr, LDAP_LIBS="$LDAP_LIBS -lnsl")
-		AC_CHECK_LIB(lber, ber_get_tag, LDAP_LIBS="$LDAP_LIBS -llber",,
-				 $LDAP_LIBS)
-
-		AC_CHECK_HEADERS(ldap.h lber.h,
-				 [ enable_ldap=yes ],
-				 [ enable_ldap=no ])
-
-		if test "$enable_ldap" = yes; then
-			AC_CHECK_LIB(ldap, ldap_open,
-					 [ enable_ldap=yes ],
-					 [ enable_ldap=no ],
-					 $LDAP_LIBS)
-
-			AC_CHECK_LIB(ldap, ldap_start_tls_s,
-			 		     [ ac_cv_have_tls=yes ],
-			 		     [ ac_cv_have_tls=no ])
-
-		fi
-
-		AC_MSG_CHECKING([whether ldap library is available])
-		AC_MSG_RESULT($enable_ldap)
-
-		AC_MSG_CHECKING([whether TLS library is available])
-		AC_MSG_RESULT($ac_cv_have_tls)
-
-		if test "$enable_ldap" = yes; then
-			AC_DEFINE(USE_LDAP, 1, Define if you want LDAP support in addressbook.)
-			LDAP_LIBS="$LDAP_LIBS -lldap"
-			AC_SUBST(LDAP_LIBS)
-			if test "$ac_cv_have_tls" = yes; then
-				AC_DEFINE(USE_LDAP_TLS, 1, Define if you want LDAP TLS support in addressbook.)
-			fi
-			dnl As of OpenLDAP API version 3000 a number of functions has
-			dnl been deprecated. As Claws-mail compiles and runs on many
-			dnl platforms and many versions of OpenLDAP we need to be able
-			dnl to switch between the old and new API because new API has
-			dnl added new functions replacing old ones and at the same time
-			dnl old functions has been changed.
-			dnl If cross-compiling defaults to enable deprecated features
-			dnl for maximum portability
-			AC_MSG_CHECKING([The API version of OpenLDAP])
-			AC_RUN_IFELSE(
-				[AC_LANG_PROGRAM(
-				 [#include <ldap.h>],
-				 [if (LDAP_API_VERSION >= 3000)
-						return 1
-				])],
-				[AC_MSG_RESULT([version < 3000])
-				 AC_DEFINE(OPEN_LDAP_API_AT_LEAST_3000, 0, Define if OpenLDAP API is at least version 3000.)],
-				[AC_MSG_RESULT([version >= 3000])
-				 AC_DEFINE(OPEN_LDAP_API_AT_LEAST_3000, 1, Define if OpenLDAP API is at least version 3000.)],
-				[AC_MSG_RESULT([Enabling deprecated features in OpenLDAP])
-				 AC_DEFINE(OPEN_LDAP_API_AT_LEAST_3000, 0, Define if OpenLDAP API is at least version 3000.)
-				 AC_DEFINE(LDAP_DEPRECATED, 1, Define to activate deprecated features in OpenLDAP)]
-			)
-		fi
-	fi
-
-	dnl for JPilot support in addressbook
-	dnl no check for libraries; these are dynamically loaded
-	AC_MSG_CHECKING([whether to use JPilot])
-	if test "$enable_jpilot" = yes; then
-		AC_MSG_RESULT(yes)
-		AC_CHECK_HEADERS(pi-args.h pi-appinfo.h pi-address.h pi-version.h,
-				 [ AC_DEFINE(USE_JPILOT, 1, Define if you want JPilot support in addressbook.) ],
-				 [ enable_jpilot=no ])
-		if test "$enable_jpilot" = no; then
-			AC_CHECK_HEADERS(libpisock/pi-args.h libpisock/pi-appinfo.h libpisock/pi-address.h libpisock/pi-version.h,
-					 [ enable_jpilot=yes
-					   AC_DEFINE(USE_JPILOT, 1, Define if you want JPilot support in addressbook.) ])
-		fi
-
-		AC_CHECK_LIB(pisock, unpack_Address, [JPILOT_LIBS="-lpisock"], [JPILOT_LIBS="" enable_jpilot="no"])
-		if test x"$enable_jpilot" = xyes; then
-			AC_DEFINE(USE_JPILOT, 1, Define if you want JPilot support in addressbook.)
-		else
-			AC_MSG_NOTICE([JPilot support not available])
-		fi
-		AC_SUBST(JPILOT_LIBS)
-	else
-		AC_MSG_RESULT(no)
-	fi
-fi
-
-AM_CONDITIONAL(BUILD_ALTADDRBOOK, test x"$enable_alternate_addressbook" = x"yes")
-
-dnl #######################################################################
 dnl # Check for NetworkManager support
 dnl #######################################################################
 if test x"$enable_dbus" = xyes; then
@@ -1042,15 +915,6 @@ if test x$enable_more_addressbook_debug = xyes; then
 	more_debug_output_modules="$more_debug_output_modules AddressBook"
 	AC_MSG_RESULT(yes)
 	AC_DEFINE(DEBUG_ADDRBOOK, 1, [Define if you want additional addressbook debug calls])
-else
-	AC_MSG_RESULT(no)
-fi
-
-AC_MSG_CHECKING([whether to build LDAP with more debug calls])
-if test x$enable_more_ldap_debug = xyes; then
-	more_debug_output_modules="$more_debug_output_modules LDAP"
-	AC_MSG_RESULT(yes)
-	AC_DEFINE(DEBUG_LDAP, 1, [Define if you want additional LDAP debug calls])
 else
 	AC_MSG_RESULT(no)
 fi
@@ -1356,7 +1220,7 @@ if test x"$HAVE_PERL" = xyes; then
 	fi
 
 	if test x"$HAVE_PERL" = xyes; then
-		AC_CHECK_LIB(perl,perl_alloc,[AC_DEFINE(HAVE_LIBPERL, 1, Check for libperl.)], 
+		AC_CHECK_LIB(perl,perl_alloc,[AC_DEFINE(HAVE_LIBPERL, 1, Check for libperl.)],
 			 		     [ HAVE_LIBPERL=no ])
 	fi
 
@@ -2242,10 +2106,6 @@ echo "$PACKAGE $VERSION"
 echo ""
 if test x"$enable_alternate_addressbook" = xyes; then
 	echo "Using Address Book   : Alternate experimental interface"
-else
-	echo "Using Address Book   : Original stable interface"
-	echo "JPilot               : $enable_jpilot"
-	echo "LDAP                 : $enable_ldap"
 fi
 echo "gnuTLS               : $enable_gnutls"
 echo "OAuth2               : $enable_oauth2"
