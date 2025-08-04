@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -53,8 +53,3 @@ void mgu_str_ltc2space		( gchar *str, gchar chlead, gchar chtail );
 gchar *mgu_slist_longest_entry	( GSList *list );
 
 #endif /* __MGUTILS_H__ */
-
-/*
-* End of Source.
-*/
-

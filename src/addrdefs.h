@@ -37,7 +37,3 @@ typedef enum {
 } AddrSearchType;
 
 #endif /* __ADDRDEFS_H__ */
-
-/*
-* End of Source.
-*/

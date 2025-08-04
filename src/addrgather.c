@@ -146,7 +146,7 @@ static void addrgather_size_allocate(
 	GtkWidget *widget, GtkAllocation *allocation )
 {
 	cm_return_if_fail( allocation != NULL );
-	
+
 	gtk_window_get_size(GTK_WINDOW(widget),
 		&prefs_common.addrgather_width, &prefs_common.addrgather_height);
 }
@@ -520,13 +520,13 @@ static void addrgather_dlg_create(void)
 	GtkWidget *hbbox;
 	GtkWidget *hsbox;
 	static GdkGeometry geometry;
-	
+
 	window = gtkut_window_new(GTK_WINDOW_TOPLEVEL, "addrgather");
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
-	
+
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(addrgather_dlg_delete_event), NULL);
 	g_signal_connect(G_OBJECT(window), "key_press_event",
@@ -613,7 +613,7 @@ void addrgather_dlg_execute(FolderItem *folderItem, gboolean sourceInd, GList *m
 	/* Create dialog */
 	if (!addrgather_dlg.window)
 		addrgather_dlg_create();
-	
+
 	addrgather_dlg.done = FALSE;
 
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(addrgather_dlg.notebook), PAGE_FIELDS);
@@ -670,8 +670,3 @@ void addrgather_dlg_execute(FolderItem *folderItem, gboolean sourceInd, GList *m
 	return _harv_addressBook_;
 #endif
 }
-/*
-* End of Source.
-*/
-
-

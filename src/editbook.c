@@ -320,7 +320,3 @@ AdapterDSource *addressbook_edit_book( AddressIndex *addrIndex, AdapterDSource *
 
 	return ads;
 }
-
-/*
-* End of Source.
-*/

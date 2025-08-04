@@ -263,7 +263,7 @@ void addritem_person_set_picture( ItemPerson *person, const gchar *value ) {
 	if (!value || g_utf8_validate(value, -1, NULL))
 		person->picture = mgu_replace_string( person->picture, value );
 	else {
-		gchar *out = conv_codeset_strdup(value, 
+		gchar *out = conv_codeset_strdup(value,
 				conv_get_locale_charset_str_no_utf8(),
 				CS_INTERNAL);
 		if (out)
@@ -319,7 +319,7 @@ void addritem_person_set_first_name( ItemPerson *person, const gchar *value ) {
 	if (!value || g_utf8_validate(value, -1, NULL))
 		person->firstName = mgu_replace_string( person->firstName, value );
 	else {
-		gchar *out = conv_codeset_strdup(value, 
+		gchar *out = conv_codeset_strdup(value,
 				conv_get_locale_charset_str_no_utf8(),
 				CS_INTERNAL);
 		if (out)
@@ -337,7 +337,7 @@ void addritem_person_set_last_name( ItemPerson *person, const gchar *value ) {
 	if (!value || g_utf8_validate(value, -1, NULL))
 		person->lastName = mgu_replace_string( person->lastName, value );
 	else {
-		gchar *out = conv_codeset_strdup(value, 
+		gchar *out = conv_codeset_strdup(value,
 				conv_get_locale_charset_str_no_utf8(),
 				CS_INTERNAL);
 		if (out)
@@ -355,7 +355,7 @@ void addritem_person_set_nick_name( ItemPerson *person, const gchar *value ) {
 	if (!value || g_utf8_validate(value, -1, NULL))
 		person->nickName = mgu_replace_string( person->nickName, value );
 	else {
-		gchar *out = conv_codeset_strdup(value, 
+		gchar *out = conv_codeset_strdup(value,
 				conv_get_locale_charset_str_no_utf8(),
 				CS_INTERNAL);
 		if (out)
@@ -373,7 +373,7 @@ void addritem_person_set_common_name( ItemPerson *person, const gchar *value ) {
 	if (!value || g_utf8_validate(value, -1, NULL))
 		ADDRITEM_NAME(person) = mgu_replace_string( ADDRITEM_NAME(person), value );
 	else {
-		gchar *out = conv_codeset_strdup(value, 
+		gchar *out = conv_codeset_strdup(value,
 				conv_get_locale_charset_str_no_utf8(),
 				CS_INTERNAL);
 		if (out)
@@ -1166,7 +1166,3 @@ gchar *addritem_format_email( ItemEMail *email ) {
 	}
 	return address;
 }
-
-/*
-* End of Source.
-*/

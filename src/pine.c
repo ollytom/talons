@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -143,19 +143,19 @@ static gchar *pine_read_line( PineFile *pineFile ) {
 	int c, i = 0;
 	gchar ch;
 
-	if( claws_feof( pineFile->file ) ) 
+	if( claws_feof( pineFile->file ) )
 		return NULL;
 
 	while( i < PINEBUFSIZE-1 ) {
 		c = fgetc( pineFile->file );
 		if( c == EOF ) {
-			if( i == 0 ) 
+			if( i == 0 )
 				return NULL;
 			break;
 		}
 		ch = (gchar) c;
 		if( ch == '\0' ) {
-			if( i == 0 ) 
+			if( i == 0 )
 				return NULL;
 			break;
 		}
@@ -661,8 +661,3 @@ gchar *pine_find_file( void ) {
 	}
 	return g_strdup( str );
 }
-
-/*
-* End of Source.
-*/
-

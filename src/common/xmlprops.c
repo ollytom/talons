@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -26,7 +26,7 @@
  *     <property name="first-name" value="Axle" >/
  *     <property name="last-name"  value="Rose" >/
  *   </property-list>
- *		
+ *
  * ***********************************************************************
  */
 
@@ -138,7 +138,7 @@ static int xmlprops_write_elem_s( FILE *fp, gint lvl, gchar *name ) {
 		return -1;
 	if(claws_fputs( name, fp ) == EOF)
 		return -1;
-	
+
 	return 0;
 }
 
@@ -154,7 +154,7 @@ static int xmlprops_write_elem_e( FILE *fp, gint lvl, gchar *name ) {
 		return -1;
 	if(claws_fputs( ">\n", fp ) == EOF)
 		return -1;
-	
+
 	return 0;
 }
 
@@ -169,7 +169,7 @@ static int xmlprops_write_attr( FILE *fp, gchar *name, gchar *value ) {
 		return -1;
 	if(claws_fputs( "\"", fp ) == EOF)
 		return -1;
-	
+
 	return 0;
 }
 
@@ -218,7 +218,7 @@ static gint xmlprops_write_to( XmlProperty *props, const gchar *fileSpec ) {
 
 		if(xmlprops_write_elem_e( fp, 0, XMLS_ELTAG_PROP_LIST ) < 0)
 			goto revert;
-		
+
 		props->retVal = MGU_SUCCESS;
 		if( prefs_file_close( pfile ) < 0 ) {
 			props->retVal = MGU_ERROR_WRITE;
@@ -230,7 +230,7 @@ revert:
 		if( prefs_file_close_revert( pfile ) < 0 ) {
 			props->retVal = MGU_ERROR_WRITE;
 		}
-	
+
 	}
 out:
 	return props->retVal;
@@ -446,9 +446,3 @@ gboolean xmlprops_get_property_b( XmlProperty *props, const gchar *name ) {
 	}
 	return value;
 }
-
-/*
-* End of Source.
-*/
-
-

@@ -153,8 +153,3 @@ void addressbook_ads_set_name		( AdapterDSource *adapter,
 ItemObjectType addressbook_type2item 	( AddressObjectType abType );
 
 #endif /* __ADDRESSITEM_H__ */
-
-/*
-* End of Source.
-*/
-

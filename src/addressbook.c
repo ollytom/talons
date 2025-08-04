@@ -5392,7 +5392,3 @@ static void addressbook_drag_received_cb(GtkWidget        *widget,
 		gtk_drag_finish(drag_context, TRUE, TRUE, time);
 	}
 }
-
-/*
-* End of Source.
-*/

@@ -567,8 +567,3 @@ ItemFolder *addressbook_edit_folder( AddressBookFile *abf, ItemFolder *parent, I
 	g_free( name );
 	return folder;
 }
-
-/*
-* End of Source.
-*/
-

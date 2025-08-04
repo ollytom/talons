@@ -356,7 +356,7 @@ static void addressbook_foldersel_load_data( AddressIndex *addrIndex )
 }
 
 gboolean addressbook_foldersel_selection( AddressIndex *addrIndex,
-					AddressBookFile **book, ItemFolder **folder, 
+					AddressBookFile **book, ItemFolder **folder,
 					const gchar* path)
 {
 	gboolean retVal = FALSE;
@@ -368,7 +368,7 @@ gboolean addressbook_foldersel_selection( AddressIndex *addrIndex,
 	gtk_widget_show(addressbook_foldersel_dlg.window);
 	manage_window_set_transient(GTK_WINDOW(addressbook_foldersel_dlg.window));
 	gtk_window_set_modal(GTK_WINDOW(addressbook_foldersel_dlg.window), TRUE);
-	
+
 	addressbook_foldersel_dlg.fiSelected = NULL;
 
 	addressbook_foldersel_load_data( addrIndex );
@@ -394,7 +394,3 @@ gboolean addressbook_foldersel_selection( AddressIndex *addrIndex,
 
 	return retVal;
 }
-
-/*
-* End of Source.
-*/

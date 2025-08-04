@@ -100,7 +100,3 @@ QueryRequest *qrymgr_find_request( const gint queryID );
 void qrymgr_delete_request	( const gint queryID );
 
 #endif /* __ADDRQUERY_H__ */
-
-/*
-* End of Source.
-*/

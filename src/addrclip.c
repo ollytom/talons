@@ -17,31 +17,31 @@
  */
 
 /*
- * Contains address clipboard objects and related functions. The address 
- * clipboard is implemented as a linked list of AddrSelectItem objects. 
+ * Contains address clipboard objects and related functions. The address
+ * clipboard is implemented as a linked list of AddrSelectItem objects.
  * The address clipboard offers two groups of functions:
  *
  * a) Cut, copy and paste of address item objects (ItemFolder, ItemGroup,
  *    ItemPerson) into a folder. With this method, we can paste ItemPerson
- *    objects but not unattached ItemEMail objects into a folder. ItemEMail 
- *    objects are owned by an ItemPerson object. Any ItemEMail objects that 
- *    appear in the clipboard are ignored. If an ItemPerson object is found, 
+ *    objects but not unattached ItemEMail objects into a folder. ItemEMail
+ *    objects are owned by an ItemPerson object. Any ItemEMail objects that
+ *    appear in the clipboard are ignored. If an ItemPerson object is found,
  *    the ItemPerson *and* ItemEMail objects that it owns are pasted.
  *
- * b) Copy and paste of ItemEMail address objects only into (below) 
+ * b) Copy and paste of ItemEMail address objects only into (below)
  *    ItemPerson objects. All ItemEMail objects which are owned by
  *    ItemPerson and referenced by ItemGroup objects are pasted. Any
  *    ItemFolder objects in the clipboard, and any objects owned by
  *    ItemFolder objects are ignored.
  *
- * Objects are inserted to the clipboard by copying (cloning) 
+ * Objects are inserted to the clipboard by copying (cloning)
  * AddrSelectItem objects from the address books selection list to the
  * clipboard's internal selection list. The clipboard makes use of the
  * object id's and address cache id's to access objects contained in
  * the address cache. If the referenced object is not found, it is
  * ignored. This eliminates the need to delete pointers in multiple
  * linked lists when an address object is deleted.
- * 
+ *
  */
 
 #include "config.h"
@@ -269,9 +269,9 @@ static GList *addrclip_cache_add_person(
 		gchar *pictureFile;
 		gchar *newPictureFile;
 
-		pictureFile = g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S, ADDRBOOK_DIR, G_DIR_SEPARATOR_S, 
+		pictureFile = g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S, ADDRBOOK_DIR, G_DIR_SEPARATOR_S,
 							person->picture, ".png", NULL );
-		newPictureFile = g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S, ADDRBOOK_DIR, G_DIR_SEPARATOR_S, 
+		newPictureFile = g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S, ADDRBOOK_DIR, G_DIR_SEPARATOR_S,
 							newPerson->picture, ".png", NULL );
 		if (file_exist(pictureFile, FALSE) && !file_exist(newPictureFile, FALSE)) {
 			debug_print("copying contact picture file: %s -> %s\n", person->picture, newPerson->picture);
@@ -465,7 +465,7 @@ static GList *addrclip_cache_add_folder(
 				}
 				/*
 				else if( ADDRITEM_TYPE(aio) == ITEMTYPE_EMAIL ) {
-				} 
+				}
 				*/
 				else if( ADDRITEM_TYPE(aio) == ITEMTYPE_GROUP ) {
 					haveGroups = TRUE;	/* Process later */
@@ -759,7 +759,3 @@ GList *addrclip_paste_cut(
 
 	return folderGroup;
 }
-/*
-* End of Source.
-*/
-

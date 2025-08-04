@@ -373,7 +373,7 @@ static void exporthtml_create_css_files( ExportHtmlCtl *ctl ) {
 		node = g_list_next( node );
 		if( strlen( entry->fileName ) ) {
 			fileSpec = g_strconcat(
-					ctl->dirOutput, G_DIR_SEPARATOR_S, 
+					ctl->dirOutput, G_DIR_SEPARATOR_S,
 					entry->fileName, NULL );
 			if( entry->id == EXPORT_HTML_ID_DEFAULT ) {
 				exporthtml_create_css_dfl( fileSpec );
@@ -1162,11 +1162,3 @@ void exporthtml_save_settings( ExportHtmlCtl *ctl ) {
 		g_warning("can't save settings");
 	xmlprops_free( props );
 }
-
-/*
- * ============================================================================
- * End of Source.
- * ============================================================================
- */
-
-

@@ -322,7 +322,7 @@ static void export_html_browse( GtkWidget *widget, gpointer data ) {
  */
 static void exp_html_file_select_create( AddressFileSelection *afs ) {
 	gchar *file = filesel_select_file_save(_("Select HTML output file"), NULL);
-	
+
 	if (file == NULL)
 		afs->cancelled = TRUE;
 	else {
@@ -705,10 +705,3 @@ void addressbook_exp_html( AddressCache *cache ) {
 
 	_addressCache_ = NULL;
 }
-
-/*
- * ============================================================================
- * End of Source.
- * ============================================================================
- */
-

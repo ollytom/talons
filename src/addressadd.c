@@ -598,7 +598,3 @@ gboolean addressadd_selection(const gchar *name, const gchar *address,
 	return retVal;
 }
 
-/*
-* End of Source.
-*/
-

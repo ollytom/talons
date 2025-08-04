@@ -145,7 +145,7 @@ const gchar *claws_get_startup_dir(void)
 
 guint claws_get_version(void)
 {
-	return VERSION_NUMERIC;
+	return 1234;
 }
 
 void claws_register_idle_function	(void (*idle_func)(void))

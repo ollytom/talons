@@ -291,8 +291,3 @@ AdapterDSource *addressbook_edit_vcard( AddressIndex *addrIndex, AdapterDSource 
 
 	return ads;
 }
-
-/*
-* End of Source.
-*/
-

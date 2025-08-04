@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -1009,7 +1009,7 @@ ItemFolder *addrcache_remove_folder_delete( AddressCache *cache, ItemFolder *fol
  * \param name      Common name.
  * \param address   EMail address.
  * \param remarks   Remarks.
- * \return Person added. Do not *NOT* to use the 
+ * \return Person added. Do not *NOT* to use the
  *         <code>addrbook_free_xxx()</code> functions...; this will destroy
  *         the address book data.
  */
@@ -1071,7 +1071,3 @@ ItemFolder *addrcache_add_new_folder( AddressCache *cache, ItemFolder *parent )
 	}
 	return folder;
 }
-
-/*
-* End of Source.
-*/

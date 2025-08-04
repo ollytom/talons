@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -28,8 +28,3 @@
 void addressbook_exp_html( AddressCache *cache );
 
 #endif /* __EXPORT_HTML_H__ */
-
-/*
-* End of Source.
-*/
-

@@ -154,7 +154,7 @@ static void imp_mutt_cancel( GtkWidget *widget, gboolean *cancelled ) {
 
 static void imp_mutt_file_select_create( AddressFileSelection *afs ) {
 	gchar *file = filesel_select_file_open(_("Select MUTT File"), NULL);
-	
+
 	if (file == NULL)
 		afs->cancelled = TRUE;
 	else {
@@ -226,7 +226,7 @@ static void imp_mutt_create( gboolean *cancelled ) {
 	gtk_grid_attach(GTK_GRID(table), name_entry, 1, 0, 1, 1);
 	gtk_widget_set_hexpand(name_entry, TRUE);
 	gtk_widget_set_halign(name_entry, GTK_ALIGN_FILL);
-	
+
 	/* Second row */
 	label = gtk_label_new(_("File"));
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
@@ -302,8 +302,3 @@ AddressBookFile *addressbook_imp_mutt( AddressIndex *addrIndex ) {
 	if (cancelled == TRUE) return NULL;
 	return _importedBook_;
 }
-
-/*
-* End of Source.
-*/
-

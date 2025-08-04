@@ -2436,7 +2436,3 @@ gchar *addrindex_get_picture_file(const gchar *emailaddr)
 
 	return filename;
 }
-
-/*
- * End of Source.
- */

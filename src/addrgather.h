@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -40,8 +40,3 @@ void addrgather_dlg_execute( FolderItem *folderItem,
 					 		 GList *msgList );
 #endif
 #endif /* __ADDR_GATHER_H__ */
-
-/*
-* End of Source.
-*/
-

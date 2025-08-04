@@ -1966,8 +1966,3 @@ void addressbook_edit_reload_attr_list( void )
 					prefs_common.addressbook_custom_attributes);
 	}
 }
-
-/*
-* End of Source.
-*/
-

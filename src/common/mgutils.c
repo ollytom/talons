@@ -154,7 +154,7 @@ GList *mgu_parse_string( gchar *line, const gint maxTokens, gint *tokenCnt ) {
 		/* Skip over leading spaces */
 		while( *ptr ) {
 			if( ! isspace( *ptr ) ) break;
-			ptr++;	
+			ptr++;
 		}
 
 		/* Find terminating space */
@@ -290,8 +290,4 @@ gchar *mgu_slist_longest_entry( GSList *list ) {
 		node = g_slist_next( node );
 	}
 	return name;
-}	
-
-/*
-* End of Source.
-*/
+}

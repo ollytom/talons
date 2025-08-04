@@ -240,7 +240,7 @@ static gchar *vcard_get_line( VCardFile *cardFile ) {
 	g_strstrip(buf);
 	cardFile->bufptr = end + 1;
 
-	/* Return a copy of buffer */	
+	/* Return a copy of buffer */
 	return g_strdup( buf );
 }
 
@@ -388,7 +388,7 @@ static gchar *vcard_unescape_qp( gchar *value ) {
 	gint len;
 	if (value == NULL)
 		return NULL;
-		
+
 	len = strlen(value);
 	res = g_malloc(len + 1);
 	qp_decode_const(res, len, value);
@@ -698,8 +698,3 @@ gint vcard_test_read_file( const gchar *fileSpec ) {
 	cardFile = NULL;
 	return retVal;
 }
-
-/*
-* End of Source.
-*/
-

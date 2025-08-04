@@ -204,7 +204,7 @@ void addrharvest_set_recurse(
  *        name      Header name.
  * Return: Header, or NULL if not found.
  */
-static HeaderEntry *addrharvest_find( 
+static HeaderEntry *addrharvest_find(
 	AddressHarvester* harvester, const gchar *name ) {
 	HeaderEntry *retVal;
 	GList *node;
@@ -304,7 +304,7 @@ static gchar* get_namepart(const gchar* name, Namepart namepart) {
             pos +=1;
             part = g_strdup(pos);
         }
-    }        
+    }
     g_free(token);
     return part;
 }
@@ -527,7 +527,7 @@ static gchar *addrharvest_extract_address( gchar *buffer ) {
 				memmove( bp, ep, len );
 				*bp = ' ';
 			}
-		}	
+		}
 	}
 	return addr;
 }
@@ -923,11 +923,3 @@ gboolean addrharvest_check_header( AddressHarvester *harvester ) {
 	}
 	return retVal;
 }
-
-/*
- * ============================================================================
- * End of Source.
- * ============================================================================
- */
-
-

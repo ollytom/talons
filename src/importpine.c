@@ -153,7 +153,7 @@ static void imp_pine_cancel( GtkWidget *widget, gboolean *cancelled ) {
 
 static void imp_pine_file_select_create( AddressFileSelection *afs ) {
 	gchar *file = filesel_select_file_open(_("Select Pine File"), NULL);
-	
+
 	if (file == NULL)
 		afs->cancelled = TRUE;
 	else {
@@ -302,8 +302,3 @@ AddressBookFile *addressbook_imp_pine( AddressIndex *addrIndex ) {
 	if (cancelled == TRUE) return NULL;
 	return _importedBook_;
 }
-
-/*
-* End of Source.
-*/
-

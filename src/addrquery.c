@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -111,7 +111,7 @@ void qryreq_add_query( QueryRequest *req, AddrQueryObject *aqo ) {
  * 			terminates.
  * \param callBackEntry Callback function that will be called after each
  * 			address entry has been read.
- * \return Initialize query request object. 			
+ * \return Initialize query request object.
  */
 QueryRequest *qrymgr_add_request(
 	const gchar *searchTerm, void *callBackEnd, void *callBackEntry )
@@ -225,9 +225,3 @@ static void qrymgr_free_all_request( void ) {
 void qrymgr_teardown( void ) {
 	qrymgr_free_all_request();
 }
-
-/*
-* End of Source.
-*/
-
-

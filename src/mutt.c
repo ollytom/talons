@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -141,7 +141,7 @@ static gchar *mutt_get_line( MuttFile *muttFile, gboolean *flagCont ) {
 	int i = 0, li = 0;
 
 	*flagCont = FALSE;
-	if( claws_feof( muttFile->file ) ) 
+	if( claws_feof( muttFile->file ) )
 		return NULL;
 
 	memset(buf, 0, MUTTBUFSIZE);
@@ -150,14 +150,14 @@ static gchar *mutt_get_line( MuttFile *muttFile, gboolean *flagCont ) {
 	while( i < MUTTBUFSIZE-1 ) {
 		ch = fgetc( muttFile->file );
 		if( ch == '\0' || ch == EOF ) {
-			if( i == 0 ) 
+			if( i == 0 )
 				return NULL;
 			break;
 		}
 		if( ch == '\n' ) {
 			if( lch == '\\' ) {
 				/* Replace backslash with NULL */
-				if( li != 0 ) 
+				if( li != 0 )
 					buf[li] = '\0';
 				*flagCont = TRUE;
 			}
@@ -266,7 +266,7 @@ static GSList *mutt_parse_rcplist( gchar *rcpList, gint *addrCount ) {
 			if( isspace( ch ) ) continue;
 		}
 		pStart = ptr;
-	
+
 		/* Extract name (if any) */
 		if( pName ) {
 			/* Look for closing parens */
@@ -561,8 +561,3 @@ gchar *mutt_find_file( void ) {
 	}
 	return g_strdup( str );
 }
-
-/*
-* End of Source.
-*/
-

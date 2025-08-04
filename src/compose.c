@@ -12565,8 +12565,3 @@ static void from_name_activate_cb(GtkWidget *widget, gpointer data)
 {
 	gtk_combo_box_popup(GTK_COMBO_BOX(data));
 }
-
-
-/*
- * End of Source.
- */
