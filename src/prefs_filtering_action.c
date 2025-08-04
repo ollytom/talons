@@ -52,9 +52,7 @@
 #include "colorlabel.h"
 #include "combobox.h"
 #include "account.h"
-#ifndef USE_ALT_ADDRBOOK
-	#include "addressbook.h"
-#endif
+#include "addressbook.h"
 
 enum {
 	PFA_ACTION,
@@ -77,9 +75,7 @@ static gint prefs_filtering_action_deleted(GtkWidget *widget,
 static void prefs_filtering_action_type_selection_changed(GtkWidget *widget,
     gpointer user_data);
 static void prefs_filtering_action_select_dest(void);
-#ifndef USE_ALT_ADDRBOOK
 static void prefs_filtering_action_select_addressbook(void);
-#endif
 static void prefs_filtering_action_up(void);
 static void prefs_filtering_action_down(void);
 static void prefs_filtering_action_set_dialog(GSList *action_list);
@@ -93,7 +89,7 @@ static void prefs_filtering_action_list_view_insert_action	(GtkWidget   *list_vi
 static GtkWidget *prefs_filtering_action_list_view_create	(void);
 static void prefs_filtering_action_create_list_view_columns	(GtkTreeView *list_view);
 static gboolean prefs_filtering_actions_selected		(GtkTreeSelection *selector,
-								 GtkTreeModel *model, 
+								 GtkTreeModel *model,
 								 GtkTreePath *path,
 								 gboolean currently_selected,
 								 gpointer data);
@@ -121,9 +117,7 @@ static struct FilteringAction_ {
 	GtkWidget *color_optmenu;
 	GtkWidget *header_combo;
 	GtkWidget *header_entry;
-#ifndef USE_ALT_ADDRBOOK
 	GtkWidget *addressbook_btn;
-#endif
 	GtkWidget *score_entry;
 	GtkWidget *tags_combo;
 
@@ -166,7 +160,7 @@ static struct {
 	gchar *text;
 	Action action;
 } action_menu [] = {
-	{ NULL, 		N_("Move"),			ACTION_MOVE }, 	
+	{ NULL, 		N_("Move"),			ACTION_MOVE },
 	{ NULL, 		N_("Copy"),			ACTION_COPY },
 	{ NULL, 		N_("Delete"),			ACTION_DELETE },
 	{ NULL, 		N_("Hide"),		        ACTION_HIDE },
@@ -213,10 +207,10 @@ static GtkTreeModel *prefs_filtering_action_create_model(void)
 	GtkTreeStore *store;
 	gchar *curr_menu = NULL;
 	gint i;
-	
+
 	store = gtk_tree_store_new(N_ACTION_COMBO, G_TYPE_STRING, G_TYPE_INT,
 				   G_TYPE_BOOLEAN);
-	
+
 	for (i = 0; action_menu[i].menu || action_menu[i].text; i++)
 	{
 		if (action_menu[i].menu) {
@@ -228,8 +222,8 @@ static GtkTreeModel *prefs_filtering_action_create_model(void)
 						   ACTION_COMBO_SENS, TRUE,
 						   -1);
 				curr_menu = action_menu[i].menu;
-			} 
-			
+			}
+
 			gtk_tree_store_append(store, &iter2, &iter);
 			gtk_tree_store_set(store, &iter2,
 					   ACTION_COMBO_TEXT, gettext(action_menu[i].text),
@@ -238,18 +232,18 @@ static GtkTreeModel *prefs_filtering_action_create_model(void)
 					   -1);
 		} else {
 			curr_menu = NULL;
-			
+
 			gtk_tree_store_append(store, &iter, NULL);
 			gtk_tree_store_set(store, &iter,
 					   ACTION_COMBO_TEXT, gettext(action_menu[i].text),
 					   ACTION_COMBO_DATA, action_menu[i].action,
 					   ACTION_COMBO_SENS, TRUE,
-					   -1); 
-		}   
+					   -1);
+		}
 	}
-	
+
 	return GTK_TREE_MODEL(store);
-} 
+}
 
 static void cell_is_sensitive(GtkCellLayout   *cell_layout,
 			      GtkCellRenderer *cell,
@@ -311,7 +305,7 @@ static void prefs_filtering_action_size_allocate_cb(GtkWidget *widget,
 static void prefs_filtering_action_check_widget_width(GtkWidget *widget)
 {
 	GtkRequisition req;
-	
+
 	gtk_widget_get_preferred_size(widget, &req, NULL);
 	if(req.width > SECOND_ROW_WIDTH)
 		gtk_widget_set_size_request(widget, SECOND_ROW_WIDTH, -1);
@@ -340,9 +334,7 @@ static void prefs_filtering_action_create(void)
 	GtkWidget *account_combo;
 	GtkWidget *header_combo;
 	GtkWidget *header_entry;
-#ifndef USE_ALT_ADDRBOOK
 	GtkWidget *addressbook_btn;
-#endif
 	GtkWidget *dest_entry;
 	GtkWidget *dest_btn;
 	GtkWidget *score_entry;
@@ -415,14 +407,14 @@ static void prefs_filtering_action_create(void)
 
 	frame = gtk_frame_new(_("Rule"));
 	gtk_frame_set_label_align(GTK_FRAME(frame), 0.01, 0.5);
-	gtk_box_pack_start (GTK_BOX (vbox1), frame, FALSE, FALSE, 0);	
-	
+	gtk_box_pack_start (GTK_BOX (vbox1), frame, FALSE, FALSE, 0);
+
 	table = gtk_grid_new();
 	gtk_container_set_border_width(GTK_CONTAINER(table), VSPACING_NARROW);
 	gtk_grid_set_row_spacing(GTK_GRID(table), VSPACING_NARROW_2);
 	gtk_grid_set_column_spacing(GTK_GRID(table), HSPACING_NARROW);
 	gtk_container_add(GTK_CONTAINER(frame), table);
-        
+
 	/* first row labels */
 
 	label1 = gtk_label_new (_("Action"));
@@ -446,12 +438,12 @@ static void prefs_filtering_action_create(void)
 	gtk_widget_set_halign(label3, GTK_ALIGN_FILL);
 
 	/* action combo */
-	
+
 	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_grid_attach(GTK_GRID(table), hbox1, 1, 0, 1, 1);
 	gtk_widget_set_hexpand(hbox1, TRUE);
 	gtk_widget_set_halign(hbox1, GTK_ALIGN_FILL);
-			
+
 	model = prefs_filtering_action_create_model();
 	action_combo = gtk_combo_box_new_with_model(model);
 	gtk_size_group_add_widget(size_action, action_combo);
@@ -512,10 +504,10 @@ static void prefs_filtering_action_create(void)
 
 	dest_entry = gtk_entry_new ();
 	gtk_box_pack_start (GTK_BOX (hbox1), dest_entry, TRUE, TRUE, 0);
-	
+
 	score_entry = gtk_spin_button_new_with_range(-1000, 1000, 1);
 	gtk_box_pack_start(GTK_BOX(hbox1), score_entry, FALSE, FALSE, 0);
-	
+
 	color_optmenu = colorlabel_create_combobox_colormenu();
 	gtk_size_group_add_widget(size_action, color_optmenu);
 	prefs_filtering_action_check_widget_width(color_optmenu);
@@ -549,13 +541,11 @@ static void prefs_filtering_action_create(void)
 			  G_CALLBACK(prefs_filtering_action_select_dest),
 			  NULL);
 
-#ifndef USE_ALT_ADDRBOOK
 	addressbook_btn = gtk_button_new_with_label (_("Select..."));
 	gtk_box_pack_start (GTK_BOX (hbox1), addressbook_btn, FALSE, FALSE, 0);
 	g_signal_connect (G_OBJECT (addressbook_btn), "clicked",
 			  G_CALLBACK(prefs_filtering_action_select_addressbook),
 			  NULL);
-#endif
 
 	exec_btn = gtkut_stock_button("dialog-information", _("_Information"));
 	gtk_box_pack_start (GTK_BOX (hbox1), exec_btn, FALSE, FALSE, 0);
@@ -649,12 +639,10 @@ static void prefs_filtering_action_create(void)
 	filtering_action.score_entry = score_entry;
 	filtering_action.header_combo = header_combo;
 	filtering_action.header_entry = header_entry;
-#ifndef USE_ALT_ADDRBOOK
 	filtering_action.addressbook_btn = addressbook_btn;
-#endif
 	filtering_action.ok_btn = ok_btn;
 	filtering_action.action_list_view = action_list_view;
-	
+
 	prefs_filtering_action_type_selection_changed(NULL, NULL);
 }
 
@@ -665,7 +653,7 @@ static void prefs_filtering_action_create(void)
  *\param	prop Condition to set
  *
  */
-static void prefs_filtering_action_list_view_set_row(GtkTreeIter *row, 
+static void prefs_filtering_action_list_view_set_row(GtkTreeIter *row,
 						     FilteringAction *action)
 {
         gchar *buf;
@@ -675,7 +663,7 @@ static void prefs_filtering_action_list_view_set_row(GtkTreeIter *row,
 			(filtering_action.action_list_view,
 			 NULL, _("(New)"), FALSE);
 		return;
-	}			 
+	}
 
         buf = filteringaction_to_string(action);
 
@@ -706,9 +694,9 @@ static void prefs_filtering_action_set_dialog(GSList *action_list)
 			prefs_filtering_action_list_view_set_row(NULL, action);
 		}
 	}
-	
+
         prefs_filtering_action_reset_dialog();
-        
+
         combobox_set_sensitive(GTK_COMBO_BOX(filtering_action.action_combo), 9,
         		(tags_get_size() > 0) ? TRUE : FALSE);
 }
@@ -733,19 +721,19 @@ static GSList *prefs_filtering_action_get_list(void)
 
 	while (gtk_tree_model_iter_nth_child(model, &iter, NULL, row)) {
 
-		gtk_tree_model_get(model, &iter, 
+		gtk_tree_model_get(model, &iter,
 			           PFA_ACTION, &action_str,
 				   PFA_VALID_ACTION, &is_valid,
 				   -1);
 
-		if (is_valid) {				   
+		if (is_valid) {
                         GSList * tmp_action_list;
 			tmp_action_list = matcher_parser_get_action_list(action_str);
-			
+
 			if (tmp_action_list == NULL) {
 				g_free(action_str);
 				break;
-			}				
+			}
 
 			action_list = g_slist_concat(action_list,
                             tmp_action_list);
@@ -754,7 +742,7 @@ static GSList *prefs_filtering_action_get_list(void)
 		g_free(action_str);
 		action_str = NULL;
 		row ++;
-		
+
 	}
 
 	return action_list;
@@ -886,14 +874,14 @@ static FilteringAction * prefs_filtering_action_dialog_to_action(gboolean alert)
         FilteringAction * action;
         gint score;
 	gchar * header = NULL;
-        
+
 	action_id = combobox_get_active_data(GTK_COMBO_BOX(filtering_action.action_combo));
 	action_type = prefs_filtering_action_get_matching_from_action(action_id);
 	list_id = gtk_combo_box_get_active(GTK_COMBO_BOX(filtering_action.account_combo));
 	account_id = get_account_id_from_list_id(list_id);
         score = 0;
         destination = NULL;
-        
+
 	switch (action_id) {
 	case ACTION_MOVE:
 	case ACTION_COPY:
@@ -901,7 +889,7 @@ static FilteringAction * prefs_filtering_action_dialog_to_action(gboolean alert)
 		destination = gtk_editable_get_chars(GTK_EDITABLE(filtering_action.dest_entry), 0, -1);
 		if (*destination == '\0') {
 			if (alert)
-                                alertpanel_error(action_id == ACTION_EXECUTE 
+                                alertpanel_error(action_id == ACTION_EXECUTE
 						 ? _("Command-line not set.")
 						 : _("Destination is not set."));
 			g_free(destination);
@@ -922,7 +910,7 @@ static FilteringAction * prefs_filtering_action_dialog_to_action(gboolean alert)
 	case ACTION_COLOR:
 		labelcolor = colorlabel_get_combobox_colormenu_active(
 				GTK_COMBO_BOX(filtering_action.color_optmenu));
-		destination = NULL;	
+		destination = NULL;
 		break;
         case ACTION_CHANGE_SCORE:
         case ACTION_SET_SCORE:
@@ -979,7 +967,7 @@ static FilteringAction * prefs_filtering_action_dialog_to_action(gboolean alert)
 	}
 	action = filteringaction_new(action_type, account_id,
             destination, labelcolor, score, header);
-	
+
 	g_free(destination);
 	return action;
 }
@@ -990,7 +978,7 @@ static FilteringAction * prefs_filtering_action_dialog_to_action(gboolean alert)
 static void prefs_filtering_action_register_cb(void)
 {
 	FilteringAction *action;
-	
+
 	action = prefs_filtering_action_dialog_to_action(TRUE);
 	if (action == NULL)
 		return;
@@ -999,9 +987,9 @@ static void prefs_filtering_action_register_cb(void)
 
 	filteringaction_free(action);
 	/* GTK 1 NOTE:
-	 * (presumably gtk_list_select_item(), called by 
-	 * prefs_filtering_action_reset_dialog() activates 
-	 * what seems to be a bug. this causes any other 
+	 * (presumably gtk_list_select_item(), called by
+	 * prefs_filtering_action_reset_dialog() activates
+	 * what seems to be a bug. this causes any other
 	 * list items to be unselectable)
 	 * prefs_filtering_action_reset_dialog(); */
 	gtk_combo_box_set_active(GTK_COMBO_BOX(filtering_action.account_combo), 0);
@@ -1059,7 +1047,7 @@ static void prefs_filtering_action_delete_cb(void)
 	if (!is_valid)
 		return;
 
-	gtk_list_store_remove(GTK_LIST_STORE(model), &row);		
+	gtk_list_store_remove(GTK_LIST_STORE(model), &row);
 
 	prefs_filtering_action_reset_dialog();
 }
@@ -1074,18 +1062,18 @@ static void prefs_filtering_action_up(void)
 	GtkListStore *store = NULL;
 	GtkTreeModel *model = NULL;
 	GtkTreeIter iprev;
-	
+
 	if (!gtk_tree_selection_get_selected
 		(gtk_tree_view_get_selection
 			(GTK_TREE_VIEW(filtering_action.action_list_view)),
-		 &model,	
+		 &model,
 		 &isel))
 		return;
 	store = (GtkListStore *)model;
 	sel = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &isel);
 	if (!sel)
 		return;
-	
+
 	/* no move if we're at row 0 or 1, looks phony, but other
 	 * solutions are more convoluted... */
 	try = gtk_tree_path_copy(sel);
@@ -1096,7 +1084,7 @@ static void prefs_filtering_action_up(void)
 	}
 	gtk_tree_path_free(try);
 
-	prev = gtk_tree_path_copy(sel);		
+	prev = gtk_tree_path_copy(sel);
 	if (gtk_tree_path_prev(prev)) {
 		gtk_tree_model_get_iter(GTK_TREE_MODEL(store),
 					&iprev, prev);
@@ -1117,7 +1105,7 @@ static void prefs_filtering_action_down(void)
 	GtkTreeModel *model = NULL;
 	GtkTreeIter next, sel;
 	GtkTreePath *try;
-	
+
 	if (!gtk_tree_selection_get_selected
 		(gtk_tree_view_get_selection
 			(GTK_TREE_VIEW(filtering_action.action_list_view)),
@@ -1126,16 +1114,16 @@ static void prefs_filtering_action_down(void)
 		return;
 	store = (GtkListStore *)model;
 	try = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &sel);
-	if (!try) 
+	if (!try)
 		return;
-	
+
 	/* move when not at row 0 ... */
 	if (gtk_tree_path_prev(try)) {
 		next = sel;
 		if (gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &next))
 			gtk_list_store_swap(store, &next, &sel);
 	}
-		
+
 	gtk_tree_path_free(try);
 }
 
@@ -1151,7 +1139,7 @@ static gboolean prefs_filtering_action_key_pressed(GtkWidget *widget,
 {
 	if (event && event->keyval == GDK_KEY_Escape) {
 		prefs_filtering_action_cancel();
-		return TRUE;		
+		return TRUE;
 	}
 	return FALSE;
 }
@@ -1211,7 +1199,7 @@ static gint prefs_filtering_action_deleted(GtkWidget *widget,
 
 /*
  * Strings describing exec format strings
- * 
+ *
  * When adding new lines, remember to put 2 strings for each line
  */
 static gchar *exec_desc_strings[] = {
@@ -1231,7 +1219,7 @@ static gchar *exec_desc_strings[] = {
 	NULL, NULL
 };
 
-static DescriptionWindow exec_desc_win = { 
+static DescriptionWindow exec_desc_win = {
 	NULL,
         NULL,
 	TRUE,
@@ -1267,7 +1255,6 @@ static void prefs_filtering_action_select_dest(void)
 	g_free(path);
 }
 
-#ifndef USE_ALT_ADDRBOOK
 static void prefs_filtering_action_select_addressbook(void)
 {
 	const gchar *folderpath = NULL;
@@ -1278,9 +1265,8 @@ static void prefs_filtering_action_select_addressbook(void)
 	if (new_path) {
 		gtk_entry_set_text(GTK_ENTRY(filtering_action.dest_entry), new_path);
 		g_free(new_path);
-	} 
+	}
 }
-#endif
 
 static void prefs_filtering_action_enable_widget(GtkWidget* widget, const gboolean enable)
 {
@@ -1296,7 +1282,7 @@ static void prefs_filtering_action_enable_widget(GtkWidget* widget, const gboole
 			gtk_entry_set_text(GTK_ENTRY(widget), "");
 		else if(GTK_IS_COMBO_BOX(widget))
 			gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
-		
+
 		gtk_widget_set_sensitive(widget, TRUE);
 		gtk_widget_show(widget);
 	} else {
@@ -1338,12 +1324,12 @@ static void prefs_filtering_action_type_selection_changed(GtkWidget *combo,
 		(ACTION_SEND(value) || value == ACTION_ADD_TO_ADDRESSBOOK));
 
 	prefs_filtering_action_enable_widget(filtering_action.label3,
-			(ACTION_SEND(value)    || ACTION_TAG(value) || 
+			(ACTION_SEND(value)    || ACTION_TAG(value) ||
 			 ACTION_SCORE(value)   || ACTION_FILEOP(value) ||
 			 value == ACTION_COLOR || value == ACTION_EXECUTE ||
 			 value == ACTION_ADD_TO_ADDRESSBOOK));
 
-	prefs_filtering_action_enable_widget(filtering_action.account_combo, 
+	prefs_filtering_action_enable_widget(filtering_action.account_combo,
 						ACTION_SEND(value));
 
 	prefs_filtering_action_enable_widget(filtering_action.tags_combo,
@@ -1352,7 +1338,7 @@ static void prefs_filtering_action_type_selection_changed(GtkWidget *combo,
 	prefs_filtering_action_enable_widget(filtering_action.dest_entry,
 			(ACTION_FILEOP(value) || value == ACTION_EXECUTE ||
 			 ACTION_SEND(value)   || value == ACTION_ADD_TO_ADDRESSBOOK));
-			 
+
 	prefs_filtering_action_enable_widget(filtering_action.dest_btn,
 						ACTION_FILEOP(value));
 
@@ -1363,19 +1349,17 @@ static void prefs_filtering_action_type_selection_changed(GtkWidget *combo,
 						(value == ACTION_COLOR));
 
 	prefs_filtering_action_enable_widget(filtering_action.header_combo,
-					(value == ACTION_ADD_TO_ADDRESSBOOK));	
-#ifndef USE_ALT_ADDRBOOK
+					(value == ACTION_ADD_TO_ADDRESSBOOK));
 	prefs_filtering_action_enable_widget(filtering_action.addressbook_btn,
 					(value == ACTION_ADD_TO_ADDRESSBOOK));
-#endif
 	prefs_filtering_action_enable_widget(filtering_action.score_entry,
 						ACTION_SCORE(value));
-		
+
 	switch(value) {
 	case ACTION_FORWARD:
 	case ACTION_FORWARD_AS_ATTACHMENT:
 	case ACTION_REDIRECT:
-		gtk_label_set_text(GTK_LABEL(filtering_action.label2), _("Account"));	
+		gtk_label_set_text(GTK_LABEL(filtering_action.label2), _("Account"));
 		gtk_label_set_text(GTK_LABEL(filtering_action.label3), _("Recipient"));
 		break;
 	case ACTION_ADD_TO_ADDRESSBOOK:
@@ -1427,8 +1411,8 @@ static void prefs_filtering_action_list_view_insert_action(GtkWidget   *list_vie
 	GtkListStore *store = GTK_LIST_STORE(gtk_tree_view_get_model
 					(GTK_TREE_VIEW(list_view)));
 	GtkTreeIter iter;
-	
-	
+
+
 	/* see if row exists, if not append */
 	if (row == NULL)
 		gtk_list_store_append(store, &iter);
@@ -1449,7 +1433,7 @@ static GtkWidget *prefs_filtering_action_list_view_create(void)
 
 	model = GTK_TREE_MODEL(prefs_filtering_action_create_data_store());
 	list_view = GTK_TREE_VIEW(gtk_tree_view_new_with_model(model));
-	g_object_unref(model);	
+	g_object_unref(model);
 
 	gtk_tree_view_set_reorderable(list_view, TRUE);
 
@@ -1457,7 +1441,7 @@ static GtkWidget *prefs_filtering_action_list_view_create(void)
 	gtk_tree_selection_set_mode(selector, GTK_SELECTION_BROWSE);
 	gtk_tree_selection_set_select_function
 		(selector, prefs_filtering_actions_selected, NULL, NULL);
-	
+
 	/* create the columns */
 	prefs_filtering_action_create_list_view_columns(list_view);
 
@@ -1475,12 +1459,12 @@ static void prefs_filtering_action_create_list_view_columns(GtkTreeView *list_vi
 		 renderer,
 		 "text", PFA_ACTION,
 		 NULL);
-	gtk_tree_view_append_column(list_view, column);		
+	gtk_tree_view_append_column(list_view, column);
 }
 
 static gboolean prefs_filtering_actions_selected
 			(GtkTreeSelection *selector,
-			 GtkTreeModel *model, 
+			 GtkTreeModel *model,
 			 GtkTreePath *path,
 			 gboolean currently_selected,
 			 gpointer data)
@@ -1498,7 +1482,7 @@ static gboolean prefs_filtering_actions_selected
 	if (!gtk_tree_model_get_iter(model, &iter, path))
 		return TRUE;
 
-	gtk_tree_model_get(model, &iter, 
+	gtk_tree_model_get(model, &iter,
 			   PFA_VALID_ACTION,  &is_valid,
 			   -1);
 
@@ -1507,7 +1491,7 @@ static gboolean prefs_filtering_actions_selected
 		return TRUE;
 	}
 
-	gtk_tree_model_get(model, &iter, 
+	gtk_tree_model_get(model, &iter,
 			   PFA_ACTION, &action_str,
 			   -1);
 

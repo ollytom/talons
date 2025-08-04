@@ -35,13 +35,8 @@
 #include "compose.h"
 #include "prefs_common.h"
 #include "addritem.h"
-#ifndef USE_ALT_ADDRBOOK
-	#include "addrbook.h"
-	#include "addressbook.h"
-#else
-	#include "addressbook-dbus.h"
-	#include "addressadd.h"
-#endif
+#include "addrbook.h"
+#include "addressbook.h"
 #include "addr_compl.h"
 #include "tags.h"
 #include "log.h"
@@ -77,7 +72,7 @@ FilteringAction * filteringaction_new(int type, int account_id,
 	} else {
 		action->header       = NULL;
 	}
-	action->labelcolor = labelcolor;	
+	action->labelcolor = labelcolor;
         action->score = score;
 	return action;
 }
@@ -94,7 +89,7 @@ static gint action_list_sort(gconstpointer a, gconstpointer b)
 {
 	int first  = filtering_is_final_action((FilteringAction *) a) ? 1 : 0;
 	int second = filtering_is_final_action((FilteringAction *) b) ? 1 : 0;
-	
+
 	return (first - second);
 }
 
@@ -124,14 +119,14 @@ FilteringProp * filteringprop_new(gboolean enabled,
 static FilteringAction * filteringaction_copy(FilteringAction * src)
 {
         FilteringAction * new;
-        
+
         new = g_new0(FilteringAction, 1);
-        
+
 	new->type = src->type;
 	new->account_id = src->account_id;
 	if (src->destination)
 		new->destination = g_strdup(src->destination);
-	else 
+	else
 		new->destination = NULL;
 	new->labelcolor = src->labelcolor;
 	new->score = src->score;
@@ -143,13 +138,13 @@ FilteringProp * filteringprop_copy(FilteringProp *src)
 {
 	FilteringProp * new;
 	GSList *tmp;
-	
+
 	new = g_new0(FilteringProp, 1);
 	new->matchers = g_new0(MatcherList, 1);
 
 	for (tmp = src->matchers->matchers; tmp != NULL && tmp->data != NULL;) {
 		MatcherProp *matcher = (MatcherProp *)tmp->data;
-		
+
 		new->matchers->matchers = g_slist_append(new->matchers->matchers,
 						   matcherprop_copy(matcher));
 		tmp = tmp->next;
@@ -161,9 +156,9 @@ FilteringProp * filteringprop_copy(FilteringProp *src)
 
         for (tmp = src->action_list ; tmp != NULL ; tmp = tmp->next) {
                 FilteringAction *filtering_action;
-                
+
                 filtering_action = tmp->data;
-                
+
                 new->action_list = g_slist_append(new->action_list,
                     filteringaction_copy(filtering_action));
         }
@@ -180,7 +175,7 @@ void filteringprop_free(FilteringProp * prop)
 
 	cm_return_if_fail(prop);
 	matcherlist_free(prop->matchers);
-        
+
         for (tmp = prop->action_list ; tmp != NULL ; tmp = tmp->next) {
                 filteringaction_free(tmp->data);
         }
@@ -219,13 +214,13 @@ void filtering_move_and_copy_msgs(GSList *msgs)
 					cur_op = IS_DELE;
 			}
 			if (info->filter_op == IS_COPY || info->filter_op == IS_MOVE) {
-				if (info->to_filter_folder == last_item 
+				if (info->to_filter_folder == last_item
 				&&  cur_op == info->filter_op) {
 					found++;
 					batch = g_slist_prepend(batch, info);
 				}
 			} else if (info->filter_op == IS_DELE) {
-				if (info->folder == last_item 
+				if (info->folder == last_item
 				&&  cur_op == info->filter_op) {
 					found++;
 					batch = g_slist_prepend(batch, info);
@@ -237,7 +232,7 @@ void filtering_move_and_copy_msgs(GSList *msgs)
 			break;
 		} else {
 			debug_print("%d messages to %s in %s\n", found,
-				cur_op==IS_COPY ? "copy":(cur_op==IS_DELE ?"delete":"move"), 
+				cur_op==IS_COPY ? "copy":(cur_op==IS_DELE ?"delete":"move"),
 				last_item->name ? last_item->name:"(noname)");
 		}
 		for (cur = batch; cur; cur = cur->next) {
@@ -254,7 +249,7 @@ void filtering_move_and_copy_msgs(GSList *msgs)
 			} else if (cur_op == IS_MOVE && last_item != info->folder) {
 				if (folder_item_move_msgs(last_item, batch) < 0)
 					folder_item_move_msgs(
-						folder_get_default_inbox(), 
+						folder_get_default_inbox(),
 						batch);
 			} else if (cur_op == IS_DELE && last_item == info->folder) {
 				folder_item_remove_msgs(last_item, batch);
@@ -299,7 +294,7 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 	case MATCHACTION_MOVE:
 		if (MSG_IS_LOCKED(info->flags))
 			return FALSE;
-			
+
 		dest_folder =
 			folder_find_item_from_identifier(action->destination);
 		if (!dest_folder) {
@@ -307,9 +302,9 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 				action->destination ?action->destination :"(null)");
 			return FALSE;
 		}
-		
+
 		FLUSH_COPY_IF_NEEDED(info);
-		/* mark message to be moved */		
+		/* mark message to be moved */
 		info->filter_op = IS_MOVE;
 		info->to_filter_folder = dest_folder;
 		return TRUE;
@@ -325,7 +320,7 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 		}
 
 		FLUSH_COPY_IF_NEEDED(info);
-		/* mark message to be copied */		
+		/* mark message to be copied */
 		info->filter_op = IS_COPY;
 		info->to_filter_folder = dest_folder;
 		return TRUE;
@@ -369,9 +364,9 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 
 	case MATCHACTION_UNLOCK:
 		FLUSH_COPY_IF_NEEDED(info);
-		procmsg_msginfo_unset_flags(info, MSG_LOCKED, 0);	
+		procmsg_msginfo_unset_flags(info, MSG_LOCKED, 0);
 		return TRUE;
-		
+
 	case MATCHACTION_MARK_AS_READ:
 		FLUSH_COPY_IF_NEEDED(info);
 		procmsg_msginfo_unset_flags(info, MSG_UNREAD | MSG_NEW, 0);
@@ -381,7 +376,7 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 		FLUSH_COPY_IF_NEEDED(info);
 		procmsg_msginfo_change_flags(info, MSG_UNREAD, 0, MSG_NEW, 0);
 		return TRUE;
-	
+
 	case MATCHACTION_MARK_AS_SPAM:
 		FLUSH_COPY_IF_NEEDED(info);
 		procmsg_spam_learner_learn(info, NULL, TRUE);
@@ -393,10 +388,10 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 		procmsg_spam_learner_learn(info, NULL, FALSE);
 		procmsg_msginfo_unset_flags(info, MSG_SPAM, 0);
 		return TRUE;
-	
+
 	case MATCHACTION_COLOR:
 		FLUSH_COPY_IF_NEEDED(info);
-		procmsg_msginfo_unset_flags(info, MSG_CLABEL_FLAG_MASK, 0); 
+		procmsg_msginfo_unset_flags(info, MSG_CLABEL_FLAG_MASK, 0);
 		procmsg_msginfo_set_flags(info, MSG_COLORLABEL_TO_FLAGS(action->labelcolor), 0);
 		return TRUE;
 
@@ -425,7 +420,7 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 					     COMPOSE_TO, PREF_NONE);
 
 		val = compose_send(compose);
-		
+
 		return val == 0 ? TRUE : FALSE;
 
 	case MATCHACTION_EXECUTE:
@@ -469,16 +464,13 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 
 	case MATCHACTION_ADD_TO_ADDRESSBOOK:
 		{
-#ifndef USE_ALT_ADDRBOOK
 			AddressDataSource *book = NULL;
 			AddressBookFile *abf = NULL;
 			ItemFolder *folder = NULL;
-#endif
 			gchar *buf = NULL;
 			Header *header = NULL;
 			gint errors = 0;
 
-#ifndef USE_ALT_ADDRBOOK
 			if (!addressbook_peek_folder_exists(action->destination, &book, &folder)) {
 				g_warning("addressbook folder not found '%s'", action->destination?action->destination:"(null)");
 				return FALSE;
@@ -489,7 +481,6 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 			}
 
 			abf = book->rawDataSource;
-#endif
 			/* get the header */
 			if (procheader_get_header_from_msginfo(info, &buf, action->header) < 0)
 				return FALSE;
@@ -520,11 +511,7 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 						gchar *name = procheader_get_fromname(walk->data);
 						debug_print("adding '%s <%s>' to addressbook '%s'\n",
 								name, stripped_addr, action->destination);
-#ifndef USE_ALT_ADDRBOOK
 						if (!addrbook_add_contact(abf, folder, name, stripped_addr, NULL)) {
-#else
-						if (!addressadd_selection(name, stripped_addr, NULL, NULL)) {
-#endif
 							g_warning("contact could not be added");
 							errors++;
 						}
@@ -563,7 +550,7 @@ gboolean filteringaction_apply_action_list(GSList *action_list, MsgInfo *info)
 				break;
 		} else
 			return FALSE;
-		
+
 	}
 	return TRUE;
 }
@@ -773,7 +760,7 @@ static gboolean filtering_match_condition(FilteringProp *filtering, MsgInfo *inf
  *\param	filtering List of filtering rules.
  *\param	info Message to apply rules on.
  *\param	final Variable returning TRUE or FALSE if one of the
- *		encountered actions was final. 
+ *		encountered actions was final.
  *		See also \ref filtering_is_final_action.
  *
  *\return	gboolean TRUE to continue applying rules.
@@ -784,7 +771,7 @@ static gboolean filtering_apply_rule(FilteringProp *filtering, MsgInfo *info,
 	gboolean result = TRUE;
 	gchar    *buf;
         GSList * tmp;
-        
+
         * final = FALSE;
         for (tmp = filtering->action_list ; tmp != NULL ; tmp = tmp->next) {
                 FilteringAction * action;
@@ -808,7 +795,7 @@ static gboolean filtering_apply_rule(FilteringProp *filtering, MsgInfo *info,
                         * final = TRUE;
                         break;
                 }
-		
+
         }
 	return result;
 }
@@ -819,7 +806,7 @@ static gboolean filtering_apply_rule(FilteringProp *filtering, MsgInfo *info,
  *
  *\param	filtering_action Action to check.
  *
- *\return	gboolean TRUE if \a filtering_action is final.	
+ *\return	gboolean TRUE if \a filtering_action is final.
  */
 static gboolean filtering_is_final_action(FilteringAction *filtering_action)
 {
@@ -849,9 +836,9 @@ static gboolean filter_msginfo(GSList * filtering_list, MsgInfo * info, PrefsAcc
 	GSList	*l;
 	gboolean final;
 	gboolean apply_next;
-	
+
 	cm_return_val_if_fail(info != NULL, TRUE);
-	
+
 	for (l = filtering_list, final = FALSE, apply_next = FALSE; l != NULL; l = g_slist_next(l)) {
 		FilteringProp * filtering = (FilteringProp *) l->data;
 
@@ -915,8 +902,8 @@ static gboolean filter_msginfo(GSList * filtering_list, MsgInfo * info, PrefsAcc
  *
  *\note		Returning FALSE means the message was not handled,
  *		and that the calling code should do the default
- *		processing. E.g. \ref inc.c::inc_start moves the 
- *		message to the inbox. 	
+ *		processing. E.g. \ref inc.c::inc_start moves the
+ *		message to the inbox.
  */
 gboolean filter_message_by_msginfo(GSList *flist, MsgInfo *info, PrefsAccount* ac_prefs,
 								   FilteringInvocationType context, gchar *extra_info)
@@ -997,7 +984,7 @@ gchar *filteringaction_to_string(FilteringAction *action)
 		g_string_free(dest, TRUE);
 		return NULL;
 	}
-    
+
 	switch(action->type) {
 	case MATCHACTION_MOVE:
 	case MATCHACTION_COPY:
@@ -1068,11 +1055,11 @@ gchar * filteringaction_list_to_string(GSList * action_list)
         for (tmp = action_list ; tmp != NULL ; tmp = tmp->next) {
                 gchar *action_str;
                 FilteringAction * action;
-                
+
                 action = tmp->data;
-                
+
                 action_str = filteringaction_to_string(action);
-                
+
                 if (action_list_str != NULL) {
                         list_str = g_strconcat(action_list_str, " ", action_str, NULL);
                         g_free(action_list_str);
@@ -1178,7 +1165,7 @@ gboolean filtering_peek_per_account_rules(GSList *filtering_list)
 
 		if (filtering->enabled && (filtering->account_id != 0)) {
 			return TRUE;
-		}		
+		}
 	}
 
 	return FALSE;
@@ -1212,9 +1199,9 @@ again:
 		if (action->type == MATCHACTION_SET_TAG ||
 		    action->type == MATCHACTION_UNSET_TAG)
 			continue;
-		if (!action->destination) 
+		if (!action->destination)
 			continue;
-		
+
 		destlen = strlen(action->destination);
 
 		if (destlen > oldpathlen) {
@@ -1259,7 +1246,7 @@ again:
 			}
 		}
 	}
-	
+
 	g_free(old_path_with_sep);
 #ifdef G_OS_WIN32
 	if (!strcmp(separator, G_DIR_SEPARATOR_S) && !matched) {

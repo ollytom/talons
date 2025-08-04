@@ -31,9 +31,7 @@ claws_mail_platform_ldflags =
 claws_mail_deps =
 endif
 
-alt_abook_source = \
-	addressbook-dbus.c
-orig_abook_source = \
+abook_source = \
 	addrbook.c \
 	addrclip.c \
 	addrcustomattr.c \
@@ -53,11 +51,7 @@ orig_abook_source = \
 	exporthtml.c \
 	vcard.c
 
-abook_source = $(orig_abook_source)
-abook_extra = $(alt_abook_source)
-
 abook_headers = \
-	addressbook-dbus.h \
 	adbookbase.h \
 	addrbook.h \
 	addrclip.h \

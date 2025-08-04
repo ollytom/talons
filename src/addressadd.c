@@ -37,26 +37,16 @@
 #include "prefs_common.h"
 #include "prefs_gtk.h"
 #include "addressadd.h"
-#ifndef USE_ALT_ADDRBOOK
-	#include "addritem.h"
-	#include "addrbook.h"
-	#include "addrindex.h"
-#else
-	#include "addressbook-dbus.h"
-#endif
+#include "addritem.h"
+#include "addrbook.h"
+#include "addrindex.h"
 #include "manage_window.h"
 #include "alertpanel.h"
 
-#ifndef USE_ALT_ADDRBOOK
 typedef struct {
 	AddressBookFile	*book;
 	ItemFolder	*folder;
 } FolderInfo;
-#else
-typedef struct {
-    gchar* book;
-} FolderInfo;
-#endif
 
 static struct _AddressAdd_dlg {
 	GtkWidget *window;
@@ -82,7 +72,6 @@ enum {
 	N_ADDRADD_COLS
 };
 
-#ifndef USE_ALT_ADDRBOOK
 static FolderInfo *addressadd_create_folderinfo( AddressBookFile *abf, ItemFolder *folder )
 {
 	FolderInfo *fi = g_new0( FolderInfo, 1 );
@@ -90,26 +79,12 @@ static FolderInfo *addressadd_create_folderinfo( AddressBookFile *abf, ItemFolde
 	fi->folder = folder;
 	return fi;
 }
-#else
-static FolderInfo *addressadd_create_folderinfo(gchar* book) {
-	FolderInfo *fi = g_new0( FolderInfo, 1 );
-	fi->book = book;
-	return fi;
-}
-#endif
 
-#ifndef USE_ALT_ADDRBOOK
 static void addressadd_free_folderinfo( FolderInfo *fi ) {
 	fi->book   = NULL;
 	fi->folder = NULL;
 	g_free( fi );
 }
-#else
-static void addressadd_free_folderinfo( FolderInfo *fi ) {
-	fi->book   = NULL;
-	g_free( fi );
-}
-#endif
 
 static gint addressadd_delete_event( GtkWidget *widget, GdkEventAny *event, gboolean *cancelled ) {
 	addressadd_cancelled = TRUE;
@@ -359,7 +334,6 @@ static void addressadd_tree_clear()
 	gtk_tree_store_clear(GTK_TREE_STORE(model));
 }
 
-#ifndef USE_ALT_ADDRBOOK
 static void addressadd_load_folder( GtkTreeIter *parent_iter,
 		ItemFolder *parentFolder, FolderInfo *fiParent )
 {
@@ -443,57 +417,19 @@ static void addressadd_load_data( AddressIndex *addrIndex ) {
 	if (gtk_tree_model_get_iter_first(model, &iter))
 		gtk_tree_selection_select_iter(sel, &iter);
 }
-#else
-static void addressadd_load_data() {
-	GSList *list;
-	FolderInfo *fi = NULL;
-	GError* error = NULL;
-	GtkWidget *view = addressadd_dlg.tree_folder;
-	GtkTreeIter iter;
-	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
-	GtkTreeSelection *sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-	gchar *name;
 
-	addressadd_tree_clear();
-
-	list = addressbook_dbus_get_books(&error);
-	for (; list; list = g_slist_next(list)) {
-		name = (gchar *) list->data;
-		fi = addressadd_create_folderinfo(name);
-		gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);
-		gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
-				ADDRADD_COL_ICON, bookXpm,ADDRADD_COL_NAME, (gchar *)list->data,
-				ADDRADD_COL_PTR, fi,
-				-1);
-	}
-
-	if (gtk_tree_model_get_iter_first(model, &iter))
-                gtk_tree_selection_select_iter(sel, &iter);
-}
-#endif
-
-#ifndef USE_ALT_ADDRBOOK
 gboolean addressadd_selection( AddressIndex *addrIndex, const gchar *name,
 		const gchar *address, const gchar *remarks, GdkPixbuf *picture ) {
-#else
-gboolean addressadd_selection(const gchar *name, const gchar *address,
-							  const gchar *remarks, GdkPixbuf *picture ) {
-#endif
 	gboolean retVal = FALSE;
-#ifndef USE_ALT_ADDRBOOK
 	ItemPerson *person = NULL;
-#endif
 	FolderInfo *fi = NULL;
 	addressadd_cancelled = FALSE;
 
 	if( ! addressadd_dlg.window ) addressadd_create();
 
 	addressadd_dlg.fiSelected = NULL;
-#ifndef USE_ALT_ADDRBOOK
 	addressadd_load_data( addrIndex );
-#else
-	addressadd_load_data();
-#endif
+
 	gtk_widget_show(addressadd_dlg.window);
 	gtk_window_set_modal(GTK_WINDOW(addressadd_dlg.window), TRUE);
 	gtk_widget_grab_focus(addressadd_dlg.ok_btn);
@@ -527,7 +463,6 @@ gboolean addressadd_selection(const gchar *name, const gchar *address,
 
 			fi = addressadd_dlg.fiSelected;
 
-#ifndef USE_ALT_ADDRBOOK
 			person = addrbook_add_contact( fi->book, fi->folder,
 							returned_name,
 							address,
@@ -549,47 +484,10 @@ gboolean addressadd_selection(const gchar *name, const gchar *address,
 					g_free( name );
 				}
 			}
-#else
-			ContactData* contact = g_new0(ContactData, 1);
-			GError* error = NULL;
 
-			if (returned_name)
-				contact->cn = g_strdup(returned_name);
-			else
-				contact->cn = g_strdup(address);
-
-			contact->name = g_strdup(returned_name);
-			contact->email = g_strdup(address);
-			contact->remarks = g_strdup(returned_remarks);
-			contact->book = g_strdup(fi->book);
-			contact->picture = picture;
-
-            if (addressbook_dbus_add_contact(contact, &error) == 0) {
-				debug_print("Added to addressbook:\n%s\n%s\n%s\n%s\n",
-							 returned_name, address, returned_remarks, fi->book);
-				retVal = TRUE;
-			}
-			else {
-				retVal = FALSE;
-				if (error) {
-					GtkWidget* dialog = gtk_message_dialog_new (
-								GTK_WINDOW(addressadd_dlg.window),
-                                GTK_DIALOG_DESTROY_WITH_PARENT,
-                                GTK_MESSAGE_ERROR,
-                                GTK_BUTTONS_CLOSE,
-                                "%s", error->message);
-					gtk_dialog_run (GTK_DIALOG (dialog));
-					gtk_widget_destroy (dialog);
-					g_error_free(error);
-				}
-			}
-			contact_data_free(&contact);
-#endif
 			g_free(returned_name);
 			g_free(returned_remarks);
-#ifndef USE_ALT_ADDRBOOK
 			if( person ) retVal = TRUE;
-#endif
 		}
 	}
 
@@ -597,4 +495,3 @@ gboolean addressadd_selection(const gchar *name, const gchar *address,
 
 	return retVal;
 }
-

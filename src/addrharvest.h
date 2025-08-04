@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -46,14 +46,6 @@ struct _AddressHarvester {
 	gint       retVal;
 	gboolean   folderRecurse;
 };
-
-#ifdef USE_ALT_ADDRBOOK
-typedef struct {
-    gchar* first_name;
-    gchar* last_name;
-    gchar* email;
-} ContactEntry;
-#endif
 
 /* Function prototypes */
 AddressHarvester *addrharvest_create	( void );

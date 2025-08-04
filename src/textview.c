@@ -48,13 +48,8 @@
 #include "html.h"
 #include "enriched.h"
 #include "compose.h"
-#ifndef USE_ALT_ADDRBOOK
-	#include "addressbook.h"
-	#include "addrindex.h"
-#else
-	#include "addressbook-dbus.h"
-	#include "addressadd.h"
-#endif
+#include "addressbook.h"
+#include "addrindex.h"
 #include "displayheader.h"
 #include "account.h"
 #include "mimeview.h"
@@ -85,7 +80,7 @@ static GdkRGBA quote_bgcolors[3] = {
 static GdkRGBA signature_color = {
 	0.5, 0.5, 0.5, 1
 };
-	
+
 static GdkRGBA uri_color = {
 	0, 0, 0, 1
 };
@@ -216,7 +211,7 @@ static gboolean textview_uri_button_pressed	(GtkTextTag 	*tag,
 
 static void textview_uri_list_remove_all	(GSList		*uri_list);
 
-static void textview_toggle_quote		(TextView 	*textview, 
+static void textview_toggle_quote		(TextView 	*textview,
 						 GSList		*start_list,
 						 ClickableText 	*uri,
 						 gboolean	 expand_only);
@@ -235,14 +230,14 @@ static void copy_mail_to_uri_cb			(GtkAction	*action,
 						 TextView	*textview);
 static void textview_show_tags(TextView *textview);
 
-static GtkActionEntry textview_link_popup_entries[] = 
+static GtkActionEntry textview_link_popup_entries[] =
 {
 	{"TextviewPopupLink",			NULL, "TextviewPopupLink", NULL, NULL, NULL },
 	{"TextviewPopupLink/Open",		NULL, N_("_Open in web browser"), NULL, NULL, G_CALLBACK(open_uri_cb) },
 	{"TextviewPopupLink/Copy",		NULL, N_("Copy this _link"), NULL, NULL, G_CALLBACK(copy_uri_cb) },
 };
 
-static GtkActionEntry textview_mail_popup_entries[] = 
+static GtkActionEntry textview_mail_popup_entries[] =
 {
 	{"TextviewPopupMail",			NULL, "TextviewPopupMail", NULL, NULL, NULL },
 	{"TextviewPopupMail/Compose",		NULL, N_("Write _new message"), NULL, NULL, G_CALLBACK(mail_to_uri_cb) },
@@ -361,7 +356,7 @@ TextView *textview_create(void)
 
 	gtk_widget_show(vbox);
 
-	
+
 	textview->ui_manager = gtk_ui_manager_new();
 	textview->link_action_group = cm_menu_create_action_group_full(textview->ui_manager,
 			"TextviewPopupLink",
@@ -373,22 +368,22 @@ TextView *textview_create(void)
 			G_N_ELEMENTS(textview_mail_popup_entries), (gpointer)textview);
 
 	MENUITEM_ADDUI_MANAGER(textview->ui_manager, "/", "Menus", "Menus", GTK_UI_MANAGER_MENUBAR)
-	MENUITEM_ADDUI_MANAGER(textview->ui_manager, 
+	MENUITEM_ADDUI_MANAGER(textview->ui_manager,
 			"/Menus", "TextviewPopupLink", "TextviewPopupLink", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(textview->ui_manager, 
+	MENUITEM_ADDUI_MANAGER(textview->ui_manager,
 			"/Menus", "TextviewPopupMail", "TextviewPopupMail", GTK_UI_MANAGER_MENU)
 
-	MENUITEM_ADDUI_MANAGER(textview->ui_manager, 
+	MENUITEM_ADDUI_MANAGER(textview->ui_manager,
 			"/Menus/TextviewPopupLink", "Open", "TextviewPopupLink/Open", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(textview->ui_manager, 
+	MENUITEM_ADDUI_MANAGER(textview->ui_manager,
 			"/Menus/TextviewPopupLink", "Copy", "TextviewPopupLink/Copy", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(textview->ui_manager, 
+	MENUITEM_ADDUI_MANAGER(textview->ui_manager,
 			"/Menus/TextviewPopupMail", "Compose", "TextviewPopupMail/Compose", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(textview->ui_manager, 
+	MENUITEM_ADDUI_MANAGER(textview->ui_manager,
 			"/Menus/TextviewPopupMail", "ReplyTo", "TextviewPopupMail/ReplyTo", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(textview->ui_manager, 
+	MENUITEM_ADDUI_MANAGER(textview->ui_manager,
 			"/Menus/TextviewPopupMail", "AddAB", "TextviewPopupMail/AddAB", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(textview->ui_manager, 
+	MENUITEM_ADDUI_MANAGER(textview->ui_manager,
 			"/Menus/TextviewPopupMail", "Copy", "TextviewPopupMail/Copy", GTK_UI_MANAGER_MENUITEM)
 
 	textview->link_popup_menu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(
@@ -411,7 +406,7 @@ static void textview_create_tags(GtkTextView *text, TextView *textview)
 	GtkTextBuffer *buffer;
 	GtkTextTag *tag, *qtag;
 	static PangoFontDescription *font_desc, *bold_font_desc;
-	
+
 	if (!font_desc)
 		font_desc = pango_font_description_from_string
 			(NORMAL_FONT);
@@ -655,7 +650,7 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 	buffer = gtk_text_view_get_buffer(text);
 	charcount = gtk_text_buffer_get_char_count(buffer);
 	gtk_text_buffer_get_end_iter(buffer, &iter);
-	
+
 	if (textview->stop_loading) {
 		return;
 	}
@@ -687,7 +682,7 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 		if (headers) {
 			if (charcount > 0)
 				gtk_text_buffer_insert(buffer, &iter, "\n", 1);
-			
+
 			if (procmime_mimeinfo_parent(mimeinfo) == NULL &&
 			    !prefs_common.display_header_pane)
 				textview_show_tags(textview);
@@ -711,10 +706,10 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 		g_snprintf(buf, sizeof(buf), _("[%s (%ld bytes)]"),
 			   content_type, mimeinfo->length);
 
-	g_free(content_type);			   
+	g_free(content_type);
 
 	if (mimeinfo->disposition == DISPOSITIONTYPE_ATTACHMENT
-	|| (mimeinfo->disposition == DISPOSITIONTYPE_INLINE && 
+	|| (mimeinfo->disposition == DISPOSITIONTYPE_INLINE &&
 	    mimeinfo->type != MIMETYPE_TEXT)) {
 		gtk_text_buffer_insert(buffer, &iter, "\n", 1);
 		TEXTVIEW_INSERT_LINK(buf, "cm://select_attachment", mimeinfo);
@@ -802,11 +797,11 @@ static void recursive_add_parts(TextView *textview, GNode *node)
         START_TIMING("");
 
         mimeinfo = (MimeInfo *) node->data;
-        
+
         textview_add_part(textview, mimeinfo);
 #ifdef GENERIC_UMPC
 	textview_set_position(textview, 0);
-#endif        
+#endif
         if ((mimeinfo->type != MIMETYPE_MULTIPART) &&
             (mimeinfo->type != MIMETYPE_MESSAGE)) {
 	    	END_TIMING();
@@ -833,7 +828,7 @@ static void recursive_add_parts(TextView *textview, GNode *node)
                         submime = (MimeInfo *) iter->data;
                         if (submime->type == MIMETYPE_TEXT)
                                 score = 2;
- 
+
                         if (submime->subtype != NULL) {
                                 if (g_ascii_strcasecmp(submime->subtype, "plain") == 0)
                                         score = 3;
@@ -948,7 +943,7 @@ void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 		TEXTVIEW_INSERT(", ");
 		TEXTVIEW_INSERT(to_human_readable((goffset)partinfo->length));
 		TEXTVIEW_INSERT("):\n\n");
-		
+
 		g_free(content_type);
 	}
 	TEXTVIEW_INSERT(_("  The following can be performed on this part\n"));
@@ -1041,7 +1036,7 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 	conv = conv_code_converter_new(charset);
 
 	procmime_force_encoding(textview->messageview->forced_encoding);
-	
+
 	textview->is_in_signature = FALSE;
 	textview->is_diff = FALSE;
 	textview->is_attachment = FALSE;
@@ -1059,7 +1054,7 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 		|| ((folder_item && folder_item->prefs && folder_item->prefs->render_html == HTML_RENDER_DEFAULT)
 			&& prefs_common.render_html))) {
 		gchar *filename;
-		
+
 		filename = procmime_get_tmp_file_name(mimeinfo);
 		if (procmime_get_part(filename, mimeinfo) == 0) {
 			tmpfp = claws_fopen(filename, "rb");
@@ -1072,7 +1067,7 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 		g_free(filename);
 	} else if (!g_ascii_strcasecmp(mimeinfo->subtype, "enriched")) {
 		gchar *filename;
-		
+
 		filename = procmime_get_tmp_file_name(mimeinfo);
 		if (procmime_get_part(filename, mimeinfo) == 0) {
 			tmpfp = claws_fopen(filename, "rb");
@@ -1132,7 +1127,7 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 		tmpfp = claws_fdopen(pfd[0], "rb");
 		while (claws_fgets(buf, sizeof(buf), tmpfp)) {
 			textview_write_line(textview, buf, conv, TRUE);
-			
+
 			if (textview->stop_loading) {
 				claws_fclose(tmpfp);
 				waitpid(pid, pfd, 0);
@@ -1191,7 +1186,7 @@ textview_default:
 				return;
 			}
 			wrote += ftell(tmpfp)-i;
-			if (mimeinfo->length > 1024*1024 
+			if (mimeinfo->length > 1024*1024
 			&&  wrote > 1024*1024
 			&& !textview->messageview->show_full_text) {
 				continue_write = FALSE;
@@ -1218,10 +1213,10 @@ textview_default:
 			}
 		}
 	}
-	
+
 	if (continue_write == FALSE) {
 		messageview_show_partial_display(
-			textview->messageview, 
+			textview->messageview,
 			textview->messageview->msginfo,
 			mimeinfo->length);
 	}
@@ -1249,12 +1244,12 @@ static void textview_show_html(TextView *textview, FILE *fp,
 				str = strtok(str, " ");
 				if (str) {
 					while (str && *str && g_ascii_isspace(*str))
-						str++; 
+						str++;
 					parser->href = g_strdup(str);
 					/* the URL may (or not) be followed by the
 					 * referenced text */
 					str = strtok(NULL, "");
-				}	
+				}
 		        }
 		        if (str != NULL)
 			        textview_write_link(textview, str, parser->href, NULL);
@@ -1299,7 +1294,7 @@ static void textview_show_ertf(TextView *textview, FILE *fp,
 			return;
 		}
 	}
-	
+
 	account_sigsep_matchlist_delete();
 
 	ertf_parser_destroy(parser);
@@ -1338,7 +1333,7 @@ static void textview_make_clickable_parts(TextView *textview,
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(text);
 	GtkTextIter iter;
 	gchar *mybuf = g_strdup(linebuf);
-	
+
 	/* parse table - in order of priority */
 	struct table {
 		const gchar *needle; /* token */
@@ -1404,7 +1399,7 @@ static void textview_make_clickable_parts(TextView *textview,
 					scanpos = tmp;
 					last_index = n;
 				}
-			}					
+			}
 		}
 
 		if (scanpos) {
@@ -1527,7 +1522,7 @@ static void textview_make_clickable_parts_later(TextView *textview,
 					scanpos = tmp;
 					last_index = n;
 				}
-			}					
+			}
 		}
 
 		if (scanpos) {
@@ -1554,23 +1549,23 @@ static void textview_make_clickable_parts_later(TextView *textview,
 			uri = g_new0(ClickableText, 1);
 			uri->uri = parser[last->pti].build_uri(last->bp,
 							       last->ep);
-			
+
 			tmp_str = mybuf;
 			old_char = tmp_str[last->ep - mybuf];
-			tmp_str[last->ep - mybuf] = '\0';				       
+			tmp_str[last->ep - mybuf] = '\0';
 			end_offset = g_utf8_strlen(tmp_str, -1);
 			tmp_str[last->ep - mybuf] = old_char;
-			
+
 			old_char = tmp_str[last->bp - mybuf];
-			tmp_str[last->bp - mybuf] = '\0';				       
+			tmp_str[last->bp - mybuf] = '\0';
 			start_offset = g_utf8_strlen(tmp_str, -1);
 			tmp_str[last->bp - mybuf] = old_char;
-			
+
 			gtk_text_buffer_get_iter_at_offset(buffer, &start_iter, start_offset + offset);
 			gtk_text_buffer_get_iter_at_offset(buffer, &end_iter, end_offset + offset);
-			
+
 			uri->start = gtk_text_iter_get_offset(&start_iter);
-			
+
 			gtk_text_buffer_apply_tag_by_name(buffer, "link", &start_iter, &end_iter);
 
 			uri->end = gtk_text_iter_get_offset(&end_iter);
@@ -1578,7 +1573,7 @@ static void textview_make_clickable_parts_later(TextView *textview,
 			textview->uri_list =
 				g_slist_prepend(textview->uri_list, uri);
 		}
-	} 
+	}
 
 	g_free(mybuf);
 }
@@ -1604,7 +1599,7 @@ static void textview_write_line(TextView *textview, const gchar *str,
 		strncpy2(buf, str, sizeof(buf));
 	else if (conv_convert(conv, buf, sizeof(buf), str) < 0)
 		conv_localetodisp(buf, sizeof(buf), str);
-		
+
 	strcrchomp(buf);
 	fg_color = NULL;
 
@@ -1689,24 +1684,24 @@ do_quote:
 					 "qlink", fg_color, NULL);
 			uri->end = gtk_text_iter_get_offset(&iter);
 			gtk_text_buffer_insert(buffer, &iter, "  \n", -1);
-			
+
 			uri->filename = NULL;
 			textview->uri_list =
 				g_slist_prepend(textview->uri_list, uri);
-		
+
 			textview->prev_quote_level = real_quotelevel;
 		} else {
 			GSList *last = textview->uri_list;
 			ClickableText *lasturi = NULL;
 			gint e_len = 0, n_len = 0;
-			
+
 			if (textview->uri_list) {
 				lasturi = (ClickableText *)last->data;
 			} else {
 				g_print("oops (%d %d)\n",
 					real_quotelevel, textview->prev_quote_level);
-			}	
-			if (lasturi) {	
+			}
+			if (lasturi) {
 				if (lasturi->is_quote == FALSE) {
 					textview->prev_quote_level = -1;
 					goto do_quote;
@@ -1742,7 +1737,7 @@ void textview_write_link(TextView *textview, const gchar *str,
 
 	while (uri && *uri && g_ascii_isspace(*uri))
 		uri++;
-		
+
 	text = GTK_TEXT_VIEW(textview->text);
 	buffer = gtk_text_view_get_buffer(text);
 	gtk_text_buffer_get_end_iter(buffer, &iter);
@@ -1804,7 +1799,7 @@ void textview_clear(TextView *textview)
 	textview->prev_quote_level = -1;
 
 	textview->body_pos = 0;
-	if (textview->image) 
+	if (textview->image)
 		gtk_widget_destroy(textview->image);
 	textview->image = NULL;
 	textview->avatar_type = 0;
@@ -2001,10 +1996,10 @@ static void textview_show_avatar(TextView *textview)
 	MsgInfo *msginfo = textview->messageview->msginfo;
 	gint x, wx, wy;
 	AvatarRender *avatarr;
-	
+
 	if (prefs_common.display_header_pane || !prefs_common.display_xface)
 		goto bail;
-	
+
 	avatarr = avatars_avatarrender_new(msginfo);
 	hooks_invoke(AVATAR_IMAGE_RENDER_HOOKLIST, avatarr);
 
@@ -2013,9 +2008,9 @@ static void textview_show_avatar(TextView *textview)
 		goto bail;
 	}
 
-	if (textview->image) 
+	if (textview->image)
 		gtk_widget_destroy(textview->image);
-	
+
 	textview->image = avatarr->image;
 	textview->avatar_type = avatarr->type;
 	avatarr->image = NULL; /* avoid destroying */
@@ -2023,7 +2018,7 @@ static void textview_show_avatar(TextView *textview)
 
 	gtk_widget_set_name(GTK_WIDGET(textview->image), "textview_avatar");
 	gtk_widget_show(textview->image);
-	
+
 	gtk_widget_get_allocation(textview->text, &allocation);
 	x = allocation.width - WIDTH - 5;
 
@@ -2031,16 +2026,16 @@ static void textview_show_avatar(TextView *textview)
 		GTK_TEXT_VIEW(textview->text),
 		GTK_TEXT_WINDOW_TEXT, x, 5, &wx, &wy);
 
-	gtk_text_view_add_child_in_window(text, textview->image, 
+	gtk_text_view_add_child_in_window(text, textview->image,
 		GTK_TEXT_WINDOW_TEXT, wx, wy);
 
 	gtk_widget_show_all(textview->text);
 
 	return;
 bail:
-	if (textview->image) 
+	if (textview->image)
 		gtk_widget_destroy(textview->image);
-	textview->image = NULL;	
+	textview->image = NULL;
 	textview->avatar_type = 0;
 }
 
@@ -2050,10 +2045,10 @@ void textview_show_icon(TextView *textview, const gchar *stock_id)
 	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
 	gint x, wx, wy;
 	gchar *img_sym = NULL;
-	
-	if (textview->image) 
+
+	if (textview->image)
 		gtk_widget_destroy(textview->image);
-	
+
 	img_sym = g_strconcat(stock_id, "-symbolic", NULL);
 	textview->image = gtk_image_new_from_icon_name(img_sym, GTK_ICON_SIZE_DIALOG);
 	g_free(img_sym);
@@ -2061,7 +2056,7 @@ void textview_show_icon(TextView *textview, const gchar *stock_id)
 
 	gtk_widget_set_name(GTK_WIDGET(textview->image), "textview_icon");
 	gtk_widget_show(textview->image);
-	
+
 	gtk_widget_get_allocation(textview->text, &allocation);
 	x = allocation.width - WIDTH - 5;
 
@@ -2069,18 +2064,17 @@ void textview_show_icon(TextView *textview, const gchar *stock_id)
 		GTK_TEXT_VIEW(textview->text),
 		GTK_TEXT_WINDOW_TEXT, x, 5, &wx, &wy);
 
-	gtk_text_view_add_child_in_window(text, textview->image, 
+	gtk_text_view_add_child_in_window(text, textview->image,
 		GTK_TEXT_WINDOW_TEXT, wx, wy);
 
 	gtk_widget_show_all(textview->text);
-	
+
 
 	return;
 }
 
 static void textview_save_contact_pic(TextView *textview)
 {
-#ifndef USE_ALT_ADDRBOOK
 	MsgInfo *msginfo = textview->messageview->msginfo;
 	gchar *filename = NULL;
 	GError *error = NULL;
@@ -2092,7 +2086,7 @@ static void textview_save_contact_pic(TextView *textview)
 	if (textview->avatar_type > AVATAR_FACE)
 		return;
 
-	if (textview->image) 
+	if (textview->image)
 		picture = gtk_image_get_pixbuf(GTK_IMAGE(textview->image));
 
 	filename = addrindex_get_picture_file(msginfo->from);
@@ -2107,14 +2101,10 @@ static void textview_save_contact_pic(TextView *textview)
 		}
 	}
 	g_free(filename);
-#else
-	/* new address book */
-#endif
 }
 
 static void textview_show_contact_pic(TextView *textview)
 {
-#ifndef USE_ALT_ADDRBOOK
 	MsgInfo *msginfo = textview->messageview->msginfo;
 	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
 	gint x, wx, wy;
@@ -2127,15 +2117,15 @@ static void textview_show_contact_pic(TextView *textview)
 	if (prefs_common.display_header_pane
 		|| !prefs_common.display_xface)
 		goto bail;
-	
+
 	if (msginfo->extradata && msginfo->extradata->avatars)
 		return;
 
-	if (textview->image) 
+	if (textview->image)
 		gtk_widget_destroy(textview->image);
 
 	filename = addrindex_get_picture_file(msginfo->from);
-	
+
 	if (!filename)
 		goto bail;
 	if (!is_file_exist(filename)) {
@@ -2144,9 +2134,9 @@ static void textview_show_contact_pic(TextView *textview)
 	}
 
 	gdk_pixbuf_get_file_info(filename, &w, &h);
-	
+
 	if (w > 48 || h > 48)
-		picture = gdk_pixbuf_new_from_file_at_scale(filename, 
+		picture = gdk_pixbuf_new_from_file_at_scale(filename,
 						48, 48, TRUE, &error);
 	else
 		picture = gdk_pixbuf_new_from_file(filename, &error);
@@ -2167,7 +2157,7 @@ static void textview_show_contact_pic(TextView *textview)
 
 	gtk_widget_set_name(GTK_WIDGET(textview->image), "textview_contact_pic");
 	gtk_widget_show(textview->image);
-	
+
 	gtk_widget_get_allocation(textview->text, &allocation);
 	x = allocation.width - WIDTH - 5;
 
@@ -2175,20 +2165,17 @@ static void textview_show_contact_pic(TextView *textview)
 		GTK_TEXT_VIEW(textview->text),
 		GTK_TEXT_WINDOW_TEXT, x, 5, &wx, &wy);
 
-	gtk_text_view_add_child_in_window(text, textview->image, 
+	gtk_text_view_add_child_in_window(text, textview->image,
 		GTK_TEXT_WINDOW_TEXT, wx, wy);
 
 	gtk_widget_show_all(textview->text);
-	
+
 	return;
 bail:
-	if (textview->image) 
+	if (textview->image)
 		gtk_widget_destroy(textview->image);
 	textview->image = NULL;
 	textview->avatar_type = 0;
-#else
-	/* new address book */
-#endif	
 }
 
 static gint textview_tag_cmp_list(gconstpointer a, gconstpointer b)
@@ -2197,10 +2184,10 @@ static gint textview_tag_cmp_list(gconstpointer a, gconstpointer b)
 	gint id_b = GPOINTER_TO_INT(b);
 	const gchar *tag_a = tags_get_tag(id_a);
 	const gchar *tag_b = tags_get_tag(id_b);
-	
+
 	if (tag_a == NULL)
 		return tag_b == NULL ? 0:1;
-	
+
 	if (tag_b == NULL)
 		return 1;
 
@@ -2217,10 +2204,10 @@ static void textview_show_tags(TextView *textview)
 	ClickableText *uri;
 	GSList *cur, *orig;
 	gboolean found_tag = FALSE;
-	
+
 	if (!msginfo->tags)
 		return;
-	
+
 	cur = orig = g_slist_sort(g_slist_copy(msginfo->tags), textview_tag_cmp_list);
 
 	for (; cur; cur = cur->next) {
@@ -2246,7 +2233,7 @@ static void textview_show_tags(TextView *textview)
 		uri = g_new0(ClickableText, 1);
 		uri->uri = g_strdup("");
 		uri->start = gtk_text_iter_get_offset(&iter);
-		gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, 
+		gtk_text_buffer_insert_with_tags_by_name(buffer, &iter,
 			cur_tag, -1,
 			"link", "header", "tags", NULL);
 		uri->end = gtk_text_iter_get_offset(&iter);
@@ -2311,11 +2298,11 @@ static void textview_show_header(TextView *textview, GPtrArray *headers)
 		    procheader_headername_equal(header->name, "Resent-From") ||
 		    procheader_headername_equal(header->name, "Resent-To"))
 			unfold_line(header->body);
-		
+
 		if (procheader_headername_equal(header->name, "Date") &&
 		    prefs_common.msgview_date_format) {
 			gchar hbody[80];
-			
+
 			procheader_date_parse(hbody, header->body, sizeof(hbody));
 			gtk_text_buffer_get_end_iter (buffer, &iter);
 			gtk_text_buffer_insert_with_tags_by_name
@@ -2330,7 +2317,7 @@ static void textview_show_header(TextView *textview, GPtrArray *headers)
 				(buffer, &iter, header->body, -1,
 				 "header", "emphasis", NULL);
 		} else {
-			gboolean hdr = 
+			gboolean hdr =
 			  procheader_headername_equal(header->name, "From") ||
 			  procheader_headername_equal(header->name, "To") ||
 			  procheader_headername_equal(header->name, "Cc") ||
@@ -2339,15 +2326,15 @@ static void textview_show_header(TextView *textview, GPtrArray *headers)
 			  procheader_headername_equal(header->name, "Sender") ||
 			  procheader_headername_equal(header->name, "Resent-From") ||
 			  procheader_headername_equal(header->name, "Resent-To");
-			textview_make_clickable_parts(textview, "header", 
-						      "hlink", header->body, 
+			textview_make_clickable_parts(textview, "header",
+						      "hlink", header->body,
 						      hdr);
 		}
 		gtk_text_buffer_get_end_iter (buffer, &iter);
 		gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, "\n", 1,
 							 "header", NULL);
 	}
-	
+
 	textview_show_avatar(textview);
 	if (prefs_common.save_xface)
 		textview_save_contact_pic(textview);
@@ -2390,12 +2377,12 @@ void textview_scroll_max(TextView *textview, gboolean up)
 {
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview->text));
 	GtkTextIter iter;
-	
+
 	if (up) {
 		gtk_text_buffer_get_start_iter(buffer, &iter);
 		gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(textview->text),
 						&iter, 0.0, TRUE, 0.0, 1.0);
-	
+
 	} else {
 		gtk_text_buffer_get_end_iter(buffer, &iter);
 		gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(textview->text),
@@ -2518,7 +2505,7 @@ static gboolean textview_visibility_notify(GtkWidget *widget,
 	/* check if occurred for the text window part */
 	if (window != event->window)
 		return FALSE;
-	
+
 	display = gdk_window_get_display(window);
 	seat = gdk_display_get_default_seat(display);
 	gdk_device_get_position(gdk_seat_get_pointer(seat),
@@ -2549,7 +2536,7 @@ static void textview_uri_update(TextView *textview, gint x, gint y)
 	GtkTextBuffer *buffer;
 	GtkTextIter start_iter, end_iter;
 	ClickableText *uri = NULL;
-	
+
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview->text));
 
 	if (x != -1 && y != -1) {
@@ -2557,8 +2544,8 @@ static void textview_uri_update(TextView *textview, gint x, gint y)
 		GtkTextIter iter;
 		GSList *tags;
 		GSList *cur;
-		
-		gtk_text_view_window_to_buffer_coords(GTK_TEXT_VIEW(textview->text), 
+
+		gtk_text_view_window_to_buffer_coords(GTK_TEXT_VIEW(textview->text),
 						      GTK_TEXT_WINDOW_WIDGET,
 						      x, y, &bx, &by);
 		gtk_text_view_get_iter_at_location(GTK_TEXT_VIEW(textview->text),
@@ -2586,7 +2573,7 @@ static void textview_uri_update(TextView *textview, gint x, gint y)
 		}
 		g_slist_free(tags);
 	}
-	
+
 	if (uri != textview->uri_hover) {
 		GdkWindow *window;
 
@@ -2595,13 +2582,13 @@ static void textview_uri_update(TextView *textview, gint x, gint y)
 							   "link-hover",
 							   &textview->uri_hover_start_iter,
 							   &textview->uri_hover_end_iter);
-		    
+
 		textview->uri_hover = uri;
 		if (uri) {
 			textview->uri_hover_start_iter = start_iter;
 			textview->uri_hover_end_iter = end_iter;
 		}
-		
+
 		window = gtk_text_view_get_window(GTK_TEXT_VIEW(textview->text),
 						  GTK_TEXT_WINDOW_TEXT);
 		if (textview->messageview->mainwin->cursor_count == 0) {
@@ -2697,7 +2684,7 @@ static void textview_zoom_reset(GtkWidget *widget, gpointer data)
 	font = pango_context_get_font_description(pctx);
 
 	/* reset and save the value for current session */
-	if (textview_font_size_default == TEXTVIEW_FONT_SIZE_UNSET || textview_font_size_percent == TEXTVIEW_FONT_SIZE_UNSET) 
+	if (textview_font_size_default == TEXTVIEW_FONT_SIZE_UNSET || textview_font_size_percent == TEXTVIEW_FONT_SIZE_UNSET)
 		return;
 
 	textview_font_size_percent = 0;
@@ -2713,7 +2700,7 @@ static void textview_populate_popup(GtkTextView* textview,
 						 gpointer user_data)
 {
 	GtkWidget *menuitem;
-	
+
 	cm_return_if_fail(menu != NULL);
 	cm_return_if_fail(GTK_IS_MENU_SHELL(menu));
 
@@ -2809,7 +2796,7 @@ static ClickableText *textview_get_uri_from_range(TextView *textview,
 		    end_pos ==  uri_->end) {
 			uri = uri_;
 			break;
-		} 
+		}
 	}
 	for (cur = textview->uri_list; uri == NULL && cur != NULL; cur = cur->next) {
 		ClickableText *uri_ = (ClickableText *)cur->data;
@@ -2825,7 +2812,7 @@ static ClickableText *textview_get_uri_from_range(TextView *textview,
 				uri = uri_;
 				break;
 			}
-		} 
+		}
 	}
 
 	return uri;
@@ -2873,14 +2860,14 @@ static void textview_remove_uris_in(TextView *textview, gint start, gint end)
 			g_free(uri->filename);
 			if (uri->is_quote) {
 				g_free(uri->fg_color);
-				g_free(uri->data); 
+				g_free(uri->data);
 				/* (only free data in quotes uris) */
 			}
 			g_free(uri);
 		} else {
 			cur = cur->next;
 		}
-		
+
 	}
 }
 
@@ -2888,10 +2875,10 @@ static void textview_toggle_quote(TextView *textview, GSList *start_list, Clicka
 {
 	GtkTextIter start, end;
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview->text));
-	
+
 	if (!uri->is_quote)
 		return;
-	
+
 	if (uri->q_expanded && expand_only)
 		return;
 
@@ -2908,18 +2895,18 @@ static void textview_toggle_quote(TextView *textview, GSList *start_list, Clicka
 					   &start,
 					   &end);
 	/* when shifting URIs start and end, we have to do it per-UTF8-char
-	 * so use g_utf8_strlen(). OTOH, when inserting in the text buffer, 
+	 * so use g_utf8_strlen(). OTOH, when inserting in the text buffer,
 	 * we have to pass a number of bytes, so use strlen(). disturbing. */
-	 
+
 	if (!uri->q_expanded) {
 		gtk_text_buffer_get_iter_at_offset(buffer, &start, uri->start);
 		gtk_text_buffer_get_iter_at_offset(buffer, &end,   uri->end);
-		textview_shift_uris_after(textview, start_list, uri->start, 
+		textview_shift_uris_after(textview, start_list, uri->start,
 			g_utf8_strlen((gchar *)uri->data, -1)-strlen(" [...]\n"));
 		gtk_text_buffer_delete(buffer, &start, &end);
 		gtk_text_buffer_get_iter_at_offset(buffer, &start, uri->start);
 		gtk_text_buffer_insert_with_tags_by_name
-				(buffer, &start, (gchar *)uri->data, 
+				(buffer, &start, (gchar *)uri->data,
 				 strlen((gchar *)uri->data)-1,
 				 "qlink", (gchar *)uri->fg_color, NULL);
 		uri->end = gtk_text_iter_get_offset(&start);
@@ -2930,7 +2917,7 @@ static void textview_toggle_quote(TextView *textview, GSList *start_list, Clicka
 		gtk_text_buffer_get_iter_at_offset(buffer, &start, uri->start);
 		gtk_text_buffer_get_iter_at_offset(buffer, &end,   uri->end);
 		textview_remove_uris_in(textview, uri->start, uri->end);
-		textview_shift_uris_after(textview, start_list, uri->start, 
+		textview_shift_uris_after(textview, start_list, uri->start,
 			strlen(" [...]\n")-g_utf8_strlen((gchar *)uri->data, -1));
 		gtk_text_buffer_delete(buffer, &start, &end);
 		gtk_text_buffer_get_iter_at_offset(buffer, &start, uri->start);
@@ -2967,14 +2954,14 @@ static gboolean textview_uri_button_pressed(GtkTextTag *tag, GObject *obj,
 		return FALSE;
 
 	g_object_get(G_OBJECT(tag), "name", &tagname, NULL);
-	
+
 	if (!strcmp(tagname, "qlink"))
 		qlink = TRUE;
 
 	g_free(tagname);
-	
+
 	bevent = (GdkEventButton *) event;
-	
+
 	/* doubleclick: open compose / add address / browser */
 	if (qlink && event->type == GDK_BUTTON_PRESS && bevent->button != 1) {
 		/* pass rightclick through */
@@ -2982,18 +2969,18 @@ static gboolean textview_uri_button_pressed(GtkTextTag *tag, GObject *obj,
 	} else if ((event->type == (qlink ? GDK_2BUTTON_PRESS:GDK_BUTTON_PRESS) && bevent->button == 1) ||
 		bevent->button == 2 || bevent->button == 3) {
 		if (uri->filename && !g_ascii_strncasecmp(uri->filename, "cm://", 5)) {
-			MimeView *mimeview = 
+			MimeView *mimeview =
 				(textview->messageview)?
 					textview->messageview->mimeview:NULL;
 			if (mimeview && bevent->button == 1) {
 				mimeview_handle_cmd(mimeview, uri->filename, NULL, uri->data);
-			} else if (mimeview && bevent->button == 2 && 
+			} else if (mimeview && bevent->button == 2 &&
 				!g_ascii_strcasecmp(uri->filename, "cm://select_attachment")) {
 				mimeview_handle_cmd(mimeview, "cm://open_attachment", NULL, uri->data);
-			} else if (mimeview && bevent->button == 3 && 
+			} else if (mimeview && bevent->button == 3 &&
 				!g_ascii_strcasecmp(uri->filename, "cm://select_attachment")) {
 				mimeview_handle_cmd(mimeview, "cm://menu_attachment", bevent, uri->data);
-			} 
+			}
 			return TRUE;
 		} else if (qlink && bevent->button == 1) {
 			if (prefs_common.hide_quoted) {
@@ -3011,10 +2998,10 @@ static gboolean textview_uri_button_pressed(GtkTextTag *tag, GObject *obj,
 				PrefsAccount *account = NULL;
 				FolderItem   *folder_item = NULL;
 				Compose *compose;
-				
+
 				if (textview->messageview && textview->messageview->msginfo &&
 				    textview->messageview->msginfo->folder) {
-					
+
 
 					folder_item = textview->messageview->msginfo->folder;
 					if (folder_item->prefs && folder_item->prefs->enable_default_account)
@@ -3029,7 +3016,7 @@ static gboolean textview_uri_button_pressed(GtkTextTag *tag, GObject *obj,
 			return TRUE;
 		} else if (g_ascii_strncasecmp(uri->uri, "file:", 5)) {
 			if (bevent->button == 1 &&
-			    textview_uri_security_check(textview, uri, FALSE) == TRUE) 
+			    textview_uri_security_check(textview, uri, FALSE) == TRUE)
 					open_uri(uri->uri,
 						 prefs_common_get_uri_cmd());
 			else if (bevent->button == 3 && !qlink) {
@@ -3053,7 +3040,7 @@ static gboolean textview_uri_button_pressed(GtkTextTag *tag, GObject *obj,
 	return FALSE;
 }
 
-gchar *textview_get_visible_uri		(TextView 	*textview, 
+gchar *textview_get_visible_uri		(TextView 	*textview,
 					 ClickableText 	*uri)
 {
 	GtkTextBuffer *buffer;
@@ -3076,7 +3063,7 @@ gchar *textview_get_visible_uri		(TextView 	*textview,
  *\param    textview The TextView the URL is contained in
  *
  *\return   gboolean TRUE if the URL is ok, or if the user chose to open
- *          it anyway, otherwise FALSE          
+ *          it anyway, otherwise FALSE
  */
 gboolean textview_uri_security_check(TextView *textview, ClickableText *uri, gboolean copied)
 {
@@ -3107,7 +3094,7 @@ gboolean textview_uri_security_check(TextView *textview, ClickableText *uri, gbo
 		gchar *open_or_cp_btn;
 		gchar *msg;
 		AlertValue aval;
-		
+
 		open_or_cp = copied? _("Copy it anyway?") : _("Open it anyway?");
 		open_or_cp_btn = copied? _("Co_py URL") : _("_Open URL");
 
@@ -3144,7 +3131,7 @@ static void textview_uri_list_remove_all(GSList *uri_list)
 			g_free(((ClickableText *)cur->data)->filename);
 			if (((ClickableText *)cur->data)->is_quote) {
 				g_free(((ClickableText *)cur->data)->fg_color);
-				g_free(((ClickableText *)cur->data)->data); 
+				g_free(((ClickableText *)cur->data)->data);
 				/* (only free data in quotes uris) */
 			}
 			g_free(cur->data);
@@ -3162,7 +3149,7 @@ static void open_uri_cb (GtkAction *action, TextView *textview)
 					   "raw_url");
 
 	if (uri) {
-		if (textview_uri_security_check(textview, uri, FALSE) == TRUE) 
+		if (textview_uri_security_check(textview, uri, FALSE) == TRUE)
 			open_uri(uri->uri,
 				 prefs_common_get_uri_cmd());
 		g_object_set_data(G_OBJECT(textview->link_popup_menu), "menu_button",
@@ -3209,7 +3196,7 @@ static void add_uri_to_addrbook_cb (GtkAction *action, TextView *textview)
 
 	/* extract url */
 	fromaddress = g_strdup(uri->uri + 7);
-	
+
 	if (textview->messageview->msginfo &&
 	   !g_strcmp0(fromaddress, textview->messageview->msginfo->from))
 		use_picture = TRUE;
@@ -3229,13 +3216,7 @@ static void add_uri_to_addrbook_cb (GtkAction *action, TextView *textview)
 		avatars_avatarrender_free(avatarr);
 	}
 
-#ifndef USE_ALT_ADDRBOOK
 	addressbook_add_contact( fromname, fromaddress, NULL, picture);
-#else
-	if (addressadd_selection(fromname, fromaddress, NULL, picture)) {
-		debug_print( "addressbook_add_contact - added\n" );
-	}
-#endif
 
 	g_free(fromaddress);
 	g_free(fromname);
@@ -3268,7 +3249,7 @@ static void mail_to_uri_cb (GtkAction *action, TextView *textview)
 		folder_item = textview->messageview->msginfo->folder;
 		if (folder_item->prefs && folder_item->prefs->enable_default_account)
 			account = account_find_from_id(folder_item->prefs->default_account);
-		
+
 		compose = compose_new_with_folderitem(account, folder_item, uri->uri+7);
 	} else {
 		compose = compose_new(account, uri->uri + 7, NULL);

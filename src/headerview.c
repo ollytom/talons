@@ -149,7 +149,7 @@ void headerview_set_font(HeaderView *headerview)
 {
 	PangoFontDescription *boldfont = NULL;
 	PangoFontDescription *normalfont = NULL;
-	
+
 	normalfont = pango_font_description_from_string(NORMAL_FONT);
 	if (normalfont) {
 		gtk_widget_override_font(headerview->from_body_label, normalfont);
@@ -261,7 +261,6 @@ static gint headerview_show_avatar (HeaderView *headerview, MsgInfo *msginfo)
 
 static void headerview_save_contact_pic (HeaderView *headerview, MsgInfo *msginfo)
 {
-#ifndef USE_ALT_ADDRBOOK
 	gchar *filename = NULL;
 	GError *error = NULL;
 	GdkPixbuf *picture = NULL;
@@ -271,7 +270,7 @@ static void headerview_save_contact_pic (HeaderView *headerview, MsgInfo *msginf
 	if (headerview->image) {
 		picture = gtk_image_get_pixbuf(GTK_IMAGE(headerview->image));
 	}
-	
+
 	filename = addrindex_get_picture_file(msginfo->from);
 	if (!filename)
 		return;
@@ -284,14 +283,10 @@ static void headerview_save_contact_pic (HeaderView *headerview, MsgInfo *msginf
 		}
 	}
 	g_free(filename);
-#else
-	/* new address book */
-#endif
-}	
+}
 
 static gint headerview_show_contact_pic (HeaderView *headerview, MsgInfo *msginfo)
 {
-#ifndef USE_ALT_ADDRBOOK
 	GtkWidget *hbox = headerview->hbox;
 	GtkWidget *image;
 	gchar *filename = NULL;
@@ -305,9 +300,9 @@ static gint headerview_show_contact_pic (HeaderView *headerview, MsgInfo *msginf
 		gtk_widget_destroy(headerview->image);
 		headerview->image = NULL;
 	}
-	
+
 	filename = addrindex_get_picture_file(msginfo->from);
-	
+
 	if (!filename)
 		return -1;
 	if (!is_file_exist(filename)) {
@@ -315,9 +310,9 @@ static gint headerview_show_contact_pic (HeaderView *headerview, MsgInfo *msginf
 		return -1;
 	}
 	gdk_pixbuf_get_file_info(filename, &w, &h);
-	
+
 	if (w > 48 || h > 48)
-		picture = gdk_pixbuf_new_from_file_at_scale(filename, 
+		picture = gdk_pixbuf_new_from_file_at_scale(filename,
 						48, 48, TRUE, &error);
 	else
 		picture = gdk_pixbuf_new_from_file(filename, &error);
@@ -331,7 +326,7 @@ static gint headerview_show_contact_pic (HeaderView *headerview, MsgInfo *msginf
 	}
 	if (picture)
 		image = gtk_image_new_from_pixbuf(picture);
-	else 
+	else
 		return -1;
 
 	g_object_unref(picture);
@@ -343,12 +338,7 @@ static gint headerview_show_contact_pic (HeaderView *headerview, MsgInfo *msginf
 	headerview->image = image;
 	if (image == NULL)
 		return -1;
-	else 
-		return 0;
-#else
-	/* new address book */
-	return -1;
-#endif
+	return 0;
 }
 
 void headerview_clear(HeaderView *headerview)

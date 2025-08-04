@@ -62,9 +62,7 @@
 #include "passwordstore.h"
 #include "file-utils.h"
 
-#ifndef USE_ALT_ADDRBOOK
-	#include "addrcustomattr.h"
-#endif
+#include "addrcustomattr.h"
 
 enum {
 	DATEFMT_FMT,
@@ -122,7 +120,7 @@ static PrefParam param_os_specific[] = {
 	 &prefs_common.mime_open_cmd,     P_STRING, NULL, NULL, NULL},
 
 	/* Interface */
-	{"pixmap_theme_path", DEFAULT_PIXMAP_THEME, 
+	{"pixmap_theme_path", DEFAULT_PIXMAP_THEME,
 	 &prefs_common.pixmap_theme_path, P_STRING, NULL, NULL, NULL},
 #ifdef HAVE_SVG
 	{"enable_alpha_svg", "TRUE",
@@ -190,7 +188,7 @@ static PrefParam param[] = {
 	 P_BOOL, NULL, NULL, NULL},
 	{"close_receive_dialog", "TRUE", &prefs_common.close_recv_dialog,
 	 P_BOOL, NULL, NULL, NULL},
- 
+
 	/* Send */
 	{"save_message", "TRUE", &prefs_common.savemsg, P_BOOL,
 	 NULL, NULL, NULL},
@@ -686,7 +684,7 @@ static PrefParam param[] = {
 	{"messagewin_height", "540", &prefs_common.msgwin_height, P_INT,
 	 NULL, NULL, NULL},
 	{"mimeview_tree_height", "60", &prefs_common.mimeview_tree_height, P_INT,
-	 NULL, NULL, NULL},	 
+	 NULL, NULL, NULL},
 	{"sourcewin_width", "600", &prefs_common.sourcewin_width, P_INT,
 	 NULL, NULL, NULL},
 	{"sourcewin_height", "500", &prefs_common.sourcewin_height, P_INT,
@@ -816,7 +814,7 @@ static PrefParam param[] = {
 	 &SPECIFIC_PREFS.mime_textviewer,   P_STRING, NULL, NULL, NULL},
 	{"mime_open_command", "xdg-open '%s'",
 	 &SPECIFIC_PREFS.mime_open_cmd,     P_STRING, NULL, NULL, NULL},
-	{"show_inline_attachments", "TRUE", 
+	{"show_inline_attachments", "TRUE",
 	 &prefs_common.show_inline_attachments, P_BOOL, NULL, NULL, NULL},
 
 	/* Interface */
@@ -878,7 +876,7 @@ static PrefParam param[] = {
 	 &prefs_common.mark_as_read_on_new_window,
 	 P_BOOL, NULL, NULL, NULL},
 	{"mark_as_read_delay", "0",
-	 &prefs_common.mark_as_read_delay, P_INT, 
+	 &prefs_common.mark_as_read_delay, P_INT,
 	 NULL, NULL, NULL},
 	{"immediate_execution", "TRUE", &prefs_common.immediate_exec, P_BOOL,
 	 NULL, NULL, NULL},
@@ -887,7 +885,7 @@ static PrefParam param[] = {
 	{"summary_from_show", "0", &prefs_common.summary_from_show, P_ENUM,
 	 NULL, NULL, NULL},
 
-	{"pixmap_theme_path", DEFAULT_PIXMAP_THEME, 
+	{"pixmap_theme_path", DEFAULT_PIXMAP_THEME,
 	 &SPECIFIC_PREFS.pixmap_theme_path, P_STRING,
 	 NULL, NULL, NULL},
 #ifdef HAVE_SVG
@@ -1197,7 +1195,7 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 #else
 	{"enable_hscrollbar", "TRUE", &prefs_common.enable_hscrollbar, P_BOOL,
-	 NULL, NULL, NULL}, 
+	 NULL, NULL, NULL},
 #endif
 	{"folderview_vscrollbar_policy", "0",
 	 &prefs_common.folderview_vscrollbar_policy, P_ENUM,
@@ -1382,7 +1380,7 @@ GList *prefs_common_read_history_from_dir_with_defaults(const gchar *dirname, co
 /*
  * Read history list from the specified history file in the specified directory (subdir of rc_dir)
  */
-static GList *prefs_common_read_history_from_dir(const gchar *dirname, const gchar *history) 
+static GList *prefs_common_read_history_from_dir(const gchar *dirname, const gchar *history)
 {
 	return prefs_common_read_history_from_dir_with_defaults(dirname, history, NULL);
 }
@@ -1390,7 +1388,7 @@ static GList *prefs_common_read_history_from_dir(const gchar *dirname, const gch
 /*
  * Read history list from the specified history file
  */
-static GList *prefs_common_read_history(const gchar *history) 
+static GList *prefs_common_read_history(const gchar *history)
 {
 	return prefs_common_read_history_from_dir(NULL, history);
 }
@@ -1430,9 +1428,7 @@ void prefs_common_read_config(void)
 		prefs_common_read_history(MESSAGE_SEARCH_HISTORY);
 	prefs_common.compose_save_to_history =
 		prefs_common_read_history(COMPOSE_SAVE_TO_HISTORY);
-#ifndef USE_ALT_ADDRBOOK
 	prefs_common.addressbook_custom_attributes = addressbook_update_custom_attr_from_prefs();
-#endif
 	colorlabel_update_colortable_from_prefs();
 }
 
@@ -1471,7 +1467,7 @@ static void prefs_common_save_history_to_dir(const gchar *dirname, const gchar *
 		FILE_OP_ERROR(history, "chmod");
 		g_warning("can't change file mode: %s", history);
 	}
-	
+
 	for (cur = list; cur != NULL; cur = cur->next) {
 		TRY(claws_fputs((gchar *)cur->data, fp) != EOF &&
 		    claws_fputc('\n', fp) != EOF);
@@ -1515,30 +1511,28 @@ void prefs_common_write_config(void)
 	prefs_write_config(param_os_specific, "CommonWin32", COMMON_RC);
 #endif
 
-	prefs_common_save_history(COMMAND_HISTORY, 
+	prefs_common_save_history(COMMAND_HISTORY,
 		prefs_common.mime_open_cmd_history);
-	prefs_common_save_history(QUICKSEARCH_HISTORY, 
+	prefs_common_save_history(QUICKSEARCH_HISTORY,
 		prefs_common.summary_quicksearch_history);
-	prefs_common_save_history(SUMMARY_SEARCH_FROM_HISTORY, 
+	prefs_common_save_history(SUMMARY_SEARCH_FROM_HISTORY,
 		prefs_common.summary_search_from_history);
-	prefs_common_save_history(SUMMARY_SEARCH_TO_HISTORY, 
+	prefs_common_save_history(SUMMARY_SEARCH_TO_HISTORY,
 		prefs_common.summary_search_to_history);
-	prefs_common_save_history(SUMMARY_SEARCH_SUBJECT_HISTORY, 
+	prefs_common_save_history(SUMMARY_SEARCH_SUBJECT_HISTORY,
 		prefs_common.summary_search_subject_history);
-	prefs_common_save_history(SUMMARY_SEARCH_BODY_HISTORY, 
+	prefs_common_save_history(SUMMARY_SEARCH_BODY_HISTORY,
 		prefs_common.summary_search_body_history);
-	prefs_common_save_history(SUMMARY_SEARCH_ADV_CONDITION_HISTORY, 
+	prefs_common_save_history(SUMMARY_SEARCH_ADV_CONDITION_HISTORY,
 		prefs_common.summary_search_adv_condition_history);
-	prefs_common_save_history(MESSAGE_SEARCH_HISTORY, 
+	prefs_common_save_history(MESSAGE_SEARCH_HISTORY,
 		prefs_common.message_search_history);
-	prefs_common_save_history(COMPOSE_SAVE_TO_HISTORY, 
+	prefs_common_save_history(COMPOSE_SAVE_TO_HISTORY,
 		prefs_common.compose_save_to_history);
 
-#ifndef USE_ALT_ADDRBOOK
 		prefs_common_save_history_to_dir(ADDRBOOK_DIR,
-		ADDRESSBOOK_CUSTOM_ATTRIBUTES, 
+		ADDRESSBOOK_CUSTOM_ATTRIBUTES,
 		prefs_common.addressbook_custom_attributes);
-#endif
 }
 
 /* make a copy of string 'in' into buffer 'out'. un-escape \ sequences.
@@ -1611,7 +1605,7 @@ void pref_get_escaped_pref(gchar *out, const gchar *in)
 	}
 	*o = '\0';
 }
-		
+
 /* set the contents of a textview widget from the internal \-escaped
   representation of a pref string. both txt and textview must be non-NULL. */
 void pref_set_textview_from_pref(GtkTextView *textview, const gchar *txt)
@@ -1656,12 +1650,12 @@ void pref_set_entry_from_pref(GtkEntry *entry, const gchar *txt)
 
 /* get the \-escaped internal representation of a pref from the contents of
    a textview widget. textview must be non-NULL. */
-gchar *pref_get_pref_from_textview(GtkTextView *textview) 
+gchar *pref_get_pref_from_textview(GtkTextView *textview)
 {
 	GtkTextBuffer *buffer;
 	GtkTextIter start, end;
 	gchar *out, *tmp;
-	
+
 	cm_return_val_if_fail( textview != NULL, "" );
 
 	buffer = gtk_text_view_get_buffer(textview);
@@ -1678,7 +1672,7 @@ gchar *pref_get_pref_from_textview(GtkTextView *textview)
 
 /* get the \-escaped internal representation of a pref from the contents of
    a gtkentry widget. entry must be non-NULL. */
-gchar *pref_get_pref_from_entry(GtkEntry *entry) 
+gchar *pref_get_pref_from_entry(GtkEntry *entry)
 {
 	gchar *out, *tmp;
 
@@ -1686,7 +1680,7 @@ gchar *pref_get_pref_from_entry(GtkEntry *entry)
 
 	tmp = gtk_editable_get_chars(GTK_EDITABLE(entry), 0, -1);
 	out = malloc(2*strlen(tmp)+1);
-	
+
 	if (out)
 		pref_get_escaped_pref(out, tmp);
 	g_free(tmp);
@@ -1741,14 +1735,14 @@ const gchar *prefs_common_get_uri_cmd(void)
 	return NULL;
 #else
 	gchar *tmp = NULL;
-	
+
 	if (!prefs_common.cmds_use_system_default)
 		return prefs_common.uri_cmd;
-	
+
 	tmp = g_find_program_in_path("xdg-open");
-	if (!tmp) 
+	if (!tmp)
 		return prefs_common.uri_cmd;
-	
+
 	g_free(tmp);
 	return "xdg-open %s";
 #endif
@@ -1760,14 +1754,14 @@ const gchar *prefs_common_get_ext_editor_cmd(void)
 #if 0 /* we should do that, but it detaches the editor and breaks
 	 compose.c's external composition. */
 	gchar *tmp = NULL;
-	
+
 	if (!prefs_common.cmds_use_system_default)
 		return prefs_common.ext_editor_cmd;
-	
+
 	tmp = g_find_program_in_path("xdg-open");
-	if (!tmp) 
+	if (!tmp)
 		return prefs_common.ext_editor_cmd;
-	
+
 	g_free(tmp);
 	return "xdg-open %s";
 #endif /* 0 */

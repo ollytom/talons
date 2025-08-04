@@ -308,10 +308,6 @@ AC_ARG_ENABLE(valgrind,
 		[  --disable-valgrind              Do not build valgrind support for debugging],
 		[enable_valgrind=$enableval], [enable_valgrind=yes])
 
-AC_ARG_ENABLE(alternate-addressbook,
-		[  --enable-alternate-addressbook  Build alternate external address book support],
-		[enable_alternate_addressbook=$enableval], [enable_alternate_addressbook=no])
-
 AC_ARG_ENABLE(svg,
         [  --disable-svg                   Do not build SVG support],
         [enable_svg=$enableval], [enable_svg=yes])
@@ -734,38 +730,6 @@ if test "x$enable_dbus" = "xyes"; then
 	])
 	AC_SUBST(DBUS_CFLAGS)
 	AC_SUBST(DBUS_LIBS)
-fi
-
-dnl #######################################################################
-dnl # Configure address book support
-dnl #######################################################################
-
-dnl #######################################################################
-dnl # Check for alternate address book support
-dnl #######################################################################
-AC_MSG_CHECKING([whether DBUS support for alternate address book is present])
-if test x"$enable_dbus" = xyes; then
-	AC_MSG_RESULT([yes])
-	AC_MSG_CHECKING([whether to enable alternate address book])
-	if test x"$enable_alternate_addressbook" = xyes; then
-		AC_MSG_RESULT([yes])
-		PKG_CHECK_MODULES(CONTACTS, [claws-contacts],
-		[
-			AC_DEFINE(USE_ALT_ADDRBOOK, 1, [Define if alternate address book is to be activated.])
-			enable_alternate_addressbook=yes
-			AC_SUBST(CONTACTS_CFLAGS)
-			AC_SUBST(CONTACTS_LIBS)
-		],
-		[
-			enable_alternate_addressbook=no
-		])
-	else
-		AC_MSG_RESULT([no])
-		enable_alternate_addressbook=no
-	fi
-else
-	AC_MSG_RESULT([no])
-	enable_alternate_addressbook=no
 fi
 
 dnl #######################################################################
@@ -1195,9 +1159,6 @@ dnl Output the configuration summary
 echo ""
 echo "$PACKAGE $VERSION"
 echo ""
-if test x"$enable_alternate_addressbook" = xyes; then
-	echo "Using Address Book   : Alternate experimental interface"
-fi
 echo "gnuTLS               : $enable_gnutls"
 echo "OAuth2               : $enable_oauth2"
 echo "iconv                : $am_cv_func_iconv"
