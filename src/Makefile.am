@@ -51,10 +51,6 @@ orig_abook_source = \
 	editvcard.c \
 	exphtmldlg.c \
 	exporthtml.c \
-	importmutt.c \
-	importpine.c \
-	mutt.c \
-	pine.c \
 	vcard.c
 
 abook_source = $(orig_abook_source)
@@ -81,10 +77,6 @@ abook_headers = \
 	exphtmldlg.h \
 	exporthtml.h \
 	file_checker.h \
-	importmutt.h \
-	importpine.h \
-	mutt.h \
-	pine.h \
 	vcard.h
 
 claws_mail_SOURCES = \

@@ -65,8 +65,6 @@
 #include "editgroup.h"
 #include "editaddress.h"
 #include "editbook.h"
-#include "importmutt.h"
-#include "importpine.h"
 #include "manual.h"
 
 #include "addrquery.h"
@@ -305,8 +303,6 @@ static void addressbook_list_select_remove	( AddrItemObject    *aio );
 
 static void addressbook_find_duplicates_cb	( GtkAction *action, gpointer data );
 static void addressbook_edit_custom_attr_cb	( GtkAction *action, gpointer data );
-static void addressbook_import_mutt_cb		( GtkAction *action, gpointer data );
-static void addressbook_import_pine_cb		( GtkAction *action, gpointer data );
 static void addressbook_export_html_cb		( GtkAction *action, gpointer data );
 static void addressbook_select_all_cb		( GtkAction *action, gpointer data );
 static void addressbook_clip_cut_cb		( GtkAction *action, gpointer data );
@@ -394,9 +390,6 @@ static GtkActionEntry addressbook_entries[] =
 	{"Address/Mailto",		NULL, N_("_Mail To"), "<control>M", NULL, G_CALLBACK(addressbook_mail_to_cb) },
 	{"Address/Merge",		NULL, N_("_Merge"), "<control>E", NULL, G_CALLBACK(addressbook_merge_cb) },
 
-
-	{"Tools/ImportMutt",		NULL, N_("Import M_utt file..."), NULL, NULL, G_CALLBACK(addressbook_import_mutt_cb) },
-	{"Tools/ImportPine",		NULL, N_("Import _Pine file..."), NULL, NULL, G_CALLBACK(addressbook_import_pine_cb) },
 	{"Tools/---",			NULL, "---", NULL, NULL, NULL },
 	{"Tools/ExportHTML",		NULL, N_("Export _HTML..."), NULL, NULL, G_CALLBACK(addressbook_export_html_cb) },
 	{"Tools/FindDuplicates",	NULL, N_("Find duplicates..."), NULL, NULL, G_CALLBACK(addressbook_find_duplicates_cb) },
@@ -892,8 +885,6 @@ static void addressbook_create(void)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Edit", "Mailto", "Address/Mailto", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Edit", "Merge", "Address/Merge", GTK_UI_MANAGER_MENUITEM)
 
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "ImportMutt", "Tools/ImportMutt", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "ImportPine", "Tools/ImportPine", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "Separator1", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "ExportHTML", "Tools/ExportHTML", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "Separator2", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
@@ -5055,81 +5046,6 @@ gboolean addressbook_peek_folder_exists( gchar *folderpath,
 	if ( folder )
 		*folder = folder_path_match.folder;
 	return folder_path_match.matched;
-}
-
-
-/**
- * Import MUTT file.
- */
-static void addressbook_import_mutt_cb( GtkAction *action, gpointer data ) {
-	AddressDataSource *ds = NULL;
-	AdapterDSource *ads = NULL;
-	AddressBookFile *abf = NULL;
-	AdapterInterface *adapter;
-	GtkCMCTreeNode *newNode;
-
-	adapter = addrbookctl_find_interface( ADDR_IF_BOOK );
-	if( adapter ) {
-		if( adapter->treeNode ) {
-			abf = addressbook_imp_mutt( _addressIndex_ );
-			if( abf ) {
-				ds = addrindex_index_add_datasource(
-					_addressIndex_, ADDR_IF_BOOK, abf );
-				ads = addressbook_create_ds_adapter(
-					ds, ADDR_BOOK, NULL );
-				addressbook_ads_set_name(
-					ads, addrbook_get_name( abf ) );
-				newNode = addressbook_add_object(
-					adapter->treeNode,
-					ADDRESS_OBJECT(ads) );
-				if( newNode ) {
-					gtk_sctree_select( GTK_SCTREE(addrbook.ctree),
-						newNode );
-					addrbook.treeSelected = newNode;
-				}
-
-				/* Notify address completion */
-				invalidate_address_completion();
-			}
-		}
-	}
-}
-
-/**
- * Import Pine file.
- */
-static void addressbook_import_pine_cb( GtkAction *action, gpointer data ) {
-	AddressDataSource *ds = NULL;
-	AdapterDSource *ads = NULL;
-	AddressBookFile *abf = NULL;
-	AdapterInterface *adapter;
-	GtkCMCTreeNode *newNode;
-
-	adapter = addrbookctl_find_interface( ADDR_IF_BOOK );
-	if( adapter ) {
-		if( adapter->treeNode ) {
-			abf = addressbook_imp_pine( _addressIndex_ );
-			if( abf ) {
-				ds = addrindex_index_add_datasource(
-					_addressIndex_, ADDR_IF_BOOK, abf );
-				ads = addressbook_create_ds_adapter(
-					ds, ADDR_BOOK, NULL );
-				addressbook_ads_set_name(
-					ads, addrbook_get_name( abf ) );
-				newNode = addressbook_add_object(
-					adapter->treeNode,
-					ADDRESS_OBJECT(ads) );
-				if( newNode ) {
-					gtk_sctree_select( GTK_SCTREE(addrbook.ctree),
-						newNode );
-					addrbook.treeSelected = newNode;
-				}
-
-				/* Notify address completion */
-				invalidate_address_completion();
-			}
-		}
-	}
 }
 
 /**
