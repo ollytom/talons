@@ -292,10 +292,6 @@ AC_ARG_ENABLE(dbus,
 		[  --disable-dbus                  Do not build DBUS support],
 		[enable_dbus=$enableval], [enable_dbus=yes])
 
-AC_ARG_ENABLE(jpilot,
-		[  --disable-jpilot                Do not build JPilot support],
-		[enable_jpilot=$enableval], [enable_jpilot=yes])
-
 AC_ARG_ENABLE(networkmanager,
 		[  --disable-networkmanager        Do not build NetworkManager support],
 		[enable_networkmanager=$enableval], [enable_networkmanager=yes])
