@@ -1309,12 +1309,10 @@ static PrefParam param[] = {
 	{"address_search_wildcard", "TRUE", &prefs_common.address_search_wildcard, P_BOOL,
 	 NULL, NULL, NULL},
 	{"enable_avatars", "3", &prefs_common.enable_avatars, P_INT, NULL, NULL, NULL},
-#ifndef PASSWORD_CRYPTO_OLD
 	{"use_master_passphrase", FALSE, &prefs_common.use_primary_passphrase, P_BOOL, NULL, NULL, NULL },
 	{"master_passphrase", "", &prefs_common.primary_passphrase, P_STRING, NULL, NULL, NULL },
 	{"master_passphrase_salt", "", &prefs_common.primary_passphrase_salt, P_STRING, NULL, NULL, NULL },
 	{"master_passphrase_pbkdf2_rounds", "50000", &prefs_common.primary_passphrase_pbkdf2_rounds, P_INT, NULL, NULL, NULL},
-#endif
 
 	{"use_proxy", "FALSE", &prefs_common.use_proxy, P_BOOL, NULL, NULL, NULL},
 	{"proxy_type", "1", &prefs_common.proxy_info.proxy_type, P_ENUM, NULL, NULL, NULL},

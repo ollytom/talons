@@ -21,10 +21,8 @@
 #include "claws-features.h"
 #endif
 
-#ifdef PASSWORD_CRYPTO_GNUTLS
 # include <gnutls/gnutls.h>
 # include <gnutls/crypto.h>
-#endif
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -48,7 +46,6 @@
 #include "passwordstore.h"
 #include "prefs_common.h"
 
-#ifndef PASSWORD_CRYPTO_OLD
 static gchar *_primary_passphrase = NULL;
 
 /* Length of stored key derivation, before base64. */
@@ -263,28 +260,6 @@ void primary_passphrase_change(const gchar *oldp, const gchar *newp)
 
 	primary_passphrase_forget();
 }
-#endif
-
-#ifdef PASSWORD_CRYPTO_OLD
-gchar *password_encrypt_old(const gchar *password)
-{
-	if (!password || strlen(password) == 0) {
-		return NULL;
-	}
-
-	gchar *encrypted = g_strdup(password);
-	gchar *encoded, *result;
-	gsize len = strlen(password);
-
-	passcrypt_encrypt(encrypted, len);
-	encoded = g_base64_encode(encrypted, len);
-	g_free(encrypted);
-	result = g_strconcat("!", encoded, NULL);
-	g_free(encoded);
-
-	return result;
-}
-#endif
 
 /* Decryption is still needed for supporting migration of old
  * configurations to newer encryption mechanisms. */
@@ -305,7 +280,6 @@ gchar *password_decrypt_old(const gchar *password)
 	return decrypted;
 }
 
-#ifdef PASSWORD_CRYPTO_GNUTLS
 #define BUFSIZE 128
 
 /* Since we can't count on having GnuTLS new enough to have
@@ -554,8 +528,6 @@ gchar *password_decrypt_gnutls(const gchar *password,
 
 #undef BUFSIZE
 
-#endif
-
 gchar *password_encrypt(const gchar *password,
 		const gchar *encryption_passphrase)
 {
@@ -563,14 +535,10 @@ gchar *password_encrypt(const gchar *password,
 		return NULL;
 	}
 
-#ifndef PASSWORD_CRYPTO_OLD
 	if (encryption_passphrase == NULL)
 		encryption_passphrase = primary_passphrase();
 
 	return password_encrypt_real(password, encryption_passphrase);
-#else
-	return password_encrypt_old(password);
-#endif
 }
 
 gchar *password_decrypt(const gchar *password,
@@ -588,7 +556,6 @@ gchar *password_decrypt(const gchar *password,
 	}
 
 	/* Try available crypto backend */
-#ifndef PASSWORD_CRYPTO_OLD
 	if (decryption_passphrase == NULL)
 		decryption_passphrase = primary_passphrase();
 
@@ -596,7 +563,6 @@ gchar *password_decrypt(const gchar *password,
 		debug_print("Trying to decrypt password...\n");
 		return password_decrypt_real(password, decryption_passphrase);
 	}
-#endif
 
 	/* Fallback, in case the configuration is really old and
 	 * stored password in plaintext */

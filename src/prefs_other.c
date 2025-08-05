@@ -37,10 +37,8 @@
 #include "gtk/gtkutils.h"
 #include "gtk/prefswindow.h"
 #include "combobox.h"
-#ifndef PASSWORD_CRYPTO_OLD
 #include "password.h"
 #include "password_gtk.h"
-#endif
 
 #include "manage_window.h"
 #ifdef HAVE_LIBETPAN
@@ -71,14 +69,10 @@ typedef struct _OtherPage
 	GtkWidget *flush_metadata_faster_radiobtn;
 	GtkWidget *flush_metadata_safer_radiobtn;
 	GtkWidget *checkbtn_transhdr;
-#ifndef PASSWORD_CRYPTO_OLD
 	GtkWidget *checkbtn_use_passphrase;
-#endif
 } OtherPage;
 
-#ifndef PASSWORD_CRYPTO_OLD
 static void prefs_change_primary_passphrase(GtkButton *button, gpointer data);
-#endif
 
 struct KeyBind {
 	const gchar *accel_path;
@@ -169,9 +163,9 @@ static void prefs_keybind_preset_changed(GtkComboBox *widget)
 		{"<Actions>/Menu/Message/Marks/MarkRead",		""},
 
 		{"<Actions>/Menu/Tools/AddressBook",			"<shift><control>A"},
-		{"<Actions>/Menu/Tools/ListUrls",			"<shift><control>U"}, 
+		{"<Actions>/Menu/Tools/ListUrls",			"<shift><control>U"},
 		{"<Actions>/Menu/Tools/Execute",			"X"},
-		{"<Actions>/Menu/Tools/Expunge",			"<control>E"}, 
+		{"<Actions>/Menu/Tools/Expunge",			"<control>E"},
 		{"<Actions>/Menu/Tools/NetworkLog",			"<shift><control>L"},
 
 		/* compose */
@@ -338,18 +332,18 @@ static void prefs_keybind_preset_changed(GtkComboBox *widget)
 	prefs_keybind_apply(menurc, n_menurc);
 }
 
-static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
 	OtherPage *prefs_other = (OtherPage *) _page;
-	
+
 	GtkWidget *vbox1;
 	GtkWidget *hbox1;
 
 	GtkWidget *frame_addr;
 	GtkWidget *vbox_addr;
 	GtkWidget *checkbtn_addaddrbyclick;
-	
+
 	GtkWidget *frame_exit;
 	GtkWidget *vbox_exit;
 	GtkWidget *checkbtn_confonexit;
@@ -382,12 +376,10 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *flush_metadata_faster_radiobtn;
 	GtkWidget *flush_metadata_safer_radiobtn;
 
-#ifndef PASSWORD_CRYPTO_OLD
 	GtkWidget *vbox_passphrase;
 	GtkWidget *frame_passphrase;
 	GtkWidget *checkbtn_use_passphrase;
 	GtkWidget *button_change_passphrase;
-#endif
 
 	gchar *shred_binary = NULL;
 
@@ -455,7 +447,7 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_box_pack_start (GTK_BOX (vbox_metadata), hbox1, FALSE, FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (hbox1), flush_metadata_safer_radiobtn, FALSE, FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (hbox1), flush_metadata_faster_radiobtn, FALSE, FALSE, 0);
-	
+
 	if (prefs_common.flush_metadata)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flush_metadata_safer_radiobtn), TRUE);
 	else
@@ -492,7 +484,7 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	CLAWS_SET_TIP(checkbtn_transhdr,
 			     _("The display of standard headers (such as 'From:', 'Subject:') "
 			     "will be translated into your language"));
-	PACK_CHECK_BUTTON (vbox2, checkbtn_askonclean, 
+	PACK_CHECK_BUTTON (vbox2, checkbtn_askonclean,
 			   _("Ask before emptying trash"));
 	PACK_CHECK_BUTTON (vbox2, checkbtn_askonfilter,
 			   _("Ask about account specific filtering rules when "
@@ -541,7 +533,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 		g_free(buf);
 	}
 
-#ifndef PASSWORD_CRYPTO_OLD
 	vbox_passphrase = gtkut_get_options_frame(vbox1, &frame_passphrase, _("Primary passphrase"));
 
 	PACK_CHECK_BUTTON(vbox_passphrase, checkbtn_use_passphrase,
@@ -563,17 +554,16 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	SET_TOGGLE_SENSITIVITY (checkbtn_use_passphrase, button_change_passphrase);
 	g_signal_connect (G_OBJECT (button_change_passphrase), "clicked",
 			  G_CALLBACK (prefs_change_primary_passphrase), NULL);
-#endif
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_addaddrbyclick), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_addaddrbyclick),
 		prefs_common.add_address_by_click);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_confonexit), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_confonexit),
 		prefs_common.confirm_on_exit);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_cleanonexit), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_cleanonexit),
 		prefs_common.clean_on_exit);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_askonclean), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_askonclean),
 		prefs_common.ask_on_clean);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_warnqueued), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_warnqueued),
 		prefs_common.warn_queued_on_exit);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_gtk_enable_accels),
 		prefs_common.gtk_enable_accels);
@@ -584,19 +574,17 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_transhdr),
 		prefs_common.trans_hdr);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_askonfilter), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_askonfilter),
 		prefs_common.ask_apply_per_account_filtering_rules);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_use_shred), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_use_shred),
 		prefs_common.use_shred);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_real_time_sync), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_real_time_sync),
 		prefs_common.real_time_sync);
 
-#ifndef PASSWORD_CRYPTO_OLD
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_use_passphrase),
 		prefs_common.use_primary_passphrase);
 	gtk_widget_set_sensitive(button_change_passphrase,
 			prefs_common.use_primary_passphrase);
-#endif
 
 	prefs_other->keys_preset_hbox = keys_preset_hbox;
 	prefs_other->keys_preset_combo = keys_preset_combo;
@@ -614,9 +602,7 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_other->entry_attach_save_chmod = entry_attach_save_chmod;
 	prefs_other->flush_metadata_safer_radiobtn = flush_metadata_safer_radiobtn;
 	prefs_other->flush_metadata_faster_radiobtn = flush_metadata_faster_radiobtn;
-#ifndef PASSWORD_CRYPTO_OLD
 	prefs_other->checkbtn_use_passphrase = checkbtn_use_passphrase;
-#endif
 	prefs_other->page.widget = vbox1;
 }
 
@@ -632,11 +618,11 @@ static void prefs_other_save(PrefsPage *_page)
 	prefs_common.confirm_on_exit = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_confonexit));
 	prefs_common.clean_on_exit = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_cleanonexit)); 
+		GTK_TOGGLE_BUTTON(page->checkbtn_cleanonexit));
 	prefs_common.ask_on_clean = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_askonclean));
 	prefs_common.warn_queued_on_exit = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_warnqueued)); 
+		GTK_TOGGLE_BUTTON(page->checkbtn_warnqueued));
 	prefs_common.io_timeout_secs = gtk_spin_button_get_value_as_int(
 		GTK_SPIN_BUTTON(page->spinbtn_iotimeout));
 	prefs_common.flush_metadata = gtk_toggle_button_get_active(
@@ -647,13 +633,13 @@ static void prefs_other_save(PrefsPage *_page)
 #endif
 	prefs_common.trans_hdr = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_transhdr));
-	prefs_common.ask_apply_per_account_filtering_rules = 
+	prefs_common.ask_apply_per_account_filtering_rules =
 		gtk_toggle_button_get_active(
-			GTK_TOGGLE_BUTTON(page->checkbtn_askonfilter)); 
-	prefs_common.use_shred = 
+			GTK_TOGGLE_BUTTON(page->checkbtn_askonfilter));
+	prefs_common.use_shred =
 		gtk_toggle_button_get_active(
-			GTK_TOGGLE_BUTTON(page->checkbtn_use_shred)); 
-	prefs_common.real_time_sync = 
+			GTK_TOGGLE_BUTTON(page->checkbtn_use_shred));
+	prefs_common.real_time_sync =
 		gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_real_time_sync));
 
@@ -663,7 +649,6 @@ static void prefs_other_save(PrefsPage *_page)
 
 	prefs_keybind_preset_changed(GTK_COMBO_BOX(page->keys_preset_combo));
 
-#ifndef PASSWORD_CRYPTO_OLD
 	/* If we're disabling use of primary passphrase, we need to reencrypt
 	 * all account passwords with hardcoded key. */
 	if (!gtk_toggle_button_get_active(
@@ -697,7 +682,6 @@ static void prefs_other_save(PrefsPage *_page)
 	prefs_common.use_primary_passphrase =
 		gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_use_passphrase));
-#endif
 
 	gtk_enable_accels = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_gtk_enable_accels));
@@ -712,8 +696,8 @@ static void prefs_other_save(PrefsPage *_page)
 			     (glong)prefs_common.gtk_enable_accels,
 			     NULL);
 	}
-	
-	if (prefs_common.gtk_enable_accels != gtk_enable_accels) {		
+
+	if (prefs_common.gtk_enable_accels != gtk_enable_accels) {
 		/* gtk_can_change_accels value changed : we have (only if changed)
 		 * to apply the gtk property to all widgets : */
 		gtk_rc_reparse_all_for_settings(gtk_settings_get_default(), TRUE);
@@ -759,10 +743,8 @@ void prefs_other_done(void)
 	g_free(prefs_other);
 }
 
-#ifndef PASSWORD_CRYPTO_OLD
 void prefs_change_primary_passphrase(GtkButton *button, gpointer data)
 {
 	/* Call the passphrase change dialog */
 	primary_passphrase_change_dialog();
 }
-#endif

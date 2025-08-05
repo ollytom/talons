@@ -21,7 +21,6 @@
 
 #include <glib.h>
 
-#ifndef PASSWORD_CRYPTO_OLD
 /* Returns a pointer to primary passphrase, asking the user
  * if necessary. Do not free the return value. */
 const gchar *primary_passphrase();
@@ -43,28 +42,13 @@ void primary_passphrase_forget();
  *        primary_passphrase()
  * newp - new primary passphrase */
 void primary_passphrase_change(const gchar *oldp, const gchar *newp);
-#endif
 
-/* Wrapper around the old, DES-CBC-broken implementation which
- * returns a newly allocated string for the encrypt/decrypt result.
- * This is for compatibility with with the rest of password-related
- * functions.*/
-#ifdef PASSWORD_CRYPTO_OLD
-gchar *password_encrypt_old(const gchar *password);
-#endif
-/* Decryption is still needed for supporting migration of old
- * configurations to newer encryption mechanisms. */
-gchar *password_decrypt_old(const gchar *password);
-
-#ifdef PASSWORD_CRYPTO_GNUTLS
-/* GNUTLS implementation */
 gchar *password_encrypt_gnutls(const gchar *password,
 		const gchar *encryption_passphrase);
 gchar *password_decrypt_gnutls(const gchar *password,
 		const gchar *decryption_passphrase);
 #define password_encrypt_real(n, m) password_encrypt_gnutls(n, m)
 #define password_decrypt_real(n, m) password_decrypt_gnutls(n, m)
-#endif
 
 /* Wrapper function that will apply best encryption available,
  * and return a string ready to be saved as-is in preferences. */

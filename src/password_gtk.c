@@ -21,8 +21,6 @@
 #include "claws-features.h"
 #endif
 
-#ifndef PASSWORD_CRYPTO_OLD
-
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
@@ -259,5 +257,3 @@ void primary_passphrase_change_dialog()
 
 	g_free(ctx);
 }
-
-#endif /* !PASSWORD_CRYPTO_OLD */

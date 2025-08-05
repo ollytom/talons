@@ -57,4 +57,4 @@ ${LIBTOOL} \
   && automake --add-missing --foreign --copy
 if test -z "$NOCONFIGURE"; then
 exec ./configure --enable-maintainer-mode "$@"
-fi   
+fi

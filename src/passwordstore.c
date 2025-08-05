@@ -22,10 +22,8 @@
 #include "claws-features.h"
 #endif
 
-#ifdef PASSWORD_CRYPTO_GNUTLS
 # include <gnutls/gnutls.h>
 # include <gnutls/crypto.h>
-#endif
 
 #include <glib.h>
 #include <glib/gi18n.h>

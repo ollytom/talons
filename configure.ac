@@ -517,37 +517,9 @@ if test x"$ac_cv_with_config_dir" = x""; then
 fi
 AC_DEFINE_UNQUOTED(CFG_RC_DIR, "$ac_cv_with_config_dir", Configuration directory)
 
-AC_ARG_WITH(password-encryption, [  --with-password-encryption=PROVIDER    Which cryptographic library to use for encrypting stored passwords (gnutls, old, default)],
-						pwd_crypto="$withval", pwd_crypto="default")
-
-if test x"$pwd_crypto" = xdefault; then
-	if test x"$enable_gnutls" = xyes; then
-		if `$PKG_CONFIG --atleast-version=3.0 gnutls`; then
-			pwd_crypto="gnutls"
-		fi
-	fi
+if ! `$PKG_CONFIG --atleast-version=3.0 gnutls`; then
+	AC_MSG_ERROR([GnuTLS version at least 3.0 is required for password encryption.])
 fi
-if test x"$pwd_crypto" = xdefault; then
-	pwd_crypto="old"
-fi
-
-case $pwd_crypto in
-	gnutls)
-		if test x"$enable_gnutls" = xno; then
-			AC_MSG_ERROR([GnuTLS password encryption requested but GnuTLS is not available.])
-		fi
-		if ! `$PKG_CONFIG --atleast-version=3.0 gnutls`; then
-			AC_MSG_ERROR([GnuTLS version at least 3.0 is required for password encryption.])
-		fi
-		AC_DEFINE(PASSWORD_CRYPTO_GNUTLS, 1, Use GnuTLS for stored password encryption)
-		;;
-	old)
-		AC_DEFINE(PASSWORD_CRYPTO_OLD, 1, Use old insecure method for stored password encryption)
-		;;
-	*)
-		AC_MSG_ERROR([Unknown password encryption provider requested.])
-		;;
-esac
 
 AC_MSG_CHECKING([whether GnuTLS support is present for OAuth2])
 if test x"$enable_gnutls" = xyes; then

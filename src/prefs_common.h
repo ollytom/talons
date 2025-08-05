@@ -217,7 +217,7 @@ struct _PrefsCommon
 	gboolean forward_as_attachment;
 	gboolean redirect_keep_from;
 	gchar *quote_chars;
-	
+
 	gboolean enable_aspell;
 	gchar *dictionary;
 	gchar *alt_dictionary;
@@ -341,7 +341,7 @@ struct _PrefsCommon
 	gint msgwin_height;
 
 	gint mimeview_tree_height;
-	
+
 	gint sourcewin_width;
 	gint sourcewin_height;
 
@@ -465,15 +465,15 @@ struct _PrefsCommon
 	gint io_timeout_secs;
 
 	gboolean gtk_enable_accels;
-	
+
 	/* Memory cache*/
 	gint cache_max_mem_usage;
 	gint cache_min_keep_time;
-	
-	/* boolean for work offline 
+
+	/* boolean for work offline
 	   stored here for use in inc.c */
 	gboolean work_offline;
-	
+
 	gint summary_quicksearch_type;
 	gint summary_quicksearch_sticky;
 	gint summary_quicksearch_recurse;
@@ -562,7 +562,7 @@ struct _PrefsCommon
 	gint print_margin_bottom;
 	gint print_margin_left;
 	gint print_margin_right;
-  
+
 	gint print_use_color;
 	gint print_use_collate;
 	gint print_use_reverse;
@@ -570,7 +570,7 @@ struct _PrefsCommon
 	gint print_imgs;
 	gint print_previewwin_width;
 	gint print_previewwin_height;
-	
+
 	gboolean use_networkmanager;
 	gboolean use_shred;
 	gboolean two_line_vert;
@@ -584,12 +584,10 @@ struct _PrefsCommon
 
 	guint enable_avatars;
 
-#ifndef PASSWORD_CRYPTO_OLD
 	gboolean use_primary_passphrase;
 	gchar *primary_passphrase;
 	gchar *primary_passphrase_salt;
 	guint primary_passphrase_pbkdf2_rounds;
-#endif
 
 	gboolean passphrase_dialog_msg_title_switch;
 	gboolean mh_compat_mode;
