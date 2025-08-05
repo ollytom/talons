@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -56,7 +56,7 @@ static int string_peekchar(char **str);
 static int file_peekchar(FILE *fp);
 static gint generic_get_one_field(gchar **bufptr, void *data,
 				  HeaderEntry hentry[],
-				  getlinefunc getline, 
+				  getlinefunc getline,
 				  peekcharfunc peekchar,
 				  gboolean unfold);
 static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
@@ -118,7 +118,7 @@ static char *string_getline(char *buf, size_t len, char **str)
 		}
 		last_was_cr = is_cr;
 	}
-		
+
 	*buf = '\0';
 
 	return buf;
@@ -221,7 +221,7 @@ static gint generic_get_one_field(gchar **bufptr, void *data,
 				strretchomp(buf);
 
 			buflen = strlen(buf);
-			
+
 			/* read next line */
 			tmpbuf = g_malloc(BUFFSIZE);
 
@@ -260,7 +260,7 @@ static gint generic_get_one_field(gchar **bufptr, void *data,
 gint procheader_get_one_field_asis(gchar **buf, FILE *fp)
 {
 	return generic_get_one_field(buf, fp, NULL,
-				     (getlinefunc)fgets_crlf, 
+				     (getlinefunc)fgets_crlf,
 				     (peekcharfunc)file_peekchar,
 				     FALSE);
 }
@@ -586,7 +586,7 @@ MsgInfo *procheader_parse_stream(FILE *fp, MsgFlags flags, gboolean full,
 static gboolean avatar_from_some_face(gpointer source, gpointer userdata)
 {
 	AvatarCaptureData *acd = (AvatarCaptureData *)source;
-	
+
 	if (*(acd->content) == '\0') /* won't be null, but may be empty */
 		return FALSE;
 
@@ -594,12 +594,6 @@ static gboolean avatar_from_some_face(gpointer source, gpointer userdata)
 		debug_print("avatar_from_some_face: found 'Face' header\n");
 		procmsg_msginfo_add_avatar(acd->msginfo, AVATAR_FACE, acd->content);
 	}
-#if HAVE_LIBCOMPFACE
-	else if (!strcmp(acd->header, hentry_full[H_X_FACE].name)) {
-		debug_print("avatar_from_some_face: found 'X-Face' header\n");
-		procmsg_msginfo_add_avatar(acd->msginfo, AVATAR_XFACE, acd->content);
-	}
-#endif
 	return FALSE;
 }
 
@@ -639,7 +633,7 @@ static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 			||  !strncmp(buf, "Subject: ", 9)) {
 				if (isstring)
 					data = orig_data;
-				else 
+				else
 					rewind((FILE *)data);
 				g_free(buf);
 				buf = NULL;
@@ -651,12 +645,12 @@ static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 	}
 
 	msginfo = procmsg_msginfo_new();
-	
-	if (flags.tmp_flags || flags.perm_flags) 
+
+	if (flags.tmp_flags || flags.perm_flags)
 		msginfo->flags = flags;
-	else 
+	else
 		MSG_SET_PERM_FLAGS(msginfo->flags, MSG_NEW | MSG_UNREAD);
-	
+
 	msginfo->inreplyto = NULL;
 
 	if (avatar_hook_id == HOOK_NONE &&
@@ -682,14 +676,14 @@ static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 				msginfo->date = g_strdup(hp);
 			} else {
 				gchar *utf = conv_codeset_strdup(
-					hp, 
+					hp,
 					conv_get_locale_charset_str_no_utf8(),
 					CS_INTERNAL);
-				if (utf == NULL || 
+				if (utf == NULL ||
 				    !g_utf8_validate(utf, -1, NULL)) {
 					g_free(utf);
 					utf = g_malloc(strlen(buf)*2+1);
-					conv_localetodisp(utf, 
+					conv_localetodisp(utf,
 						strlen(hp)*2+1, hp);
 				}
 				msginfo->date = utf;
@@ -712,7 +706,7 @@ static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 				g_free(p);
 			} else
 				msginfo->to = g_strdup(tmp);
-                        g_free(tmp);                                
+                        g_free(tmp);
 			break;
 		case H_CC:
 			tmp = conv_unmime_header(hp, NULL, TRUE);
@@ -724,7 +718,7 @@ static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 				g_free(p);
 			} else
 				msginfo->cc = g_strdup(tmp);
-                        g_free(tmp);                                
+                        g_free(tmp);
 			break;
 		case H_NEWSGROUPS:
 			if (msginfo->newsgroups) {
@@ -780,7 +774,7 @@ static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 			if (msginfo->extradata->returnreceiptto) break;
 			msginfo->extradata->returnreceiptto = g_strdup(hp);
 			break;
-/* partial download infos */			
+/* partial download infos */
 		case H_SC_PARTIALLY_RETRIEVED:
 			if (!msginfo->extradata)
 				msginfo->extradata = g_new0(MsgInfoExtraData, 1);
@@ -1110,8 +1104,8 @@ gboolean procheader_date_parse_to_tm(const gchar *src, struct tm *t, char *zone)
 
 	if (!t)
 		return FALSE;
-	
-	memset(t, 0, sizeof *t);	
+
+	memset(t, 0, sizeof *t);
 
 	if (procheader_scan_date_string(src, weekday, &day, month, &year,
 					&hh, &mm, &ss, zone) < 0) {
@@ -1346,7 +1340,7 @@ void procheader_entries_free (HeaderEntry *entries)
 			g_free(he->name);
 			if (he->body != NULL)
 				g_free(he->body);
-			++he;			
+			++he;
 		}
 		g_free(entries);
 	}

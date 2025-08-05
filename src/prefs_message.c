@@ -74,11 +74,11 @@ static void disphdr_pane_toggled(GtkToggleButton *toggle_btn, GtkWidget *widget)
 	gtk_widget_set_sensitive(widget, !is_active);
 }
 
-static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
 	MessagePage *prefs_message = (MessagePage *) _page;
-	
+
 	GtkWidget *vbox1;
 	GtkWidget *vbox2;
 	GtkWidget *hbox1;
@@ -107,7 +107,7 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *checkbtn_hide_quoted;
 
 	GtkWidget *checkbtn_attach_desc;
-	
+
 	GtkWidget *frame_quote;
 	GtkWidget *hbox2;
 	GtkWidget *vbox_quote;
@@ -123,19 +123,12 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	PACK_CHECK_BUTTON(vbox2, checkbtn_disphdrpane,
 			  _("Display header pane above message view"));
 
-#if HAVE_LIBCOMPFACE
-	PACK_CHECK_BUTTON(vbox2, checkbtn_dispxface,
-			  _("Display (X-)Face in message view"));
-	PACK_CHECK_BUTTON(vbox2, checkbtn_savexface,
-			  _("Save (X-)Face in address book if possible"));
-#else
 	PACK_CHECK_BUTTON(vbox2, checkbtn_dispxface,
 			  _("Display Face in message view"));
 	PACK_CHECK_BUTTON(vbox2, checkbtn_savexface,
 			  _("Save Face in address book if possible"));
-#endif
 
-	gtk_widget_set_sensitive(checkbtn_dispxface, 
+	gtk_widget_set_sensitive(checkbtn_dispxface,
 		!prefs_common.display_header_pane);
 
 	g_signal_connect(G_OBJECT(checkbtn_disphdrpane), "toggled",
@@ -165,7 +158,7 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	PACK_CHECK_BUTTON(vbox2, checkbtn_html_plugin,
 			  _("Render HTML-only messages with plugin if possible"));
-	
+
 	PACK_CHECK_BUTTON(vbox2, checkbtn_promote_html_part,
 			  _("Select the HTML part of multipart/alternative messages"));
 
@@ -287,9 +280,9 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 		prefs_common.line_space);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_scrollstep),
 		prefs_common.scroll_step);
-	gtk_entry_set_text(GTK_ENTRY(entry_quote_chars), 
+	gtk_entry_set_text(GTK_ENTRY(entry_quote_chars),
 			prefs_common.quote_chars?prefs_common.quote_chars:"");
-		
+
 	prefs_message->window = GTK_WIDGET(window);
 	prefs_message->checkbtn_disphdrpane = checkbtn_disphdrpane;
 	prefs_message->checkbtn_dispxface = checkbtn_dispxface;
@@ -305,7 +298,7 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_message->checkbtn_halfpage = checkbtn_halfpage;
 	prefs_message->checkbtn_attach_desc = checkbtn_attach_desc;
 	prefs_message->entry_quote_chars = entry_quote_chars;
-	
+
 	prefs_message->page.widget = vbox1;
 }
 
@@ -340,7 +333,7 @@ static void prefs_message_save(PrefsPage *_page)
 	prefs_common.scroll_step = gtk_spin_button_get_value_as_int(
 		GTK_SPIN_BUTTON(page->spinbtn_scrollstep));
 
-	g_free(prefs_common.quote_chars); 
+	g_free(prefs_common.quote_chars);
 	prefs_common.quote_chars = gtk_editable_get_chars(
 			GTK_EDITABLE(page->entry_quote_chars), 0, -1);
 	remove_space(prefs_common.quote_chars);

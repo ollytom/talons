@@ -276,10 +276,6 @@ AC_ARG_ENABLE(generic-umpc,
 		[  --enable-generic-umpc           Build generic UMPC code],
 		[enable_generic_umpc=$enableval], [enable_generic_umpc=no])
 
-AC_ARG_ENABLE(compface,
-		[  --disable-compface              Do not build compface support for X-Face],
-		[enable_compface=$enableval], [enable_compface=yes])
-
 AC_ARG_ENABLE(pthread,
 		[  --disable-pthread               Do not build pthread support],
 		[enable_pthread=$enableval], [enable_pthread=yes])
@@ -590,23 +586,6 @@ dnl generic umpc
 if test $enable_generic_umpc = yes; then
 	AC_DEFINE(GENERIC_UMPC, 1, Generic UMPC code)
 	AC_MSG_RESULT($enable_generic_umpc)
-fi
-
-dnl Check for X-Face support
-AC_MSG_CHECKING([whether to use compface])
-if test x"$enable_compface" = xyes; then
-	AC_MSG_RESULT(yes)
-	AC_CHECK_LIB(compface, uncompface,
-		[AC_DEFINE(HAVE_LIBCOMPFACE, 1, Define if you want compface support.)],
-		[enable_compface=no])
-	if test x"$enable_compface" = xyes; then
-		COMPFACE_LIBS="-lcompface"
-	else
-		COMPFACE_LIBS=""
-	fi
-	AC_SUBST(COMPFACE_LIBS)
-else
-	AC_MSG_RESULT(no)
 fi
 
 dnl check for pthread support
@@ -1130,7 +1109,6 @@ echo ""
 echo "gnuTLS               : $enable_gnutls"
 echo "OAuth2               : $enable_oauth2"
 echo "iconv                : $am_cv_func_iconv"
-echo "compface             : $enable_compface"
 echo "IPv6                 : $enable_ipv6"
 echo "enchant              : $enable_enchant"
 echo "IMAP4 (libetpan)     : $enable_libetpan"

@@ -542,7 +542,6 @@ claws_mail_LDADD = \
 	$(GTK_LIBS) \
 	$(GNUTLS_LIBS) \
 	$(NETTLE_LIBS) \
-	$(COMPFACE_LIBS) \
 	$(PTHREAD_LIBS) \
 	$(SM_LIBS) \
 	$(LIBICONV) \

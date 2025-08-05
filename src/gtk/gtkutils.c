@@ -33,14 +33,6 @@
 
 #include "combobox.h"
 
-#if HAVE_LIBCOMPFACE
-#  include <compface.h>
-#endif
-
-#if HAVE_LIBCOMPFACE
-#define XPM_XFACE_HEIGHT	(HEIGHT + 3)  /* 3 = 1 header + 2 colors */
-#endif
-
 #if (HAVE_WCTYPE_H && HAVE_WCHAR_H)
 #  include <wchar.h>
 #  include <wctype.h>
@@ -354,13 +346,13 @@ gboolean gtkut_ctree_node_is_parent(GtkCMCTreeNode *parent, GtkCMCTreeNode *node
 	cm_return_val_if_fail(node != NULL, FALSE);
 	cm_return_val_if_fail(parent != NULL, FALSE);
 	tmp = node;
-	
+
 	while (tmp) {
 		if(GTK_CMCTREE_ROW(tmp)->parent && GTK_CMCTREE_ROW(tmp)->parent == parent)
 			return TRUE;
 		tmp = GTK_CMCTREE_ROW(tmp)->parent;
 	}
-	
+
 	return FALSE;
 }
 
@@ -762,7 +754,7 @@ GtkWidget *label_window_create(const gchar *str)
 	manage_window_set_transient(GTK_WINDOW(window));
 
 	label = gtk_label_new(str);
-	
+
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, FALSE, 0);
@@ -770,13 +762,13 @@ GtkWidget *label_window_create(const gchar *str)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_box_pack_start(GTK_BOX(hbox), wait_progress, TRUE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-	
+
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
 	gtk_widget_show_all(vbox);
 
 	gtk_widget_show_now(window);
-	
+
 	if (move_bar_id == 0) {
 		move_bar_id = g_timeout_add(200, move_bar_cb, wait_progress);
 		move_bar = TRUE;
@@ -793,7 +785,7 @@ void label_window_destroy(GtkWidget *window)
 	g_source_remove(move_bar_id);
 	move_bar_id = 0;
 	GTK_EVENTS_FLUSH();
-	gtk_widget_destroy(window);	
+	gtk_widget_destroy(window);
 }
 
 GtkWidget *gtkut_account_menu_new(GList			*ac_list,
@@ -806,7 +798,7 @@ GtkWidget *gtkut_account_menu_new(GList			*ac_list,
 	GtkTreeIter iter;
 	PrefsAccount *account;
 	gchar *name;
-	
+
 	cm_return_val_if_fail(ac_list != NULL, NULL);
 
 	optmenu = gtkut_sc_combobox_create(NULL, FALSE);
@@ -858,30 +850,30 @@ GtkWidget *gtkut_get_focused_child(GtkContainer *parent)
 			}
 		}
 	}
-	
+
 	/* See if the returned widget is a container itself; if it is,
-	 * see if one of its children is focused. If the focused 
-	 * container has no focused child, it is itself a focusable 
+	 * see if one of its children is focused. If the focused
+	 * container has no focused child, it is itself a focusable
 	 * child, and has focus. */
 	if (result && GTK_IS_CONTAINER(result)) {
-		GtkWidget *tmp =  gtkut_get_focused_child(GTK_CONTAINER(result)); 
-		
-		if (tmp) 
+		GtkWidget *tmp =  gtkut_get_focused_child(GTK_CONTAINER(result));
+
+		if (tmp)
 			result = tmp;
 	} else {
 		/* Try the same for each container in the chain */
 		for (c = child_list; c != NULL && !result; c = g_list_next(c)) {
-			if (c->data && GTK_IS_WIDGET(c->data) 
+			if (c->data && GTK_IS_WIDGET(c->data)
 			&&  GTK_IS_CONTAINER(c->data)) {
 				result = gtkut_get_focused_child
 					(GTK_CONTAINER(c->data));
 			}
 		}
-	
+
 	}
-	
+
 	g_list_free(child_list);
-		
+
 	return result;
 }
 
@@ -939,7 +931,7 @@ GtkWidget *gtkut_stock_button(const gchar *stock_image, const gchar *label)
 		gtk_button_set_label(GTK_BUTTON(button), _(label));
 	gtk_button_set_use_underline(GTK_BUTTON(button), TRUE);
 	gtk_button_set_always_show_image(GTK_BUTTON(button), TRUE);
-	
+
 	return button;
 };
 
@@ -973,78 +965,6 @@ GtkWidget *gtkut_get_options_frame(GtkWidget *box, GtkWidget **pframe,
 	return vbox;
 }
 
-#if HAVE_LIBCOMPFACE
-static gint create_xpm_from_xface(gchar *xpm[], const gchar *xface)
-{
-	static gchar *bit_pattern[] = {
-		"....",
-		"...#",
-		"..#.",
-		"..##",
-		".#..",
-		".#.#",
-		".##.",
-		".###",
-		"#...",
-		"#..#",
-		"#.#.",
-		"#.##",
-		"##..",
-		"##.#",
-		"###.",
-		"####"
-	};
-
-	static gchar *xface_header = "48 48 2 1";
-	static gchar *xface_black  = "# c #000000";
-	static gchar *xface_white  = ". c #ffffff";
-
-	gint i, line = 0;
-	const guchar *p;
-	gchar buf[WIDTH * 4 + 1];  /* 4 = strlen("0x0000") */
-
-	p = xface;
-
-	strcpy(xpm[line++], xface_header);
-	strcpy(xpm[line++], xface_black);
-	strcpy(xpm[line++], xface_white);
-
-	for (i = 0; i < HEIGHT; i++) {
-		gint col;
-
-		buf[0] = '\0';
-     
-		for (col = 0; col < 3; col++) {
-			gint figure;
-
-			p += 2;  /* skip '0x' */
-
-			for (figure = 0; figure < 4; figure++) {
-				gint n = 0;
-
-				if ('0' <= *p && *p <= '9') {
-					n = *p - '0';
-				} else if ('a' <= *p && *p <= 'f') {
-					n = *p - 'a' + 10;
-				} else if ('A' <= *p && *p <= 'F') {
-					n = *p - 'A' + 10;
-				}
-
-				strcat(buf, bit_pattern[n]);
-				p++;  /* skip ',' */
-			}
-
-			p++;  /* skip '\n' */
-		}
-
-		strcpy(xpm[line++], buf);
-		p++;
-	}
-
-	return 0;
-}
-#endif
-
 gboolean get_tag_range(GtkTextIter *iter,
 				       GtkTextTag *tag,
 				       GtkTextIter *start_iter,
@@ -1070,46 +990,6 @@ gboolean get_tag_range(GtkTextIter *iter,
 	return TRUE;
 }
 
-#if HAVE_LIBCOMPFACE
-GtkWidget *xface_get_from_header(const gchar *o_xface)
-{
-	static gchar *xpm_xface[XPM_XFACE_HEIGHT];
-	static gboolean xpm_xface_init = TRUE;
-	GdkPixbuf *pixbuf;
-	GtkWidget *ret;
-	gchar xface[2048];
-	
-	if (o_xface == NULL)
-		return NULL;
-	
-	strncpy(xface, o_xface, sizeof(xface) - 1);
-	xface[sizeof(xface) - 1] = '\0';
-
-	if (uncompface(xface) < 0) {
-		g_warning("uncompface failed");
-		return NULL;
-	}
-
-	if (xpm_xface_init) {
-		gint i;
-
-		for (i = 0; i < XPM_XFACE_HEIGHT; i++) {
-			xpm_xface[i] = g_malloc(WIDTH + 1);
-			*xpm_xface[i] = '\0';
-		}
-		xpm_xface_init = FALSE;
-	}
-
-	create_xpm_from_xface(xpm_xface, xface);
-
-	pixbuf = gdk_pixbuf_new_from_xpm_data((const char **)xpm_xface);
-	ret = gtk_image_new_from_pixbuf(pixbuf);
-	g_object_unref(pixbuf);
-
-	return ret;
-}
-#endif
-
 GtkWidget *face_get_from_header(const gchar *o_face)
 {
 	gchar face[2048];
@@ -1119,7 +999,7 @@ GtkWidget *face_get_from_header(const gchar *o_face)
 	GError *error = NULL;
 	GdkPixbufLoader *loader = gdk_pixbuf_loader_new ();
 	GtkWidget *image;
-	
+
 	if (o_face == NULL || strlen(o_face) == 0)
 		return NULL;
 
@@ -1166,7 +1046,7 @@ static gboolean _combobox_separator_func(GtkTreeModel *model,
 
 	if( txt == NULL )
 		return TRUE;
-	
+
 	g_free(txt);
 	return FALSE;
 }
@@ -1397,7 +1277,7 @@ gboolean gtkut_tree_model_text_iter_prev(GtkTreeModel *model,
 		valid = gtk_tree_model_iter_next(model, &cur_iter);
 		count++;
 	}
-	return FALSE;		
+	return FALSE;
 }
 
 gboolean gtkut_tree_model_get_iter_last(GtkTreeModel *model,
@@ -1427,8 +1307,8 @@ GtkWidget *gtkut_window_new		(GtkWindowType	 type,
 	return window;
 }
 
-static gboolean gtkut_tree_iter_comp(GtkTreeModel *model, 
-				     GtkTreeIter *iter1, 
+static gboolean gtkut_tree_iter_comp(GtkTreeModel *model,
+				     GtkTreeIter *iter1,
 				     GtkTreeIter *iter2)
 {
 	GtkTreePath *path1 = gtk_tree_model_get_path(model, iter1);
@@ -1439,7 +1319,7 @@ static gboolean gtkut_tree_iter_comp(GtkTreeModel *model,
 
 	gtk_tree_path_free(path1);
 	gtk_tree_path_free(path2);
-	
+
 	return result;
 }
 
@@ -1455,13 +1335,13 @@ gint gtkut_list_view_get_selected_row(GtkWidget *list_view)
 	GtkTreeIter iter;
 	int row;
 
-	if (n_rows == 0) 
+	if (n_rows == 0)
 		return -1;
-	
+
 	selection = gtk_tree_view_get_selection(view);
 	if (!gtk_tree_selection_get_selected(selection, &model, &iter))
 		return -1;
-	
+
 	/* get all iterators and compare them... */
 	for (row = 0; row < n_rows; row++) {
 		GtkTreeIter itern;
@@ -1470,7 +1350,7 @@ gint gtkut_list_view_get_selected_row(GtkWidget *list_view)
 		 && gtkut_tree_iter_comp(model, &iter, &itern))
 			return row;
 	}
-	
+
 	return -1;
 }
 
@@ -1487,13 +1367,13 @@ gboolean gtkut_list_view_select_row(GtkWidget *list, gint row)
 
 	if (!gtk_tree_model_iter_nth_child(model, &iter, NULL, row))
 		return FALSE;
-	
+
 	gtk_tree_selection_select_iter(selection, &iter);
 
 	path = gtk_tree_model_get_path(model, &iter);
 	gtk_tree_view_set_cursor(list_view, path, NULL, FALSE);
 	gtk_tree_path_free(path);
-	
+
 	return TRUE;
 }
 
@@ -1520,7 +1400,7 @@ struct _ClawsIOClosure
   gpointer data;
 };
 
-static gboolean  
+static gboolean
 claws_io_invoke (GIOChannel   *source,
 	         GIOCondition  condition,
 	         gpointer      data)
@@ -1573,7 +1453,7 @@ claws_input_add    (gint	      source,
   else
     channel = g_io_channel_win32_new_fd(source);
 #endif
-  result = g_io_add_watch_full (channel, G_PRIORITY_DEFAULT, condition, 
+  result = g_io_add_watch_full (channel, G_PRIORITY_DEFAULT, condition,
 				claws_io_invoke,
 				closure, claws_io_destroy);
   g_io_channel_unref (channel);
@@ -1662,7 +1542,7 @@ GdkPixbuf *claws_load_pixbuf_fitting(GdkPixbuf *src_pixbuf, gboolean inline_img,
 
 	avail_width = box_width-32;
 	avail_height = box_height;
-		
+
 	if (box_width != -1 && box_height != -1 && avail_width - 100 > 0) {
 		if (inline_img || fit_img_height) {
 			if (w > avail_width) {
@@ -1679,7 +1559,7 @@ GdkPixbuf *claws_load_pixbuf_fitting(GdkPixbuf *src_pixbuf, gboolean inline_img,
 				w = avail_width;
 			}
 		}
-		t_pixbuf = gdk_pixbuf_scale_simple(pixbuf, 
+		t_pixbuf = gdk_pixbuf_scale_simple(pixbuf,
 			w, h, GDK_INTERP_BILINEAR);
 		g_object_unref(pixbuf);
 		pixbuf = t_pixbuf;
@@ -1981,7 +1861,7 @@ static void get_time_from_combo(GtkComboBox *combo, int *h, int *m)
 	gchar *tmp;
 	gchar **parts;
 
-	if (!h || !m) 
+	if (!h || !m)
 		return;
 
 	tmp = gtk_editable_get_chars(GTK_EDITABLE(gtk_bin_get_child(GTK_BIN(combo))), 0, -1);

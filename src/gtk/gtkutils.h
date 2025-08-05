@@ -131,7 +131,7 @@ GtkCMCTreeNode *gtkut_ctree_find_collapsed_parent
 					 GtkCMCTreeNode	*node);
 void gtkut_ctree_expand_parent_all	(GtkCMCTree	*ctree,
 					 GtkCMCTreeNode	*node);
-gboolean gtkut_ctree_node_is_parent	(GtkCMCTreeNode 	*parent, 
+gboolean gtkut_ctree_node_is_parent	(GtkCMCTreeNode 	*parent,
 					 GtkCMCTreeNode 	*node);
 void gtkut_ctree_set_focus_row		(GtkCMCTree	*ctree,
 					 GtkCMCTreeNode	*node);
@@ -174,9 +174,6 @@ GtkWidget *gtkut_get_browse_directory_btn(const gchar *label);
 GtkWidget *gtkut_get_replace_btn(const gchar *label);
 GtkWidget *gtkut_stock_button(const gchar *stock_image, const gchar *label);
 GtkWidget *gtkut_get_options_frame(GtkWidget *box, GtkWidget **frame, const gchar *frame_label);
-#if HAVE_LIBCOMPFACE
-GtkWidget *xface_get_from_header(const gchar *o_xface);
-#endif
 gboolean get_tag_range(GtkTextIter *iter,
 				       GtkTextTag *tag,
 				       GtkTextIter *start_iter,
@@ -185,11 +182,11 @@ gboolean get_tag_range(GtkTextIter *iter,
 GtkWidget *face_get_from_header(const gchar *o_face);
 
 GtkWidget *gtkut_sc_combobox_create(GtkWidget *eventbox, gboolean focus_on_click);
-void gtkutils_scroll_one_line	(GtkWidget *widget, 
-				 GtkAdjustment *vadj, 
+void gtkutils_scroll_one_line	(GtkWidget *widget,
+				 GtkAdjustment *vadj,
 				 gboolean up);
-gboolean gtkutils_scroll_page	(GtkWidget *widget, 
-				 GtkAdjustment *vadj, 
+gboolean gtkutils_scroll_page	(GtkWidget *widget,
+				 GtkAdjustment *vadj,
 				 gboolean up);
 
 gboolean gtkut_tree_model_text_iter_prev(GtkTreeModel *model,

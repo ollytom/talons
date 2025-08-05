@@ -422,16 +422,6 @@ static GtkWidget *about_create_child_page_features(void)
 	stock_pixbuf_gdk(STOCK_PIXMAP_CHECKBOX_ON, &active_pixbuf);
 	stock_pixbuf_gdk(STOCK_PIXMAP_CHECKBOX_OFF, &inactive_pixbuf);
 
-#if HAVE_LIBCOMPFACE
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
-#else
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, inactive_pixbuf);
-#endif
-	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" compface "), -1,
-						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter,
-		(gchar *)C_("compface", "adds support for the X-Face header\n"), -1);
-
 #if USE_ENCHANT
 	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
 #else

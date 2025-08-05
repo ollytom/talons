@@ -79,15 +79,6 @@ gboolean avatars_internal_rendering_hook(gpointer source, gpointer data)
 		avatarr->image = face_get_from_header(aface);
 		avatarr->type  = AVATAR_FACE;
 	}
-#if HAVE_LIBCOMPFACE
-	else {
-		aface = procmsg_msginfo_get_avatar(avatarr->full_msginfo, AVATAR_XFACE);
-		if (aface) {
-			avatarr->image = xface_get_from_header(aface);
-			avatarr->type  = AVATAR_XFACE;
-		}
-	}
-#endif
 	return FALSE;
 }
 

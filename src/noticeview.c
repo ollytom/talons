@@ -1,4 +1,4 @@
-/* 
+/*
  * Claws Mail -- a GTK based, lightweight, and fast e-mail client
  * Copyright (C) 2002-2025 the Claws Mail Team
  *
@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -30,10 +30,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-
-#if HAVE_LIBCOMPFACE
-#  include <compface.h>
-#endif
 
 #include "prefs_common.h"
 #include "gtkutils.h"
@@ -94,7 +90,7 @@ NoticeView *noticeview_create(MainWindow *mainwin)
 	hsep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
 	g_object_set(hsep, "margin", 1, NULL);
 	gtk_container_add(GTK_CONTAINER(vgrid), hsep);
-	
+
 	hgrid = gtk_grid_new();
 	gtk_orientable_set_orientation(GTK_ORIENTABLE(hgrid),
 			GTK_ORIENTATION_HORIZONTAL);
@@ -106,10 +102,10 @@ NoticeView *noticeview_create(MainWindow *mainwin)
 	gtk_event_box_set_visible_window(GTK_EVENT_BOX(evtbox), FALSE);
 	gtk_widget_show(evtbox);
 
-	icon = stock_pixmap_widget(STOCK_PIXMAP_NOTICE_WARN); 
+	icon = stock_pixmap_widget(STOCK_PIXMAP_NOTICE_WARN);
 
 	gtk_widget_show(icon);
-	g_signal_connect(G_OBJECT(evtbox), "button-press-event", 
+	g_signal_connect(G_OBJECT(evtbox), "button-press-event",
 			 G_CALLBACK(noticeview_icon_pressed),
 			 (gpointer) noticeview);
 	g_signal_connect(G_OBJECT(evtbox), "motion-notify-event",
@@ -118,27 +114,27 @@ NoticeView *noticeview_create(MainWindow *mainwin)
 			 G_CALLBACK(noticeview_leave_notify), noticeview);
 	g_signal_connect(G_OBJECT(evtbox), "enter-notify-event",
 			 G_CALLBACK(noticeview_enter_notify), noticeview);
-	
+
 	gtk_container_add(GTK_CONTAINER(evtbox), icon);
 	gtk_container_add(GTK_CONTAINER(hgrid), evtbox);
-	
+
 	text = gtk_label_new("");
 	gtk_widget_show(text);
 	gtk_container_add(GTK_CONTAINER(hgrid), text);
 
 	widget = gtk_button_new_with_label("");
-	g_signal_connect(G_OBJECT(widget), "clicked", 
+	g_signal_connect(G_OBJECT(widget), "clicked",
 			 G_CALLBACK(noticeview_button_pressed),
 			 (gpointer) noticeview);
 	g_object_set(widget, "margin-right", 4, NULL);
 	gtk_container_add(GTK_CONTAINER(hgrid), widget);
-	
+
 	widget2 = gtk_button_new_with_label("");
-	g_signal_connect(G_OBJECT(widget2), "clicked", 
+	g_signal_connect(G_OBJECT(widget2), "clicked",
 			 G_CALLBACK(noticeview_2ndbutton_pressed),
 			 (gpointer) noticeview);
 	gtk_container_add(GTK_CONTAINER(hgrid), widget2);
-	
+
 	noticeview->vgrid   = vgrid;
 	noticeview->hsep   = hsep;
 	noticeview->hgrid   = hgrid;
@@ -166,7 +162,7 @@ void noticeview_show(NoticeView *noticeview)
 	if (!noticeview->visible) {
 		gtk_widget_show(GTK_WIDGET_PTR(noticeview));
 		noticeview->visible = TRUE;
-	}	
+	}
 }
 
 void noticeview_hide(NoticeView *noticeview)
@@ -174,7 +170,7 @@ void noticeview_hide(NoticeView *noticeview)
 	if (noticeview && noticeview->visible) {
 		gtk_widget_hide(GTK_WIDGET_PTR(noticeview));
 		noticeview->visible = FALSE;
-	}	
+	}
 }
 
 void noticeview_set_text(NoticeView *noticeview, const char *text)
@@ -193,10 +189,10 @@ void noticeview_set_button_text(NoticeView *noticeview, const char *text)
 		gtk_widget_show(noticeview->button);
 	} else
 		gtk_widget_hide(noticeview->button);
-	
-	/* Callers defining only one button don't have to mind 
+
+	/* Callers defining only one button don't have to mind
 	 * resetting the second one. Callers defining two have
-	 * to define the second button after the first one. 
+	 * to define the second button after the first one.
 	 */
 	gtk_widget_hide(noticeview->button2);
 }
@@ -289,17 +285,17 @@ static void noticeview_2ndbutton_pressed(GtkButton *button, NoticeView *noticevi
 void noticeview_set_icon(NoticeView *noticeview, StockPixmap icon)
 {
 	GdkPixbuf *pixbuf;
-	
+
 	if (stock_pixbuf_gdk(icon, &pixbuf) < 0)
 		return;
-	
+
 	gtk_image_set_from_pixbuf(GTK_IMAGE(noticeview->icon), pixbuf);
 }
 
 void noticeview_set_icon_clickable(NoticeView *noticeview, gboolean setting)
 {
 	noticeview->icon_clickable = setting;
-}		
+}
 
 void noticeview_set_tooltip (NoticeView *noticeview, const gchar *text)
 {

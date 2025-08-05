@@ -102,7 +102,7 @@ static GtkWidget *prefs_custom_header_list_view_create (void);
 static void prefs_custom_header_create_list_view_columns	(GtkWidget *list_view);
 
 static gboolean prefs_custom_header_selected	(GtkTreeSelection *selector,
-						 GtkTreeModel *model, 
+						 GtkTreeModel *model,
 						 GtkTreePath *path,
 						 gboolean currently_selected,
 						 gpointer data);
@@ -440,7 +440,7 @@ static void prefs_custom_header_set_dialog(PrefsAccount *ac)
 {
 	GtkListStore *store;
 	GSList *cur;
-	
+
 	store = GTK_LIST_STORE(gtk_tree_view_get_model
 				(GTK_TREE_VIEW(customhdr.list_view)));
 	gtk_list_store_clear(store);
@@ -453,7 +453,7 @@ static void prefs_custom_header_set_dialog(PrefsAccount *ac)
 					 ch->value ? ch->value : "");
 
 		prefs_custom_header_list_view_insert_header
-			(customhdr.list_view, NULL, ch_str, ch);						 
+			(customhdr.list_view, NULL, ch_str, ch);
 
 		g_free(ch_str);
 	}
@@ -493,9 +493,9 @@ static void prefs_custom_header_list_view_set_row(PrefsAccount *ac)
 		alertpanel_error(_("Header name is not set."));
 		return;
 	}
-	
-	while (*entry_text && 
-	       (*entry_text == '\n' || *entry_text == '\r' || 
+
+	while (*entry_text &&
+	       (*entry_text == '\n' || *entry_text == '\r' ||
 	        *entry_text == '\t' || *entry_text == ' '))
 		entry_text++;
 
@@ -519,11 +519,11 @@ static void prefs_custom_header_list_view_set_row(PrefsAccount *ac)
 	gtk_entry_set_text(GTK_ENTRY(customhdr.hdr_entry), ch->name);
 
 	entry_text = gtk_entry_get_text(GTK_ENTRY(customhdr.val_entry));
-	while (*entry_text && 
-	       (*entry_text == '\n' || *entry_text == '\r' || 
+	while (*entry_text &&
+	       (*entry_text == '\n' || *entry_text == '\r' ||
 	        *entry_text == '\t' || *entry_text == ' '))
 		entry_text++;
-	
+
 	if (entry_text[0] != '\0') {
 		ch->value = g_strdup(entry_text);
 		unfold_line(ch->value);
@@ -533,10 +533,10 @@ static void prefs_custom_header_list_view_set_row(PrefsAccount *ac)
 
 	ch_str = g_strdup_printf("%s: %s", ch->name,
 				 ch->value ? ch->value : "");
-	
+
 	prefs_custom_header_list_view_insert_header
 		(customhdr.list_view, NULL, ch_str, ch);
-	
+
 	g_free(ch_str);
 
 	prefs_custom_header_set_list(cur_ac);
@@ -548,7 +548,7 @@ static void prefs_custom_header_val_from_file_cb(void)
 	gchar *filename = NULL;
 	gchar *contents = NULL;
 	const gchar *hdr = gtk_entry_get_text(GTK_ENTRY(customhdr.hdr_entry));
-	
+
 	if (!strcmp(hdr, "Face"))
 		filename = filesel_select_file_open(_("Choose a PNG file"), NULL);
 	else if (!strcmp(hdr, "X-Face"))
@@ -565,7 +565,7 @@ static void prefs_custom_header_val_from_file_cb(void)
 			gint w, h;
 			GdkPixbufFormat *format = gdk_pixbuf_get_file_info(
 							filename, &w, &h);
-			
+
 			if (format == NULL) {
 				alertpanel_error(_("This file isn't an image."));
 				g_free(filename);
@@ -574,7 +574,7 @@ static void prefs_custom_header_val_from_file_cb(void)
 			if (w != 48 || h != 48) {
 				alertpanel_error(_("The chosen image isn't the correct size (48x48)."));
 				g_free(filename);
-				return;	
+				return;
 			}
 			if (!strcmp(hdr, "Face")) {
 				if (get_file_size(filename) > 725) {
@@ -616,7 +616,7 @@ static void prefs_custom_header_val_from_file_cb(void)
 					gchar *tmp2 = NULL;
 					if (tmp[i] == ' ') {
 						i++; continue;
-					} 
+					}
 					if (tmp[i] == '\r' || tmp[i] == '\n') {
 						i++; continue;
 					}
@@ -632,7 +632,7 @@ static void prefs_custom_header_val_from_file_cb(void)
 			fp = claws_fopen(filename, "rb");
 			if (!fp) {
 				g_free(filename);
-				return;	
+				return;
 			}
 
 			while ((len = claws_fread(inbuf, sizeof(gchar),
@@ -669,7 +669,7 @@ static void prefs_custom_header_val_from_file_cb(void)
 settext:
 	if (contents && strlen(contents))
 		gtk_entry_set_text(GTK_ENTRY(customhdr.val_entry), contents);
-	
+
 	g_free(contents);
 	g_free(filename);
 }
@@ -688,7 +688,7 @@ static void prefs_custom_header_delete_cb(void)
 	if (!gtk_tree_selection_get_selected(gtk_tree_view_get_selection
 				(GTK_TREE_VIEW(customhdr.list_view)),
 				&model, &sel))
-		return;	
+		return;
 
 	if (alertpanel(_("Delete header"),
 		       _("Do you really want to delete this header?"),
@@ -702,7 +702,7 @@ static void prefs_custom_header_delete_cb(void)
 	gtk_list_store_remove(GTK_LIST_STORE(model), &sel);
 
 	cur_ac->customhdr_list = g_slist_remove(cur_ac->customhdr_list, ch);
-	
+
 	custom_header_free(ch);
 }
 
@@ -713,7 +713,7 @@ static void prefs_custom_header_up(void)
 	GtkListStore *store = NULL;
 	GtkTreeModel *model = NULL;
 	GtkTreeIter iprev;
-	
+
 	if (!gtk_tree_selection_get_selected
 		(gtk_tree_view_get_selection
 			(GTK_TREE_VIEW(customhdr.list_view)),
@@ -724,7 +724,7 @@ static void prefs_custom_header_up(void)
 	sel = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &isel);
 	if (!sel)
 		return;
-	
+
 	/* no move if we're at row 0... */
 	prev = gtk_tree_path_copy(sel);
 	if (!gtk_tree_path_prev(prev)) {
@@ -747,7 +747,7 @@ static void prefs_custom_header_down(void)
 	GtkListStore *store = NULL;
 	GtkTreeModel *model = NULL;
 	GtkTreeIter next, sel;
-	
+
 	if (!gtk_tree_selection_get_selected
 		(gtk_tree_view_get_selection
 			(GTK_TREE_VIEW(customhdr.list_view)),
@@ -756,7 +756,7 @@ static void prefs_custom_header_down(void)
 		return;
 	store = (GtkListStore *)model;
 	next = sel;
-	if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &next)) 
+	if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &next))
 		return;
 
 	gtk_list_store_swap(store, &next, &sel);
@@ -781,7 +781,7 @@ static void prefs_custom_header_ok(void)
 
 static void prefs_custom_header_cancel(void)
 {
-	prefs_custom_header_read_config(cur_ac); 
+	prefs_custom_header_read_config(cur_ac);
 	gtk_widget_hide(customhdr.window);
 	gtk_window_set_modal(GTK_WINDOW(customhdr.window), FALSE);
 }
@@ -796,7 +796,7 @@ static gint prefs_custom_header_deleted(GtkWidget *widget, GdkEventAny *event,
 static GtkListStore* prefs_custom_header_create_data_store(void)
 {
 	return gtk_list_store_new(N_CUSTHDR_COLUMNS,
-				  G_TYPE_STRING,	
+				  G_TYPE_STRING,
 				  G_TYPE_POINTER,
 				  -1);
 }
@@ -826,7 +826,7 @@ static void prefs_custom_header_list_view_insert_header(GtkWidget *list_view,
 				   -1);
 
 		custom_header_free(old_data);
-		
+
 		gtk_list_store_set(list_store, row_iter,
 				   CUSTHDR_STRING, header,
 				   CUSTHDR_DATA, data,
@@ -842,10 +842,10 @@ static GtkWidget *prefs_custom_header_list_view_create(void)
 
 	model = GTK_TREE_MODEL(prefs_custom_header_create_data_store());
 	list_view = GTK_TREE_VIEW(gtk_tree_view_new_with_model(model));
-	g_object_unref(model);	
+	g_object_unref(model);
 
 	gtk_tree_view_set_reorderable(list_view, TRUE);
-	
+
 	selector = gtk_tree_view_get_selection(list_view);
 	gtk_tree_selection_set_mode(selector, GTK_SELECTION_BROWSE);
 	gtk_tree_selection_set_select_function(selector, prefs_custom_header_selected,
@@ -868,14 +868,14 @@ static void prefs_custom_header_create_list_view_columns(GtkWidget *list_view)
 		 renderer,
 		 "text", CUSTHDR_STRING,
 		 NULL);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);		
+	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);
 }
 
 #define ENTRY_SET_TEXT(entry, str) \
 	gtk_entry_set_text(GTK_ENTRY(entry), str ? str : "")
 
 static gboolean prefs_custom_header_selected(GtkTreeSelection *selector,
-					     GtkTreeModel *model, 
+					     GtkTreeModel *model,
 					     GtkTreePath *path,
 					     gboolean currently_selected,
 					     gpointer data)
@@ -892,10 +892,10 @@ static gboolean prefs_custom_header_selected(GtkTreeSelection *selector,
 	if (!gtk_tree_model_get_iter(model, &iter, path))
 		return TRUE;
 
-	gtk_tree_model_get(model, &iter, 
+	gtk_tree_model_get(model, &iter,
 			   CUSTHDR_DATA, &ch,
 			   -1);
-	
+
 	if (!ch) ch = &default_ch;
 
 	ENTRY_SET_TEXT(customhdr.hdr_entry, ch->name);
@@ -906,16 +906,7 @@ static gboolean prefs_custom_header_selected(GtkTreeSelection *selector,
 		gtk_image_set_from_pixbuf (GTK_IMAGE(customhdr.preview), pixbuf);
 		gtk_widget_show(customhdr.preview);
 		g_object_ref_sink (G_OBJECT(preview));
-	} 
-#if HAVE_LIBCOMPFACE
-	else if (!g_strcmp0("X-Face", ch->name) && ch->value != NULL) {
-		preview = GTK_IMAGE(xface_get_from_header(ch->value));	
-		pixbuf = gtk_image_get_pixbuf(preview);
-		gtk_image_set_from_pixbuf (GTK_IMAGE(customhdr.preview), pixbuf);
-		gtk_widget_show(customhdr.preview);
-		g_object_ref_sink (G_OBJECT(preview));
-	} 
-#endif
+	}
 	else {
 		gtk_widget_hide(customhdr.preview);
 	}

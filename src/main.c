@@ -815,12 +815,6 @@ static void main_dump_features_list(gboolean show_debug_only)
 		debug_print("Compiled-in features:\n");
 	else
 		g_print("Compiled-in features:\n");
-#if HAVE_LIBCOMPFACE
-	if (show_debug_only)
-		debug_print(" compface\n");
-	else
-		g_print(" compface\n");
-#endif
 #if USE_ENCHANT
 	if (show_debug_only)
 		debug_print(" Enchant\n");
