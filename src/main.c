@@ -55,12 +55,6 @@
 #endif
 #endif
 
-#ifdef HAVE_DBUS_GLIB
-#include <dbus/dbus-glib.h>
-#endif
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-#include <NetworkManager.h>
-#endif
 #ifdef HAVE_VALGRIND
 #include <valgrind.h>
 #endif
@@ -150,11 +144,6 @@
 #include <windows.h>
 #endif
 
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-/* Went offline due to NetworkManager */
-static gboolean went_offline_nm;
-#endif
-
 gchar *prog_version;
 #ifdef CRASH_DIALOG
 gchar *argv0;
@@ -231,11 +220,6 @@ static void quit_signal_handler         (int sig);
 #endif
 static void install_basic_sighandlers   (void);
 static void exit_claws			(MainWindow *mainwin);
-
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-static void networkmanager_state_change_cb(DBusGProxy *proxy, gchar *dev,
-																					 gpointer data);
-#endif
 
 #define MAKE_DIR_IF_NOT_EXIST(dir) \
 { \
@@ -659,12 +643,6 @@ static void main_dump_features_list(gboolean show_debug_only)
 		g_print(" libetpan %d.%d\n", LIBETPAN_VERSION_MAJOR, LIBETPAN_VERSION_MINOR);
 #endif
 
-#if HAVE_NETWORKMANAGER_SUPPORT
-	if (show_debug_only)
-		debug_print(" NetworkManager\n");
-	else
-		g_print(" NetworkManager\n");
-#endif
 #if HAVE_SVG
 	if (show_debug_only)
 		debug_print(" librSVG " LIBRSVG_VERSION "\n");
@@ -686,13 +664,6 @@ static void reset_statistics(void)
 
 int main(int argc, char *argv[])
 {
-#ifdef HAVE_DBUS_GLIB
-	DBusGConnection *connection;
-	GError *error;
-#endif
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-	DBusGProxy *nm_proxy;
-#endif
 	gchar *userrc;
 	MainWindow *mainwin;
 	FolderView *folderview;
@@ -774,34 +745,6 @@ int main(int argc, char *argv[])
 	reset_statistics();
 
 	gtk_init(&argc, &argv);
-
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-	went_offline_nm = FALSE;
-	nm_proxy = NULL;
-#endif
-#ifdef HAVE_DBUS_GLIB
-	error = NULL;
-	connection = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
-
-	if(!connection) {
-		debug_print("Failed to open connection to system bus: %s\n", error->message);
-		g_error_free(error);
-	}
-	else {
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-		nm_proxy = dbus_g_proxy_new_for_name(connection,
-			"org.freedesktop.NetworkManager",
-			"/org/freedesktop/NetworkManager",
-			"org.freedesktop.NetworkManager");
-		if (nm_proxy) {
-			dbus_g_proxy_add_signal(nm_proxy, "StateChanged", G_TYPE_UINT, G_TYPE_INVALID);
-			dbus_g_proxy_connect_signal(nm_proxy, "StateChanged",
-				G_CALLBACK(networkmanager_state_change_cb),
-				NULL,NULL);
-		}
-#endif
-	}
-#endif
 
 	gtkut_create_ui_manager();
 
@@ -977,10 +920,6 @@ int main(int argc, char *argv[])
 
 	if (!check_file_integrity())
 		exit(1);
-
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-	networkmanager_state_change_cb(nm_proxy,NULL,mainwin);
-#endif
 
 	manage_window_focus_in(mainwin->window, NULL, NULL);
 	folderview = mainwin->folderview;
@@ -1261,15 +1200,6 @@ int main(int argc, char *argv[])
 	END_TIMING();
 
 	gtk_main();
-
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-	if(nm_proxy)
-		g_object_unref(nm_proxy);
-#endif
-#ifdef HAVE_DBUS_GLIB
-	if(connection)
-		dbus_g_connection_unref(connection);
-#endif
 	utils_free_regex();
 	exit_claws(mainwin);
 
@@ -1292,18 +1222,12 @@ static void save_all_caches(FolderItem *item, gpointer data)
 static void exit_claws(MainWindow *mainwin)
 {
 	gchar *filename;
-	gboolean have_connectivity;
 	FolderItem *item;
 
 	sc_exiting = TRUE;
 
 	debug_print("shutting down\n");
 	inc_autocheck_timer_remove();
-
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-	if (prefs_common.work_offline && went_offline_nm)
-		prefs_common.work_offline = FALSE;
-#endif
 
 	/* save prefs for opened folder */
 	if((item = folderview_get_opened_item(mainwin->folderview)) != NULL) {
@@ -1338,14 +1262,9 @@ static void exit_claws(MainWindow *mainwin)
 	close_log_file(LOG_PROTOCOL);
 	close_log_file(LOG_DEBUG_FILTERING);
 
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-	have_connectivity = networkmanager_is_online(NULL);
-#else
-	have_connectivity = TRUE;
-#endif
 #ifdef HAVE_LIBETPAN
-	imap_main_done(have_connectivity);
-	nntp_main_done(have_connectivity);
+	imap_main_done(TRUE);
+	nntp_main_done(TRUE);
 #endif
 	/* delete crashfile */
 	if (!cmd.crash)
@@ -2573,100 +2492,3 @@ static void install_basic_sighandlers()
 #endif /* !G_OS_WIN32 */
 }
 
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-static void networkmanager_state_change_cb(DBusGProxy *proxy, gchar *dev,
-					 gpointer data)
-{
-	MainWindow *mainWin;
-
-	mainWin = NULL;
-	if (static_mainwindow)
-		mainWin = static_mainwindow;
-	else if (data)
-		mainWin = (MainWindow*)data;
-
-	if (!prefs_common.use_networkmanager)
-		return;
-
-	if (mainWin) {
-		GError *error = NULL;
-		gboolean online;
-
-		online = networkmanager_is_online(&error);
-		if(!error) {
-			if(online && went_offline_nm) {
-				went_offline_nm = FALSE;
-				main_window_toggle_work_offline(mainWin, FALSE, FALSE);
-				debug_print("NetworkManager: Went online\n");
-				log_message(LOG_PROTOCOL, _("NetworkManager: network is online.\n"));
-			}
-			else if(!online) {
-				went_offline_nm = TRUE;
-				main_window_toggle_work_offline(mainWin, TRUE, FALSE);
-				debug_print("NetworkManager: Went offline\n");
-				log_message(LOG_PROTOCOL, _("NetworkManager: network is offline.\n"));
-			}
-		}
-		else {
-			debug_print("Failed to get online information from NetworkManager: %s\n",
-							 error->message);
-			g_error_free(error);
-		}
-	}
-	else
-		debug_print("NetworkManager: Cannot change connection state because "
-						 "main window does not exist\n");
-}
-
-/* Returns true (and sets error appropriately, if given) in case of error */
-gboolean networkmanager_is_online(GError **error)
-{
-	DBusGConnection *connection;
-	DBusGProxy *proxy;
-	GError *tmp_error = NULL;
-	gboolean retVal;
-	guint32 state;
-
-	if (!prefs_common.use_networkmanager)
-		return TRUE;
-
-	tmp_error = NULL;
-	proxy = NULL;
-	connection = dbus_g_bus_get(DBUS_BUS_SYSTEM, &tmp_error);
-
-	if(!connection) {
-		/* If calling code doesn't do error checking, at least print some debug */
-		if((error == NULL) || (*error == NULL))
-			debug_print("Failed to open connection to system bus: %s\n",
-							 tmp_error->message);
-		g_propagate_error(error, tmp_error);
-		return TRUE;
-	}
-
-	proxy = dbus_g_proxy_new_for_name(connection,
-			"org.freedesktop.NetworkManager",
-			"/org/freedesktop/NetworkManager",
-			"org.freedesktop.NetworkManager");
-
-	retVal = dbus_g_proxy_call(proxy,"state",&tmp_error, G_TYPE_INVALID,
-			G_TYPE_UINT, &state, G_TYPE_INVALID);
-
-	if(proxy)
-		g_object_unref(proxy);
-	if(connection)
-		dbus_g_connection_unref(connection);
-
-	if(!retVal) {
-		/* If calling code doesn't do error checking, at least print some debug */
-		if((error == NULL) || (*error == NULL))
-			debug_print("Failed to get state info from NetworkManager: %s\n",
-							 tmp_error->message);
-		g_propagate_error(error, tmp_error);
-		return TRUE;
-	}
-    	return (state == NM_STATE_CONNECTED_LOCAL ||
-		state == NM_STATE_CONNECTED_SITE ||
-		state == NM_STATE_CONNECTED_GLOBAL ||
-		state == NM_STATE_UNKNOWN);
-}
-#endif

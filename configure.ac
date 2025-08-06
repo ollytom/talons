@@ -270,14 +270,6 @@ AC_ARG_ENABLE(startup-notification,
 		[  --disable-startup-notification  Do not startup notification support],
 		[enable_startup_notification=$enableval], [enable_startup_notification=yes])
 
-AC_ARG_ENABLE(dbus,
-		[  --disable-dbus                  Do not build DBUS support],
-		[enable_dbus=$enableval], [enable_dbus=yes])
-
-AC_ARG_ENABLE(networkmanager,
-		[  --disable-networkmanager        Do not build NetworkManager support],
-		[enable_networkmanager=$enableval], [enable_networkmanager=yes])
-
 AC_ARG_ENABLE(libetpan,
 		[  --disable-libetpan              Do not build libetpan support for IMAP4/NNTP],
 		[enable_libetpan=$enableval], [enable_libetpan=yes])
@@ -613,7 +605,7 @@ dnl #######################################################################
 dnl # Check for startup notification
 dnl #######################################################################
 if test "x$enable_startup_notification" = "xyes"; then
-	PKG_CHECK_MODULES(STARTUP_NOTIFICATION, libstartup-notification-1.0 >= 0.5,
+	PKG_CHECK_MODULES(STARTUP_NOTIFICATION, pkg_info libstartup-notification-1.0 >= 0.5,
 	[
 		AC_DEFINE(HAVE_STARTUP_NOTIFICATION, 1, [Define if we're using libstartup-notification.])
 		echo "Building with libstartup-notification"
@@ -626,45 +618,6 @@ if test "x$enable_startup_notification" = "xyes"; then
 
 	AC_SUBST(STARTUP_NOTIFICATION_CFLAGS)
 	AC_SUBST(STARTUP_NOTIFICATION_LIBS)
-fi
-
-dnl #######################################################################
-dnl # Check for D-Bus support
-dnl #######################################################################
-if test "x$enable_dbus" = "xyes"; then
-	PKG_CHECK_MODULES(DBUS, [dbus-1 >= 0.60, dbus-glib-1 >= 0.60],
-	[
-		AC_DEFINE(HAVE_DBUS_GLIB, 1, [Define if glib bindings of D-Bus are available])
-		enable_dbus=yes
-	],
-	[
-		echo "D-Bus requirements not met. D-Bus support not activated."
-		enable_dbus=no
-	])
-	AC_SUBST(DBUS_CFLAGS)
-	AC_SUBST(DBUS_LIBS)
-fi
-
-dnl #######################################################################
-dnl # Check for NetworkManager support
-dnl #######################################################################
-if test x"$enable_dbus" = xyes; then
-	if test x"$enable_networkmanager" = xyes; then
-		PKG_CHECK_MODULES(NETWORKMANAGER_SUPPORT, libnm,
-		[
-			AC_DEFINE(HAVE_NETWORKMANAGER_SUPPORT, 1, [Define if NetworkManager support is to be included.])
-			echo "Building with NetworkManager support"
-			enable_networkmanager=yes
-		],
-		[
-			echo "NetworkManager not found."
-			enable_networkmanager=no
-		])
-		AC_SUBST(NETWORKMANAGER_SUPPORT_CFLAGS)
-	fi
-else
-	echo "NetworkManager support deactivated as D-Bus requirements were not met."
-	enable_networkmanager=no
 fi
 
 dnl Libetpan
@@ -1019,8 +972,6 @@ echo "enchant              : $enable_enchant"
 echo "IMAP4 (libetpan)     : $enable_libetpan"
 echo "NNTP (libetpan)      : $enable_libetpan"
 echo "Crash dialog         : $enable_crash_dialog"
-echo "DBUS                 : $enable_dbus"
-echo "NetworkManager       : $enable_networkmanager"
 echo "Manual               : $enable_manual"
 echo "Generic UMPC code    : $enable_generic_umpc"
 echo "SVG support          : $enable_svg"

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __MAIN_H__
@@ -46,9 +46,5 @@ gboolean claws_is_starting(void);
 gchar *claws_get_socket_name(void);
 void main_set_show_at_startup(gboolean show);
 gboolean claws_crashed(void);
-
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-gboolean networkmanager_is_online(GError **error);
-#endif
 
 #endif /* __MAIN_H__ */

@@ -143,7 +143,7 @@ static gint inc_spool_account(PrefsAccount *account);
 static void inc_autocheck_timer_set_interval	(guint		 interval);
 static gint inc_autocheck_func			(gpointer	 data);
 
-static void inc_notify_cmd		(gint new_msgs, 
+static void inc_notify_cmd		(gint new_msgs,
  					 gboolean notify);
 
 static void inc_update_stats(gint new_msgs)
@@ -156,7 +156,7 @@ static void inc_update_stats(gint new_msgs)
  * inc_finished:
  * @mainwin: Main window.
  * @new_messages: TRUE if some messages have been received.
- * 
+ *
  * Update the folder view and the summary view after receiving
  * messages.  If @new_messages is FALSE, this function avoids unneeded
  * updating.
@@ -189,7 +189,7 @@ void inc_mail(MainWindow *mainwin, gboolean notify)
 
 	if (inc_lock_count) return;
 
-	if (prefs_common.work_offline && 
+	if (prefs_common.work_offline &&
 	    !inc_offline_should_override(TRUE,
 		_("Claws Mail needs network access in order "
 		  "to get mails.")))
@@ -232,7 +232,7 @@ void inc_pop_before_smtp(PrefsAccount *acc)
     	session = inc_session_new(acc);
     	if (!session) return;
 	POP3_SESSION(session->session)->pop_before_smtp = TRUE;
-		
+
     	inc_dialog = inc_progress_dialog_create(FALSE);
     	inc_dialog->queue_list = g_list_append(inc_dialog->queue_list,
 					       session);
@@ -244,7 +244,7 @@ void inc_pop_before_smtp(PrefsAccount *acc)
 		toolbar_main_set_sensitive(mainwin);
 		main_window_set_menu_sensitive(mainwin);
 	}
-			
+
 	inc_start(inc_dialog);
 }
 
@@ -252,13 +252,13 @@ static gint inc_account_mail_real(MainWindow *mainwin, PrefsAccount *account)
 {
 	IncProgressDialog *inc_dialog;
 	IncSession *session;
-	
+
 	switch (account->protocol) {
 	case A_IMAP4:
 	case A_NNTP:
 		/* Melvin: bug [14]
 		 * FIXME: it should return foldeview_check_new() value.
-		 * TODO: do it when bug [19] is fixed (IMAP folder sets 
+		 * TODO: do it when bug [19] is fixed (IMAP folder sets
 		 * an incorrect new message count)
 		 */
 		folderview_check_new(FOLDER(account->folder));
@@ -266,7 +266,7 @@ static gint inc_account_mail_real(MainWindow *mainwin, PrefsAccount *account)
 	case A_POP3:
 		session = inc_session_new(account);
 		if (!session) return 0;
-		
+
 		inc_dialog = inc_progress_dialog_create(FALSE);
 		inc_dialog->queue_list = g_list_append(inc_dialog->queue_list,
 						       session);
@@ -277,7 +277,7 @@ static gint inc_account_mail_real(MainWindow *mainwin, PrefsAccount *account)
 			toolbar_main_set_sensitive(mainwin);
 			main_window_set_menu_sensitive(mainwin);
 		}
-			
+
 		return inc_start(inc_dialog);
 
 	case A_LOCAL:
@@ -297,7 +297,7 @@ gint inc_account_mail(MainWindow *mainwin, PrefsAccount *account)
 
 	if (account->receive_in_progress) return 0;
 
-	if (prefs_common.work_offline && 
+	if (prefs_common.work_offline &&
 	    !inc_offline_should_override(TRUE,
 		_("Claws Mail needs network access in order "
 		  "to get mails.")))
@@ -323,7 +323,7 @@ void inc_account_list_mail(MainWindow *mainwin, GList *account_list, gboolean au
 	IncProgressDialog *inc_dialog;
 	gint new_msgs = 0, num;
 
-	if (prefs_common.work_offline && 
+	if (prefs_common.work_offline &&
 	    !inc_offline_should_override( (autocheck == FALSE),
 		_("Claws Mail needs network access in order "
 		  "to get mails.")))
@@ -345,7 +345,7 @@ void inc_account_list_mail(MainWindow *mainwin, GList *account_list, gboolean au
 		/* external incorporating program */
 		if (execute_command_line(prefs_common.extinc_cmd, FALSE, NULL) < 0) {
 			log_error(LOG_PROTOCOL, _("%s failed\n"), prefs_common.extinc_cmd);
-			
+
 			main_window_unlock(mainwin);
 			return;
 		}
@@ -628,7 +628,7 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 		GList *next = qlist->next;
 
 		session = qlist->data;
-		pop3_session = POP3_SESSION(session->session); 
+		pop3_session = POP3_SESSION(session->session);
 		pop3_session->user = g_strdup(pop3_session->ac_prefs->userid);
 
 		if (inc_dialog->show_dialog)
@@ -636,7 +636,7 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 				(inc_dialog->dialog->window,
 				 NULL, NULL);
 #ifdef USE_OAUTH2
-		if(pop3_session->ac_prefs->use_pop_auth && 
+		if(pop3_session->ac_prefs->use_pop_auth &&
 		   pop3_session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2)
 		     oauth2_check_passwds (pop3_session->ac_prefs);
 #endif
@@ -744,7 +744,7 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 		default:
 			break;
 		}
-		
+
 		if (pop3_session->error_val == PS_AUTHFAIL) {
 			if(prefs_common.show_recv_err_dialog) {
 				if((prefs_common.recv_dialog_mode == RECV_DIALOG_ALWAYS) ||
@@ -770,21 +770,21 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 
 		/* process messages */
 		folder_item_update_freeze();
-		
-		procmsg_msglist_filter(msglist, pop3_session->ac_prefs, 
-				&filtered, &unfiltered, 
+
+		procmsg_msglist_filter(msglist, pop3_session->ac_prefs,
+				&filtered, &unfiltered,
 				pop3_session->ac_prefs->filter_on_recv);
 
 		filtering_move_and_copy_msgs(msglist);
-		if (unfiltered != NULL)		
+		if (unfiltered != NULL)
 			folder_item_move_msgs(inbox, unfiltered);
 
-		for(msglist_element = msglist; msglist_element != NULL; 
+		for(msglist_element = msglist; msglist_element != NULL;
 		    msglist_element = msglist_element->next) {
 			procmsg_msginfo_free((MsgInfo**)&(msglist_element->data));
 		}
 		folder_item_update_thaw();
-		
+
 		g_slist_free(msglist);
 		g_slist_free(filtered);
 		g_slist_free(unfiltered);
@@ -864,7 +864,7 @@ static IncState inc_pop3_session_do(IncSession *session)
 
 	debug_print("getting new messages of account %s...\n",
 		    ac->account_name);
-		    
+
 	ac->last_pop_login_time = time(NULL);
 
 	buf = g_strdup_printf(_("%s: Retrieving new messages"),
@@ -923,7 +923,7 @@ static IncState inc_pop3_session_do(IncSession *session)
 
 	session_set_timeout(SESSION(pop3_session),
 			    prefs_common.io_timeout_secs * 1000);
-	
+
 	if (session_connect(SESSION(pop3_session), server, port) < 0) {
 		if(prefs_common.show_recv_err_dialog) {
 			if((prefs_common.recv_dialog_mode == RECV_DIALOG_ALWAYS) ||
@@ -1235,7 +1235,7 @@ static void inc_put_error(IncState istate, Pop3Session *session)
 		if (!prefs_common.show_recv_err_dialog)
 			break;
 		err_msg = g_strdup_printf(_("Connection to %s:%d failed."),
-					  SESSION(session)->server, 
+					  SESSION(session)->server,
 					  SESSION(session)->port);
 		break;
 	case INC_ERROR:
@@ -1265,15 +1265,15 @@ static void inc_put_error(IncState istate, Pop3Session *session)
 		if (!prefs_common.show_recv_err_dialog)
 			break;
 		err_msg = g_strdup_printf(_("Socket error on connection to %s:%d."),
-					  SESSION(session)->server, 
+					  SESSION(session)->server,
 					  SESSION(session)->port);
 		break;
 	case INC_EOF:
 		log_msg = _("Connection closed by the remote host.");
 		if (!prefs_common.show_recv_err_dialog)
 			break;
-		err_msg = g_strdup_printf(_("Connection to %s:%d closed by the remote host."), 
-					  SESSION(session)->server, 
+		err_msg = g_strdup_printf(_("Connection to %s:%d closed by the remote host."),
+					  SESSION(session)->server,
 					  SESSION(session)->port);
 		break;
 	case INC_LOCKED:
@@ -1303,8 +1303,8 @@ static void inc_put_error(IncState istate, Pop3Session *session)
 			    "Preferences/Other/Miscellaneous.");
 		if (!prefs_common.show_recv_err_dialog)
 			break;
-		err_msg = g_strdup_printf(_("Connection to %s:%d timed out."), 
-					  SESSION(session)->server, 
+		err_msg = g_strdup_printf(_("Connection to %s:%d timed out."),
+					  SESSION(session)->server,
 					  SESSION(session)->port);
 		break;
 	default:
@@ -1396,24 +1396,24 @@ static gint inc_spool_account(PrefsAccount *account)
 	if (account->local_mbox) {
 		if (is_file_exist(account->local_mbox))
 			mbox = g_strdup(account->local_mbox);
-		else if (is_dir_exist(account->local_mbox)) 
+		else if (is_dir_exist(account->local_mbox))
 			mbox = g_strconcat(account->local_mbox, G_DIR_SEPARATOR_S,
 					   g_get_user_name(), NULL);
 		else {
-			debug_print("%s: local mailbox not found.\n", 
+			debug_print("%s: local mailbox not found.\n",
 				    account->local_mbox);
 			return -1;
 		}
 	} else {
 		debug_print("local mailbox not set in account info.\n");
 		return -1;
-	}	
+	}
 
 	result = get_spool(inbox, mbox, account);
 	g_free(mbox);
-	
+
 	statusbar_pop_all();
-	
+
 	return result;
 }
 
@@ -1519,7 +1519,7 @@ static void inc_autocheck_timer_set_interval(guint _interval)
 		interval /= 1000;
 
 	inc_autocheck_timer_remove();
-	/* last test is to avoid re-enabling auto_check after modifying 
+	/* last test is to avoid re-enabling auto_check after modifying
 	   the common preferences */
 	if (prefs_common.autochk_newmail && autocheck_data
 	    && prefs_common.work_offline == FALSE) {
@@ -1614,12 +1614,6 @@ gboolean inc_offline_should_override(gboolean force_ask, const gchar *msg)
 	gint length = 10; /* seconds */
 	gint answer = G_ALERTDEFAULT;
 
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-	/* If no network connection is available, override is not possible */
-	if(!networkmanager_is_online(NULL))
-		return FALSE;
-#endif
-
 	if (prefs_common.autochk_newmail)
 		length = prefs_common.autochk_itv; /* seconds */
 
@@ -1629,7 +1623,7 @@ gboolean inc_offline_should_override(gboolean force_ask, const gchar *msg)
 
 	if (prefs_common.work_offline) {
 		gchar *tmp = NULL;
-		
+
 		if (time(NULL) - inc_offline_overridden_yes < length * 60) /* seconds */
 			 return TRUE;
 		else if (time(NULL) - inc_offline_overridden_no < length * 60) /* seconds */
@@ -1662,16 +1656,16 @@ gboolean inc_offline_should_override(gboolean force_ask, const gchar *msg)
 			}
 			tmp = g_strdup_printf(
 				_("%s%sYou're working offline. Override for %d %s?"),
-				msg?msg:"", 
+				msg?msg:"",
 				msg?"\n\n":"",
 				length, unit);
 		} else
 			tmp = g_strdup_printf(
 				_("%s%sYou're working offline. Override?"),
-				msg?msg:"", 
+				msg?msg:"",
 				msg?"\n\n":"");
 
-		answer = alertpanel(_("Offline warning"), 
+		answer = alertpanel(_("Offline warning"),
 			       tmp,
 			       NULL, _("_No"), NULL, _("_Yes"),
 			       NULL, !force_ask? _("On_ly once"):NULL, ALERTFOCUS_SECOND);

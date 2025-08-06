@@ -571,7 +571,6 @@ struct _PrefsCommon
 	gint print_previewwin_width;
 	gint print_previewwin_height;
 
-	gboolean use_networkmanager;
 	gboolean use_shred;
 	gboolean two_line_vert;
 	gboolean inherit_folder_props;

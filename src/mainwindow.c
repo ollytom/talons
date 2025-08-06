@@ -4193,13 +4193,6 @@ static void mainwindow_check_synchronise(MainWindow *mainwin, gboolean ask)
 static void online_switch_clicked (GtkButton *btn, gpointer data)
 {
 	MainWindow *mainwin;
-	gboolean have_connectivity;
-
-#ifdef HAVE_NETWORKMANAGER_SUPPORT
-	have_connectivity = networkmanager_is_online(NULL);
-#else
-	have_connectivity = TRUE;
-#endif
 
 	mainwin = (MainWindow *) data;
 
@@ -4218,11 +4211,10 @@ static void online_switch_clicked (GtkButton *btn, gpointer data)
 		if (prefs_common.work_offline)
 			return;
 
-		if(have_connectivity)
-			mainwindow_check_synchronise(mainwin, TRUE);
+		mainwindow_check_synchronise(mainwin, TRUE);
 		prefs_common.work_offline = TRUE;
-		imap_disconnect_all(have_connectivity);
-		nntp_disconnect_all(have_connectivity);
+		imap_disconnect_all(TRUE);
+		nntp_disconnect_all(TRUE);
 		hooks_invoke(OFFLINE_SWITCH_HOOKLIST, NULL);
 	} else {
 		/*go online */
