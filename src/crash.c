@@ -430,9 +430,6 @@ static gchar *get_compiled_in_features(void)
 #if HAVE_LIBETPAN
 		   " libetpan"
 #endif
-#if HAVE_LIBSM
-		   " libSM"
-#endif
 	"");
 }
 

@@ -40,9 +40,6 @@
 #  include <errno.h>
 #  include <fcntl.h>
 #endif
-#ifdef HAVE_LIBSM
-#include <X11/SM/SMlib.h>
-#endif
 
 #if HAVE_FLOCK
 #include <sys/file.h>
@@ -159,7 +156,7 @@ static gboolean went_offline_nm;
 #endif
 
 gchar *prog_version;
-#if (defined HAVE_LIBSM || defined CRASH_DIALOG)
+#ifdef CRASH_DIALOG
 gchar *argv0;
 #endif
 
@@ -448,190 +445,6 @@ backup_mode:
 	return (r == 0);
 }
 
-#ifdef HAVE_LIBSM
-static void
-sc_client_set_value (MainWindow *mainwin,
-		  gchar       *name,
-		  char        *type,
-		  int          num_vals,
-		  SmPropValue *vals)
-{
-	SmProp *proplist[1];
-	SmProp prop;
-
-	prop.name = name;
-	prop.type = type;
-	prop.num_vals = num_vals;
-	prop.vals = vals;
-
-	proplist[0]= &prop;
-	if (mainwin->smc_conn)
-		SmcSetProperties ((SmcConn) mainwin->smc_conn, 1, proplist);
-}
-
-static void sc_die_callback (SmcConn smc_conn, SmPointer client_data)
-{
-	clean_quit(NULL);
-}
-
-static void sc_save_complete_callback(SmcConn smc_conn, SmPointer client_data)
-{
-}
-
-static void sc_shutdown_cancelled_callback (SmcConn smc_conn, SmPointer client_data)
-{
-	MainWindow *mainwin = (MainWindow *)client_data;
-	if (mainwin->smc_conn)
-		SmcSaveYourselfDone ((SmcConn) mainwin->smc_conn, TRUE);
-}
-
-static void sc_save_yourself_callback (SmcConn   smc_conn,
-			       SmPointer client_data,
-			       int       save_style,
-			       gboolean  shutdown,
-			       int       interact_style,
-			       gboolean  fast) {
-
-	MainWindow *mainwin = (MainWindow *)client_data;
-	if (mainwin->smc_conn)
-		SmcSaveYourselfDone ((SmcConn) mainwin->smc_conn, TRUE);
-}
-
-static IceIOErrorHandler sc_ice_installed_handler;
-
-static void sc_ice_io_error_handler (IceConn connection)
-{
-	if (sc_ice_installed_handler)
-		(*sc_ice_installed_handler) (connection);
-}
-static gboolean sc_process_ice_messages (GIOChannel   *source,
-					 GIOCondition  condition,
-					 gpointer      data)
-{
-	IceConn connection = (IceConn) data;
-	IceProcessMessagesStatus status;
-
-	status = IceProcessMessages (connection, NULL, NULL);
-
-	if (status == IceProcessMessagesIOError) {
-		IcePointer context = IceGetConnectionContext (connection);
-
-		if (context && G_IS_OBJECT(context)) {
-		guint disconnect_id = g_signal_lookup ("disconnect", G_OBJECT_TYPE (context));
-
-		if (disconnect_id > 0)
-			g_signal_emit (context, disconnect_id, 0);
-		} else {
-			IceSetShutdownNegotiation (connection, False);
-			IceCloseConnection (connection);
-		}
-	}
-
-	return TRUE;
-}
-
-static void new_ice_connection (IceConn connection, IcePointer client_data, Bool opening,
-		    IcePointer *watch_data)
-{
-	guint input_id;
-
-	if (opening) {
-		GIOChannel *channel;
-		/* Make sure we don't pass on these file descriptors to any
-		exec'ed children */
-		fcntl(IceConnectionNumber(connection),F_SETFD,
-		fcntl(IceConnectionNumber(connection),F_GETFD,0) | FD_CLOEXEC);
-
-		channel = g_io_channel_unix_new (IceConnectionNumber (connection));
-		input_id = g_io_add_watch (channel,
-		G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
-		sc_process_ice_messages,
-		connection);
-		g_io_channel_unref (channel);
-
-		*watch_data = (IcePointer) GUINT_TO_POINTER (input_id);
-	} else {
-		input_id = GPOINTER_TO_UINT ((gpointer) *watch_data);
-		g_source_remove (input_id);
-	}
-}
-
-static void sc_session_manager_connect(MainWindow *mainwin)
-{
-	static gboolean connected = FALSE;
-	SmcCallbacks      callbacks;
-	gchar            *client_id;
-	IceIOErrorHandler default_handler;
-
-	if (connected)
-		return;
-	connected = TRUE;
-
-
-	sc_ice_installed_handler = IceSetIOErrorHandler (NULL);
-	default_handler = IceSetIOErrorHandler (sc_ice_io_error_handler);
-
-	if (sc_ice_installed_handler == default_handler)
-		sc_ice_installed_handler = NULL;
-
-	IceAddConnectionWatch (new_ice_connection, NULL);
-
-
-      	callbacks.save_yourself.callback      = sc_save_yourself_callback;
-	callbacks.die.callback                = sc_die_callback;
-	callbacks.save_complete.callback      = sc_save_complete_callback;
-	callbacks.shutdown_cancelled.callback = sc_shutdown_cancelled_callback;
-
-	callbacks.save_yourself.client_data =
-		callbacks.die.client_data =
-		callbacks.save_complete.client_data =
-		callbacks.shutdown_cancelled.client_data = (SmPointer) mainwin;
-	if (g_getenv ("SESSION_MANAGER")) {
-		gchar error_string_ret[256] = "";
-
-		mainwin->smc_conn = (gpointer)
-			SmcOpenConnection (NULL, mainwin,
-				SmProtoMajor, SmProtoMinor,
-				SmcSaveYourselfProcMask | SmcDieProcMask |
-				SmcSaveCompleteProcMask |
-				SmcShutdownCancelledProcMask,
-				&callbacks,
-				NULL, &client_id,
-				256, error_string_ret);
-
-		/* From https://www.x.org/releases/X11R7.7/doc/libSM/SMlib.txt:
-		 * If SmcOpenConnection succeeds, it returns an opaque connection
-		 * pointer of type SmcConn and the client_id_ret argument contains
-		 * the client ID to be used for this session. The client_id_ret
-		 * should be freed with a call to free when no longer needed. On
-		 * failure, SmcOpenConnection returns NULL, and the reason for
-		 * failure is returned in error_string_ret. */
-		if (mainwin->smc_conn != NULL)
-			g_free(client_id);
-
-		if (error_string_ret[0] || mainwin->smc_conn == NULL)
-			g_warning("while connecting to session manager: %s",
-				error_string_ret);
-		else {
-			SmPropValue *vals;
-			vals = g_new (SmPropValue, 1);
-			vals[0].length = strlen(argv0);
-			vals[0].value = argv0;
-			sc_client_set_value (mainwin, SmCloneCommand, SmLISTofARRAY8, 1, vals);
-			sc_client_set_value (mainwin, SmRestartCommand, SmLISTofARRAY8, 1, vals);
-			sc_client_set_value (mainwin, SmProgram, SmARRAY8, 1, vals);
-
-			vals[0].length = strlen(g_get_user_name()?g_get_user_name():"");
-			vals[0].value = g_strdup(g_get_user_name()?g_get_user_name():"");
-			sc_client_set_value (mainwin, SmUserID, SmARRAY8, 1, vals);
-
-			g_free(vals[0].value);
-			g_free(vals);
-		}
-	}
-}
-#endif
-
 static gboolean sc_exiting = FALSE;
 static gboolean show_at_startup = TRUE;
 static gboolean claws_crashed_bool = FALSE;
@@ -845,12 +658,7 @@ static void main_dump_features_list(gboolean show_debug_only)
 	else
 		g_print(" libetpan %d.%d\n", LIBETPAN_VERSION_MAJOR, LIBETPAN_VERSION_MINOR);
 #endif
-#if HAVE_LIBSM
-	if (show_debug_only)
-		debug_print(" libSM\n");
-	else
-		g_print(" libSM\n");
-#endif
+
 #if HAVE_NETWORKMANAGER_SUPPORT
 	if (show_debug_only)
 		debug_print(" NetworkManager\n");
@@ -913,7 +721,7 @@ int main(int argc, char *argv[])
 	}
 
 	prog_version = PROG_VERSION;
-#if (defined HAVE_LIBSM || defined CRASH_DIALOG)
+#ifdef CRASH_DIALOG
 	argv0 = g_strdup(argv[0]);
 #endif
 
@@ -1383,9 +1191,6 @@ int main(int argc, char *argv[])
 		startup_notification_complete(FALSE);
 #endif
 #endif
-#ifdef HAVE_LIBSM
-	sc_session_manager_connect(mainwin);
-#endif
 
 	folder_item_update_thaw();
 	folderview_thaw(mainwin->folderview);
@@ -1547,12 +1352,6 @@ static void exit_claws(MainWindow *mainwin)
 		claws_unlink(get_crashfile_name());
 
 	lock_socket_remove();
-
-#ifdef HAVE_LIBSM
-	if (mainwin->smc_conn)
-		SmcCloseConnection ((SmcConn)mainwin->smc_conn, 0, NULL);
-	mainwin->smc_conn = NULL;
-#endif
 
 	main_window_destroy_all();
 

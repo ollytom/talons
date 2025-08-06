@@ -87,7 +87,7 @@ typedef enum
 } LayoutType;
 
 typedef enum
-{	
+{
 	TOOLBAR_NONE		= 0,
 	TOOLBAR_ICON		= 1,
 	TOOLBAR_TEXT		= 2,
@@ -141,18 +141,14 @@ struct _MainWindow
 	LogWindow	*filtering_debugwin;
 
 	gint	progressindicator_hook;
-	
+
 	GtkWidget 	*colorlabel_menu;
 	GtkWidget	*warning_btn;
 	GtkWidget 	*tags_menu;
-	
+
 	gboolean	 in_folder;
 	GtkActionGroup	*action_group;
 	GtkUIManager	*ui_manager;
-
-#ifdef HAVE_LIBSM
-	gpointer smc_conn;
-#endif
 };
 
 MainWindow *main_window_create		(void);
@@ -201,11 +197,11 @@ void main_window_popup			(MainWindow	*mainwin);
 
 SensitiveCondMask main_window_get_current_state   (MainWindow *mainwin);
 
-void toolbar_set_compose_button               (Toolbar		 *toolbar, 
+void toolbar_set_compose_button               (Toolbar		 *toolbar,
 					       ComposeButtonType  compose_btn_type);
 void main_window_destroy_all                  (void);
 
-void main_window_toggle_work_offline          (MainWindow        *mainwin, 
+void main_window_toggle_work_offline          (MainWindow        *mainwin,
                                                gboolean           offline,
 					       gboolean		  ask_sync);
 

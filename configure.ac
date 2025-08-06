@@ -238,10 +238,6 @@ AC_ARG_ENABLE(manual,
 		[  --disable-manual                Do not build user manual],
 		[enable_manual=$enableval], [enable_manual=yes])
 
-AC_ARG_ENABLE(libsm,
-		[  --disable-libsm                 Do not build libSM support for session management],
-		[enable_libsm=$enableval], [enable_libsm=yes])
-
 AC_ARG_ENABLE(ipv6,
 		[  --disable-ipv6                  Do not build IPv6 support],
 		[enable_ipv6=$enableval], [enable_ipv6=yes])
@@ -350,26 +346,6 @@ else
 fi
 
 AC_CHECK_LIB(xpg4, setlocale)
-
-SM_LIBS=""
-dnl Check for LibSM
-AC_MSG_CHECKING([whether to use LibSM])
-if test x"$enable_libsm" = xyes; then
-	AC_MSG_RESULT(yes)
-	AC_CHECK_LIB(SM, SmcSaveYourselfDone,
-		[SM_LIBS="$X_LIBS -lSM -lICE"],enable_libsm=no,
-		$X_LIBS -lICE)
-	AC_CHECK_HEADERS(X11/SM/SMlib.h,,enable_libsm=no)
-	if test x"$enable_libsm" = xyes; then
-		AC_DEFINE(HAVE_LIBSM, 1, [Define to 1 if you have libSM installed])
-	else
-		AC_MSG_RESULT(not found)
-		AC_MSG_WARN([*** LibSM will not be supported ***])
-	fi
-else
-	AC_MSG_RESULT(no)
-fi
-AC_SUBST(SM_LIBS)
 
 dnl Check for __VA_OPT__ macro
 AC_CACHE_CHECK([for __VA_OPT__],
@@ -1043,13 +1019,11 @@ echo "enchant              : $enable_enchant"
 echo "IMAP4 (libetpan)     : $enable_libetpan"
 echo "NNTP (libetpan)      : $enable_libetpan"
 echo "Crash dialog         : $enable_crash_dialog"
-echo "LibSM                : $enable_libsm"
 echo "DBUS                 : $enable_dbus"
 echo "NetworkManager       : $enable_networkmanager"
 echo "Manual               : $enable_manual"
 echo "Generic UMPC code    : $enable_generic_umpc"
 echo "SVG support          : $enable_svg"
-echo "Password crypto      : $pwd_crypto"
 echo "Unit tests           : $enable_tests"
 echo "pthread              : $enable_pthread"
 echo "Startup notification : $enable_startup_notification"
