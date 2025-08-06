@@ -199,16 +199,6 @@ if test $USE_MAINTAINER_MODE = yes; then
 	AM_CFLAGS="$AM_CFLAGS -g"
 fi
 
-AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
-_gcc_cflags_save=$CFLAGS
-CFLAGS="-Wno-pointer-sign"
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],_gcc_psign=yes,_gcc_psign=no)
-AC_MSG_RESULT($_gcc_psign)
-CFLAGS=$_gcc_cflags_save;
-if test x"$_gcc_psign" = xyes ; then
-	AM_CFLAGS="$AM_CFLAGS -Wno-pointer-sign"
-fi
-
 pthread_name=
 case "$target" in
 *-darwin*)
