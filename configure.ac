@@ -852,14 +852,6 @@ fi
 AC_SUBST(EXPAT_CFLAGS)
 AC_SUBST(EXPAT_LIBS)
 
-dnl webkit *********************************************************************
-PKG_CHECK_MODULES(WEBKIT, webkit2gtk-4.1, HAVE_WEBKIT=yes, HAVE_WEBKIT=no)
-if test x"$HAVE_WEBKIT" = xno; then
-	PKG_CHECK_MODULES(WEBKIT, webkit2gtk-4.0 >= 2.18.0, HAVE_WEBKIT=yes, HAVE_WEBKIT=no)
-fi
-AC_SUBST(WEBKIT_LIBS)
-AC_SUBST(WEBKIT_CFLAGS)
-
 dnl libarchive *****************************************************************
 PKG_CHECK_MODULES(LIBARCHIVE, libarchive, HAVE_ARCHIVE=yes, HAVE_ARCHIVE=no)
 AC_SUBST(ARCHIVE_LIBS)
@@ -987,20 +979,6 @@ else
 	HAVE_GPGME=no
 fi
 
-dnl Python *********************************************************************
-PKG_CHECK_MODULES(PYTHON, python3, HAVE_PYTHON=yes, HAVE_PYTHON=no)
-PKG_CHECK_MODULES(PYTHONEMBED, python3-embed, HAVE_PYTHONEMBED=yes, HAVE_PYTHONEMBED=no)
-PKG_CHECK_MODULES(PYGOBJECT, pygobject-3.0, HAVE_PYGOBJ=yes, HAVE_PYGOBJ=no)
-
-AC_SUBST(PYTHON_SHARED_LIB)
-AC_SUBST(PYTHON_CFLAGS)
-AC_SUBST(PYTHON_LIBS)
-AC_SUBST(PYTHONEMBED_SHARED_LIB)
-AC_SUBST(PYTHONEMBED_CFLAGS)
-AC_SUBST(PYTHONEMBED_LIBS)
-AC_SUBST(PYGOBJECT_CFLAGS)
-AC_SUBST(PYGOBJECT_LIBS)
-
 dnl libnotify ******************************************************************
 PKG_CHECK_MODULES(libnotify, libnotify >= 0.4.3, HAVE_LIBNOTIFY=yes, HAVE_LIBNOTIFY=no)
 if test x"$HAVE_LIBNOTIFY" = xyes; then
@@ -1040,45 +1018,6 @@ if test x"$HAVE_HOTKEYS" = xyes; then
 fi
 AC_SUBST(CM_NP_HOTKEY_CFLAGS)
 AC_SUBST(CM_NP_HOTKEY_LIBS)
-
-dnl libytnef *******************************************************************
-YTNEF_CFLAGS=""
-YTNEF_LIBS=""
-have_ytnef=0
-# Check both ytnef.h and libytnef/ytnef.h, and adjust YTNEF_CFLAGS
-# accordingly
-AC_CHECK_HEADER(ytnef.h, [have_ytnef=1], [have_ytnef=0])
-if test $have_ytnef -eq 0; then
-	AC_CHECK_HEADER(libytnef/ytnef.h,
-									[have_ytnef=1;
-									 YTNEF_CFLAGS="${YTNEF_CFLAGS} -DYTNEF_H_SUBDIR"],
-									[have_ytnef=0])
-fi
-if test $have_ytnef -eq 1; then
-	AC_MSG_CHECKING([how libytnef's SwapDDWord() should be called])
-	# Now we have to figure out which libytnef version we're using,
-	# based on whether SwapDDWord takes one argument or two.
-	if test "x${YTNEF_CFLAGS}" = "x"; then
-		ytnef_include="#include <ytnef.h>"
-	else
-		ytnef_include="#include <libytnef/ytnef.h>"
-	fi
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>
-									${ytnef_include}]], [[SwapDDWord(0, 0);]])],[have_ytnef=1],[have_ytnef=0])
-	if test $have_ytnef -eq 0; then
-		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>
-										${ytnef_include}]], [[SwapDDWord(0);]])],[have_ytnef=1;
-										 YTNEF_CFLAGS="${YTNEF_CFLAGS} -DYTNEF_OLD_SWAPDDWORD"],[have_ytnef=0])
-	fi
-	if test $have_ytnef -eq 1; then
-		YTNEF_LIBS="-lytnef"
-		AC_MSG_RESULT(ok)
-	else
-		AC_MSG_RESULT(no idea, unsupported libytnef version?)
-	fi
-fi
-AC_SUBST(YTNEF_CFLAGS)
-AC_SUBST(YTNEF_LIBS)
 
 
 AC_CONFIG_FILES([
