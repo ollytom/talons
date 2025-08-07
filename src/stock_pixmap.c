@@ -726,9 +726,6 @@ GdkPixbuf *pixbuf_from_svg_like_icon(char *filename, GError **error, StockPixmap
 }
 #endif
 
-/*!
- *\brief
- */
 gint priv_pixbuf_gdk(PrivPixmap icon, GdkPixbuf **pixbuf)
 {
 	PrivPixmapData *pix_d;

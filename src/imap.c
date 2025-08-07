@@ -5720,12 +5720,7 @@ static void imap_set_batch (Folder *folder, FolderItem *_item, gboolean batch)
 	}
 }
 
-
-
 /* data types conversion libetpan <-> claws */
-
-
-
 #define ETPAN_IMAP_MB_MARKED      1
 #define ETPAN_IMAP_MB_UNMARKED    2
 #define ETPAN_IMAP_MB_NOSELECT    4

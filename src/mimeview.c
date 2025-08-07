@@ -1053,10 +1053,9 @@ static void update_signature_noticeview(MimeView *mimeview, gboolean special, Si
 	if (mimeview == NULL || mimeview->siginfo == NULL)
 		g_error("bad call to update noticeview");
 
+	mycode = privacy_mimeinfo_get_sig_status(mimeview->siginfo);
 	if (special)
 		mycode = code;
-	else
-		mycode = privacy_mimeinfo_get_sig_status(mimeview->siginfo);
 
 	switch (mycode) {
 	case SIGNATURE_UNCHECKED:
