@@ -276,8 +276,6 @@ static void addrgather_page_fields(gint pageNum, gchar *pageLbl)
 	GtkAdjustment *adjFolder;
 	GtkWidget *checkRecurse;
 	gint i;
-	GError* error = NULL;
-	GSList *books, *cur;
 
 	/* Container */
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
