@@ -313,16 +313,12 @@ claws_mailinclude_HEADERS = \
 
 BUILT_SOURCES = \
 	matcher_parser_parse.h \
-	quote_fmt_parse.h \
-	client-bindings.h
-
-client-bindings.h: claws-contacts.xml
+	quote_fmt_parse.h
 
 CLEANFILES = \
 	     $(BUILT_SOURCES)
 
 EXTRA_DIST = \
-	claws-contacts.xml \
 	w32-logo.ico \
 	pixmaps/addr_one.xpm \
 	pixmaps/addr_two.xpm \
@@ -517,9 +513,7 @@ EXTRA_DIST = \
 	pixmaps/zoom_fit.xpm \
 	pixmaps/zoom_in.xpm \
 	pixmaps/zoom_out.xpm \
-	pixmaps/zoom_width.xpm \
-	$(abook_extra)
-
+	pixmaps/zoom_width.xpm
 
 IFLAGS = \
 	-I$(srcdir)/common \
@@ -543,7 +537,6 @@ claws_mail_LDADD = \
 	$(GNUTLS_LIBS) \
 	$(NETTLE_LIBS) \
 	$(PTHREAD_LIBS) \
-	$(SM_LIBS) \
 	$(LIBICONV) \
 	$(STARTUP_NOTIFICATION_LIBS) \
 	$(LIBETPAN_LIBS) \
