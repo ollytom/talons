@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -83,7 +83,7 @@ typedef struct {
 /* callbacks */
 static void     printing_textview_cb_begin_print(GtkPrintOperation*,
 						 GtkPrintContext*, gpointer);
-static void     printing_textview_cb_draw_page(GtkPrintOperation*, 
+static void     printing_textview_cb_draw_page(GtkPrintOperation*,
 					       GtkPrintContext*, gint,
 			     		       gpointer);
 static gboolean cb_preview(GtkPrintOperation*, GtkPrintOperationPreview*,
@@ -193,7 +193,7 @@ GtkPageSetup *printing_get_page_setup(void)
 		read_from_file = FALSE;
 
 		/* try reading the page setup from file */
-		page_setup_filename = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, 
+		page_setup_filename = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 						  PRINTING_PAGE_SETUP_STORAGE_FILE, NULL);
 		keyfile = g_key_file_new();
 		key_file_read = g_key_file_load_from_file(keyfile, page_setup_filename,
@@ -245,9 +245,9 @@ GtkPageSetup *printing_get_page_setup(void)
 	return page_setup;
 }
 
-void printing_print_full(GtkWindow *parent, PrintRenderer *renderer, gpointer renderer_data, 
+void printing_print_full(GtkWindow *parent, PrintRenderer *renderer, gpointer renderer_data,
 			 gint sel_start, gint sel_end, GtkImage *avatar)
-{			 
+{
 	GtkPrintOperation *op;
 	GtkPrintOperationResult res;
 	PrintData *print_data;
@@ -338,14 +338,14 @@ static gpointer printing_textview_get_data_to_print(gpointer data, gint sel_star
 void printing_print(GtkTextView *text_view, GtkWindow *parent, gint sel_start, gint sel_end, GtkImage *avatar)
 {
 	PrintRenderer *textview_renderer = g_new0(PrintRenderer, 1);
-	
+
 	textview_renderer->get_pango_context = printing_textview_get_pango_context;
 	textview_renderer->get_data_to_print = printing_textview_get_data_to_print;
 	textview_renderer->cb_begin_print    = printing_textview_cb_begin_print;
 	textview_renderer->cb_draw_page      = printing_textview_cb_draw_page;
 
 	printing_print_full(parent, textview_renderer, text_view, sel_start, sel_end, avatar);
-	
+
 	g_free(textview_renderer);
 }
 
@@ -371,7 +371,7 @@ void printing_page_setup(GtkWindow *parent)
 						gtk_page_setup_get_paper_size(page_setup)));
 	prefs_common.print_paper_orientation = gtk_page_setup_get_orientation(page_setup);
 	/* store 100th millimeters */
-	prefs_common.print_margin_top    = (int) (100*gtk_page_setup_get_top_margin(page_setup, 
+	prefs_common.print_margin_top    = (int) (100*gtk_page_setup_get_top_margin(page_setup,
 								PAGE_MARGIN_STORAGE_UNIT));
 	prefs_common.print_margin_bottom = (int) (100*gtk_page_setup_get_bottom_margin(page_setup,
 								PAGE_MARGIN_STORAGE_UNIT));
@@ -437,7 +437,7 @@ static gboolean cb_preview(GtkPrintOperation        *operation,
 	/* vbox */
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_container_add(GTK_CONTAINER(dialog), vbox);
-  
+
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
   	gtk_orientable_set_orientation(GTK_ORIENTABLE(toolbar), GTK_ORIENTATION_HORIZONTAL);
@@ -453,7 +453,7 @@ static gboolean cb_preview(GtkPrintOperation        *operation,
 			gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_BOTH_HORIZ);
 			break;
 		case TOOLBAR_BOTH:
-			default:	  
+			default:
 			gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_BOTH);
 	}
 	gtk_toolbar_set_show_arrow(GTK_TOOLBAR(toolbar), TRUE);
@@ -573,7 +573,7 @@ static gboolean cb_preview_close(GtkWidget *widget, GdkEventAny *event,
  		 if (((GdkEventKey *)event)->keyval != GDK_KEY_Escape)
     			return FALSE;
 	if (preview_data->rendering)
-		return FALSE; 
+		return FALSE;
 	gtk_widget_destroy(widget);
 	return FALSE;
 }
@@ -598,7 +598,7 @@ static void cb_preview_ready(GtkPrintOperationPreview *preview,
 
 	for (iPage = 0; iPage < (preview_data->print_data->npages); iPage++) {
 		if (gtk_print_operation_preview_is_selected(preview_data->preview, iPage)) {
-			preview_data->pages_to_print = 
+			preview_data->pages_to_print =
 				g_list_prepend(preview_data->pages_to_print,
 					       GINT_TO_POINTER(iPage));
 			debug_print("want to print page %d\n",iPage+1);
@@ -628,7 +628,7 @@ static void cb_preview_got_page_size(GtkPrintOperationPreview *preview,
 	preview_data = (PreviewData*) data;
 	debug_print("got_page_size\n");
 	paper_size   = gtk_page_setup_get_paper_size(page_setup);
-	paper_width  = (gint)(gtk_paper_size_get_width(paper_size, GTK_UNIT_INCH)  
+	paper_width  = (gint)(gtk_paper_size_get_width(paper_size, GTK_UNIT_INCH)
 			      * PREVIEW_SCALE);
 	paper_height = (gint)(gtk_paper_size_get_height(paper_size,  GTK_UNIT_INCH)
 			      * PREVIEW_SCALE);
@@ -637,7 +637,7 @@ static void cb_preview_got_page_size(GtkPrintOperationPreview *preview,
 	preview_data->page_height = paper_height;
 
 	debug_print("w/h %d/%d\n", paper_width, paper_height);
-	gtk_widget_set_size_request(GTK_WIDGET(preview_data->area), 
+	gtk_widget_set_size_request(GTK_WIDGET(preview_data->area),
 				    paper_width, paper_height);
 }
 
@@ -744,7 +744,7 @@ static void cb_preview_btn_close(GtkButton *button, gpointer data)
 {
 	PreviewData *preview_data = (PreviewData *)data;
 	if (preview_data->rendering)
-		return; 
+		return;
 	gtk_widget_destroy(preview_data->dialog);
 }
 
@@ -956,7 +956,7 @@ static void printing_textview_cb_begin_print(GtkPrintOperation *op, GtkPrintCont
 	pango_layout_iter_free(iter);
 
 	page_breaks = g_list_reverse(page_breaks);
-	print_data->npages = g_list_length(page_breaks) + 1;	
+	print_data->npages = g_list_length(page_breaks) + 1;
 	print_data->page_breaks = page_breaks;
 
 	gtk_print_operation_set_n_pages(op, print_data->npages);
@@ -984,9 +984,9 @@ static cairo_surface_t *pixbuf_to_surface(GdkPixbuf *pixbuf)
 	    format = CAIRO_FORMAT_RGB24;
 	  else
 	    format = CAIRO_FORMAT_ARGB32;
-	  surface = cairo_image_surface_create_for_data (pixels, 	 
+	  surface = cairo_image_surface_create_for_data (pixels,
 						format, width, height, 4*width);
-          cairo_surface_set_user_data (surface, &key, 
+          cairo_surface_set_user_data (surface, &key,
 	  	pixels, (cairo_destroy_func_t)g_free);
 
 	  for (j = height; j; j--) {
@@ -1038,7 +1038,7 @@ static cairo_surface_t *pixbuf_to_surface(GdkPixbuf *pixbuf)
 		src_pixels += stride;
 		pixels += 4 * width;
 	}
-		
+
 	return surface;
 }
 
@@ -1098,7 +1098,7 @@ static void printing_textview_cb_draw_page(GtkPrintOperation *op, GtkPrintContex
 				     		gtk_print_context_get_height(context)/print_data->zoom);
 				cairo_set_line_width(cr, .5);
 				cairo_set_source_surface(cr, surface,
-							 ((double)logical_rect.x) / PANGO_SCALE, 
+							 ((double)logical_rect.x) / PANGO_SCALE,
 							 ((double)baseline) / PANGO_SCALE - start_pos);
 				cairo_move_to(cr, ((double)logical_rect.x) / PANGO_SCALE,
 					      (double)print_data->ypos_line / PANGO_SCALE);
@@ -1117,8 +1117,8 @@ static void printing_textview_cb_draw_page(GtkPrintOperation *op, GtkPrintContex
 				cairo_surface_t *surface;
 
 				surface = pixbuf_to_surface(GDK_PIXBUF(attr->data));
-				cairo_set_source_surface (cr, surface, 
-							  ((double)logical_rect.x) / PANGO_SCALE, 
+				cairo_set_source_surface (cr, surface,
+							  ((double)logical_rect.x) / PANGO_SCALE,
 							  ((double)baseline) / PANGO_SCALE - start_pos);
 				cairo_paint (cr);
 				cairo_surface_destroy (surface);
@@ -1133,10 +1133,10 @@ static void printing_textview_cb_draw_page(GtkPrintOperation *op, GtkPrintContex
 		cairo_surface_t *surface;
 		GdkPixbuf *pixbuf = gtk_image_get_pixbuf(print_data->avatar);
 		gdouble startx, starty;
-		
+
 		if (pixbuf != NULL) {
 			startx = gtk_print_context_get_width(context)/print_data->zoom;
-		
+
 			startx -= ((double)gdk_pixbuf_get_width(pixbuf));
 
 			starty = start_pos;
@@ -1197,7 +1197,7 @@ static void printing_layout_set_text_attributes(PrintData *print_data,
 			rect.y = 0;
 			rect.width = r_w * PANGO_SCALE;
 			rect.height = r_h * PANGO_SCALE;
-      
+
 			scaled = gdk_pixbuf_scale_simple(image, r_w, r_h, GDK_INTERP_BILINEAR);
 			attr = pango_attr_shape_new_with_data (&rect, &rect,
 							       scaled, NULL, NULL);
@@ -1234,7 +1234,7 @@ static void printing_layout_set_text_attributes(PrintData *print_data,
 							attr_color = (PangoAttrColor*) attr;
 							g_object_get(G_OBJECT(tag), "foreground-rgba",
 								     &color, NULL);
-							if (color && 
+							if (color &&
 							    printing_is_pango_gdk_rgba_equal(&(attr_color->color),
 							    color)) {
 								attr->end_index = printing_text_iter_get_offset_bytes(print_data, &iter);
@@ -1260,7 +1260,7 @@ static void printing_layout_set_text_attributes(PrintData *print_data,
 							attr_color = (PangoAttrColor*) attr;
 							g_object_get(G_OBJECT(tag), "background-rgba",
 								     &color, NULL);
-							if (color && 
+							if (color &&
 							    printing_is_pango_gdk_rgba_equal(&(attr_color->color),
 							    color)) {
 								attr->end_index = printing_text_iter_get_offset_bytes(print_data, &iter);
@@ -1379,20 +1379,20 @@ static void printing_layout_set_text_attributes(PrintData *print_data,
 					g_object_get(G_OBJECT(tag), "underline", &underline, NULL);
 					attr = pango_attr_underline_new(underline);
 					attr->start_index = printing_text_iter_get_offset_bytes(print_data, &iter);
-					open_attrs = g_slist_prepend(open_attrs, attr);	  
+					open_attrs = g_slist_prepend(open_attrs, attr);
 				}
 				if (strike_set) {
 					g_object_get(G_OBJECT(tag), "strikethrough", &strikethrough, NULL);
 					attr = pango_attr_strikethrough_new(strikethrough);
 					attr->start_index = printing_text_iter_get_offset_bytes(print_data, &iter);
-					open_attrs = g_slist_prepend(open_attrs, attr);	  
+					open_attrs = g_slist_prepend(open_attrs, attr);
 				}
 				if (weight_set && !weight_set_for_this_iter) {
 					weight_set_for_this_iter = TRUE;
 					g_object_get(G_OBJECT(tag), "weight", &weight, NULL);
 					attr = pango_attr_weight_new(weight);
 					attr->start_index = printing_text_iter_get_offset_bytes(print_data, &iter);
-					open_attrs = g_slist_prepend(open_attrs, attr); 
+					open_attrs = g_slist_prepend(open_attrs, attr);
 					/* Hack to see if the first char is bold -- indicates header */
 					if (attr->start_index == 0 && weight == PANGO_WEIGHT_BOLD) {
 						*has_headers = TRUE;
@@ -1401,9 +1401,9 @@ static void printing_layout_set_text_attributes(PrintData *print_data,
 			}
 			g_slist_free(tags);
 		}
-    
+
 	} while(!gtk_text_iter_is_end(&iter) && gtk_text_iter_forward_to_tag_toggle(&iter, NULL));
-	  
+
 	/* close all open attributes */
 	for (attr_walk = open_attrs; attr_walk != NULL; attr_walk = attr_walk->next) {
 		attr = (PangoAttribute*) attr_walk->data;
@@ -1438,7 +1438,7 @@ static gboolean printing_is_pango_gdk_rgba_equal(PangoColor *p, GdkRGBA *g)
 }
 
 /* Pango has it's attribute in bytes, but GtkTextIter gets only an offset
- * in characters, so here we're returning an offset in bytes. 
+ * in characters, so here we're returning an offset in bytes.
  */
 static gint printing_text_iter_get_offset_bytes(PrintData *print_data, const GtkTextIter *iter)
 {

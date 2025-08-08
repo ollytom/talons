@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -66,13 +66,13 @@ static gboolean verify_folderlist_xml()
 	bak = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
  			  FOLDER_LIST, ".bak", NULL);
 	bakexists = is_file_exist(bak);
-	
+
 	if (bakexists) {
 		date = get_file_mtime(bak);
 		ts = localtime(&date);
 		strftime(buf, sizeof(buf), "%a %d-%b-%Y %H:%M %Z", ts);
 	}
-	
+
 	if (!fileexists && bakexists) {
 		AlertValue aval;
 		gchar *msg;

@@ -96,11 +96,11 @@ static void prefs_receive_itv_spinbutton_value_changed_cb(GtkWidget *w, gpointer
 	}
 }
 
-static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
 	ReceivePage *prefs_receive = (ReceivePage *) _page;
-	
+
 	GtkWidget *vbox1;
 	GtkWidget *vbox2;
 	GtkWidget *checkbtn_incext;
@@ -161,8 +161,8 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_box_pack_start (GTK_BOX (hbox), entry_incext, TRUE, TRUE, 0);
 
 	/* Auto-checking */
-	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Automatic checking"));	
-	
+	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Automatic checking"));
+
 	hbox_autochk = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox_autochk);
 	gtk_box_pack_start (GTK_BOX (vbox2), hbox_autochk, FALSE, FALSE, 0);
@@ -216,7 +216,7 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	/* receive dialog */
 	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Dialogs"));
-	
+
 	label_recvdialog = gtk_label_new (_("Show receive dialog"));
 	gtk_label_set_xalign(GTK_LABEL(label_recvdialog), 0.0);
 	gtk_widget_show (label_recvdialog);
@@ -234,16 +234,16 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_widget_show(hbox);
 	gtk_box_pack_start(GTK_BOX(hbox), label_recvdialog, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), optmenu_recvdialog, FALSE, FALSE, 0);
-	
+
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, FALSE, 0);
-	
+
 	PACK_CHECK_BUTTON (vbox2, checkbtn_close_recv_dialog,
 			   _("Close receive dialog when finished"));
 
 	PACK_CHECK_BUTTON (vbox2, checkbtn_show_recv_err_dialog,
 			   _("Show error dialog on receive error"));
 
- 	vbox2 = gtkut_get_options_frame(vbox1, &frame, 
+ 	vbox2 = gtkut_get_options_frame(vbox1, &frame,
 					_("After receiving new mail"));
 
  	PACK_CHECK_BUTTON (vbox2, checkbtn_openinbox, _("Go to Inbox"));
@@ -251,7 +251,7 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
  			   _("Update all local folders"));
 
  	vbox3 = gtkut_get_options_frame(vbox2, &frame, _("Run command"));
- 	
+
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox);
 	PACK_CHECK_BUTTON (hbox, checkbtn_newmail_auto,
@@ -262,14 +262,14 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	hbox_newmail_notify = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox_newmail_notify);
-	gtk_box_pack_start (GTK_BOX (vbox3), hbox_newmail_notify, FALSE, 
+	gtk_box_pack_start (GTK_BOX (vbox3), hbox_newmail_notify, FALSE,
 			    FALSE, 0);
 
 	label_newmail_notify_cmd = gtk_label_new (_("Command to execute"));
 	gtk_label_set_justify(GTK_LABEL(label_newmail_notify_cmd),
 			      GTK_JUSTIFY_RIGHT);
 	gtk_widget_show (label_newmail_notify_cmd);
-	gtk_box_pack_start (GTK_BOX (hbox_newmail_notify), 
+	gtk_box_pack_start (GTK_BOX (hbox_newmail_notify),
 			    label_newmail_notify_cmd, FALSE, FALSE, 0);
 
 	entry_newmail_notify_cmd = gtk_entry_new ();
@@ -283,15 +283,15 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_box_pack_start (GTK_BOX (hbox_newmail_notify),
 			    label_newmail_notify_cmd_syntax, FALSE, FALSE, 0);
 
-	gtk_widget_set_sensitive(hbox_newmail_notify, 
-				 prefs_common.newmail_notify_auto || 
+	gtk_widget_set_sensitive(hbox_newmail_notify,
+				 prefs_common.newmail_notify_auto ||
 				 prefs_common.newmail_notify_manu);
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_newmail_auto),
 		prefs_common.newmail_notify_auto);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_newmail_manu),
 		prefs_common.newmail_notify_manu);
-	gtk_entry_set_text(GTK_ENTRY(entry_newmail_notify_cmd), 
+	gtk_entry_set_text(GTK_ENTRY(entry_newmail_notify_cmd),
 		prefs_common.newmail_notify_cmd);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_autochk),
 		prefs_common.autochk_newmail);
@@ -308,7 +308,7 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_scan_after_inc),
 		prefs_common.scan_all_after_inc);
 
-	gtk_entry_set_text(GTK_ENTRY(entry_incext), 
+	gtk_entry_set_text(GTK_ENTRY(entry_incext),
 		prefs_common.extinc_cmd);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_autochk_hour),
 		prefs_common.autochk_itv / 3600);
@@ -391,7 +391,7 @@ static void prefs_receive_save(PrefsPage *_page)
 	tmp = gtk_editable_get_chars(GTK_EDITABLE(page->entry_incext), 0, -1);
 	g_free(prefs_common.extinc_cmd);
 	prefs_common.extinc_cmd = tmp;
-	
+
 	tmp = gtk_editable_get_chars(GTK_EDITABLE(page->entry_newmail_notify_cmd), 0, -1);
 	g_free(prefs_common.newmail_notify_cmd);
 	prefs_common.newmail_notify_cmd = tmp;

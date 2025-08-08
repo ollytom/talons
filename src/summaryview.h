@@ -284,8 +284,8 @@ void summary_msgs_lock		  (SummaryView		*summaryview);
 void summary_msgs_unlock	  (SummaryView		*summaryview);
 void summary_mark_all_read	  (SummaryView		*summaryview, gboolean ask_if_needed);
 void summary_mark_all_unread	  (SummaryView		*summaryview, gboolean ask_if_needed);
-void summary_mark_as_spam	  (SummaryView 		*summaryview, 
-				   guint 		 action, 
+void summary_mark_as_spam	  (SummaryView 		*summaryview,
+				   guint 		 action,
 				   GtkWidget 		*widget);
 void summary_ignore_thread	  (SummaryView 		*summaryview);
 void summary_unignore_thread	  (SummaryView 		*summaryview);

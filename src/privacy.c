@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #include "config.h"
@@ -102,7 +102,7 @@ void privacy_unregister_system(PrivacySystem *system)
 void privacy_free_privacydata(PrivacyData *privacydata)
 {
 	PrivacySystem *system = NULL;
-	
+
 	cm_return_if_fail(privacydata != NULL);
 
 	system = privacy_data_get_system(privacydata);
@@ -145,7 +145,7 @@ gboolean privacy_mimeinfo_is_signed(MimeInfo *mimeinfo)
 	cm_return_val_if_fail(mimeinfo != NULL, FALSE);
 
 	if (mimeinfo->privacy != NULL) {
-		PrivacySystem *system = 
+		PrivacySystem *system =
 			privacy_data_get_system(mimeinfo->privacy);
 
 		if (system == NULL) {
@@ -179,7 +179,7 @@ static void msginfo_set_signed_flag(GNode *node, gpointer data)
 	struct SignedState *sstate = (struct SignedState *)data;
 	MsgInfo *msginfo = sstate->msginfo;
 	MimeInfo *mimeinfo = node->data;
-	
+
 	if (privacy_mimeinfo_is_signed(mimeinfo)) {
 		procmsg_msginfo_set_flags(msginfo, 0, MSG_SIGNED);
 		if (sstate->system && !*(sstate->system) && mimeinfo->privacy)
@@ -312,9 +312,9 @@ static gint decrypt(MimeInfo *mimeinfo, PrivacySystem *system)
 {
 	MimeInfo *decryptedinfo, *parentinfo;
 	gint childnumber;
-	
+
 	cm_return_val_if_fail(system->decrypt != NULL, -1);
-	
+
 	decryptedinfo = system->decrypt(mimeinfo);
 	if (decryptedinfo == NULL)
 		return -1;
@@ -324,7 +324,7 @@ static gint decrypt(MimeInfo *mimeinfo, PrivacySystem *system)
 		return -1;
 
 	childnumber = g_node_child_index(parentinfo->node, mimeinfo);
-	
+
 	procmime_mimeinfo_free_all(&mimeinfo);
 
 	g_node_insert(parentinfo->node, childnumber, decryptedinfo->node);
@@ -459,7 +459,7 @@ gchar *privacy_get_encrypt_data(const gchar *id, GSList *recp_names)
 		}
 	}
 	ret = system->get_encrypt_data(uniq_names);
-	
+
 	g_slist_free(uniq_names);
 	return ret;
 }

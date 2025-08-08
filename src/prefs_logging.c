@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -73,21 +73,21 @@ static GtkWidget *prefs_logging_create_check_buttons(GtkWidget **checkbtn1,
 
 	hbox_checkbtn = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, VBOX_BORDER);
 	gtk_widget_show(hbox_checkbtn);
-	
-	PACK_CHECK_BUTTON (hbox_checkbtn, *checkbtn1, label1); 
+
+	PACK_CHECK_BUTTON (hbox_checkbtn, *checkbtn1, label1);
 	gtk_label_set_line_wrap(GTK_LABEL(gtk_bin_get_child(GTK_BIN((*checkbtn1)))), TRUE);
 
 	PACK_CHECK_BUTTON (hbox_checkbtn, *checkbtn2, label2);
 	gtk_label_set_line_wrap(GTK_LABEL(gtk_bin_get_child(GTK_BIN((*checkbtn2)))), TRUE);
-	
+
 	return hbox_checkbtn;
 }
 
-static void prefs_logging_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_logging_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
 	LoggingPage *prefs_logging = (LoggingPage *) _page;
-	
+
 	GtkWidget *vbox1;
 
 	GtkWidget *frame_logging;
@@ -126,7 +126,7 @@ static void prefs_logging_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *checkbtn_log_error;
 	GtkWidget *checkbtn_log_status;
 	GtkSizeGroup *log_size_group;
-	
+
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox1);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
@@ -140,7 +140,7 @@ static void prefs_logging_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	PACK_CHECK_BUTTON (hbox_clip_network_log, checkbtn_clip_network_log,
 			   _("Restrict the log window to"));
-	
+
 	spinbtn_network_log_length_adj = GTK_ADJUSTMENT(gtk_adjustment_new (500, 0, G_MAXINT, 1, 10, 0));
 	spinbtn_network_log_length = gtk_spin_button_new
 		(GTK_ADJUSTMENT (spinbtn_network_log_length_adj), 1, 0);
@@ -192,7 +192,7 @@ static void prefs_logging_create_widget(PrefsPage *_page, GtkWindow *window,
 						&checkbtn_filtering_log_post_proc,
 						_("post-processing folders"));
 	gtk_box_pack_start(GTK_BOX(vbox2_filtering_log), hbox_checkbtn, FALSE, FALSE, 0);
-	
+
 	hbox_checkbtn = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, VBOX_BORDER);
 	gtk_widget_show(hbox_checkbtn);
 	gtk_box_pack_start(GTK_BOX(vbox2_filtering_log), hbox_checkbtn, FALSE, FALSE, 0);
@@ -219,7 +219,7 @@ static void prefs_logging_create_widget(PrefsPage *_page, GtkWindow *window,
 
  	optmenu_filtering_log_level = gtkut_sc_combobox_create(NULL, FALSE);
  	gtk_widget_show (optmenu_filtering_log_level);
- 	
+
 	menu = GTK_LIST_STORE(gtk_combo_box_get_model(
 				GTK_COMBO_BOX(optmenu_filtering_log_level)));
 	COMBOBOX_ADD (menu, _("Low"), 0);
@@ -246,7 +246,7 @@ static void prefs_logging_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_widget_show (hbox_clip_filtering_log);
 	PACK_CHECK_BUTTON (hbox_clip_filtering_log, checkbtn_clip_filtering_log,
 			   _("Restrict the log window to"));
-	
+
 	spinbtn_filtering_log_length_adj = GTK_ADJUSTMENT(gtk_adjustment_new (500, 0, G_MAXINT, 1, 10, 0));
 	spinbtn_filtering_log_length = gtk_spin_button_new
 		(GTK_ADJUSTMENT (spinbtn_filtering_log_length_adj), 1, 0);
@@ -284,39 +284,39 @@ static void prefs_logging_create_widget(PrefsPage *_page, GtkWindow *window,
 				_("Network protocol messages"));
 	gtk_box_pack_start(GTK_BOX(vbox_disk_log), hbox_checkbtn, FALSE, FALSE, 0);
 
-	hbox_checkbtn = prefs_logging_create_check_buttons(&checkbtn_log_error,	
+	hbox_checkbtn = prefs_logging_create_check_buttons(&checkbtn_log_error,
 				_("Error messages"), &checkbtn_log_status,
 				_("Status messages for filtering/processing log"));
 	gtk_box_pack_start(GTK_BOX(vbox_disk_log), hbox_checkbtn, FALSE, FALSE, 0);
-	
+
 	log_size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	gtk_size_group_add_widget(log_size_group, checkbtn_log_warning);
 	gtk_size_group_add_widget(log_size_group, checkbtn_log_error);
 	g_object_unref(G_OBJECT(log_size_group));
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_clip_network_log), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_clip_network_log),
 		prefs_common.cliplog);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_clip_filtering_log), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_clip_filtering_log),
 		prefs_common.filtering_debug_cliplog);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_log_standard), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_log_standard),
 		prefs_common.enable_log_standard);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_log_warning), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_log_warning),
 		prefs_common.enable_log_warning);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_log_error), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_log_error),
 		prefs_common.enable_log_error);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_log_status), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_log_status),
 		prefs_common.enable_log_status);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log),
 		prefs_common.enable_filtering_debug);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_inc), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_inc),
 		prefs_common.enable_filtering_debug_inc);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_manual), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_manual),
 		prefs_common.enable_filtering_debug_manual);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_folder_proc), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_folder_proc),
 		prefs_common.enable_filtering_debug_folder_proc);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_pre_proc), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_pre_proc),
 		prefs_common.enable_filtering_debug_pre_proc);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_post_proc), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_filtering_log_post_proc),
 		prefs_common.enable_filtering_debug_post_proc);
 
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_network_log_length),

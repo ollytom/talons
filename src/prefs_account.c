@@ -177,7 +177,7 @@ typedef struct ReceivePage
 	GtkWidget *filter_on_recv_checkbtn;
 	GtkWidget *filterhook_on_recv_checkbtn;
 	GtkWidget *recvatgetall_checkbtn;
-	
+
 	GtkWidget *imap_frame;
 	GtkWidget *imap_auth_type_optmenu;
 	GtkWidget *imapdir_label;
@@ -227,7 +227,7 @@ typedef struct Oauth2Page
 	GtkWidget *oauth2_authorise_btn;
 	GtkWidget *oauth2_deauthorise_btn;
 	GtkWidget *oauth2_authcode_entry;
-	GtkWidget *oauth2_auth_optmenu;	
+	GtkWidget *oauth2_auth_optmenu;
  	GtkWidget *oauth2_link_button;
  	GtkWidget *oauth2_link_copy_button;
 	gpointer *protocol_optmenu;
@@ -517,7 +517,7 @@ static PrefParam basic_param[] = {
 	{"use_nntp_auth", "FALSE", &tmp_ac_prefs.use_nntp_auth, P_BOOL,
 	 &basic_page.nntpauth_checkbtn,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
-	
+
 	{"use_nntp_auth_onconnect", "FALSE", &tmp_ac_prefs.use_nntp_auth_onconnect, P_BOOL,
 	 &basic_page.nntpauth_onconnect_checkbtn,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
@@ -719,9 +719,9 @@ static PrefParam compose_param[] = {
 	{"auto_signature", "TRUE", &tmp_ac_prefs.auto_sig, P_BOOL,
 	 &compose_page.checkbtn_autosig,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
-	 
+
 	{"signature_separator", "-- ", &tmp_ac_prefs.sig_sep, P_STRING,
-	 &compose_page.entry_sigsep, 
+	 &compose_page.entry_sigsep,
 	 prefs_set_data_from_entry, prefs_set_entry},
 
 	{"set_autocc", "FALSE", &tmp_ac_prefs.set_autocc, P_BOOL,
@@ -778,7 +778,7 @@ static PrefParam compose_param[] = {
 
 	{"default_alt_dictionary", NULL, &tmp_ac_prefs.default_alt_dictionary, P_STRING,
 	 NULL, NULL, NULL},
-#endif	 
+#endif
 
 	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
 };
@@ -1079,7 +1079,7 @@ static PrefParam advanced_param[] = {
 	{"trash_folder", NULL, &tmp_ac_prefs.trash_folder, P_STRING,
 	 &advanced_page.trash_folder_entry,
 	 prefs_set_data_from_entry, prefs_set_entry},
-	 
+
 
 	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
 };
@@ -1116,7 +1116,7 @@ static void prefs_account_receive_itv_spinbutton_value_changed_cb(GtkWidget *w, 
  * system choice. */
 static void privacy_system_activated(GtkWidget *combobox)
 {
-	gtk_widget_set_sensitive (privacy_page.save_clear_text_checkbtn, 
+	gtk_widget_set_sensitive (privacy_page.save_clear_text_checkbtn,
 		!gtk_toggle_button_get_active(
 				GTK_TOGGLE_BUTTON(privacy_page.encrypt_to_self_checkbtn)));
 }
@@ -1145,7 +1145,7 @@ static void update_privacy_system_menu() {
 	for (cur = system_ids; cur != NULL; cur = g_slist_next(cur)) {
 		gchar *id = (gchar *) cur->data;
 		const gchar *name;
-		
+
 		name = privacy_system_get_name(id);
 		gtk_list_store_append(menu, &iter);
 		gtk_list_store_set(menu, &iter,
@@ -1361,7 +1361,7 @@ static void basic_create_widget_func(PrefsPage * _page,
 	nntpauth_checkbtn = gtk_check_button_new_with_label
 		(_("This server requires authentication"));
 	gtk_widget_show (nntpauth_checkbtn);
-	
+
 	gtk_grid_attach(GTK_GRID(serv_table), nntpauth_checkbtn, 0, 6, 2, 1);
 
 	nntpauth_onconnect_checkbtn = gtk_check_button_new_with_label
@@ -1412,7 +1412,7 @@ static void basic_create_widget_func(PrefsPage * _page,
 	gtk_widget_set_halign(pass_entry, GTK_ALIGN_FILL);
 	gtk_entry_set_visibility (GTK_ENTRY (pass_entry), FALSE);
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(pass_entry),
-					  GTK_ENTRY_ICON_SECONDARY, 
+					  GTK_ENTRY_ICON_SECONDARY,
 					  "view-reveal-symbolic");
 	gtk_entry_set_icon_activatable(GTK_ENTRY(pass_entry),
 				       GTK_ENTRY_ICON_SECONDARY, TRUE);
@@ -2104,7 +2104,7 @@ static void send_create_widget_func(PrefsPage * _page,
 	gtk_box_pack_start (GTK_BOX (hbox), smtp_pass_entry, TRUE, TRUE, 0);
 	gtk_entry_set_visibility (GTK_ENTRY (smtp_pass_entry), FALSE);
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(smtp_pass_entry),
-					  GTK_ENTRY_ICON_SECONDARY, 
+					  GTK_ENTRY_ICON_SECONDARY,
 					  "view-reveal-symbolic");
 	gtk_entry_set_icon_activatable(GTK_ENTRY(smtp_pass_entry),
 				       GTK_ENTRY_ICON_SECONDARY, TRUE);
@@ -2141,7 +2141,7 @@ static void send_create_widget_func(PrefsPage * _page,
 
 	PACK_CHECK_BUTTON (vbox3, pop_bfr_smtp_checkbtn,
 		_("Authenticate with POP before sending"));
-	
+
 	g_signal_connect (G_OBJECT (pop_bfr_smtp_checkbtn), "clicked",
 			  G_CALLBACK (pop_bfr_smtp_tm_set_sens),
 			  NULL);
@@ -2166,7 +2166,7 @@ static void send_create_widget_func(PrefsPage * _page,
 	pop_auth_minutes_lbl = gtk_label_new(_("minutes"));
 	gtk_widget_show (pop_auth_minutes_lbl);
 	gtk_box_pack_start (GTK_BOX (hbox), pop_auth_minutes_lbl, FALSE, FALSE, 0);
-	
+
 	page->msgid_checkbtn     = msgid_checkbtn;
 	page->xmailer_checkbtn   = xmailer_checkbtn;
 	page->customhdr_checkbtn = customhdr_checkbtn;
@@ -2237,7 +2237,7 @@ static void oauth2_create_widget_func(PrefsPage * _page,
 
 	auth_vbox = gtkut_get_options_frame(vbox1, &auth_frame,
 			_("Authorization"));
-	
+
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_widget_show (hbox);
 	gtk_box_pack_start (GTK_BOX (auth_vbox), hbox, FALSE, FALSE, 0);
@@ -2261,7 +2261,7 @@ static void oauth2_create_widget_func(PrefsPage * _page,
 	menu = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(oauth2_auth_optmenu)));
 	gtk_widget_show (oauth2_auth_optmenu);
 	gtk_box_pack_start (GTK_BOX (hbox), oauth2_auth_optmenu, FALSE, FALSE, 0);
-	
+
 	COMBOBOX_ADD (menu, _("Select"), NULL);
 	COMBOBOX_ADD (menu, NULL, 0);
 
@@ -2288,7 +2288,7 @@ static void oauth2_create_widget_func(PrefsPage * _page,
 	vbox3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_show (vbox3);
 	gtk_box_pack_start (GTK_BOX (auth_vbox), vbox3, FALSE, FALSE, 0);
- 
+
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_show (vbox2);
 	gtk_box_pack_start (GTK_BOX (vbox3), vbox2, FALSE, FALSE, 0);
@@ -2402,9 +2402,9 @@ static void oauth2_create_widget_func(PrefsPage * _page,
 
 	tmp_ac_prefs = *ac_prefs;
 
-	g_signal_connect(G_OBJECT(oauth2_auth_optmenu), "changed", 
+	g_signal_connect(G_OBJECT(oauth2_auth_optmenu), "changed",
 			 G_CALLBACK(prefs_account_oauth2_set_sensitivity), NULL);
-	g_signal_connect(G_OBJECT(oauth2_authcode_entry), "changed", 
+	g_signal_connect(G_OBJECT(oauth2_authcode_entry), "changed",
 			 G_CALLBACK(prefs_account_oauth2_set_auth_sensitivity), NULL);
 	prefs_account_oauth2_set_auth_sensitivity();
 
@@ -2655,7 +2655,7 @@ static void compose_create_widget_func(PrefsPage * _page,
 
 	page->page.widget = vbox1;
 }
-	
+
 static void templates_create_widget_func(PrefsPage * _page,
                                            GtkWindow * window,
                                            gpointer data)
@@ -2668,7 +2668,7 @@ static void templates_create_widget_func(PrefsPage * _page,
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_show(vbox);
-	
+
 	notebook = gtk_notebook_new();
 	gtk_widget_show(notebook);
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
@@ -2688,11 +2688,11 @@ static void templates_create_widget_func(PrefsPage * _page,
 				TRUE, NULL);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(C_("Templates", "New")));
 
-	/* reply format */	
+	/* reply format */
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox2);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox2), VBOX_BORDER);
-	
+
 	quotefmt_create_reply_fmt_widgets(
 				window,
 				vbox2,
@@ -2703,7 +2703,7 @@ static void templates_create_widget_func(PrefsPage * _page,
 				TRUE, NULL);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(C_("Templates", "Reply")));
 
-	/* forward format */	
+	/* forward format */
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox2);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox2), VBOX_BORDER);
@@ -2864,7 +2864,7 @@ static void pop_ssltunnel_toggled(GtkToggleButton *button,
 					gpointer data)
 {
 	gboolean active = gtk_toggle_button_get_active(button);
-	
+
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 			advanced_page.popport_checkbtn)) == TRUE)
 		return;
@@ -2876,7 +2876,7 @@ static void imap_ssltunnel_toggled(GtkToggleButton *button,
 					gpointer data)
 {
 	gboolean active = gtk_toggle_button_get_active(button);
-	
+
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 			advanced_page.imapport_checkbtn)) == TRUE)
 		return;
@@ -2888,24 +2888,24 @@ static void nntp_ssltunnel_toggled(GtkToggleButton *button,
 					gpointer data)
 {
 	gboolean active = gtk_toggle_button_get_active(button);
-	
+
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 			advanced_page.nntpport_checkbtn)) == TRUE)
 		return;
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(advanced_page.nntpport_spinbtn),
 				  active ? 563 : 119);
-}	
+}
 
 static void smtp_ssltunnel_toggled(GtkToggleButton *button,
 					gpointer data)
 {
 	gboolean active = gtk_toggle_button_get_active(button);
-	
+
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 			advanced_page.smtpport_checkbtn)) == TRUE)
 		return;
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(advanced_page.smtpport_spinbtn),
-				  active ? 465 : 25);	
+				  active ? 465 : 25);
 }
 
 static void ssl_create_widget_func(PrefsPage * _page,
@@ -2971,7 +2971,7 @@ static void ssl_create_widget_func(PrefsPage * _page,
 			     SSL_STARTTLS);
 	g_signal_connect(G_OBJECT(pop_ssltunnel_radiobtn), "toggled",
 			 G_CALLBACK(pop_ssltunnel_toggled), NULL);
-	
+
 	vbox3 = gtkut_get_options_frame(vbox1, &imap_frame, _("IMAP"));
 
 	CREATE_RADIO_BUTTONS(vbox3,
@@ -3045,7 +3045,7 @@ static void ssl_create_widget_func(PrefsPage * _page,
 	entry_in_cert_pass = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(entry_in_cert_pass), FALSE);
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry_in_cert_pass),
-					  GTK_ENTRY_ICON_SECONDARY, 
+					  GTK_ENTRY_ICON_SECONDARY,
 					  "view-reveal-symbolic");
 	gtk_entry_set_icon_activatable(GTK_ENTRY(entry_in_cert_pass),
 				       GTK_ENTRY_ICON_SECONDARY, TRUE);
@@ -3078,7 +3078,7 @@ static void ssl_create_widget_func(PrefsPage * _page,
 	entry_out_cert_pass = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(entry_out_cert_pass), FALSE);
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(entry_out_cert_pass),
-					  GTK_ENTRY_ICON_SECONDARY, 
+					  GTK_ENTRY_ICON_SECONDARY,
 					  "view-reveal-symbolic");
 	gtk_entry_set_icon_activatable(GTK_ENTRY(entry_out_cert_pass),
 				       GTK_ENTRY_ICON_SECONDARY, TRUE);
@@ -3098,7 +3098,7 @@ static void ssl_create_widget_func(PrefsPage * _page,
 			 G_CALLBACK(prefs_account_in_cert_browse_cb), NULL);
 	g_signal_connect(G_OBJECT(out_ssl_cert_browse_button), "clicked",
 			 G_CALLBACK(prefs_account_out_cert_browse_cb), NULL);
-	
+
 	vbox7 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_show (vbox7);
 	gtk_box_pack_start (GTK_BOX (vbox1), vbox7, FALSE, FALSE, 0);
@@ -3279,7 +3279,7 @@ static void proxy_create_widget_func(PrefsPage * _page,
 	gtk_widget_set_size_request(proxy_pass_entry, DEFAULT_ENTRY_WIDTH, -1);
 	gtk_entry_set_visibility(GTK_ENTRY(proxy_pass_entry), FALSE);
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(proxy_pass_entry),
-					  GTK_ENTRY_ICON_SECONDARY, 
+					  GTK_ENTRY_ICON_SECONDARY,
 					  "view-reveal-symbolic");
 	gtk_entry_set_icon_activatable(GTK_ENTRY(proxy_pass_entry),
 				       GTK_ENTRY_ICON_SECONDARY, TRUE);
@@ -3411,7 +3411,7 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	PACK_PORT_SPINBTN (hbox1, spinbtn_smtpport);
 	SET_TOGGLE_SENSITIVITY (checkbtn_smtpport, spinbtn_smtpport);
 	gtk_size_group_add_widget(size_group, checkbtn_smtpport);
-	
+
 	PACK_HBOX (hbox_popport);
 	PACK_CHECK_BUTTON (hbox_popport, checkbtn_popport,
 			   _("POP port"));
@@ -3435,7 +3435,7 @@ static void advanced_create_widget_func(PrefsPage * _page,
 
 	PACK_HBOX (hbox1);
 	PACK_CHECK_BUTTON (hbox1, checkbtn_domain, _("Domain name"));
-	gtk_size_group_add_widget(size_group, checkbtn_domain);	
+	gtk_size_group_add_widget(size_group, checkbtn_domain);
 
 	tip_domain = _("The domain name will be used in the generated "
 			"Message-ID, and when connecting to SMTP servers");
@@ -3448,7 +3448,7 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	SET_TOGGLE_SENSITIVITY (checkbtn_domain, entry_domain);
 	CLAWS_SET_TIP(entry_domain, tip_domain);
 
-#ifndef G_OS_WIN32	
+#ifndef G_OS_WIN32
 	PACK_HBOX (hbox1);
 	PACK_CHECK_BUTTON (hbox1, checkbtn_tunnelcmd,
 			   _("Use command to communicate with server"));
@@ -3459,7 +3459,7 @@ static void advanced_create_widget_func(PrefsPage * _page,
 #endif
 
 	PACK_HBOX (hbox1);
-	PACK_CHECK_BUTTON (hbox1, checkbtn_crosspost, 
+	PACK_CHECK_BUTTON (hbox1, checkbtn_crosspost,
 			   _("Mark cross-posted messages as read and color:"));
 	g_signal_connect (G_OBJECT (checkbtn_crosspost), "toggled",
 			  G_CALLBACK (crosspost_color_toggled),
@@ -3557,10 +3557,10 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	page->vbox = vbox1;
 
 	page->page.widget = vbox1;
-	
+
 	g_object_unref(G_OBJECT(size_group));
 }
-	
+
 static gint prefs_basic_apply(void)
 {
 	RecvProtocol protocol;
@@ -3585,8 +3585,8 @@ static gint prefs_basic_apply(void)
 		return -1;
 	}
 
-	if (((protocol == A_POP3) || 
-	     (protocol == A_LOCAL && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(basic_page.mailcmd_checkbtn))) || 
+	if (((protocol == A_POP3) ||
+	     (protocol == A_LOCAL && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(basic_page.mailcmd_checkbtn))) ||
 	     (protocol == A_NONE)) &&
            *gtk_entry_get_text(GTK_ENTRY(basic_page.smtpserv_entry)) == '\0') {
 		alertpanel_error(_("SMTP server is not entered."));
@@ -3645,12 +3645,12 @@ static gint prefs_basic_apply(void)
 		alertpanel_error(_("mail command is not entered."));
 		return -1;
 	}
-	
-	if (protocol == A_IMAP4 || protocol == A_NNTP) 
+
+	if (protocol == A_IMAP4 || protocol == A_NNTP)
 		old_id = g_strdup_printf("#%s/%s",
 				protocol == A_IMAP4 ? "imap":"news",
 				tmp_ac_prefs.account_name ? tmp_ac_prefs.account_name : "(null)");
-	
+
 	if (strchr(gtk_entry_get_text(GTK_ENTRY(basic_page.uid_entry)), '\n') != NULL) {
 		alertpanel_error(_("User ID cannot contain a newline character."));
 		if (old_id)
@@ -3689,7 +3689,7 @@ static gint prefs_basic_apply(void)
 		if (new_id)
 			g_free(new_id);
 	}
-	
+
 	return 0;
 }
 
@@ -3885,7 +3885,7 @@ static void advanced_destroy_widget_func(PrefsPage *_page)
 }
 
 static gboolean basic_can_close_func(PrefsPage *_page)
-{	
+{
 	BasicPage *page = (BasicPage *) _page;
 
 	if (!page->page.page_open)
@@ -3895,7 +3895,7 @@ static gboolean basic_can_close_func(PrefsPage *_page)
 }
 
 static gboolean receive_can_close_func(PrefsPage *_page)
-{	
+{
 	ReceivePage *page = (ReceivePage *) _page;
 
 	if (!page->page.page_open)
@@ -3905,7 +3905,7 @@ static gboolean receive_can_close_func(PrefsPage *_page)
 }
 
 static gboolean send_can_close_func(PrefsPage *_page)
-{	
+{
 	SendPage *page = (SendPage *) _page;
 
 	if (!page->page.page_open)
@@ -3916,7 +3916,7 @@ static gboolean send_can_close_func(PrefsPage *_page)
 
 #ifdef USE_OAUTH2
 static gboolean oauth2_can_close_func(PrefsPage *_page)
-{	
+{
 	Oauth2Page *page = (Oauth2Page *) _page;
 
 	if (!page->page.page_open)
@@ -3927,7 +3927,7 @@ static gboolean oauth2_can_close_func(PrefsPage *_page)
 #endif
 
 static gboolean compose_can_close_func(PrefsPage *_page)
-{	
+{
 	ComposePage *page = (ComposePage *) _page;
 
 	if (!page->page.page_open)
@@ -4121,7 +4121,7 @@ static void register_basic_page(void)
 	path[0] = _("Account");
 	path[1] = _("Basic");
 	path[2] = NULL;
-        
+
 	basic_page.page.path = path;
 	basic_page.page.weight = 1000.0;
 	basic_page.page.create_widget = basic_create_widget_func;
@@ -4139,7 +4139,7 @@ static void register_receive_page(void)
 	path[0] = _("Account");
 	path[1] = _("Receive");
 	path[2] = NULL;
-        
+
 	receive_page.page.path = path;
 	receive_page.page.weight = 1000.0;
 	receive_page.page.create_widget = receive_create_widget_func;
@@ -4157,7 +4157,7 @@ static void register_send_page(void)
 	path[0] = _("Account");
 	path[1] = (gchar *) C_("Preferences menu item", "Send");
 	path[2] = NULL;
-        
+
 	send_page.page.path = path;
 	send_page.page.weight = 1000.0;
 	send_page.page.create_widget = send_create_widget_func;
@@ -4176,14 +4176,14 @@ static void register_oauth2_page(void)
 	path[0] = _("Account");
 	path[1] = _("OAuth2");
 	path[2] = NULL;
-        
+
 	oauth2_page.page.path = path;
 	oauth2_page.page.weight = 1000.0;
 	oauth2_page.page.create_widget = oauth2_create_widget_func;
 	oauth2_page.page.destroy_widget = oauth2_destroy_widget_func;
 	oauth2_page.page.save_page = oauth2_save_func;
 	oauth2_page.page.can_close = oauth2_can_close_func;
-	  
+
 	prefs_account_register_page((PrefsPage *) &oauth2_page);
 }
 #endif
@@ -4195,7 +4195,7 @@ static void register_compose_page(void)
 	path[0] = _("Account");
 	path[1] = _("Write");
 	path[2] = NULL;
-        
+
 	compose_page.page.path = path;
 	compose_page.page.weight = 1000.0;
 	compose_page.page.create_widget = compose_create_widget_func;
@@ -4213,7 +4213,7 @@ static void register_templates_page(void)
 	path[0] = _("Account");
 	path[1] = _("Templates");
 	path[2] = NULL;
-        
+
 	templates_page.page.path = path;
 	templates_page.page.weight = 1000.0;
 	templates_page.page.create_widget = templates_create_widget_func;
@@ -4231,7 +4231,7 @@ static void register_privacy_page(void)
 	path[0] = _("Account");
 	path[1] = _("Privacy");
 	path[2] = NULL;
-        
+
 	privacy_page.page.path = path;
 	privacy_page.page.weight = 1000.0;
 	privacy_page.page.create_widget = privacy_create_widget_func;
@@ -4250,7 +4250,7 @@ static void register_ssl_page(void)
 	path[0] = _("Account");
 	path[1] = _("TLS");
 	path[2] = NULL;
-        
+
 	ssl_page.page.path = path;
 	ssl_page.page.weight = 1000.0;
 	ssl_page.page.create_widget = ssl_create_widget_func;
@@ -4274,7 +4274,7 @@ static gboolean sslcert_get_client_cert_hook(gpointer source, gpointer data)
 		g_warning("can't find account");
 		return TRUE;
 	}
-	
+
 	if (hookdata->is_smtp) {
 		if (account->out_ssl_client_cert_file && *account->out_ssl_client_cert_file)
 			hookdata->cert_path = account->out_ssl_client_cert_file;
@@ -4306,7 +4306,7 @@ static gboolean do_get_pass(gpointer data)
 	return FALSE;
 }
 static gboolean sslcert_get_password(gpointer source, gpointer data)
-{ 
+{
 	struct GetPassData pass_data;
 	/* do complicated stuff to be able to call GTK from the mainloop */
 	g_cond_init(&pass_data.cond);
@@ -4351,7 +4351,7 @@ static void register_advanced_page(void)
 	path[0] = _("Account");
 	path[1] = _("Advanced");
 	path[2] = NULL;
-        
+
 	advanced_page.page.path = path;
 	advanced_page.page.weight = 1000.0;
 	advanced_page.page.create_widget = advanced_create_widget_func;
@@ -4567,7 +4567,7 @@ void prefs_account_write_config_all(GList *account_list)
 			g_free(rcpath);
 			return;
         }
-        
+
 		str = g_string_sized_new(32);
 		g_hash_table_foreach(tmp_ac_prefs.privacy_prefs, create_privacy_prefs, str);
 		privacy_prefs = g_string_free(str, FALSE);
@@ -4675,7 +4675,7 @@ static void destroy_dialog(gpointer data)
 		if (ac_prefs->protocol == A_IMAP4 && !new_account) {
 			if ((&tmp_ac_prefs)->imap_subsonly != ac_prefs->imap_subsonly) {
 				update_fld_list = TRUE;
-			} 
+			}
 		}
 		*ac_prefs = tmp_ac_prefs;
 		if (update_fld_list)
@@ -4686,7 +4686,7 @@ static void destroy_dialog(gpointer data)
 	} else /* the customhdr_list may have changed, update it anyway */
 		ac_prefs->customhdr_list = (&tmp_ac_prefs)->customhdr_list;
 
-	
+
 	gtk_main_quit();
 }
 
@@ -4767,11 +4767,11 @@ static void prefs_account_crosspost_set_colormenu(PrefParam *pparam)
 
 static void pop_bfr_smtp_tm_set_sens(GtkWidget *widget, gpointer data)
 {
-	gtk_widget_set_sensitive(send_page.pop_bfr_smtp_tm_spinbtn, 
+	gtk_widget_set_sensitive(send_page.pop_bfr_smtp_tm_spinbtn,
 				 gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(send_page.pop_bfr_smtp_checkbtn)));
-	gtk_widget_set_sensitive(send_page.pop_auth_timeout_lbl, 
+	gtk_widget_set_sensitive(send_page.pop_auth_timeout_lbl,
 				 gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(send_page.pop_bfr_smtp_checkbtn)));
-	gtk_widget_set_sensitive(send_page.pop_auth_minutes_lbl, 
+	gtk_widget_set_sensitive(send_page.pop_auth_minutes_lbl,
 				 gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(send_page.pop_bfr_smtp_checkbtn)));
 }
 
@@ -5058,7 +5058,7 @@ static void prefs_account_protocol_set_optmenu(PrefParam *pparam)
 		if (protocol == A_IMAP4) {
 			if (new_account)
 				gtk_toggle_button_set_active(
-					GTK_TOGGLE_BUTTON(send_page.msgid_checkbtn), 
+					GTK_TOGGLE_BUTTON(send_page.msgid_checkbtn),
 					TRUE);
 			gtk_widget_hide(send_page.msgid_checkbtn);
 		} else
@@ -5176,15 +5176,15 @@ static void prefs_account_oauth2_copy_url(GtkButton *button, gpointer data)
 	Oauth2Service service;
 	const gchar * custom_client_id = NULL;
 	struct Oauth2Listener *oauth2_listener_data;
-		
+
 	service = combobox_get_active_data(GTK_COMBO_BOX(optmenu));
 	custom_client_id = gtk_entry_get_text((GtkEntry *)oauth2_page.oauth2_client_id_entry);
-	
+
 	oauth2_authorisation_url(service, &url, custom_client_id);
-	
+
 	win = gtk_widget_get_toplevel (optmenu);
 	len = strlen(url);
-       
+
 	clip = gtk_widget_get_clipboard (win, GDK_SELECTION_PRIMARY);
 	clip2 = gtk_widget_get_clipboard (win, GDK_SELECTION_CLIPBOARD);
 	gtk_clipboard_set_text (clip, url, len);
@@ -5204,7 +5204,7 @@ static void prefs_account_oauth2_copy_url(GtkButton *button, gpointer data)
 		while (oauth2_listener_closed == 0)
 			gtk_main_iteration();
 	}
-		
+
 	debug_print("Starting oauth2 listener task\n");
 
 	oauth2_listener_data = g_new(struct Oauth2Listener, 1);
@@ -5213,14 +5213,14 @@ static void prefs_account_oauth2_copy_url(GtkButton *button, gpointer data)
 	oauth2_listener_data->service = combobox_get_active_data(GTK_COMBO_BOX(optmenu));
 	oauth2_listener_data->OAUTH2Data = g_malloc(sizeof(* oauth2_listener_data->OAUTH2Data));
 	oauth2_init (oauth2_listener_data->OAUTH2Data);
-	oauth2_listener_data->OAUTH2Data->custom_client_secret = 
+	oauth2_listener_data->OAUTH2Data->custom_client_secret =
 		g_strdup(gtk_entry_get_text((GtkEntry *)oauth2_page.oauth2_client_secret_entry));
-	oauth2_listener_data->OAUTH2Data->custom_client_id = 
+	oauth2_listener_data->OAUTH2Data->custom_client_id =
 		g_strdup(gtk_entry_get_text((GtkEntry *)oauth2_page.oauth2_client_id_entry));
 
 	oauth2_listener_cancel = 0;
 	oauth2_listener_closed = 0;
-	
+
 	oauth2_listener_task = g_task_new(NULL, NULL, prefs_account_oauth2_callback, oauth2_listener_data);
 	g_task_set_task_data(oauth2_listener_task, oauth2_listener_data, NULL);
 	g_task_run_in_thread(oauth2_listener_task, prefs_account_oauth2_listener);
@@ -5241,15 +5241,15 @@ static void prefs_account_oauth2_obtain_tokens(GtkButton *button, gpointer data)
 	oauth2_init (OAUTH2Data);
 
 
-	OAUTH2Data->custom_client_secret = 
+	OAUTH2Data->custom_client_secret =
 		g_strdup(gtk_entry_get_text((GtkEntry *)oauth2_page.oauth2_client_secret_entry));
-	OAUTH2Data->custom_client_id = 
+	OAUTH2Data->custom_client_id =
 		g_strdup(gtk_entry_get_text((GtkEntry *)oauth2_page.oauth2_client_id_entry));
 
-		
+
 	service = combobox_get_active_data(GTK_COMBO_BOX(optmenu));
 	ret = oauth2_obtain_tokens (service, OAUTH2Data, trim_text);
-	
+
 	if(!ret){
 		if(OAUTH2Data->refresh_token != NULL){
 			passwd_store_set_account(tmp_ac_prefs.account_id,
@@ -5442,7 +5442,7 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_show(basic_page.pass_label);
 		gtk_widget_show(basic_page.uid_entry);
 		gtk_widget_show(basic_page.pass_entry);
- 
+
 		gtk_widget_set_sensitive(basic_page.uid_label,  TRUE);
 		gtk_widget_set_sensitive(basic_page.pass_label, TRUE);
 		gtk_widget_set_sensitive(basic_page.uid_entry,  TRUE);
@@ -5466,13 +5466,13 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 			(GTK_TOGGLE_BUTTON(send_page.pop_bfr_smtp_checkbtn), FALSE);
 		gtk_widget_set_sensitive(send_page.pop_bfr_smtp_checkbtn, FALSE);
 		gtk_widget_set_sensitive(send_page.pop_bfr_smtp_tm_spinbtn, FALSE);
-		
+
 		if (!tmp_ac_prefs.account_name) {
 			gtk_toggle_button_set_active
-				(GTK_TOGGLE_BUTTON(receive_page.filter_on_recv_checkbtn), 
+				(GTK_TOGGLE_BUTTON(receive_page.filter_on_recv_checkbtn),
 				TRUE);
 			gtk_toggle_button_set_active
-				(GTK_TOGGLE_BUTTON(receive_page.filterhook_on_recv_checkbtn), 
+				(GTK_TOGGLE_BUTTON(receive_page.filterhook_on_recv_checkbtn),
 				TRUE);
 			gtk_toggle_button_set_active
 				(GTK_TOGGLE_BUTTON(receive_page.recvatgetall_checkbtn),
@@ -5551,10 +5551,10 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 
 		if (!tmp_ac_prefs.account_name) {
 			gtk_toggle_button_set_active
-				(GTK_TOGGLE_BUTTON(receive_page.filter_on_recv_checkbtn), 
+				(GTK_TOGGLE_BUTTON(receive_page.filter_on_recv_checkbtn),
 				TRUE);
 			gtk_toggle_button_set_active
-				(GTK_TOGGLE_BUTTON(receive_page.filterhook_on_recv_checkbtn), 
+				(GTK_TOGGLE_BUTTON(receive_page.filterhook_on_recv_checkbtn),
 				TRUE);
 			gtk_toggle_button_set_active
 				(GTK_TOGGLE_BUTTON(receive_page.recvatgetall_checkbtn),
@@ -5589,7 +5589,7 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 #endif
 		if (new_account)
 			gtk_toggle_button_set_active(
-				GTK_TOGGLE_BUTTON(send_page.msgid_checkbtn), 
+				GTK_TOGGLE_BUTTON(send_page.msgid_checkbtn),
 				TRUE);
 		gtk_widget_hide(send_page.msgid_checkbtn);
 		gtk_widget_show(send_page.xmailer_checkbtn);
@@ -5642,10 +5642,10 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 
 		if (!tmp_ac_prefs.account_name) {
 			gtk_toggle_button_set_active
-				(GTK_TOGGLE_BUTTON(receive_page.filter_on_recv_checkbtn), 
+				(GTK_TOGGLE_BUTTON(receive_page.filter_on_recv_checkbtn),
 				TRUE);
 			gtk_toggle_button_set_active
-				(GTK_TOGGLE_BUTTON(receive_page.filterhook_on_recv_checkbtn), 
+				(GTK_TOGGLE_BUTTON(receive_page.filterhook_on_recv_checkbtn),
 				TRUE);
 			gtk_toggle_button_set_active
 				(GTK_TOGGLE_BUTTON(receive_page.recvatgetall_checkbtn),
@@ -5724,7 +5724,7 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		/* update pop_before_smtp sensitivity */
 		gtk_widget_set_sensitive(send_page.pop_bfr_smtp_checkbtn, FALSE);
 		pop_bfr_smtp_tm_set_sens(NULL, NULL);
-	
+
 		gtk_toggle_button_set_active
 			(GTK_TOGGLE_BUTTON(receive_page.filter_on_recv_checkbtn), FALSE);
 		gtk_toggle_button_set_active
@@ -5806,13 +5806,13 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		/* update pop_before_smtp sensitivity */
 		gtk_widget_set_sensitive(send_page.pop_bfr_smtp_checkbtn, TRUE);
 		pop_bfr_smtp_tm_set_sens(NULL, NULL);
-		
+
 		if (!tmp_ac_prefs.account_name) {
 			gtk_toggle_button_set_active
-				(GTK_TOGGLE_BUTTON(receive_page.filter_on_recv_checkbtn), 
+				(GTK_TOGGLE_BUTTON(receive_page.filter_on_recv_checkbtn),
 				TRUE);
 			gtk_toggle_button_set_active
-				(GTK_TOGGLE_BUTTON(receive_page.filterhook_on_recv_checkbtn), 
+				(GTK_TOGGLE_BUTTON(receive_page.filterhook_on_recv_checkbtn),
 				TRUE);
 			gtk_toggle_button_set_active
 				(GTK_TOGGLE_BUTTON(receive_page.recvatgetall_checkbtn),
@@ -5958,7 +5958,7 @@ static void prefs_account_compose_default_dictionary_set_optmenu_from_string
 	}
 	combo = *pparam->widget;
 	if (dictionary && *dictionary)
-		gtkaspell_set_dictionary_menu_active_item(GTK_COMBO_BOX(combo), 
+		gtkaspell_set_dictionary_menu_active_item(GTK_COMBO_BOX(combo),
 							  dictionary);
 	else {
 		GtkTreeModel *model;
@@ -6022,7 +6022,7 @@ gchar *prefs_account_generate_msgid(PrefsAccount *account)
 void prefs_account_register_page(PrefsPage *page)
 {
 	prefs_pages = g_slist_append(prefs_pages, page);
-	
+
 }
 
 void prefs_account_unregister_page(PrefsPage *page)
@@ -6105,7 +6105,7 @@ static void prefs_account_oauth2_listener(GTask *task, gpointer source, gpointer
 	struct timeval timeout;
 
 	debug_print("oauth2 listener task running\n");
-     
+
 	//Create socket
 	socket_desc = socket(AF_INET , SOCK_STREAM , 0);
 	if (socket_desc == -1)
@@ -6116,12 +6116,12 @@ static void prefs_account_oauth2_listener(GTask *task, gpointer source, gpointer
 		return;
 	}
 	debug_print("oauth2 listener socket created\n");
-	
+
 	//Prepare the sockaddr_in structure
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = INADDR_ANY;
 	server.sin_port = htons( 8888 );
-	
+
 	//Bind
 	if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
 	{
@@ -6134,11 +6134,11 @@ static void prefs_account_oauth2_listener(GTask *task, gpointer source, gpointer
 	debug_print("oauth2 listener bind done\n");
 
 	listen(socket_desc , 1);
-	
+
 	//Accept and incoming connection
 	debug_print("oauth2 listener waiting for incoming connections...\n");
 	c = sizeof(struct sockaddr_in);
-	
+
 	do{
 		FD_ZERO(&rfds);
 		FD_SET(socket_desc, &rfds);
@@ -6187,7 +6187,7 @@ static void prefs_account_oauth2_listener(GTask *task, gpointer source, gpointer
 			close(client_sock);
 		}
 	}while(ret && !oauth2_listener_cancel);
-	
+
 	close(socket_desc);
 	debug_print("oauth2 closing task\n");
 	g_task_return_boolean (task, TRUE);
@@ -6252,7 +6252,7 @@ static int prefs_account_oauth2_get_line(int sock, char *buf, int size)
 	int i = 0;
 	char c = '\0';
 	int n;
-	
+
 	while ((i < size - 1) && (c != '\n')) {
                 n = recv(sock, &c, 1, 0);
                 //printf("%02X\n", c);
@@ -6263,7 +6263,7 @@ static int prefs_account_oauth2_get_line(int sock, char *buf, int size)
                                 if ((n > 0) && (c == '\n')) {
                                         n = recv(sock, &c, 1, 0);
                                         if (n < 0)
-                                               log_message(LOG_PROTOCOL, "Receiving from pipe failed\n"); 
+                                               log_message(LOG_PROTOCOL, "Receiving from pipe failed\n");
                                 }
                                 else
                                         c = '\n';

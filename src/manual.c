@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -67,7 +67,7 @@ static gchar *get_local_path_with_locale(gchar *rootpath)
 	gchar *lang_str, *dir;
 
 	lang_str = get_language();
-	dir = g_strconcat(rootpath, G_DIR_SEPARATOR_S, 
+	dir = g_strconcat(rootpath, G_DIR_SEPARATOR_S,
 			  lang_str, NULL);
 	g_free(lang_str);
 	if(!is_dir_exist(dir)) {
@@ -87,7 +87,7 @@ gboolean manual_available(ManualType type)
 {
 	gboolean ret = FALSE;
     	gchar *dir = NULL, *uri = NULL;
-	
+
 	switch (type) {
 		case MANUAL_MANUAL_CLAWS:
 			dir = get_local_path_with_locale(MANUALDIR);

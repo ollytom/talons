@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -81,7 +81,7 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"default_alt_dictionary", NULL, &tmp_prefs.default_alt_dictionary, P_STRING,
 	 NULL, NULL, NULL},
-#endif	 
+#endif
 	{"always_sign", "0", &tmp_prefs.always_sign, P_ENUM,
  	 NULL, NULL, NULL},
 	{"always_encrypt", "0", &tmp_prefs.always_encrypt, P_ENUM,
@@ -160,7 +160,7 @@ void folder_item_prefs_read_config(FolderItem * item)
 }
 
 void folder_item_prefs_save_config(FolderItem * item)
-{	
+{
 	gchar * id;
 
 	tmp_prefs = * item->prefs;
@@ -182,13 +182,13 @@ static gboolean folder_item_prefs_save_config_func(GNode *node, gpointer data)
 }
 
 void folder_item_prefs_save_config_recursive(FolderItem * item)
-{	
+{
 	g_node_traverse(item->node, G_PRE_ORDER, G_TRAVERSE_ALL,
 			-1, folder_item_prefs_save_config_func, NULL);
 }
 
 void folder_prefs_save_config_recursive(Folder *folder)
-{	
+{
 	g_node_traverse(folder->node, G_PRE_ORDER, G_TRAVERSE_ALL,
 			-1, folder_item_prefs_save_config_func, NULL);
 }
@@ -308,13 +308,13 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 
 	for (tmp = src->prefs->processing; tmp != NULL && tmp->data != NULL;) {
 		FilteringProp *prop = (FilteringProp *)tmp->data;
-		
+
 		tmp_prop_list = g_slist_append(tmp_prop_list,
 					   filteringprop_copy(prop));
 		tmp = tmp->next;
 	}
 	tmp_prefs.processing			= tmp_prop_list;
-	
+
 	tmp_prefs.request_return_receipt	= src->prefs->request_return_receipt;
 	tmp_prefs.enable_default_from		= src->prefs->enable_default_from;
 	tmp_prefs.default_from			= g_strdup(src->prefs->default_from);

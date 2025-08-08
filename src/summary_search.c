@@ -603,7 +603,7 @@ static gboolean summary_search_prepare_matcher()
 	if (search_window.advsearch == NULL) {
 		search_window.advsearch = advsearch_new();
 		advsearch_set_on_error_cb(search_window.advsearch, NULL, NULL); /* TODO */
-		advsearch_set_on_progress_cb(search_window.advsearch, 
+		advsearch_set_on_progress_cb(search_window.advsearch,
 			summary_search_progress_cb, NULL);
 	}
 

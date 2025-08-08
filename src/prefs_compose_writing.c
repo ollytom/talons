@@ -69,11 +69,11 @@ typedef struct _WritingPage
 	GtkWidget *checkbtn_warn_pasted_attachments;
 } WritingPage;
 
-static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
 	WritingPage *prefs_writing = (WritingPage *) _page;
-	
+
 	GtkWidget *vbox1;
 	GtkWidget *vbox2;
 	GtkWidget *checkbtn_autoextedit;
@@ -251,7 +251,7 @@ static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *win
 			optmenu_dnd_insert_or_attach, FALSE, FALSE, 0);
 
 	PACK_CHECK_BUTTON(vbox1, checkbtn_warn_pasted_attachments, _("Warn when pasting files as attachments"));
-	
+
 	SET_TOGGLE_SENSITIVITY (checkbtn_autosave, spinbtn_autosave_length);
 	SET_TOGGLE_SENSITIVITY (checkbtn_autosave, label_autosave_length);
 	SET_TOGGLE_SENSITIVITY (checkbtn_autosave, checkbtn_autosave_encrypted);
@@ -273,7 +273,7 @@ static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *win
 
 	prefs_writing->checkbtn_warn_large_insert = checkbtn_warn_large_insert;
 	prefs_writing->spinbtn_warn_large_insert_size = spinbtn_warn_large_insert_size;
-	
+
 	prefs_writing->checkbtn_forward_as_attachment =
 		checkbtn_forward_as_attachment;
 	prefs_writing->checkbtn_redirect_keep_from = checkbtn_redirect_keep_from;
@@ -323,25 +323,25 @@ static void prefs_compose_writing_save(PrefsPage *_page)
 {
 	WritingPage *page = (WritingPage *) _page;
 
-	prefs_common.auto_exteditor = 
+	prefs_common.auto_exteditor =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_autoextedit));
 	prefs_common.forward_as_attachment =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_forward_as_attachment));
 	prefs_common.redirect_keep_from =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_redirect_keep_from));
-	prefs_common.autosave = 
+	prefs_common.autosave =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_autosave));
-	prefs_common.autosave_encrypted = 
+	prefs_common.autosave_encrypted =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_autosave_encrypted));
 	prefs_common.autosave_length =
 		gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(page->spinbtn_autosave_length));
-	prefs_common.undolevels = 
+	prefs_common.undolevels =
 		gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(page->spinbtn_undolevel));
-	prefs_common.warn_large_insert = 
+	prefs_common.warn_large_insert =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_warn_large_insert));
 	prefs_common.warn_large_insert_size =
 		gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(page->spinbtn_warn_large_insert_size));
-		
+
 	prefs_common.reply_account_autosel =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_reply_account_autosel));
 	prefs_common.forward_account_autosel =
@@ -352,10 +352,10 @@ static void prefs_compose_writing_save(PrefsPage *_page)
 			GTK_TOGGLE_BUTTON(page->checkbtn_reply_with_quote));
 	prefs_common.default_reply_list =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_default_reply_list));
-	
+
 	prefs_common.compose_dnd_mode = combobox_get_active_data(
 			GTK_COMBO_BOX(page->optmenu_dnd_insert_or_attach));
-	
+
 	prefs_common.notify_pasted_attachments =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_warn_pasted_attachments));
 }

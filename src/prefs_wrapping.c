@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -53,11 +53,11 @@ typedef struct _WrappingPage
 	GtkWidget *checkbtn_autoindent;
 } WrappingPage;
 
-static void prefs_wrapping_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_wrapping_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
 	WrappingPage *prefs_wrapping = (WrappingPage *) _page;
-	
+
 	GtkWidget *vbox1;
 	GtkWidget *vbox2;
 	GtkWidget *label_linewrap;
@@ -126,11 +126,11 @@ static void prefs_wrapping_save(PrefsPage *_page)
 {
 	WrappingPage *page = (WrappingPage *) _page;
 
-	prefs_common.linewrap_len = 
+	prefs_common.linewrap_len =
 		gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(page->spinbtn_linewrap));
-	prefs_common.linewrap_quote = 
+	prefs_common.linewrap_quote =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_wrapquote));
-	prefs_common.linewrap_pastes = 
+	prefs_common.linewrap_pastes =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_wrappastes));
 	prefs_common.autowrap =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_autowrap));

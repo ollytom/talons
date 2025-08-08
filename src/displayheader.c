@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -30,7 +30,7 @@ gchar *display_header_prop_get_str(DisplayHeaderProp *dp)
 {
 	return g_strconcat(dp->hidden ? "-" : "", dp->name, NULL);
 }
- 
+
 DisplayHeaderProp *display_header_prop_read_str(gchar *buf)
 {
 	DisplayHeaderProp *dp;
@@ -50,7 +50,7 @@ DisplayHeaderProp *display_header_prop_read_str(gchar *buf)
 
 	return dp;
 }
- 
+
 void display_header_prop_free(DisplayHeaderProp *dp)
 {
 	if (!dp) return;

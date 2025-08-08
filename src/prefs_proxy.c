@@ -137,7 +137,7 @@ static void prefs_proxy_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_widget_set_size_request(proxy_pass_entry, DEFAULT_ENTRY_WIDTH, -1);
 	gtk_entry_set_visibility(GTK_ENTRY(proxy_pass_entry), FALSE);
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(proxy_pass_entry),
-					  GTK_ENTRY_ICON_SECONDARY, 
+					  GTK_ENTRY_ICON_SECONDARY,
 					  "view-reveal-symbolic");
 	gtk_entry_set_icon_activatable(GTK_ENTRY(proxy_pass_entry),
 				       GTK_ENTRY_ICON_SECONDARY, TRUE);
@@ -145,7 +145,7 @@ static void prefs_proxy_create_widget(PrefsPage *_page, GtkWindow *window,
 					GTK_ENTRY_ICON_SECONDARY, _("Show password"));
 	g_signal_connect(proxy_pass_entry, "icon-press",
 			 G_CALLBACK(showpwd_toggled), NULL);
-	
+
 	gtk_grid_attach(GTK_GRID(table), proxy_pass_entry, 3, 0, 1, 1);
 	gtk_widget_set_hexpand(proxy_pass_entry, TRUE);
 	gtk_widget_set_halign(proxy_pass_entry, GTK_ALIGN_FILL);

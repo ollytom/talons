@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -128,7 +128,7 @@ gint send_message(const gchar *file, PrefsAccount *ac_prefs, GSList *to_list)
 		return val;
 	} else {
 		val = send_message_smtp(ac_prefs, to_list, fp);
-		
+
 		claws_fclose(fp);
 		inc_unlock();
 		return val;
@@ -355,8 +355,8 @@ gint send_message_smtp_full(PrefsAccount *ac_prefs, GSList *to_list, FILE *fp, g
 		send_dialog->session = session;
 		smtp_session->dialog = send_dialog;
 
-		progress_dialog_list_set(send_dialog->dialog, 0, NULL, 
-					 ac_prefs->smtp_server, 
+		progress_dialog_list_set(send_dialog->dialog, 0, NULL,
+					 ac_prefs->smtp_server,
 					 _("Connecting"));
 
 		if (ac_prefs->pop_before_smtp
@@ -382,7 +382,7 @@ gint send_message_smtp_full(PrefsAccount *ac_prefs, GSList *to_list, FILE *fp, g
 
 	} else {
 		/* everything is ready to start at MAIL FROM:, just
-		 * reinit useful variables. 
+		 * reinit useful variables.
 		 */
 		session = SESSION(ac_prefs->session);
 		ac_prefs->session = NULL;
@@ -558,7 +558,7 @@ static gint send_send_data_progressive(Session *session, guint cur_len,
 	gchar buf[BUFFSIZE];
 	SendProgressDialog *dialog = (SendProgressDialog *)data;
 	MainWindow *mainwin = mainwindow_get_mainwindow();
-	
+
 	cm_return_val_if_fail(dialog != NULL, -1);
 
 	if (SMTP_SESSION(session)->state != SMTP_SEND_DATA &&
@@ -572,7 +572,7 @@ static gint send_send_data_progressive(Session *session, guint cur_len,
 		(dialog->dialog, (total_len == 0) ? 0 : (gfloat)cur_len / (gfloat)total_len);
 
 	if (mainwin) {
-		if (!gtk_widget_get_visible(mainwin->progressbar))	
+		if (!gtk_widget_get_visible(mainwin->progressbar))
 			gtk_widget_show(mainwin->progressbar);
 		gtk_progress_bar_set_fraction
 			(GTK_PROGRESS_BAR(mainwin->progressbar),
@@ -645,7 +645,7 @@ static SendProgressDialog *send_progress_dialog_create(void)
 	if (!prefs_common.send_dialog_invisible) {
 		gtk_widget_show_now(progress->window);
 	}
-	
+
 	dialog->dialog = progress;
 
 	return dialog;

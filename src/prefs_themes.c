@@ -128,13 +128,13 @@ typedef struct _CopyInfo {
 
 static ThemesData *prefs_themes_data;
 
-StockPixmap prefs_themes_icons[PREVIEW_ICONS] = { 
+StockPixmap prefs_themes_icons[PREVIEW_ICONS] = {
 	STOCK_PIXMAP_DIR_CLOSE,
 	STOCK_PIXMAP_MAIL_SEND,
-	STOCK_PIXMAP_MAIL_RECEIVE, 
+	STOCK_PIXMAP_MAIL_RECEIVE,
 	STOCK_PIXMAP_MAIL_ATTACH,
-	STOCK_PIXMAP_BOOK, 
-	STOCK_PIXMAP_MIME_TEXT_PLAIN, 
+	STOCK_PIXMAP_BOOK,
+	STOCK_PIXMAP_MIME_TEXT_PLAIN,
 	STOCK_PIXMAP_REPLIED
 };
 
@@ -234,7 +234,7 @@ static void prefs_themes_file_stats(const gchar *filename, gpointer data)
 		}
 	}
 }
-	
+
 static void prefs_themes_file_remove(const gchar *filename, gpointer data)
 {
 	gchar **status = (gchar **)data;
@@ -412,7 +412,7 @@ static void prefs_themes_get_themes_and_names(ThemesData *tdata)
 			tdata->displayed = (gchar *)tpaths->data;
 		}
 		tpaths = g_list_next(tpaths);
-		g_free(sname);	
+		g_free(sname);
 	}
 }
 
@@ -484,7 +484,7 @@ void prefs_themes_done(void)
 	debug_print("Finished preferences for themes.\n");
 
 	stock_pixmap_themes_list_free(tdata->themes);
-	prefs_themes_free_names(tdata); 
+	prefs_themes_free_names(tdata);
 	g_free(tdata->page);
 	g_free(tdata);
 }
@@ -511,7 +511,7 @@ static void prefs_themes_btn_remove_clicked_cb(GtkWidget *widget, gpointer data)
 	if (G_ALERTALTERNATE == val) {
 		gchar *status = NULL;
 
-		prefs_themes_foreach_file(theme_str, prefs_themes_file_remove, &status); 
+		prefs_themes_foreach_file(theme_str, prefs_themes_file_remove, &status);
 		if (0 != rmdir(theme_str)) {
 			if (status != NULL) {
 				alertpanel_error(_("File %s failed\nwhile removing theme."), status);
@@ -520,7 +520,7 @@ static void prefs_themes_btn_remove_clicked_cb(GtkWidget *widget, gpointer data)
 			else
 				alertpanel_error(_("Removing theme directory failed."));
 		}
-		else {	
+		else {
 			alertpanel_notice(_("Theme removed successfully"));
 			/* update interface back to first theme */
 			prefs_themes_get_themes_and_names(tdata);
@@ -542,7 +542,7 @@ static void prefs_themes_btn_install_clicked_cb(GtkWidget *widget, gpointer data
 	ThemesData *tdata = prefs_themes_data;
 
 	filename = filesel_select_file_open_folder(_("Select theme folder"), NULL);
-	if (filename == NULL) 
+	if (filename == NULL)
 		return;
 
 	if (filename[strlen(filename) - 1] != G_DIR_SEPARATOR)
@@ -868,10 +868,10 @@ static void prefs_themes_display_global_stats(const ThemesData *tdata)
 	while (tnames != NULL) {
 		ThemeName *tname = (ThemeName *)(tnames->data);
 		gchar     *tpath = (gchar *)(tname->item->data);
-		
-		if (IS_SYSTEM_THEME(tpath)) 
+
+		if (IS_SYSTEM_THEME(tpath))
 			++sys;
-		else if (!IS_INTERNAL_THEME(tpath)) 
+		else if (!IS_INTERNAL_THEME(tpath))
 			++usr;
 		++all;
 		tnames = g_list_next(tnames);
@@ -935,7 +935,7 @@ static void prefs_themes_get_theme_info(ThemesData *tdata)
 			info->author = g_strdup(line);
 			FGETS_INFOFILE_LINE()
 			info->url = g_strdup(line);
-		
+
 			claws_fclose(finfo);
 		}
 		g_free(sinfo);
@@ -1285,7 +1285,7 @@ static void prefs_themes_create_widget(PrefsPage *page, GtkWindow *window, gpoin
 #endif
 
 	prefs_themes->page.widget = vbox1;
-	
+
 	prefs_themes_set_themes_menu(GTK_COMBO_BOX(menu_themes), tdata);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(menu_themes), renderer, TRUE);

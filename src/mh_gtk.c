@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -50,7 +50,7 @@ static void copy_folder_cb(GtkAction *action, gpointer data);
 static void update_tree_cb(GtkAction *action, gpointer data);
 static void remove_mailbox_cb(GtkAction *action, gpointer data);
 
-static GtkActionEntry mh_popup_entries[] = 
+static GtkActionEntry mh_popup_entries[] =
 {
 	{"FolderViewPopup/CreateNewFolder",	NULL, N_("Create _new folder..."), NULL, NULL, G_CALLBACK(new_folder_cb) },
 	{"FolderViewPopup/RenameFolder",	NULL, N_("_Rename folder..."), NULL, NULL, G_CALLBACK(rename_folder_cb) },
@@ -61,7 +61,7 @@ static GtkActionEntry mh_popup_entries[] =
 	{"FolderViewPopup/CheckNewFolders",	NULL, N_("C_heck for new folders"), NULL, NULL, G_CALLBACK(update_tree_cb) }, /*1*/
 	{"FolderViewPopup/RebuildTree",		NULL, N_("R_ebuild folder tree"), NULL, NULL, G_CALLBACK(update_tree_cb) }, /*2*/
 	{"FolderViewPopup/RemoveMailbox",	NULL, N_("Remove _mailbox..."), NULL, NULL, G_CALLBACK(remove_mailbox_cb) },
-};			
+};
 static void set_sensitivity(GtkUIManager *ui_manager, FolderItem *item);
 static void add_menuitems(GtkUIManager *ui_manager, FolderItem *item);
 
@@ -102,7 +102,7 @@ static void add_menuitems(GtkUIManager *ui_manager, FolderItem *item)
 
 static void set_sensitivity(GtkUIManager *ui_manager, FolderItem *item)
 {
-	gboolean folder_is_normal = 
+	gboolean folder_is_normal =
 			item != NULL &&
 			item->stype == F_NORMAL &&
 			!folder_has_parent_of_type(item, F_OUTBOX) &&
@@ -276,7 +276,7 @@ static void rename_folder_cb(GtkAction *action, gpointer data)
 	}
 
 	old_id = folder_item_get_identifier(item);
-	
+
 	if (folder_item_rename(item, new_folder) < 0) {
 		alertpanel_error(_("The folder could not be renamed.\n"
 				   "The new folder name is not allowed."));
@@ -311,7 +311,7 @@ static void move_folder_cb(GtkAction *action, gpointer data)
 	g_free(msg);
 	if (!to_folder)
 		return;
-	
+
 	folderview_move_folder(folderview, from_folder, to_folder, 0);
 }
 
@@ -331,7 +331,7 @@ static void copy_folder_cb(GtkAction *action, gpointer data)
 	g_free(msg);
 	if (!to_folder)
 		return;
-	
+
 	folderview_move_folder(folderview, from_folder, to_folder, 1);
 }
 
@@ -376,7 +376,7 @@ static void remove_mailbox_cb(GtkAction *action, gpointer data)
 		 		 NULL, _("_Cancel"), "list-remove-symbolic", _("_Remove"),
 				 NULL, NULL, ALERTFOCUS_FIRST, FALSE,
 				 NULL, ALERT_WARNING);
-			    
+
 	g_free(message);
 	g_free(name);
 	if (avalue != G_ALERTALTERNATE) return;

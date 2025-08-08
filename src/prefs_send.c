@@ -86,7 +86,7 @@ static gboolean _select_by_data_func(GtkTreeModel *model, GtkTreePath *path,
 {
 	GtkComboBox *combobox = ctx->combobox;
 	gchar *data = ctx->data;
-	gchar *curdata; 
+	gchar *curdata;
 
 	gtk_tree_model_get(GTK_TREE_MODEL(model), iter, COMBOBOX_DATA, &curdata, -1);
 	if ( data != NULL && curdata != NULL && !strcmp(data, curdata) ) {
@@ -142,7 +142,7 @@ static void checkbtn_warn_multiple_recipients_toggled(GtkToggleButton *button,
 	gtk_widget_set_sensitive(spin, active);
 }
 
-static void prefs_send_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_send_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
 	SendPage *prefs_send = (SendPage *) _page;
@@ -349,7 +349,7 @@ static void prefs_send_create_widget(PrefsPage *_page, GtkWindow *window,
 	else
 		gtk_widget_set_sensitive(spinbtn_warn_multiple_recipients, FALSE);
 
-	prefs_common_charset_set_optmenu(combobox_charset, 
+	prefs_common_charset_set_optmenu(combobox_charset,
 		prefs_common.outgoing_charset);
 	combobox_select_by_data(GTK_COMBO_BOX(combobox_encoding),
 		prefs_common.encoding_method);

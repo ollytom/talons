@@ -115,8 +115,8 @@ struct MarkSum {
 };
 
 /* CLAWS subject threading:
-  
-  in the first round it inserts subject lines in a 
+
+  in the first round it inserts subject lines in a
   hashtable (subject <-> node)
 
   the second round finishes the threads by attaching
@@ -124,7 +124,7 @@ struct MarkSum {
   hashtable. will use the oldest node with the same
   subject that is not more then thread_by_subject_max_age
   days old (see subject_hashtable_lookup)
-*/  
+*/
 
 static void subject_hashtable_insert(GHashTable *hashtable, GNode *node)
 {
@@ -156,7 +156,7 @@ static GNode *subject_hashtable_lookup(GHashTable *hashtable, MsgInfo *msginfo)
 	gint prefix_length;
 	MsgInfo *hashtable_msginfo = NULL, *best_msginfo = NULL;
 	gboolean match;
-    
+
 	cm_return_val_if_fail(hashtable != NULL, NULL);
 
 	subject = msginfo->subject;
@@ -166,7 +166,7 @@ static GNode *subject_hashtable_lookup(GHashTable *hashtable, MsgInfo *msginfo)
 	if (prefix_length <= 0)
 		return NULL;
 	subject += prefix_length;
-	
+
 	list = g_hash_table_lookup(hashtable, subject);
 	if (list == NULL)
 		return NULL;
@@ -219,7 +219,7 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 	START_TIMING("");
 	root = g_node_new(NULL);
 	msgid_table = g_hash_table_new(g_str_hash, g_str_equal);
-	
+
 	if (prefs_common.thread_by_subject) {
 		subject_hashtable = g_hash_table_new(g_str_hash, g_str_equal);
 	}
@@ -251,7 +251,7 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 		next = node->next;
 		msginfo = (MsgInfo *)node->data;
 		parent = NULL;
-		
+
                 if (msginfo->inreplyto)
 			parent = g_hash_table_lookup(msgid_table, msginfo->inreplyto);
 
@@ -262,8 +262,8 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 				if ((parent = g_hash_table_lookup
 					(msgid_table, reflist->data)) != NULL)
 					break;
-                }                                        
-              
+                }
+
 		/* node should not be the parent, and node should not
 		   be an ancestor of parent (circular reference) */
 		if (parent && parent != node &&
@@ -272,7 +272,7 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 			g_node_insert_before
 				(parent, parent->children, node);
 		}
-               
+
 		node = next;
 	}
 
@@ -281,11 +281,11 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 		for (node = root->children; node && node != NULL;) {
 			next = node->next;
 			msginfo = (MsgInfo *) node->data;
-			
+
 			parent = subject_hashtable_lookup(subject_hashtable, msginfo);
-			
-			/* the node may already be threaded by IN-REPLY-TO, so go up 
-			 * in the tree to 
+
+			/* the node may already be threaded by IN-REPLY-TO, so go up
+			 * in the tree to
 			   find the parent node */
 			if (parent != NULL) {
 				if (g_node_is_ancestor(node, parent))
@@ -293,17 +293,17 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 				if (parent == node)
 					parent = NULL;
 			}
-			
+
 			if (parent) {
 				g_node_unlink(node);
 				g_node_append(parent, node);
 			}
 
 			node = next;
-		}	
+		}
 		END_TIMING();
 	}
-	
+
 	if (prefs_common.thread_by_subject)
 	{
 		g_hash_table_foreach(subject_hashtable, subject_hashtable_free, NULL);
@@ -487,7 +487,7 @@ FILE *procmsg_open_message(MsgInfo *msginfo, gboolean skip_special_headers)
 	gchar *file;
 
 	cm_return_val_if_fail(msginfo != NULL, NULL);
-	
+
 	file = procmsg_get_message_file_path(msginfo);
 	cm_return_val_if_fail(file != NULL, NULL);
 
@@ -678,7 +678,7 @@ void procmsg_get_filter_keyword(MsgInfo *msginfo, gchar **header, gchar **key,
 		g_free(hentry[H_LIST_ID].body);
 		hentry[H_LIST_ID].body = NULL;
 		g_free(hentry[H_SENDER].body);
-		hentry[H_SENDER].body = NULL;		
+		hentry[H_SENDER].body = NULL;
 
 #undef SET_FILTER_KEY
 		break;
@@ -691,8 +691,8 @@ static void procmsg_empty_trash(FolderItem *trash)
 {
 	GNode *node, *next;
 
-	if (!trash || 
-	    (trash->stype != F_TRASH && 
+	if (!trash ||
+	    (trash->stype != F_TRASH &&
 	     !folder_has_parent_of_type(trash, F_TRASH)))
 		return;
 
@@ -705,7 +705,7 @@ static void procmsg_empty_trash(FolderItem *trash)
 				procmsg_msginfo_free(&msginfo);
 				continue;
 			}
-			if (msginfo->total_size != 0 && 
+			if (msginfo->total_size != 0 &&
 			    msginfo->size != (off_t)msginfo->total_size)
 				partial_mark_for_delete(msginfo);
 
@@ -735,7 +735,7 @@ void procmsg_empty_all_trash(void)
 		Folder *folder = FOLDER(cur->data);
 		trash = folder->trash;
 		procmsg_empty_trash(trash);
-		if (folder->account && folder->account->set_trash_folder && 
+		if (folder->account && folder->account->set_trash_folder &&
 		    folder_find_item_from_identifier(folder->account->trash_folder))
 		    	procmsg_empty_trash(
 				folder_find_item_from_identifier(folder->account->trash_folder));
@@ -765,7 +765,7 @@ static PrefsAccount *procmsg_get_account_from_file(const gchar *file)
 				       {"X-Sylpheed-Encrypt:", NULL, FALSE},
 				       {"X-Sylpheed-Encrypt-Data:", NULL, FALSE},
 				       {NULL,    NULL, FALSE}};
-	
+
 	cm_return_val_if_fail(file != NULL, NULL);
 
 	if ((fp = claws_fopen(file, "rb")) == NULL) {
@@ -878,15 +878,15 @@ static GSList *procmsg_list_sort_by_account(FolderItem *queue, GSList *list)
 		return NULL;
 
 	orig = g_slist_copy(list);
-	
+
 	msg = (MsgInfo *)orig->data;
-	
+
 	for (cur = orig; cur; cur = cur->next)
 		debug_print("sort before %s\n", ((MsgInfo *)cur->data)->from);
-	
+
 	debug_print("\n");
 
-parse_again:	
+parse_again:
 	nothing_to_sort = TRUE;
 	cur = orig;
 	while (cur) {
@@ -906,7 +906,7 @@ parse_again:
 		}
 		cur = cur->next;
 	}
-	
+
 	if (orig && g_slist_length(orig)) {
 		if (!last_account && nothing_to_sort) {
 			/* can't find an account for the rest of the list */
@@ -920,9 +920,9 @@ parse_again:
 			goto parse_again;
 		}
 	}
-	
+
 	g_slist_free(orig);
-	
+
 	for (cur = result; cur; cur = cur->next)
 		debug_print("sort after %s\n", ((MsgInfo *)cur->data)->from);
 
@@ -940,14 +940,14 @@ static gboolean procmsg_is_last_for_account(FolderItem *queue, MsgInfo *msginfo,
 	for (cur = elem; cur; cur = cur->next) {
 		MsgInfo *cur_msginfo = (MsgInfo *)cur->data;
 		file = folder_item_fetch_msg(queue, cur_msginfo->msgnum);
-		
+
 		if (cur_msginfo != msginfo && !MSG_IS_LOCKED(cur_msginfo->flags)) {
 			if (procmsg_get_account_from_file(file) == ac) {
 				g_free(file);
 				return FALSE;
 			}
 		}
-		
+
 		g_free(file);
 	}
 	return TRUE;
@@ -988,7 +988,7 @@ gint procmsg_send_queue(FolderItem *queue, gboolean save_msgs, gchar **errstr)
 	GSList *list, *elem;
 	GSList *sorted_list = NULL;
 	GNode *node, *next;
-	
+
 	if (!procmsg_queue_lock(errstr)) {
 		main_window_set_menu_sensitive(mainwindow_get_mainwindow());
 		toolbar_main_set_sensitive(mainwindow_get_mainwindow());
@@ -997,7 +997,7 @@ gint procmsg_send_queue(FolderItem *queue, gboolean save_msgs, gchar **errstr)
 	inc_lock();
 	if (!queue)
 		queue = folder_get_default_queue();
-	
+
 	if (queue == NULL) {
 		procmsg_queue_unlock();
 		inc_unlock();
@@ -1012,24 +1012,24 @@ gint procmsg_send_queue(FolderItem *queue, gboolean save_msgs, gchar **errstr)
 
 	/* sort the list per sender account; this helps reusing the same SMTP server */
 	sorted_list = procmsg_list_sort_by_account(queue, list);
-	
+
 	for (elem = sorted_list; elem != NULL; elem = elem->next) {
 		gchar *file;
 		MsgInfo *msginfo;
-			
+
 		msginfo = (MsgInfo *)(elem->data);
 		if (!MSG_IS_LOCKED(msginfo->flags) && !MSG_IS_DELETED(msginfo->flags)) {
 			file = folder_item_fetch_msg(queue, msginfo->msgnum);
 			if (file) {
 				gboolean queued_removed = FALSE;
-				if (procmsg_send_message_queue_full(file, 
+				if (procmsg_send_message_queue_full(file,
 						!procmsg_is_last_for_account(queue, msginfo, elem),
 						errstr, queue, msginfo->msgnum, &queued_removed) < 0) {
 					g_warning("sending queued message %d failed",
 						  msginfo->msgnum);
 					err++;
 				} else {
-					sent++; 
+					sent++;
 					if (!queued_removed)
 						folder_item_remove_msg(queue, msginfo->msgnum);
 				}
@@ -1037,7 +1037,7 @@ gint procmsg_send_queue(FolderItem *queue, gboolean save_msgs, gchar **errstr)
 			}
 		}
 		/* FIXME: supposedly if only one message is locked, and queue
-		 * is being flushed, the following free says something like 
+		 * is being flushed, the following free says something like
 		 * "freeing msg ## in folder (nil)". */
 		procmsg_msginfo_free(&msginfo);
 	}
@@ -1053,7 +1053,7 @@ gint procmsg_send_queue(FolderItem *queue, gboolean save_msgs, gchar **errstr)
 			send_queue_lock = FALSE;
 			res = procmsg_send_queue(FOLDER_ITEM(node->data), save_msgs, errstr);
 			send_queue_lock = TRUE;
-			if (res < 0) 
+			if (res < 0)
 				err = -res;
 			else
 				sent += res;
@@ -1112,7 +1112,7 @@ gint procmsg_remove_special_headers(const gchar *in, const gchar *out)
 {
 	FILE *fp, *outfp;
 	gchar buf[BUFFSIZE];
-	
+
 	if ((fp = claws_fopen(in, "rb")) == NULL) {
 		FILE_OP_ERROR(in, "claws_fopen");
 		return -1;
@@ -1175,7 +1175,7 @@ gint procmsg_save_to_outbox(FolderItem *outbox, const gchar *file)
 
 	g_snprintf(tmp, sizeof(tmp), "%s%ctmpmsg.out.%08x",
 		   get_rc_dir(), G_DIR_SEPARATOR, (guint) rand());
-	
+
 	if (procmsg_remove_special_headers(file, tmp) !=0)
 		return -1;
 
@@ -1198,16 +1198,16 @@ gint procmsg_save_to_outbox(FolderItem *outbox, const gchar *file)
 	}
 
 	msginfo = folder_item_get_msginfo(outbox, num);		/* refcnt++ */
-	tmp_msginfo = procmsg_msginfo_get_full_info(msginfo);	/* refcnt++ */ 
+	tmp_msginfo = procmsg_msginfo_get_full_info(msginfo);	/* refcnt++ */
 	if (msginfo != NULL) {
 		procmsg_msginfo_unset_flags(msginfo, ~0, 0);
 		procmsg_msginfo_free(&msginfo);			/* refcnt-- */
 		/* tmp_msginfo == msginfo */
-		if (tmp_msginfo && msginfo->extradata && 
-		    (msginfo->extradata->dispositionnotificationto || 
+		if (tmp_msginfo && msginfo->extradata &&
+		    (msginfo->extradata->dispositionnotificationto ||
 		     msginfo->extradata->returnreceiptto)) {
-			procmsg_msginfo_set_flags(msginfo, MSG_RETRCPT_SENT, 0); 
-		}	
+			procmsg_msginfo_set_flags(msginfo, MSG_RETRCPT_SENT, 0);
+		}
 		procmsg_msginfo_free(&tmp_msginfo);		/* refcnt-- */
 	}
 
@@ -1218,7 +1218,7 @@ gint procmsg_save_to_outbox(FolderItem *outbox, const gchar *file)
 MsgInfo *procmsg_msginfo_new_ref(MsgInfo *msginfo)
 {
 	msginfo->refcnt++;
-	
+
 	return msginfo;
 }
 
@@ -1228,7 +1228,7 @@ MsgInfo *procmsg_msginfo_new(void)
 
 	newmsginfo = g_new0(MsgInfo, 1);
 	newmsginfo->refcnt = 1;
-	
+
 	return newmsginfo;
 }
 
@@ -1314,7 +1314,7 @@ MsgInfo *procmsg_msginfo_copy(MsgInfo *msginfo)
         refs = msginfo->references;
         for (refs = msginfo->references; refs != NULL; refs = refs->next) {
                 newmsginfo->references = g_slist_prepend
-                        (newmsginfo->references, g_strdup(refs->data)); 
+                        (newmsginfo->references, g_strdup(refs->data));
         }
         newmsginfo->references = g_slist_reverse(newmsginfo->references);
 
@@ -1360,7 +1360,7 @@ MsgInfo *procmsg_msginfo_get_full_info_from_file(MsgInfo *msginfo, const gchar *
 			msginfo->extradata->avatars = g_slist_copy_deep(full_msginfo->extradata->avatars,
 									(GCopyFunc) procmsg_msginfoavatar_copy, NULL);
 		if (!msginfo->extradata->dispositionnotificationto)
-			msginfo->extradata->dispositionnotificationto = 
+			msginfo->extradata->dispositionnotificationto =
 				g_strdup(full_msginfo->extradata->dispositionnotificationto);
 		if (!msginfo->extradata->returnreceiptto)
 			msginfo->extradata->returnreceiptto = g_strdup
@@ -1473,7 +1473,7 @@ guint procmsg_msginfo_memusage(MsgInfo *msginfo)
 {
 	guint memusage = 0;
 	GSList *tmp;
-	
+
 	memusage += sizeof(MsgInfo);
 	if (msginfo->fromname)
 		memusage += strlen(msginfo->fromname);
@@ -1597,11 +1597,11 @@ static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_ses
 
 		switch (hnum) {
 		case Q_SENDER:
-			if (from == NULL) 
+			if (from == NULL)
 				from = g_strdup(p);
 			break;
 		case Q_SMTPSERVER:
-			if (smtpserver == NULL) 
+			if (smtpserver == NULL)
 				smtpserver = g_strdup(p);
 			break;
 		case Q_RECIPIENTS:
@@ -1617,20 +1617,20 @@ static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_ses
 			newsac = account_find_from_id(atoi(p));
 			break;
 		case Q_SAVE_COPY_FOLDER:
-			if (savecopyfolder == NULL) 
+			if (savecopyfolder == NULL)
 				savecopyfolder = g_strdup(p);
 			break;
 		case Q_REPLY_MESSAGE_ID:
-			if (replymessageid == NULL) 
+			if (replymessageid == NULL)
 				replymessageid = g_strdup(p);
 			break;
 		case Q_FWD_MESSAGE_ID:
-			if (fwdmessageid == NULL) 
+			if (fwdmessageid == NULL)
 				fwdmessageid = g_strdup(p);
 			break;
 		case Q_ENCRYPT:
 		case Q_ENCRYPT_OLD:
-			if (p[0] == '1') 
+			if (p[0] == '1')
 				encrypt = TRUE;
 			break;
 		case Q_CLAWS_HDRS:
@@ -1814,7 +1814,7 @@ send_mail:
 	if (replymessageid != NULL || fwdmessageid != NULL) {
 		gchar **tokens;
 		FolderItem *item;
-		
+
 		if (replymessageid != NULL)
 			tokens = g_strsplit(replymessageid, "\t", 0);
 		else
@@ -1824,21 +1824,21 @@ send_mail:
 		/* check if queued message has valid folder and message id */
 		if (item != NULL && tokens[2] != NULL) {
 			MsgInfo *msginfo;
-			
+
 			msginfo = folder_item_get_msginfo(item, atoi(tokens[1]));
-		
+
 			/* check if referring message exists and has a message id */
-			if ((msginfo != NULL) && 
+			if ((msginfo != NULL) &&
 			    (msginfo->msgid != NULL) &&
 			    (strcmp(msginfo->msgid, tokens[2]) != 0)) {
 				procmsg_msginfo_free(&msginfo);
 				msginfo = NULL;
 			}
-			
+
 			if (msginfo == NULL) {
 				msginfo = folder_item_get_msginfo_by_msgid(item, tokens[2]);
 			}
-			
+
 			if (msginfo != NULL) {
 				if (replymessageid != NULL) {
 					MsgPermFlags to_unset = 0;
@@ -1912,7 +1912,7 @@ static void update_folder_msg_counts(FolderItem *item, MsgInfo *msginfo, MsgPerm
 		if (procmsg_msg_has_marked_parent(msginfo))
 			item->unreadmarked_msgs--;
 	}
-	
+
 	/* MARK flag */
 	if (!(old_flags & MSG_MARKED) && (new_flags & MSG_MARKED)) {
 		procmsg_update_unread_children(msginfo, TRUE);
@@ -1975,7 +1975,7 @@ void procmsg_msginfo_set_flags(MsgInfo *msginfo, MsgPermFlags perm_flags, MsgTmp
 	cm_return_if_fail(msginfo != NULL);
 	item = msginfo->folder;
 	cm_return_if_fail(item != NULL);
-	
+
 	debug_print("Setting flags for message %d in folder %s\n", msginfo->msgnum, item->path);
 
 	/* Perm Flags handling */
@@ -2018,13 +2018,13 @@ void procmsg_msginfo_unset_flags(MsgInfo *msginfo, MsgPermFlags perm_flags, MsgT
 	cm_return_if_fail(msginfo != NULL);
 	item = msginfo->folder;
 	cm_return_if_fail(item != NULL);
-	
+
 	debug_print("Unsetting flags for message %d in folder %s\n", msginfo->msgnum, item->path);
 
 	/* Perm Flags handling */
 	perm_flags_old = msginfo->flags.perm_flags;
 	perm_flags_new = msginfo->flags.perm_flags & ~perm_flags;
-	
+
 	if (perm_flags_old != perm_flags_new) {
 		folder_item_change_msg_flags(msginfo->folder, msginfo, perm_flags_new);
 
@@ -2044,7 +2044,7 @@ void procmsg_msginfo_unset_flags(MsgInfo *msginfo, MsgPermFlags perm_flags, MsgT
 	}
 }
 
-void procmsg_msginfo_change_flags(MsgInfo *msginfo, 
+void procmsg_msginfo_change_flags(MsgInfo *msginfo,
 				MsgPermFlags add_perm_flags, MsgTmpFlags add_tmp_flags,
 				MsgPermFlags rem_perm_flags, MsgTmpFlags rem_tmp_flags)
 {
@@ -2056,7 +2056,7 @@ void procmsg_msginfo_change_flags(MsgInfo *msginfo,
 	cm_return_if_fail(msginfo != NULL);
 	item = msginfo->folder;
 	cm_return_if_fail(item != NULL);
-	
+
 	debug_print("Changing flags for message %d in folder %s\n", msginfo->msgnum, item->path);
 
 	/* Perm Flags handling */
@@ -2151,9 +2151,9 @@ gboolean procmsg_msg_has_flagged_parent(MsgInfo *info, MsgPermFlags perm_flags)
 {
 	gboolean result;
 	static GHashTable *parentmsgs = NULL;
-	
+
 	if (parentmsgs == NULL)
-		parentmsgs = g_hash_table_new(NULL, NULL); 
+		parentmsgs = g_hash_table_new(NULL, NULL);
 
 	result = procmsg_msg_has_flagged_parent_real(info, perm_flags, parentmsgs);
 	g_hash_table_foreach_remove(parentmsgs, parentmsgs_hash_remove, NULL);
@@ -2171,7 +2171,7 @@ gboolean procmsg_msg_has_marked_parent(MsgInfo *info)
 }
 
 
-static GSList *procmsg_find_children_func(MsgInfo *info, 
+static GSList *procmsg_find_children_func(MsgInfo *info,
 				   GSList *children, GSList *all)
 {
 	GSList *cur;
@@ -2184,12 +2184,12 @@ static GSList *procmsg_find_children_func(MsgInfo *info,
 		MsgInfo *tmp = (MsgInfo *)cur->data;
 		if (tmp->inreplyto && !strcmp(tmp->inreplyto, info->msgid)) {
 			/* Check if message is already in the list */
-			if ((children == NULL) || 
+			if ((children == NULL) ||
 			    (g_slist_index(children, tmp) == -1)) {
 				children = g_slist_prepend(children,
 						procmsg_msginfo_new_ref(tmp));
-				children = procmsg_find_children_func(tmp, 
-							children, 
+				children = procmsg_find_children_func(tmp,
+							children,
 							all);
 			}
 		}
@@ -2224,7 +2224,7 @@ static void procmsg_update_unread_children(MsgInfo *info, gboolean newly_marked)
 	for (cur = children; cur != NULL; cur = g_slist_next(cur)) {
 		MsgInfo *tmp = (MsgInfo *)cur->data;
 		if(MSG_IS_UNREAD(tmp->flags) && !MSG_IS_IGNORE_THREAD(tmp->flags)) {
-			if(newly_marked) 
+			if(newly_marked)
 				info->folder->unreadmarked_msgs++;
 			else
 				info->folder->unreadmarked_msgs--;
@@ -2264,12 +2264,12 @@ void procmsg_msginfo_set_to_folder(MsgInfo *msginfo, FolderItem *to_folder)
 static gboolean procmsg_msginfo_filter(MsgInfo *msginfo, PrefsAccount* ac_prefs)
 {
 	MailFilteringData mail_filtering_data;
-			
-	mail_filtering_data.msginfo = msginfo;			
-	mail_filtering_data.msglist = NULL;			
-	mail_filtering_data.filtered = NULL;			
+
+	mail_filtering_data.msginfo = msginfo;
+	mail_filtering_data.msglist = NULL;
+	mail_filtering_data.filtered = NULL;
 	mail_filtering_data.unfiltered = NULL;
-	mail_filtering_data.account = ac_prefs;	
+	mail_filtering_data.account = ac_prefs;
 
 	if (!ac_prefs || ac_prefs->filterhook_on_recv)
 		if (hooks_invoke(MAIL_FILTERING_HOOKLIST, &mail_filtering_data))
@@ -2281,24 +2281,24 @@ static gboolean procmsg_msginfo_filter(MsgInfo *msginfo, PrefsAccount* ac_prefs)
 				FILTERING_INCORPORATION, NULL)) {
 		return TRUE;
 	}
-		
+
 	return FALSE;
 }
 
-void procmsg_msglist_filter(GSList *list, PrefsAccount *ac, 
+void procmsg_msglist_filter(GSList *list, PrefsAccount *ac,
 			    GSList **filtered, GSList **unfiltered,
 			    gboolean do_filter)
 {
 	GSList *cur, *to_do = NULL;
 	gint total = 0, curnum = 0;
 	MailFilteringData mail_filtering_data;
-			
+
 	cm_return_if_fail(filtered != NULL);
 	cm_return_if_fail(unfiltered != NULL);
 
 	*filtered = NULL;
 	*unfiltered = NULL;
-	
+
 	if (list == NULL)
 		return;
 
@@ -2312,21 +2312,21 @@ void procmsg_msglist_filter(GSList *list, PrefsAccount *ac,
 
 	statusbar_print_all(_("Filtering messages...\n"));
 
-	mail_filtering_data.msginfo = NULL;			
-	mail_filtering_data.msglist = list;			
-	mail_filtering_data.filtered = NULL;			
-	mail_filtering_data.unfiltered = NULL;	
-	mail_filtering_data.account = ac;	
-			
+	mail_filtering_data.msginfo = NULL;
+	mail_filtering_data.msglist = list;
+	mail_filtering_data.filtered = NULL;
+	mail_filtering_data.unfiltered = NULL;
+	mail_filtering_data.account = ac;
+
 	if (!ac || ac->filterhook_on_recv)
 	hooks_invoke(MAIL_LISTFILTERING_HOOKLIST, &mail_filtering_data);
-	
+
 	if (mail_filtering_data.filtered == NULL &&
 	    mail_filtering_data.unfiltered == NULL) {
 	    	/* nothing happened */
 		debug_print(MAIL_LISTFILTERING_HOOKLIST " did nothing. filtering whole list normally.\n");
 		to_do = list;
-	} 
+	}
 	if (mail_filtering_data.filtered != NULL) {
 		/* keep track of what's been filtered by the hooks */
 		debug_print(MAIL_LISTFILTERING_HOOKLIST " filtered some stuff. total %d filtered %d unfilt %d.\n",
@@ -2337,14 +2337,14 @@ void procmsg_msglist_filter(GSList *list, PrefsAccount *ac,
 		*filtered = g_slist_copy(mail_filtering_data.filtered);
 	}
 	if (mail_filtering_data.unfiltered != NULL) {
-		/* what the hooks didn't handle will go in filtered or 
+		/* what the hooks didn't handle will go in filtered or
 		 * unfiltered in the next loop */
 		debug_print(MAIL_LISTFILTERING_HOOKLIST " left unfiltered stuff. total %d filtered %d unfilt %d.\n",
 			g_slist_length(list),
 			g_slist_length(mail_filtering_data.filtered),
 			g_slist_length(mail_filtering_data.unfiltered));
 		to_do = mail_filtering_data.unfiltered;
-	} 
+	}
 
 	for (cur = to_do; cur; cur = cur->next) {
 		MsgInfo *info = (MsgInfo *)cur->data;
@@ -2357,7 +2357,7 @@ void procmsg_msglist_filter(GSList *list, PrefsAccount *ac,
 
 	g_slist_free(mail_filtering_data.filtered);
 	g_slist_free(mail_filtering_data.unfiltered);
-	
+
 	*filtered = g_slist_reverse(*filtered);
 	*unfiltered = g_slist_reverse(*unfiltered);
 
@@ -2371,21 +2371,21 @@ MsgInfo *procmsg_msginfo_new_from_mimeinfo(MsgInfo *src_msginfo, MimeInfo *mimei
 	MsgFlags flags = {0, 0};
 	gchar *tmpfile = get_tmp_file();
 	FILE *fp = claws_fopen(tmpfile, "wb");
-	
+
 	if (!mimeinfo || mimeinfo->type != MIMETYPE_MESSAGE ||
 	    g_ascii_strcasecmp(mimeinfo->subtype, "rfc822")) {
 		g_warning("procmsg_msginfo_new_from_mimeinfo(): unsuitable mimeinfo");
-		if (fp) 
+		if (fp)
 			claws_fclose(fp);
 		g_free(tmpfile);
 		return NULL;
 	}
-	
+
 	if (fp && procmime_write_mimeinfo(mimeinfo, fp) >= 0) {
 		claws_safe_fclose(fp);
 		fp = NULL;
 		tmp_msginfo = procheader_parse_file(
-			tmpfile, flags, 
+			tmpfile, flags,
 			TRUE, FALSE);
 	}
 	if (fp)
@@ -2463,8 +2463,8 @@ void procmsg_spam_set_folder (const char *item_identifier, FolderItem *(*spam_ge
 FolderItem *procmsg_spam_get_folder (MsgInfo *msginfo)
 {
 	FolderItem *item = NULL;
-	
-	if (procmsg_spam_get_folder_func) 
+
+	if (procmsg_spam_get_folder_func)
 		item = procmsg_spam_get_folder_func(msginfo);
 	if (item == NULL && spam_folder_item)
 		item = folder_find_item_from_identifier(spam_folder_item);
@@ -2524,7 +2524,7 @@ gchar *procmsg_msginfo_get_tags_str(MsgInfo *msginfo)
 {
 	GSList *cur = NULL;
 	gchar *tags = NULL;
-	
+
 	if (!msginfo)
 		return NULL;
 
@@ -2574,7 +2574,7 @@ void procmsg_msginfo_update_tags(MsgInfo *msginfo, gboolean set, gint id)
 		changed.next = NULL;
 		folder_item_commit_tags(msginfo->folder, msginfo, &changed, NULL);
 	}
-	
+
 }
 
 void procmsg_msginfo_clear_tags(MsgInfo *msginfo)

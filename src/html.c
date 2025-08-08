@@ -104,7 +104,7 @@ gchar *sc_html_parse(SC_HTMLParser *parser)
 			 */
 			if (SC_HTML_HREF_BEG == st || SC_HTML_HREF == st)
 				return parser->str->str;
-			} 
+			}
 			break;
 		case '&':
 			sc_html_parse_special(parser);
@@ -334,7 +334,7 @@ static void decode_href(SC_HTMLParser *parser)
 	tparser->bufp = tparser->buf->str;
 
 	tmp = sc_html_parse(tparser);
-	
+
 	g_free(parser->href);
 	parser->href = g_strdup(tmp);
 

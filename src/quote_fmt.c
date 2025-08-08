@@ -39,7 +39,7 @@
 
 /*
  * Strings describing quote format strings
- * 
+ *
  * When adding new lines, remember to put 2 strings for each line
  */
 static gchar *quote_desc_strings[] = {
@@ -52,12 +52,12 @@ static gchar *quote_desc_strings[] = {
 	"%firstname (%F)",			N_("first name of sender"), /* first name */
 	"%lastname (%L)",			N_("last name of sender"), /* last name */
 	"%initials (%I)",			N_("initials of sender"), /* initial of sender */
-	"%subject (%s)",			N_("Subject"), /* subject */ 
-	"%to (%t)",					N_("To"), /* to */ 
-	"%cc (%c)",					N_("Cc"), /* cc */ 
-	"%newsgroups (%n)",			N_("Newsgroups"), /* newsgroups */ 
-	"%references (%r)",			N_("References"), /* references */ 
-	"%messageid (%i)",			N_("Message-ID"), /* message-id */ 
+	"%subject (%s)",			N_("Subject"), /* subject */
+	"%to (%t)",					N_("To"), /* to */
+	"%cc (%c)",					N_("Cc"), /* cc */
+	"%newsgroups (%n)",			N_("Newsgroups"), /* newsgroups */
+	"%references (%r)",			N_("References"), /* references */
+	"%messageid (%i)",			N_("Message-ID"), /* message-id */
 	"%msg (%M)",				N_("message body"), /* message */
 	"%quoted_msg (%Q)",			N_("quoted message body"), /* quoted message */
 	"%msg_no_sig (%m)",			N_("message body without signature"), /* message with no signature */
@@ -101,7 +101,7 @@ static gchar *quote_desc_strings[] = {
 	NULL,NULL
 };
 
-static DescriptionWindow quote_desc_win = { 
+static DescriptionWindow quote_desc_win = {
         NULL,
 	NULL,
 	TRUE,
@@ -121,12 +121,12 @@ void quote_fmt_quote_description(GtkWidget *widget, GtkWidget *pref_window)
 static void quote_fmt_add_buttons(GtkWindow* parent_window, GtkWidget *parent_box,
 			gboolean add_info_button, void(*set_defaults_func)(void)) {
 	GtkWidget *hbox_btns;
-	
+
 	if (!add_info_button && !set_defaults_func)
 		return;
-	
+
 	hbox_btns = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_end (GTK_BOX(parent_box), hbox_btns, FALSE, TRUE, 0);	
+	gtk_box_pack_end (GTK_BOX(parent_box), hbox_btns, FALSE, TRUE, 0);
 
 	if (add_info_button)
 		quotefmt_add_info_button(parent_window, hbox_btns);
@@ -169,7 +169,7 @@ void quotefmt_create_new_msg_fmt_widgets(GtkWindow *parent_window,
 	size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 
 	if (checkbtn_compose_with_format)
-		PACK_CHECK_BUTTON (parent_box, checkbtn_use_format, 
+		PACK_CHECK_BUTTON (parent_box, checkbtn_use_format,
 				   _("Use template when writing new messages"));
 
 	vbox_format = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
@@ -515,7 +515,7 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 	if (override_from_format)
 		*override_from_format = entry_from;
 	*edit_fw_format = text_fw_quotefmt;
-	
+
 	g_object_unref(G_OBJECT(size_group));
 }
 

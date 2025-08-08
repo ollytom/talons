@@ -449,7 +449,7 @@ static void foldersel_append_item(GtkTreeStore *store, FolderItem *item,
 			   FOLDERSEL_FOREGROUND, foreground,
 			   FOLDERSEL_BOLD, weight,
 			   -1);
-        
+
         g_free(name);
 }
 
@@ -485,11 +485,11 @@ static void foldersel_set_tree(Folder *cur_folder, FolderSelectionType type)
 			if (FOLDER_TYPE(folder) == F_NEWS)
 				continue;
 		}
-		
+
 		if (cur_folder && (cur_folder->klass != folder->klass
 		    && g_strcmp0(cur_folder->name, folder->name) != 0))
 		    continue;
-		
+
 		foldersel_insert_gnode_in_store(tree_store, folder->node, NULL);
 	}
 
@@ -612,7 +612,7 @@ static void foldersel_new_folder(GtkButton *button, gpointer data)
 
 	/* add new child */
 	foldersel_append_item(store, new_item, &new_child, &selected);
-        
+
 	selected_p = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &selected);
 	new_child_p = gtk_tree_model_get_path(GTK_TREE_MODEL(store),
 					      &new_child);

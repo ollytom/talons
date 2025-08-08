@@ -124,12 +124,12 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 		dropfolder = folder_get_default_processing(account->account_id);
 	else
 		dropfolder = dest;
-	
+
 	do {
 		FILE *tmp_fp;
 		gint empty_lines;
 		gint msgnum;
-		
+
 		if (msgs%10 == 0) {
 			long cur_offset_mb = ftell(mbox_fp) / (1024 * 1024);
 			if (printed)
@@ -141,7 +141,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 			printed=TRUE;
 			GTK_EVENTS_FLUSH();
 		}
-	
+
 		if ((tmp_fp = claws_fopen(tmp_file, "wb")) == NULL) {
 			FILE_OP_ERROR(tmp_file, "claws_fopen");
 			g_warning("can't open temporary file");
@@ -194,7 +194,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 
 			/* other line */
 			/* flush any eaten empty line */
-			if (empty_lines > 0) {			
+			if (empty_lines > 0) {
 				while (empty_lines-- > 0) {
 					FPUTS_TO_TMP_ABORT_IF_FAIL("\n");
 			}
@@ -215,7 +215,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 		/* more emails to expect? */
 		more = !claws_feof(mbox_fp);
 
-		/* warn if email part is empty (it's the minimum check 
+		/* warn if email part is empty (it's the minimum check
 		   we can do */
 		if (lines == 0) {
 			g_warning("malformed mbox: %s: message %d is empty", mbox, msgs);
@@ -246,10 +246,10 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 		} else {
 			MsgFileInfo *finfo = g_new0(MsgFileInfo, 1);
 			finfo->file = tmp_file;
-			
+
 			to_add = g_slist_prepend(to_add, finfo);
 			tmp_file = get_tmp_file();
-			
+
 			/* flush every 500 */
 			if (msgs > 0 && msgs % 500 == 0) {
 				folder_item_add_msgs(dropfolder, to_add, TRUE);
@@ -268,7 +268,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 	if (apply_filter) {
 
 		folder_item_set_batch(dropfolder, FALSE);
-		procmsg_msglist_filter(to_filter, account, 
+		procmsg_msglist_filter(to_filter, account,
 				&filtered, &unfiltered, TRUE);
 		folder_item_set_batch(dropfolder, TRUE);
 
@@ -297,7 +297,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 	}
 
 	folder_item_update_thaw();
-	
+
 	g_free(tmp_file);
 	claws_fclose(mbox_fp);
 	debug_print("%d messages found.\n", msgs);
@@ -373,7 +373,7 @@ gint lock_mbox(const gchar *base, LockType type)
 			FILE_OP_ERROR(base, "open");
 			return -1;
 		}
-		
+
 #if HAVE_FCNTL_H && !defined(G_OS_WIN32)
 		if (fcntl(lockfd, F_SETLK, &fl) == -1) {
 			g_warning("can't fnctl %s (%s)", base, g_strerror(errno));
@@ -585,7 +585,7 @@ gint export_list_to_mbox(GSList *mlist, const gchar *mbox)
 		}
 
 		buf[0] = '\0';
-		
+
 		/* write email to mboxrc */
 		while (claws_fgets(buf, sizeof(buf), msg_fp) != NULL) {
 			/* quote any From, >From, >>From, etc., according to mbox format specs */
@@ -651,7 +651,7 @@ gint export_to_mbox(FolderItem *src, const gchar *mbox)
 {
 	GSList *mlist;
 	gint ret;
-	
+
 	cm_return_val_if_fail(src != NULL, -1);
 	cm_return_val_if_fail(src->folder != NULL, -1);
 	cm_return_val_if_fail(mbox != NULL, -1);

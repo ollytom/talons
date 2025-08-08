@@ -61,13 +61,13 @@ static gint tag_cmp_func (GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, g
 
 	gtk_tree_model_get(model, a, TAG_NAME, &name1, -1);
 	gtk_tree_model_get(model, b, TAG_NAME, &name2, -1);
-	
+
 	if (name1 == NULL)
 		return name2 == NULL ? 0:1;
-	
+
 	if (name2 == NULL)
 		return 1;
-	
+
 	res = g_utf8_collate(name1,name2);
 	g_free(name1);
 	g_free(name2);
@@ -115,7 +115,7 @@ void tags_window_open(GSList *msglist)
 
 	manage_window_set_transient(GTK_WINDOW(tagswindow.window));
 	gtk_widget_grab_focus(tagswindow.close_btn);
-	
+
 	tagswindow.msglist = msglist;
 	tags_window_load_tags();
 
@@ -127,7 +127,7 @@ void tags_window_open(GSList *msglist)
 		gtk_tree_view_remove_column(GTK_TREE_VIEW(tagswindow.taglist),
 			gtk_tree_view_get_column(GTK_TREE_VIEW(tagswindow.taglist), 0));
 		tagswindow.has_tag_col = FALSE;
-	} 
+	}
 	if (msglist == NULL) {
 		gtk_widget_hide(tagswindow.label);
 		gtk_widget_show(tagswindow.del_btn);
@@ -185,7 +185,7 @@ static void tags_window_insert_check_column(GtkWidget *list_view)
 		 "inconsistent", TAG_SELECTED_INCONSISTENT,
 		 NULL);
 	gtk_tree_view_column_set_alignment (column, 0.5);
-	gtk_tree_view_insert_column(GTK_TREE_VIEW(list_view), column, 0);		
+	gtk_tree_view_insert_column(GTK_TREE_VIEW(list_view), column, 0);
 	g_signal_connect(G_OBJECT(renderer), "toggled",
 			 G_CALLBACK(tags_selected_toggled),
 			 list_view);
@@ -237,7 +237,7 @@ static void tags_popup_delete (GtkAction *action, gpointer data)
 
 	TAGS_WINDOW_LOCK();
 
-	/* XXX: Here's the reason why we need to store the original 
+	/* XXX: Here's the reason why we need to store the original
 	 * pointer: we search the slist for it. */
 	gtk_tree_model_get(model, &sel,
 			   TAG_DATA, &id,
@@ -264,7 +264,7 @@ static void tags_popup_delete_all (GtkAction *action, gpointer data)
 	GSList *cur, *tags;
 	GtkTreeModel *model;
 	SummaryView *summaryview = NULL;
-	
+
 	if (alertpanel(_("Delete all tags"),
 		       _("Do you really want to delete all tags?"),
 		       NULL, _("_Cancel"), "edit-delete", _("D_elete"), NULL, NULL,
@@ -341,10 +341,10 @@ static gboolean tags_list_popup_menu(GtkWidget *widget, gpointer data)
 {
 	GtkTreeView *list_view = (GtkTreeView *)data;
 	GdkEventButton event;
-	
+
 	event.button = 3;
 	event.time = gtk_get_current_event_time();
-	
+
 	tags_list_btn_pressed(NULL, &event, list_view);
 
 	return TRUE;
@@ -377,7 +377,7 @@ static GtkWidget *tags_window_list_view_create	(void)
 
 static void tags_window_list_view_clear_tags(GtkWidget *list_view);
 
-static void tags_window_close(void) 
+static void tags_window_close(void)
 {
 	if (tagswindow.busy)
 		return;
@@ -394,7 +394,7 @@ static void tags_window_close(void)
 }
 
 static void tags_window_close_cb(GtkWidget *widget,
-			         gpointer data) 
+			         gpointer data)
 {
 	tags_window_close();
 }
@@ -423,7 +423,7 @@ static gboolean find_tag_in_store(GtkTreeModel *model,
 		return TRUE;
 	}
 
-	return FALSE; 
+	return FALSE;
 }
 
 static void tags_window_add_tag(void)
@@ -447,15 +447,15 @@ static void tags_window_add_tag(void)
 			tags_write_tags();
 			if (mainwindow_get_mainwindow())
 				summary_set_tag(
-					mainwindow_get_mainwindow()->summaryview, 
+					mainwindow_get_mainwindow()->summaryview,
 					id, NULL);
 			main_window_reflect_tags_changes(mainwindow_get_mainwindow());
 			tags_window_list_view_insert_tag(tagswindow.taglist, NULL, id);
-		} 
+		}
 		fis.tag_id = id;
 		fis.path = NULL;
 		gtk_tree_model_foreach(gtk_tree_view_get_model
-				(GTK_TREE_VIEW(tagswindow.taglist)), 
+				(GTK_TREE_VIEW(tagswindow.taglist)),
 				(GtkTreeModelForeachFunc) find_tag_in_store,
 			       	&fis);
 		if (fis.path) {
@@ -466,12 +466,12 @@ static void tags_window_add_tag(void)
 
 			if (mainwindow_get_mainwindow())
 				summary_set_tag(
-					mainwindow_get_mainwindow()->summaryview, 
+					mainwindow_get_mainwindow()->summaryview,
 					id, NULL);
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tagswindow.taglist));
 			gtk_tree_selection_select_iter(selection, &fis.iter);
 			path = gtk_tree_model_get_path(model, &fis.iter);
-			/* XXX returned path may not be valid??? create new one to be sure */ 
+			/* XXX returned path may not be valid??? create new one to be sure */
 			gtk_tree_view_set_cursor(GTK_TREE_VIEW(tagswindow.taglist), path, NULL, FALSE);
 			tags_window_list_view_insert_tag(tagswindow.taglist, &fis.iter, id);
 			gtk_tree_path_free(path);
@@ -481,7 +481,7 @@ static void tags_window_add_tag(void)
 	g_free(new_tag);
 }
 
-static void tags_window_add_tag_cb(GtkWidget *widget, gpointer data) 
+static void tags_window_add_tag_cb(GtkWidget *widget, gpointer data)
 {
 	if (tagswindow.busy)
 		return;
@@ -490,7 +490,7 @@ static void tags_window_add_tag_cb(GtkWidget *widget, gpointer data)
 	gtk_widget_grab_focus(tagswindow.taglist);
 }
 
-static void tags_window_del_tag_cb(GtkWidget *widget, gpointer data) 
+static void tags_window_del_tag_cb(GtkWidget *widget, gpointer data)
 {
 	if (tagswindow.busy)
 		return;
@@ -519,7 +519,7 @@ static gboolean tags_window_add_key_pressed(GtkWidget *widget, GdkEventKey *even
 		gtk_entry_set_text(GTK_ENTRY(tagswindow.add_entry), "");
 		gtk_widget_grab_focus(tagswindow.taglist);
 	}
-		
+
 	return FALSE;
 }
 
@@ -535,7 +535,7 @@ static void tags_window_size_allocate_cb(GtkWidget *widget,
 		&prefs_common.tagswin_width, &prefs_common.tagswin_height);
 }
 
-static void tags_window_create(void) 
+static void tags_window_create(void)
 {
 	GtkWidget *window;
 	GtkWidget *hbox1;
@@ -602,16 +602,16 @@ static void tags_window_create(void)
 			 G_CALLBACK(tags_window_del_tag_cb), NULL);
 
 	taglist = tags_window_list_view_create();
-	
+
 	label = gtk_label_new(_("Choose the tag(s) for the message(s).\n"
 				"Changes are immediately applied."));
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
 	gtk_box_pack_start(GTK_BOX(vbox1), label, FALSE, TRUE, 0);
-	
+
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin),
 				       GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-				       
+
 	gtk_container_add(GTK_CONTAINER(scrolledwin), taglist);
 	gtk_box_pack_start(GTK_BOX(vbox1), scrolledwin, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox1), hbox1, FALSE, FALSE, 0);
@@ -645,8 +645,8 @@ static void tags_window_create(void)
 	tagswindow.has_tag_col = FALSE;
 	tagswindow.watch_cursor = gdk_cursor_new_for_display(
 			gtk_widget_get_display(window), GDK_WATCH);
-	
-	g_signal_connect(G_OBJECT(new_tag_entry), "changed", 
+
+	g_signal_connect(G_OBJECT(new_tag_entry), "changed",
 			 G_CALLBACK(new_tag_set_add_sensitivity), NULL);
 	new_tag_set_add_sensitivity();
 }
@@ -691,7 +691,7 @@ static void tags_selected_toggled(GtkCellRendererToggle *widget,
 			   TAG_SELECTED, set,
 			   TAG_SELECTED_INCONSISTENT, FALSE,
 			   -1);
-	
+
 	TAGS_WINDOW_LOCK();
 	if (summaryview)
 		summary_set_tag(summaryview, set ? tag_id : -tag_id, NULL);
@@ -727,15 +727,15 @@ static void tags_selected_edited(GtkCellRendererText *widget,
 			   -1);
 
 	tag_id = GPOINTER_TO_INT(tmp);
-	
+
 	TAGS_WINDOW_LOCK();
 	if (selected) {
 		if (summaryview)
 			summary_set_tag(summaryview, -tag_id, NULL);
 	}
-	
+
 	tags_update_tag(tag_id, new_text);
-	
+
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 			   TAG_NAME, new_text,
 			   -1);
@@ -745,7 +745,7 @@ static void tags_selected_edited(GtkCellRendererText *widget,
 	} else  {
 		if (summaryview)
 			summary_set_tag(summaryview, 0, NULL);
-	}	
+	}
 	TAGS_WINDOW_UNLOCK();
 }
 
@@ -770,7 +770,7 @@ static void tags_window_get_selected_state(gint tag, gboolean *selected, gboolea
 
 static void tags_window_list_view_insert_tag(GtkWidget *list_view,
 					     GtkTreeIter *row_iter,
-					     gint tag) 
+					     gint tag)
 {
 	GtkTreeIter iter;
 	GtkListStore *list_store = GTK_LIST_STORE(gtk_tree_view_get_model
@@ -808,12 +808,12 @@ static void new_tag_set_add_sensitivity()
 
 }
 
-static void tags_window_load_tags (void) 
+static void tags_window_load_tags (void)
 {
 	GSList *cur, *tags;
 	gint id;
 	tags_window_list_view_clear_tags(tagswindow.taglist);
-	
+
 	cur = tags = tags_get_list();
 	for (; cur; cur = cur->next) {
 		id = GPOINTER_TO_INT(cur->data);

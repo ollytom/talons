@@ -51,7 +51,7 @@ typedef struct _FontsPage
 	GtkWidget *entry_messageprintfont;
 } FontsPage;
 
-static void prefs_fonts_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_fonts_create_widget(PrefsPage *_page, GtkWindow *window,
 			       gpointer data)
 {
 	FontsPage *prefs_fonts = (FontsPage *) _page;
@@ -83,8 +83,8 @@ static void prefs_fonts_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	/* normal font button */
 	entry_folderview_normalfont = gtk_font_button_new_with_font (prefs_common.normalfont);
-	g_object_set(G_OBJECT(entry_folderview_normalfont), 
-			      "use-font", TRUE, 
+	g_object_set(G_OBJECT(entry_folderview_normalfont),
+			      "use-font", TRUE,
 			      NULL);
 	gtk_widget_show (entry_folderview_normalfont);
 	gtk_grid_attach(GTK_GRID(table), entry_folderview_normalfont, 1, row, 1, 1);
@@ -101,8 +101,8 @@ static void prefs_fonts_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	/* message font button */
 	entry_messageviewfont = gtk_font_button_new_with_font (prefs_common.textfont);
-	g_object_set(G_OBJECT(entry_messageviewfont), 
-			      "use-font", TRUE, 
+	g_object_set(G_OBJECT(entry_messageviewfont),
+			      "use-font", TRUE,
 			      NULL);
 	gtk_widget_show (entry_messageviewfont);
 	gtk_grid_attach(GTK_GRID(table), entry_messageviewfont, 1, row, 1, 1);
@@ -114,7 +114,7 @@ static void prefs_fonts_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_widget_show(vbox);
 	gtk_grid_attach(GTK_GRID(table), vbox, 0, row, 1, 1);
 	row++;
-	
+
 	/* derive from normal font check button */
 	derive_from_normalfont_checkbutton = gtk_check_button_new_with_label(_("Derive small and bold fonts from Folder and Message Lists font"));
 	gtk_widget_show(derive_from_normalfont_checkbutton);
@@ -133,8 +133,8 @@ static void prefs_fonts_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	/* small font button */
 	entry_folderview_smallfont = gtk_font_button_new_with_font (prefs_common.smallfont);
-	g_object_set(G_OBJECT(entry_folderview_smallfont), 
-			      "use-font", TRUE, 
+	g_object_set(G_OBJECT(entry_folderview_smallfont),
+			      "use-font", TRUE,
 			      NULL);
 	gtk_widget_show (entry_folderview_smallfont);
 	gtk_grid_attach(GTK_GRID(table), entry_folderview_smallfont, 1, row, 1, 1);
@@ -153,8 +153,8 @@ static void prefs_fonts_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	/* bold font button */
 	entry_folderview_boldfont = gtk_font_button_new_with_font (prefs_common.boldfont);
-	g_object_set(G_OBJECT(entry_folderview_boldfont), 
-			      "use-font", TRUE, 
+	g_object_set(G_OBJECT(entry_folderview_boldfont),
+			      "use-font", TRUE,
 			      NULL);
 	gtk_widget_show (entry_folderview_boldfont);
 	gtk_grid_attach(GTK_GRID(table), entry_folderview_boldfont, 1, row, 1, 1);
@@ -181,8 +181,8 @@ static void prefs_fonts_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	/* print font button */
 	entry_messageprintfont = gtk_font_button_new_with_font (prefs_common.printfont);
-	g_object_set(G_OBJECT(entry_messageprintfont), 
-			      "use-font", TRUE, 
+	g_object_set(G_OBJECT(entry_messageprintfont),
+			      "use-font", TRUE,
 			      NULL);
 	gtk_widget_show (entry_messageprintfont);
 	gtk_grid_attach(GTK_GRID(table), entry_messageprintfont, 1, row, 1, 1);
@@ -214,19 +214,19 @@ static void prefs_fonts_save(PrefsPage *_page)
 	g_free(prefs_common.normalfont);
 	prefs_common.normalfont = g_strdup(gtk_font_chooser_get_font
 		(GTK_FONT_CHOOSER(fonts->entry_folderview_normalfont)));
-		
-	g_free(prefs_common.smallfont);		
+
+	g_free(prefs_common.smallfont);
 	prefs_common.smallfont  = g_strdup(gtk_font_chooser_get_font
 		(GTK_FONT_CHOOSER(fonts->entry_folderview_smallfont)));
 
-	g_free(prefs_common.textfont);		
+	g_free(prefs_common.textfont);
 	prefs_common.textfont   = g_strdup(gtk_font_chooser_get_font
 		(GTK_FONT_CHOOSER(fonts->entry_messageviewfont)));
 
 	prefs_common.derive_from_normal_font = gtk_toggle_button_get_active
 			(GTK_TOGGLE_BUTTON(fonts->derive_from_normalfont_checkbutton));
 
-	g_free(prefs_common.printfont);		
+	g_free(prefs_common.printfont);
 	prefs_common.printfont   = g_strdup(gtk_font_chooser_get_font
 		(GTK_FONT_CHOOSER(fonts->entry_messageprintfont)));
 	prefs_common.use_different_print_font = gtk_toggle_button_get_active

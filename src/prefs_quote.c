@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -87,11 +87,11 @@ static void prefs_quote_set_default_forward_fmt(void)
 		"?n{Newsgroups: %n\\n}?s{Subject: %s\\n}\\n\\n%M"));
 }
 
-static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
 	QuotePage *prefs_quote = (QuotePage *) _page;
-	
+
 	GtkWidget *vbox;
 	GtkWidget *vbox2;
 	GtkWidget *notebook;
@@ -107,7 +107,7 @@ static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox2);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox2), VBOX_BORDER);
-	
+
 	quotefmt_create_new_msg_fmt_widgets(
 				window,
 				vbox2,
@@ -122,7 +122,7 @@ static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox2);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox2), VBOX_BORDER);
-	
+
 	quotefmt_create_reply_fmt_widgets(
 				window,
 				vbox2,
@@ -137,7 +137,7 @@ static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox2);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox2), VBOX_BORDER);
-	
+
 	quotefmt_create_forward_fmt_widgets(
 				window,
 				vbox2,
@@ -158,7 +158,7 @@ static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 	else
 		prefs_quote_set_default_new_msg_fmt();
 
-	gtk_entry_set_text(GTK_ENTRY(prefs_quote->entry_quotemark), 
+	gtk_entry_set_text(GTK_ENTRY(prefs_quote->entry_quotemark),
 			prefs_common.quotemark?prefs_common.quotemark:"");
 	if (prefs_common.quotefmt)
 		pref_set_textview_from_pref(GTK_TEXT_VIEW(prefs_quote->text_quotefmt),
@@ -166,7 +166,7 @@ static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 	else
 		prefs_quote_set_default_reply_fmt();
 
-	gtk_entry_set_text(GTK_ENTRY(prefs_quote->entry_fw_quotemark), 
+	gtk_entry_set_text(GTK_ENTRY(prefs_quote->entry_fw_quotemark),
 			prefs_common.fw_quotemark?prefs_common.fw_quotemark:"");
 	if (prefs_common.fw_quotefmt)
 		pref_set_textview_from_pref(GTK_TEXT_VIEW(prefs_quote->text_fw_quotefmt),
@@ -181,20 +181,20 @@ static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 static void prefs_quote_save(PrefsPage *_page)
 {
 	QuotePage *page = (QuotePage *) _page;
-	
-	g_free(prefs_common.compose_subject_format); 
+
+	g_free(prefs_common.compose_subject_format);
 	prefs_common.compose_subject_format = NULL;
-	g_free(prefs_common.compose_body_format); 
+	g_free(prefs_common.compose_body_format);
 	prefs_common.compose_body_format = NULL;
-	g_free(prefs_common.quotefmt); 
+	g_free(prefs_common.quotefmt);
 	prefs_common.quotefmt = NULL;
-	g_free(prefs_common.fw_quotefmt); 
+	g_free(prefs_common.fw_quotefmt);
 	prefs_common.fw_quotefmt = NULL;
-	g_free(prefs_common.quotemark); 
+	g_free(prefs_common.quotemark);
 	prefs_common.quotemark = NULL;
-	g_free(prefs_common.fw_quotemark); 
+	g_free(prefs_common.fw_quotemark);
 	prefs_common.fw_quotemark = NULL;
-	
+
 	prefs_common.compose_with_format =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_compose_with_format));
 	prefs_common.compose_subject_format = pref_get_pref_from_entry(

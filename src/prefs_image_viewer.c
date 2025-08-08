@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -38,7 +38,7 @@
 typedef struct _ImageViewerPage
 {
 	PrefsPage page;
-	
+
 	GtkWidget *window;		/* do not modify */
 
 	GtkWidget *autoload_img;
@@ -110,11 +110,11 @@ static void imageviewer_create_widget_func(PrefsPage * _page,
 	inline_img = gtk_check_button_new_with_label(_("Display images inline"));
 	gtk_widget_show(inline_img);
 	gtk_grid_attach(GTK_GRID(table), inline_img, 0, 3, 1, 1);
-	
+
 	print_imgs = gtk_check_button_new_with_label(_("Print images"));
 	gtk_widget_show(print_imgs);
 	gtk_grid_attach(GTK_GRID(table), print_imgs, 0, 4, 1, 1);
-	
+
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(resize_img), prefs_common.resize_img);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(autoload_img), prefs_common.display_img);
 	if (prefs_common.fit_img_height)
@@ -123,7 +123,7 @@ static void imageviewer_create_widget_func(PrefsPage * _page,
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(fit_img_width_radiobtn), TRUE);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(inline_img), prefs_common.inline_img);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(print_imgs), prefs_common.print_imgs);
-	
+
 	SET_TOGGLE_SENSITIVITY(resize_img, vbox);
 
 	prefs_imageviewer->window	= GTK_WIDGET(window);
@@ -144,7 +144,7 @@ static void imageviewer_destroy_widget_func(PrefsPage *_page)
 static void imageviewer_save_func(PrefsPage * _page)
 {
 	ImageViewerPage *imageviewer = (ImageViewerPage *) _page;
-	
+
 	prefs_common.display_img =
 	    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON
 					 (imageviewer->autoload_img));

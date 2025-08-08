@@ -62,7 +62,7 @@ typedef struct _ExtProgPage
 	GtkWidget *astextviewer_entry;
 } ExtProgPage;
 
-static void prefs_ext_prog_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_ext_prog_create_widget(PrefsPage *_page, GtkWindow *window,
 			          gpointer data)
 {
 	ExtProgPage *prefs_ext_prog = (ExtProgPage *) _page;
@@ -124,8 +124,8 @@ static void prefs_ext_prog_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_widget_set_halign(table2, GTK_ALIGN_FILL);
 
 	cmds_use_system_default_checkbtn = gtk_check_button_new_with_label(
-		_("Use system defaults when possible")); 
-	
+		_("Use system defaults when possible"));
+
 	gtk_widget_show(cmds_use_system_default_checkbtn);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cmds_use_system_default_checkbtn),
 					prefs_common.cmds_use_system_default);
@@ -139,9 +139,9 @@ static void prefs_ext_prog_create_widget(PrefsPage *_page, GtkWindow *window,
 	} else
 		g_free(tmp);
 
-	
+
 	gtk_grid_attach(GTK_GRID(table2), cmds_use_system_default_checkbtn, 0, i, 2, 1);
-	
+
 #ifndef G_OS_WIN32
 	uri_label = gtk_label_new (_("Web browser"));
 	gtk_widget_show(uri_label);
@@ -195,7 +195,7 @@ static void prefs_ext_prog_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_grid_attach(GTK_GRID(table2), exteditor_combo, 1, i, 1, 1);
 
 	exteditor_entry = gtk_bin_get_child(GTK_BIN((exteditor_combo)));
-	gtk_entry_set_text(GTK_ENTRY(exteditor_entry), 
+	gtk_entry_set_text(GTK_ENTRY(exteditor_entry),
 			   prefs_common.ext_editor_cmd ? prefs_common.ext_editor_cmd : "");
 
 	astextviewer_label = gtk_label_new(_("Command for 'Display as text'"));
@@ -212,12 +212,12 @@ static void prefs_ext_prog_create_widget(PrefsPage *_page, GtkWindow *window,
 			     _("This option enables MIME parts to be displayed in the "
  			       "message view via a script when using the 'Display as text' "
 			       "contextual menu item"));
-	
+
 	gtk_grid_attach(GTK_GRID(table2), astextviewer_entry, 1, i, 1, 1);
 	gtk_widget_set_hexpand(astextviewer_entry, TRUE);
 	gtk_widget_set_halign(astextviewer_entry, GTK_ALIGN_FILL);
 
-	gtk_entry_set_text(GTK_ENTRY(astextviewer_entry), 
+	gtk_entry_set_text(GTK_ENTRY(astextviewer_entry),
 			   prefs_common.mime_textviewer ? prefs_common.mime_textviewer : "");
 
 #ifndef G_OS_WIN32
@@ -269,7 +269,7 @@ void prefs_ext_prog_init(void)
 {
 	ExtProgPage *page;
 	static gchar *path[3];
-	
+
 	path[0] = _("Message View");
 	path[1] = _("External Programs");
 	path[2] = NULL;

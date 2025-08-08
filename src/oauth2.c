@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -231,7 +231,7 @@ void account_read_oauth2_all(void)
 	gint matchedversion = 0;
 
 	debug_print("Reading oauth2rc file\n");
-	
+
 	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, OAUTH2_RC, NULL);
 	if ((fp = claws_fopen(rcpath, "rb")) == NULL) {
 	        //No oauth2rc file exists
@@ -245,7 +245,7 @@ void account_read_oauth2_all(void)
 			g_free(rcpath);
 			return;
 		}
-	}else{  
+	}else{
 	        //oauth2rc file exists. Check version and whether protected from update
 	        version_text = g_strconcat("[Version: ", VERSION, "]\n", NULL);
 	        while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
@@ -253,7 +253,7 @@ void account_read_oauth2_all(void)
 			  protected = 0;
 			  debug_print("oauth2rc file is unprotected from updates\n");
 			}
-			
+
 			if (!strcmp(buf, version_text)) {
 			  matchedversion = 1;
 			  debug_print("oauth2rc file matches Claws version\n");
@@ -261,7 +261,7 @@ void account_read_oauth2_all(void)
 		}
 		g_free(version_text);
 		rewind(fp);
-		
+
 		if(!protected && !matchedversion){
 		        //oauth2rc not protected from updates and does not match this version of Claws
 		        //Update it to the latest template version.
@@ -270,7 +270,7 @@ void account_read_oauth2_all(void)
 			str_write_to_file(oauth2_text, rcpath, TRUE);
 			g_free(oauth2_text);
 			debug_print("Replacement oauth2rc file created to match this Claws version\n");
-			
+
 			if ((fp = claws_fopen(rcpath, "rb")) == NULL) {
 			        if (ENOENT != errno) FILE_OP_ERROR(rcpath, "claws_fopen");
 				g_free(rcpath);
@@ -327,30 +327,30 @@ static gint oauth2_filter_access (gchar *json, gchar *access_token, gint *expiry
 {
        GMatchInfo *matchInfo;
        GRegex *regex;
-       
+
        regex = g_regex_new ("\"access_token\": ?\"(.*?)\",?", G_REGEX_RAW, 0, NULL);
        g_regex_match (regex, json, 0, &matchInfo);
-       if (g_match_info_matches (matchInfo)) 
+       if (g_match_info_matches (matchInfo))
 	 g_stpcpy (access_token,g_match_info_fetch (matchInfo, 1));
-       else{  
+       else{
 	 g_match_info_free (matchInfo);
 	 return (-1);
        }
-       
+
        g_match_info_free (matchInfo);
-       
+
        regex = g_regex_new ("\"expires_in\": ?([0-9]*),?", G_REGEX_RAW, 0, NULL);
        g_regex_match (regex, json, 0, &matchInfo);
        if (g_match_info_matches (matchInfo)){
 	 // Reduce available token life to avoid attempting connections with (near) expired tokens
-	 *expiry = (g_get_real_time () / G_USEC_PER_SEC) + atoi(g_match_info_fetch (matchInfo, 1)) - 120; 
+	 *expiry = (g_get_real_time () / G_USEC_PER_SEC) + atoi(g_match_info_fetch (matchInfo, 1)) - 120;
        }else{
 	 g_match_info_free (matchInfo);
 	 return (-2);
        }
-       
+
        g_match_info_free (matchInfo);
-       
+
        return(0);
 }
 
@@ -358,18 +358,18 @@ static gint oauth2_filter_refresh (gchar *json, gchar *refresh_token)
 {
        GMatchInfo *matchInfo;
        GRegex *regex;
-       
+
        regex = g_regex_new ("\"refresh_token\": ?\"(.*?)\",?", G_REGEX_RAW, 0, NULL);
        g_regex_match (regex, json, 0, &matchInfo);
-       if (g_match_info_matches (matchInfo)) 
+       if (g_match_info_matches (matchInfo))
 	 g_stpcpy (refresh_token,g_match_info_fetch (matchInfo, 1));
-       else{  
+       else{
 	 g_match_info_free (matchInfo);
 	 return (-1);
        }
-       
+
        g_match_info_free (matchInfo);
-       
+
        return(0);
 }
 
@@ -377,17 +377,17 @@ static gchar* oauth2_get_token_from_response(Oauth2Service provider, const gchar
 	gchar* token = NULL;
 	gint i;
 	Oauth2Info *oa2;
-	
+
 	//Retrieve oauth2 configuration information
 	if(provider > g_list_length(oauth2_providers_list)){
 	  debug_print("Configured OAUTH2 provider is not present in the oauth2rc config file\n");
 	  return NULL;
 	}
-	
+
 	i = (int)provider - 1;
 
 	oa2 = g_list_nth_data (oauth2_providers_list, i);
-	
+
         debug_print("Auth response: %s\n", response);
         if (!oa2->oa2_codemarker_start || !oa2->oa2_codemarker_stop ||
 	    !oa2->oa2_codemarker_start[0] || !oa2->oa2_codemarker_stop[0]) {
@@ -403,7 +403,7 @@ static gchar* oauth2_get_token_from_response(Oauth2Service provider, const gchar
                         return NULL;
                 token = g_strndup(start, stop - start);
         }
-	
+
 	return token;
 }
 
@@ -471,13 +471,13 @@ int oauth2_obtain_tokens (Oauth2Service provider, OAUTH2Data *OAUTH2Data, const 
         gchar *tmp;
 	gint i;
 	Oauth2Info *oa2;
-	
+
 	//Retrieve oauth2 configuration information
 	if(provider > g_list_length(oauth2_providers_list)){
 	  debug_print("Configured OAUTH2 provider is not present in the oauth2rc config file\n");
 	  return (1);
 	}
-	
+
 	i = (int)provider - 1;
 	oa2 = g_list_nth_data (oauth2_providers_list, i);
 
@@ -507,7 +507,7 @@ int oauth2_obtain_tokens (Oauth2Service provider, OAUTH2Data *OAUTH2Data, const 
                 return (1);
         }
 
-	refresh_token = g_malloc(OAUTH2BUFSIZE+1);	
+	refresh_token = g_malloc(OAUTH2BUFSIZE+1);
 	access_token = g_malloc(OAUTH2BUFSIZE+1);
 	request = g_malloc(OAUTH2BUFSIZE+1);
 
@@ -626,13 +626,13 @@ gint oauth2_use_refresh_token (Oauth2Service provider, OAUTH2Data *OAUTH2Data)
 	gchar *tmp;
 	gint i;
 	Oauth2Info *oa2;
-	
+
 	//Retrieve oauth2 configuration information
 	if(provider > g_list_length(oauth2_providers_list)){
 	  debug_print("Configured OAUTH2 provider is not present in the oauth2rc config file\n");
 	  return (1);
 	}
-	
+
 	i = (int)provider - 1;
 	oa2 = g_list_nth_data (oauth2_providers_list, i);
 
@@ -663,7 +663,7 @@ gint oauth2_use_refresh_token (Oauth2Service provider, OAUTH2Data *OAUTH2Data)
 	  client_id = g_strdup(oa2->oa2_client_id);
 
 	uri = g_uri_escape_string (client_id, NULL, FALSE);
-	body = g_strconcat ("client_id=", uri, "&refresh_token=", OAUTH2Data->refresh_token, NULL); 
+	body = g_strconcat ("client_id=", uri, "&refresh_token=", OAUTH2Data->refresh_token, NULL);
 	g_free(uri);
 
 	if(oa2->oa2_client_secret[0]){
@@ -683,7 +683,7 @@ gint oauth2_use_refresh_token (Oauth2Service provider, OAUTH2Data *OAUTH2Data)
 
 	if(oa2->oa2_grant_type_refresh[0]) {
 	  uri = g_uri_escape_string (oa2->oa2_grant_type_refresh, NULL, FALSE);
-	  tmp = g_strconcat (body, "&grant_type=", uri, NULL);	
+	  tmp = g_strconcat (body, "&grant_type=", uri, NULL);
 	  g_free(body);
 	  g_free(uri);
 	  body = tmp;
@@ -739,7 +739,7 @@ gint oauth2_use_refresh_token (Oauth2Service provider, OAUTH2Data *OAUTH2Data)
 
 	debug_print("OAuth2 - access token: %s\n", access_token);
 	debug_print("OAuth2 - access token expiry: %i\n", expiry);
-	
+
 	sock_close(sock, TRUE);
 	g_free(body);
 	g_free(header);
@@ -760,13 +760,13 @@ gint oauth2_authorisation_url (Oauth2Service provider, gchar **url, const gchar 
 	gchar *tmp;
 	gchar *uri;
 	Oauth2Info *oa2;
-	
+
 	//Retrieve oauth2 configuration information
 	if(provider > g_list_length(oauth2_providers_list)){
 	  debug_print("Configured OAUTH2 provider is not present in the oauth2rc config file\n");
 	  return (1);
 	}
-	
+
 	i = (int)provider - 1;
 	oa2 = g_list_nth_data (oauth2_providers_list, i);
 
@@ -775,7 +775,7 @@ gint oauth2_authorisation_url (Oauth2Service provider, gchar **url, const gchar 
 
 	if(!custom_client_id[0])
 	  client_id = g_strdup(oa2->oa2_client_id);
-	
+
 	uri = g_uri_escape_string (custom_client_id[0] ? custom_client_id : client_id, NULL, FALSE);
 	*url = g_strconcat ("https://", oa2->oa2_base_url, oa2->oa2_auth_resource, "?client_id=",
 			    uri, NULL);
@@ -789,43 +789,43 @@ gint oauth2_authorisation_url (Oauth2Service provider, gchar **url, const gchar 
 	  g_free(*url);
 	  *url = tmp;
 	  g_free(uri);
-    
-	}  
+
+	}
 	if(oa2->oa2_response_type[0]) {
 	  uri = g_uri_escape_string (oa2->oa2_response_type, NULL, FALSE);
 	  tmp = g_strconcat (*url, "&response_type=", uri, NULL);
 	  g_free(*url);
 	  *url = tmp;
 	  g_free(uri);
-	}  
+	}
 	if(oa2->oa2_scope_for_auth[0]) {
 	  uri = g_uri_escape_string (oa2->oa2_scope_for_auth, NULL, FALSE);
 	  tmp = g_strconcat (*url, "&scope=", uri, NULL);
 	  g_free(*url);
 	  *url = tmp;
 	  g_free(uri);
-	}  
+	}
 	if(oa2->oa2_tenant[0]) {
 	  uri = g_uri_escape_string (oa2->oa2_tenant, NULL, FALSE);
 	  tmp = g_strconcat (*url, "&tenant=", uri, NULL);
 	  g_free(*url);
 	  *url = tmp;
 	  g_free(uri);
-	}  
+	}
 	if(oa2->oa2_response_mode[0]) {
 	  uri = g_uri_escape_string (oa2->oa2_response_mode, NULL, FALSE);
 	  tmp = g_strconcat (*url, "&response_mode=", uri, NULL);
 	  g_free(*url);
 	  *url = tmp;
 	  g_free(uri);
-	}  
+	}
 	if(oa2->oa2_state[0]) {
 	  uri = g_uri_escape_string (oa2->oa2_state, NULL, FALSE);
 	  tmp = g_strconcat (*url, "&state=", uri, NULL);
 	  g_free(*url);
 	  *url = tmp;
 	  g_free(uri);
-	}  
+	}
 
 	return (0);
 }
@@ -834,7 +834,7 @@ gint oauth2_check_passwds (PrefsAccount *ac_prefs)
 {
 	gchar *uid = g_strdup_printf("%d", ac_prefs->account_id);
 	gint expiry;
-	OAUTH2Data *OAUTH2Data = g_malloc(sizeof(* OAUTH2Data)); 
+	OAUTH2Data *OAUTH2Data = g_malloc(sizeof(* OAUTH2Data));
 	gint ret;
 	gchar *acc;
 
@@ -842,7 +842,7 @@ gint oauth2_check_passwds (PrefsAccount *ac_prefs)
 
 	OAUTH2Data->custom_client_id = ac_prefs->oauth2_client_id;
 	OAUTH2Data->custom_client_secret = ac_prefs->oauth2_client_secret;
-	
+
 	if (passwd_store_has_password(PWS_ACCOUNT, uid, PWS_ACCOUNT_OAUTH2_EXPIRY)) {
 		acc = passwd_store_get_account(ac_prefs->account_id, PWS_ACCOUNT_OAUTH2_EXPIRY);
 		expiry = atoi(acc);
@@ -854,7 +854,7 @@ gint oauth2_check_passwds (PrefsAccount *ac_prefs)
 			return (0);
 		}
 	}
-	
+
 	if (passwd_store_has_password(PWS_ACCOUNT, uid, PWS_ACCOUNT_OAUTH2_REFRESH)) {
 		log_message(LOG_PROTOCOL, _("OAuth2 obtaining access token using refresh token\n"));
 		OAUTH2Data->refresh_token = passwd_store_get_account(ac_prefs->account_id, PWS_ACCOUNT_OAUTH2_REFRESH);
@@ -866,7 +866,7 @@ gint oauth2_check_passwds (PrefsAccount *ac_prefs)
 		g_free(acc);
 	} else
 		ret = 1;
-	
+
 	if (ret)
 		log_message(LOG_PROTOCOL, _("OAuth2 access token not obtained\n"));
 	else {
@@ -876,11 +876,11 @@ gint oauth2_check_passwds (PrefsAccount *ac_prefs)
 		if (ac_prefs->use_smtp_auth && ac_prefs->smtp_auth_type == SMTPAUTH_OAUTH2)
 			passwd_store_set_account(ac_prefs->account_id, PWS_ACCOUNT_SEND, OAUTH2Data->access_token, FALSE);
 		passwd_store_set_account(ac_prefs->account_id, PWS_ACCOUNT_OAUTH2_EXPIRY, OAUTH2Data->expiry_str, FALSE);
-		//Some providers issue replacement refresh tokens with each access token. Re-store whether replaced or not. 
+		//Some providers issue replacement refresh tokens with each access token. Re-store whether replaced or not.
 		if (OAUTH2Data->refresh_token != NULL)
 			passwd_store_set_account(ac_prefs->account_id, PWS_ACCOUNT_OAUTH2_REFRESH, OAUTH2Data->refresh_token, FALSE);
 		passwd_store_write_config();
-		log_message(LOG_PROTOCOL, _("OAuth2 access and refresh token updated\n"));  
+		log_message(LOG_PROTOCOL, _("OAuth2 access and refresh token updated\n"));
 	}
 	if (OAUTH2Data->refresh_token) {
 		memset(OAUTH2Data->refresh_token, 0, strlen(OAUTH2Data->refresh_token));
@@ -888,19 +888,19 @@ gint oauth2_check_passwds (PrefsAccount *ac_prefs)
 	g_free(OAUTH2Data->refresh_token);
 	g_free(OAUTH2Data);
 	g_free(uid);
-	
+
 	return (ret);
 }
 
 gint oauth2_init (OAUTH2Data *OAUTH2Data)
-{ 
+{
 	 OAUTH2Data->refresh_token = NULL;
 	 OAUTH2Data->access_token = NULL;
 	 OAUTH2Data->expiry_str = NULL;
 	 OAUTH2Data->expiry = 0;
 	 OAUTH2Data->custom_client_id = NULL;
 	 OAUTH2Data->custom_client_secret = NULL;
-	 
+
 	 return (0);
 }
 

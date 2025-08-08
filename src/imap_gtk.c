@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -73,7 +73,7 @@ static GtkActionEntry imap_popup_entries[] =
 
 
 	{"FolderViewPopup/Subscriptions",	NULL, N_("S_ubscriptions"), NULL, NULL, NULL },
-	{"FolderViewPopup/Subscriptions/---",	NULL, "---", NULL, NULL, NULL }, 
+	{"FolderViewPopup/Subscriptions/---",	NULL, "---", NULL, NULL, NULL },
 	{"FolderViewPopup/Subscriptions/Subscribe",	NULL, N_("_Subscribe..."), NULL, NULL, G_CALLBACK(subscribe_cb) },
 	{"FolderViewPopup/Subscriptions/Unsubscribe",	NULL, N_("_Unsubscribe..."), NULL, NULL, G_CALLBACK(unsubscribe_cb) },
 
@@ -134,7 +134,7 @@ static void add_menuitems(GtkUIManager *ui_manager, FolderItem *item)
 
 static void set_sensitivity(GtkUIManager *ui_manager, FolderItem *item)
 {
-	gboolean folder_is_normal = 
+	gboolean folder_is_normal =
 			item != NULL &&
 			item->stype == F_NORMAL &&
 			!folder_has_parent_of_type(item, F_OUTBOX) &&
@@ -154,7 +154,7 @@ static void set_sensitivity(GtkUIManager *ui_manager, FolderItem *item)
 	SET_SENS("FolderViewPopup/CheckNewFolders",  folder_item_parent(item) == NULL);
 	SET_SENS("FolderViewPopup/RebuildTree",    folder_item_parent(item) == NULL);
 
-	SET_SENS("FolderViewPopup/Synchronise",    
+	SET_SENS("FolderViewPopup/Synchronise",
 			item ? (folder_item_parent(item) != NULL
 			&& folder_want_synchronise(item->folder))
 			: FALSE);
@@ -163,7 +163,7 @@ static void set_sensitivity(GtkUIManager *ui_manager, FolderItem *item)
 	SET_SENS("FolderViewPopup/CheckNewMessages", folder_item_parent(item) == NULL);
 	SET_SENS("FolderViewPopup/CheckNewFolders",  folder_item_parent(item) == NULL);
 	SET_SENS("FolderViewPopup/RebuildTree",    folder_item_parent(item) == NULL);
-	
+
 	SET_SENS("FolderViewPopup/Subscriptions/Unsubscribe",    item && item->stype == F_NORMAL && folder_item_parent(item) != NULL);
 	SET_SENS("FolderViewPopup/Subscriptions/Subscribe",    TRUE);
 	if (item && item->folder && item->folder->account)
@@ -182,7 +182,7 @@ static void new_folder_cb(GtkAction *action, gpointer data)
 	gchar *name;
 	gchar *p;
 	gchar separator = '/';
-	
+
 	if ((item = folderview_get_selected_item(folderview)) == NULL) return;
 
 	cm_return_if_fail(item != NULL);
@@ -285,7 +285,7 @@ static void rename_folder_cb(GtkAction *action, gpointer data)
 	}
 
 	old_id = folder_item_get_identifier(item);
-	
+
 	if (folder_item_rename(item, new_folder) < 0) {
 		alertpanel_error(_("The folder could not be renamed.\n"
 				   "The new folder name is not allowed."));
@@ -320,7 +320,7 @@ static void move_folder_cb(GtkAction *action, gpointer data)
 	g_free(msg);
 	if (!to_folder)
 		return;
-	
+
 	folderview_move_folder(folderview, from_folder, to_folder, 0);
 }
 
@@ -340,7 +340,7 @@ static void copy_folder_cb(GtkAction *action, gpointer data)
 	g_free(msg);
 	if (!to_folder)
 		return;
-	
+
 	folderview_move_folder(folderview, from_folder, to_folder, 1);
 }
 
@@ -428,7 +428,7 @@ void imap_gtk_synchronise(FolderItem *item, gint days)
 {
 	MainWindow *mainwin = mainwindow_get_mainwindow();
 	FolderView *folderview = mainwin->folderview;
-	
+
 	cm_return_if_fail(item != NULL);
 	cm_return_if_fail(item->folder != NULL);
 
@@ -481,7 +481,7 @@ static gboolean imap_gtk_subscribe_func(GNode *node, gpointer data)
 {
 	FolderItem *item = node->data;
 	gboolean action = GPOINTER_TO_INT(data);
-	
+
 	if (item->path)
 		imap_subscribe(item->folder, item, NULL, action);
 
@@ -501,7 +501,7 @@ static void subscribe_cb_full(FolderView *folderview, guint action)
 
 	name = trim_string(item->name, 32);
 	AUTORELEASE_STR(name, {g_free(name); return;});
-	
+
 	if (action && item->folder->account->imap_subsonly) {
 		GList *child_list = NULL;
 		GList *transc_list = NULL;
@@ -512,7 +512,7 @@ static void subscribe_cb_full(FolderView *folderview, guint action)
 
 		rec_chk = gtk_check_button_new_with_label(_("Search recursively"));
 
-		g_signal_connect(G_OBJECT(rec_chk), "toggled", 
+		g_signal_connect(G_OBJECT(rec_chk), "toggled",
 				G_CALLBACK(chk_update_val), &recurse);
 
 		avalue = alertpanel_full(_("Subscriptions"), message,
@@ -521,24 +521,24 @@ static void subscribe_cb_full(FolderView *folderview, guint action)
 					 FALSE, rec_chk, ALERT_QUESTION);
 		g_free(message);
 		if (avalue != G_ALERTALTERNATE) return;
-		
+
 		child_list = imap_scan_subtree(item->folder, item, TRUE, recurse);
-		
+
 		if (child_list) {
 			GList *cur;
 			int r = -1;
 			gchar *msg = g_strdup_printf(_("Choose a subfolder of %s to subscribe to: "),
-					item->name); 
+					item->name);
 			gchar *child_folder = NULL;
-			
+
 			for (cur = child_list; cur; cur = cur->next) {
-				transc_list = g_list_append(transc_list, 
+				transc_list = g_list_append(transc_list,
 					imap_modified_utf7_to_utf8(cur->data, FALSE));
 			}
-			
+
 			transc_list = g_list_sort(transc_list, g_str_equal);
-			
-			child_folder = input_dialog_combo(_("Subscribe"), 
+
+			child_folder = input_dialog_combo(_("Subscribe"),
 					msg,
 					transc_list->next?_("All of them"):transc_list->data, transc_list);
 			g_free(msg);
@@ -547,13 +547,13 @@ static void subscribe_cb_full(FolderView *folderview, guint action)
 				r = imap_subscribe(item->folder, NULL, transc_folder, TRUE);
 				g_free(transc_folder);
 			} else if (child_folder) {
-				for (cur = child_list; cur; cur = cur->next) 
+				for (cur = child_list; cur; cur = cur->next)
 					r = imap_subscribe(item->folder, NULL, (gchar *)cur->data, TRUE);
 			}
 			g_free(child_folder);
-			for (cur = child_list; cur; cur = cur->next) 
+			for (cur = child_list; cur; cur = cur->next)
 				g_free((gchar *)cur->data);
-			for (cur = transc_list; cur; cur = cur->next) 
+			for (cur = transc_list; cur; cur = cur->next)
 				g_free((gchar *)cur->data);
 			if (r == 0)
 				folderview_rescan_tree(item->folder, FALSE);
@@ -569,10 +569,10 @@ static void subscribe_cb_full(FolderView *folderview, guint action)
 	message = g_markup_printf_escaped
 		(_("Do you want to %s the '%s' folder?"),
 		   action?_("subscribe"):_("unsubscribe"), name);
-	
+
 	rec_chk = gtk_check_button_new_with_label(_("Apply to subfolders"));
-	
-	g_signal_connect(G_OBJECT(rec_chk), "toggled", 
+
+	g_signal_connect(G_OBJECT(rec_chk), "toggled",
 			G_CALLBACK(chk_update_val), &recurse);
 
 	avalue = alertpanel_full(_("Subscriptions"), message,
@@ -580,7 +580,7 @@ static void subscribe_cb_full(FolderView *folderview, guint action)
 				 NULL, NULL, ALERTFOCUS_SECOND, FALSE, rec_chk, ALERT_QUESTION);
 	g_free(message);
 	if (avalue != G_ALERTALTERNATE) return;
-	
+
 	FolderItem *opened = folderview_get_opened_item(folderview);
 	FolderItem *selected = folderview_get_selected_item(folderview);
 	if (!action) {
@@ -617,7 +617,7 @@ static void subscribed_cb(GtkAction *action, gpointer data)
 	FolderView *folderview = (FolderView *)data;
 	FolderItem *item = folderview_get_selected_item(folderview);
 	FolderItem *opened = folderview_get_opened_item(folderview);
-	
+
 	if (!item || !item->folder || !item->folder->account)
 		return;
 	if (item->folder->account->imap_subsonly == gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action)))

@@ -119,19 +119,19 @@ static void action_update_menu		(GtkUIManager   *ui_manager,
 					 gchar		*branch_path,
 					 gpointer	 callback,
 					 gpointer	 data);
-static void compose_actions_execute_cb	(GtkWidget 	*widget, 
+static void compose_actions_execute_cb	(GtkWidget 	*widget,
 					 gpointer 	 data);
 static void compose_actions_execute 	(Compose	*compose,
 					 guint		 action_nb,
 					 GtkWidget 	*widget);
 
-static void mainwin_actions_execute_cb	(GtkWidget 	*widget, 
+static void mainwin_actions_execute_cb	(GtkWidget 	*widget,
 					 gpointer 	 data);
 static void mainwin_actions_execute 	(MainWindow	*mainwin,
 					 guint		 action_nb,
 					 GtkWidget 	*widget);
 
-static void msgview_actions_execute_cb	(GtkWidget 	*widget, 
+static void msgview_actions_execute_cb	(GtkWidget 	*widget,
 					 gpointer 	 data);
 static void msgview_actions_execute 	(MessageView	*msgview,
 					 guint		 action_nb,
@@ -141,14 +141,14 @@ static void message_actions_execute	(MessageView	*msgview,
 					 guint		 action_nb,
 					 GSList		*msg_list);
 
-static gboolean execute_filtering_actions(gchar		*action, 
+static gboolean execute_filtering_actions(gchar		*action,
 					  GSList	*msglist);
 
-static gboolean execute_actions		(gchar		*action, 
-					 GSList		*msg_list, 
+static gboolean execute_actions		(gchar		*action,
+					 GSList		*msg_list,
 					 GtkWidget	*text,
 					 gint		 body_pos,
-					 MimeInfo	*partinfo, 
+					 MimeInfo	*partinfo,
 					 void (*callback)(void *data),
 					 void *data);
 
@@ -188,7 +188,7 @@ static gint io_dialog_key_pressed_cb	(GtkWidget	*widget,
 static void catch_output		(gpointer		 data,
 					 gint			 source,
 					 GIOCondition		 cond);
-static void catch_input			(gpointer		 data, 
+static void catch_input			(gpointer		 data,
 					 gint			 source,
 					 GIOCondition		 cond);
 static void catch_status		(GPid pid, gint status, gpointer data);
@@ -232,8 +232,8 @@ ActionType action_get_type(const gchar *action_str)
 					* add ACTION_SINGLE | ACTION_MULTIPLE so it will
 					* only be executed from the main window toolbar */
 					if (p[2] == 's')  /* source messages */
-						action_type = ACTION_FILTERING_ACTION 
-								| ACTION_SINGLE 
+						action_type = ACTION_FILTERING_ACTION
+								| ACTION_SINGLE
 								| ACTION_MULTIPLE;
 					in_filtering_action = TRUE;
 					break;
@@ -291,9 +291,9 @@ static gchar *parse_action_cmd(gchar *action, MsgInfo *msginfo,
 	GString *cmd;
 	gchar *p;
 	GSList *cur;
-	
+
 	p = action;
-	
+
 	if (p[0] == '|' || p[0] == '>' || p[0] == '*')
 		p++;
 
@@ -445,17 +445,17 @@ static gboolean parse_append_msgpart(GString *cmd, MsgInfo *msginfo,
 	return TRUE;
 }
 
-void actions_execute(gpointer data, 
+void actions_execute(gpointer data,
 		     guint action_nb,
 		     GtkWidget *widget,
 		     gint source)
 {
-	if (source == TOOLBAR_MAIN) 
+	if (source == TOOLBAR_MAIN)
 		mainwin_actions_execute((MainWindow*)data, action_nb, widget);
 	else if (source == TOOLBAR_COMPOSE)
 		compose_actions_execute((Compose*)data, action_nb, widget);
 	else if (source == TOOLBAR_MSGVIEW)
-		msgview_actions_execute((MessageView*)data, action_nb, widget);	
+		msgview_actions_execute((MessageView*)data, action_nb, widget);
 }
 
 void action_update_mainwin_menu(GtkUIManager *ui_manager,
@@ -474,7 +474,7 @@ void action_update_msgview_menu(GtkUIManager 	*ui_manager,
 			   msgview_actions_execute_cb, msgview);
 }
 
-void action_update_compose_menu(GtkUIManager *ui_manager, 
+void action_update_compose_menu(GtkUIManager *ui_manager,
 				gchar *branch_path,
 				Compose *compose)
 {
@@ -507,7 +507,7 @@ static GtkWidget *create_submenus(GtkWidget *menu, const gchar *action)
 {
 	gchar *submenu = g_strdup(action);
 	GtkWidget *new_menu = NULL;
-	
+
 	if (strchr(submenu, '/')) {
 		const gchar *end = (strchr(submenu, '/')+1);
 		GtkWidget *menu_item = NULL;
@@ -517,7 +517,7 @@ static GtkWidget *create_submenus(GtkWidget *menu, const gchar *action)
 				menu_item = gtk_menu_item_new_with_mnemonic(submenu);
 				g_object_set_data_full(G_OBJECT(menu_item), "s_name", g_strdup(submenu), g_free);
 				gtk_widget_show(menu_item);
-				gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);		
+				gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 				new_menu = gtk_menu_new();
 				gtk_widget_show(new_menu);
 				gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), new_menu);
@@ -559,7 +559,7 @@ static void action_update_menu(GtkUIManager *ui_manager,
 			} else {
 				action_name = action;
 			}
-			gtk_menu_set_accel_group (GTK_MENU (cur_menu), 
+			gtk_menu_set_accel_group (GTK_MENU (cur_menu),
 				gtk_ui_manager_get_accel_group(ui_manager));
 			item = gtk_menu_item_new_with_label(action_name);
 			gtk_menu_shell_append(GTK_MENU_SHELL(cur_menu), item);
@@ -610,7 +610,7 @@ static void compose_actions_execute(Compose *compose, guint action_nb, GtkWidget
 		return;
 	}
 
-	execute_actions(action, NULL, compose->text, 0, NULL, 
+	execute_actions(action, NULL, compose->text, 0, NULL,
 		compose_action_cb, compose);
 }
 
@@ -668,7 +668,7 @@ static void message_actions_execute(MessageView *msgview, guint action_nb,
 	GtkWidget *text = NULL;
 	guint body_pos = 0;
 	ActionType action_type;
-	
+
 	cm_return_if_fail(action_nb < g_slist_length(prefs_common.actions_list));
 
 	buf = (gchar *)g_slist_nth_data(prefs_common.actions_list, action_nb);
@@ -691,7 +691,7 @@ static void message_actions_execute(MessageView *msgview, guint action_nb,
 	if (action_type & (ACTION_PIPE_OUT | ACTION_INSERT))
 		msgview->filtered = TRUE;
 
-	if (action_type & ACTION_FILTERING_ACTION) 
+	if (action_type & ACTION_FILTERING_ACTION)
 		/* CLAWS: most of the above code is not necessary for applying
 		 * filtering */
 		execute_filtering_actions(action, msg_list);
@@ -719,7 +719,7 @@ static gboolean execute_filtering_actions(gchar *action, GSList *msglist)
 	if (NULL == (send = strrchr(sbegin, '}')))
 		return FALSE;
 	action_string = g_strndup(sbegin, send - sbegin);
-	
+
 	action_list = matcher_parser_get_action_list(action_string);
 	if (action_list == NULL) {
 		gchar *tmp = g_strdup(action_string);
@@ -734,32 +734,32 @@ static gboolean execute_filtering_actions(gchar *action, GSList *msglist)
 		return FALSE;
 	}
 	g_free(action_string);
-	
+
 	/* apply actions on each message info */
 	for (p = msglist; p && p->data; p = g_slist_next(p)) {
 		filteringaction_apply_action_list(action_list, (MsgInfo *) p->data);
 	}
 
 	if (summaryview) {
-		summary_lock(summaryview);				
-		main_window_cursor_wait(mainwin);		
-		summary_freeze(summaryview);	
-		folder_item_update_freeze();				
+		summary_lock(summaryview);
+		main_window_cursor_wait(mainwin);
+		summary_freeze(summaryview);
+		folder_item_update_freeze();
 	}
 
 	filtering_move_and_copy_msgs(msglist);
 
 	if (summaryview) {
-		folder_item_update_thaw();				
-		summary_thaw(summaryview);		
-		main_window_cursor_normal(mainwin);	
-		summary_unlock(summaryview);				
+		folder_item_update_thaw();
+		summary_thaw(summaryview);
+		main_window_cursor_normal(mainwin);
+		summary_unlock(summaryview);
 		summary_show(summaryview, summaryview->folder_item, FALSE);
 	}
 	for (p = action_list; p; p = g_slist_next(p))
-		if (p->data) filteringaction_free(p->data);	
-	g_slist_free(action_list);		
-	return TRUE;	
+		if (p->data) filteringaction_free(p->data);
+	g_slist_free(action_list);
+	return TRUE;
 }
 
 static gboolean execute_actions(gchar *action, GSList *msg_list,
@@ -889,7 +889,7 @@ static gboolean execute_actions(gchar *action, GSList *msg_list,
 			if ((child_info = fork_child(cmd, msg_str, children))) {
 				/* Pass msginfo to catch_status () */
 				if (!(action_type & (ACTION_PIPE_OUT | ACTION_INSERT)))
-					child_info->msginfo_list = 
+					child_info->msginfo_list =
 						g_slist_append (NULL, msginfo);
 				children_list = g_slist_append(children_list,
 							       child_info);
@@ -903,7 +903,7 @@ static gboolean execute_actions(gchar *action, GSList *msg_list,
 		if (cmd) {
 			if ((child_info = fork_child(cmd, msg_str, children))) {
 				if (!(action_type & (ACTION_PIPE_OUT | ACTION_INSERT)))
-					child_info->msginfo_list = 
+					child_info->msginfo_list =
 						g_slist_copy (msg_list);
 				children_list = g_slist_append(children_list,
 								child_info);
@@ -932,7 +932,7 @@ static gboolean execute_actions(gchar *action, GSList *msg_list,
 			child_info = (ChildInfo *) cur->data;
 			child_info->callback = callback;
 			child_info->data = data;
-			child_info->tag_status = 
+			child_info->tag_status =
 				g_child_watch_add(child_info->pid, catch_status, child_info);
 		}
 
@@ -965,7 +965,7 @@ static ChildInfo *fork_child(gchar *cmd, const gchar *msg_str,
 			g_free(ret_str);
 		ret_str = g_strdup(cmd);
 	}
-    
+
 	trim_cmd = ret_str;
 
 	while (g_ascii_isspace(trim_cmd[0]))
@@ -988,7 +988,7 @@ static ChildInfo *fork_child(gchar *cmd, const gchar *msg_str,
 			  NULL, NULL, &pid, &chld_in, &chld_out,
 			  &chld_err, &error);
 	} else {
-		result = g_spawn_async(NULL, argv, NULL, 
+		result = g_spawn_async(NULL, argv, NULL,
 			  G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH, NULL, NULL,
 			  &pid, &error);
 	}
@@ -1198,7 +1198,7 @@ static void free_children(Children *children)
 
 	if (callback)
 		callback(data);
-	
+
 	g_free(children);
 }
 
@@ -1454,13 +1454,13 @@ static void catch_status(GPid pid, gint status, gpointer data)
 		for (cur = child_info->msginfo_list; cur; cur = cur->next) {
 			msginfo = (MsgInfo *)cur->data;
 			if (!(msginfo && /* Stuff used valid? */
-			    msginfo->folder && msginfo->folder->cache)) 
+			    msginfo->folder && msginfo->folder->cache))
 				continue;
 			file = procmsg_get_message_file_path (msginfo);
-			if (!file) 
+			if (!file)
 				continue;
 			nmi = procheader_parse_file (file, msginfo->flags, TRUE, FALSE);
-			if (!nmi) 
+			if (!nmi)
 				continue; /* Deleted? */
 			if (msginfo->mtime != nmi->mtime || msginfo->size != nmi->size) {
 				nmi->folder = msginfo->folder;
@@ -1474,9 +1474,9 @@ static void catch_status(GPid pid, gint status, gpointer data)
 		    	    summaryview->folder_item == msginfo->folder &&
 			    summary_get_msgnum(summaryview, summaryview->displayed) == msginfo->msgnum)
 				summary_redisplay_msg(summaryview);
-					
+
 		}
-		if (modified_something && last_item && 
+		if (modified_something && last_item &&
 		    summaryview && summaryview->folder_item == last_item) {
 			summary_show (summaryview, summaryview->folder_item, FALSE);
 		}
@@ -1489,7 +1489,7 @@ static void catch_status(GPid pid, gint status, gpointer data)
 
 	wait_for_children(child_info->children);
 }
-	
+
 static void catch_input(gpointer data, gint source, GIOCondition cond)
 {
 	Children *children = (Children *)data;
@@ -1624,7 +1624,7 @@ static void catch_output(gpointer data, gint source, GIOCondition cond)
 			child_info->chld_err = -1;
 		}
 	}
-	
+
 	wait_for_children(child_info->children);
 }
 

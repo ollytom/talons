@@ -49,7 +49,7 @@ typedef struct _SpellingPage
 
 	GtkWidget *automatic_frame;
 	GtkWidget *dictionary_frame;
-	
+
 	GtkWidget *enable_aspell_checkbtn;
 	GtkWidget *recheck_when_changing_dict_checkbtn;
 	GtkWidget *check_while_typing_checkbtn;
@@ -121,11 +121,11 @@ static void prefs_spelling_create_widget(PrefsPage *_page, GtkWindow *window, gp
 	gtk_widget_show(use_alternate_checkbtn);
 	gtk_box_pack_start(GTK_BOX(vbox2), use_alternate_checkbtn, TRUE, TRUE, 0);
 
-	CLAWS_SET_TIP(use_alternate_checkbtn, 
+	CLAWS_SET_TIP(use_alternate_checkbtn,
 			_("Faster switching with last used dictionary"));
 
 	vbox2 = gtkut_get_options_frame(vbox1, &automatic_frame, _("Automatic spell checking"));
-	
+
 	check_while_typing_checkbtn = gtk_check_button_new_with_label(
 			_("Check while typing"));
 	gtk_widget_show(check_while_typing_checkbtn);
@@ -135,9 +135,9 @@ static void prefs_spelling_create_widget(PrefsPage *_page, GtkWindow *window, gp
 			_("Re-check message when changing dictionary"));
 	gtk_widget_show(recheck_when_changing_dict_checkbtn);
 	gtk_box_pack_start(GTK_BOX(vbox2), recheck_when_changing_dict_checkbtn, TRUE, TRUE, 0);
-	
+
 	vbox2 = gtkut_get_options_frame(vbox1, &dictionary_frame, _("Dictionary"));
-	
+
 	table = gtk_grid_new();
 	gtk_widget_show(table);
 	gtk_container_set_border_width(GTK_CONTAINER(table), 0);
@@ -151,7 +151,7 @@ static void prefs_spelling_create_widget(PrefsPage *_page, GtkWindow *window, gp
 	gtk_label_set_justify(GTK_LABEL(default_dict_label), GTK_JUSTIFY_RIGHT);
 	gtk_label_set_xalign(GTK_LABEL(default_dict_label), 1.0);
 	gtk_grid_attach(GTK_GRID(table), default_dict_label, 0, 0, 1, 1);
-	
+
 	default_dict_combo = gtkaspell_dictionary_combo_new(TRUE);
 	gtk_grid_attach(GTK_GRID(table), default_dict_combo, 1, 0, 1, 1);
 
@@ -160,7 +160,7 @@ static void prefs_spelling_create_widget(PrefsPage *_page, GtkWindow *window, gp
 	gtk_label_set_justify(GTK_LABEL(default_alt_dict_label), GTK_JUSTIFY_RIGHT);
 	gtk_label_set_xalign(GTK_LABEL(default_alt_dict_label), 1.0);
 	gtk_grid_attach(GTK_GRID(table), default_alt_dict_label, 0, 1, 1, 1);
-	
+
 	default_alt_dict_combo = gtkaspell_dictionary_combo_new(FALSE);
 	gtk_grid_attach(GTK_GRID(table), default_alt_dict_combo, 1, 1, 1, 1);
 
@@ -178,7 +178,7 @@ static void prefs_spelling_create_widget(PrefsPage *_page, GtkWindow *window, gp
 	misspelled_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 	gtk_widget_show(misspelled_hbox);
 	gtk_box_pack_start(GTK_BOX(vbox1), misspelled_hbox, FALSE, FALSE, 0);
-		
+
 	misspelled_label = gtk_label_new(_("Misspelled word color"));
 	gtk_widget_show(misspelled_label);
 	gtk_box_pack_start(GTK_BOX(misspelled_hbox), misspelled_label,
@@ -216,7 +216,7 @@ static void prefs_spelling_create_widget(PrefsPage *_page, GtkWindow *window, gp
 			prefs_common.recheck_when_changing_dict);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(use_alternate_checkbtn),
 			prefs_common.use_alternate);
-	if (prefs_common.dictionary && 
+	if (prefs_common.dictionary &&
 	    strrchr(prefs_common.dictionary, '/')) {
 		gchar *tmp = g_strdup(strrchr(prefs_common.dictionary, '/')+1);
 		g_free(prefs_common.dictionary);
@@ -278,12 +278,12 @@ static void prefs_spelling_save(PrefsPage *_page)
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(spelling->both_dict_check));
 
 	g_free(prefs_common.dictionary);
-	prefs_common.dictionary = 
+	prefs_common.dictionary =
 		gtkaspell_get_dictionary_menu_active_item(
 				GTK_COMBO_BOX(spelling->default_dict_combo));
 
 	g_free(prefs_common.alt_dictionary);
-	prefs_common.alt_dictionary = 
+	prefs_common.alt_dictionary =
 		gtkaspell_get_dictionary_menu_active_item(
 				GTK_COMBO_BOX(spelling->default_alt_dict_combo));
 
@@ -304,7 +304,7 @@ void prefs_spelling_init(void)
 	SpellingPage *page;
 	static gchar *path[3];
 	const gchar* language = NULL;
-	
+
 	path[0] = _("Write");
 	path[1] = _("Spell Checking");
 	path[2] = NULL;
@@ -318,11 +318,11 @@ void prefs_spelling_init(void)
 
 	prefs_gtk_register_page((PrefsPage *) page);
 	prefs_spelling = page;
-	
+
 	language = g_getenv("LANG");
 	if (language == NULL || !strcmp(language, "POSIX") || !strcmp(language, "C"))
 		language = "en";
-	
+
 	if (!prefs_common.dictionary)
 		prefs_common.dictionary = g_strdup_printf("%s", language);
 

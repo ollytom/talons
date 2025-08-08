@@ -98,8 +98,8 @@ static void prefs_filtering_set_dialog	(const gchar *header,
 static void prefs_filtering_set_list	(void);
 
 /* callback functions */
-static gboolean prefs_filtering_search_func_cb (GtkTreeModel *model, gint column, 
-						const gchar *key, GtkTreeIter *iter, 
+static gboolean prefs_filtering_search_func_cb (GtkTreeModel *model, gint column,
+						const gchar *key, GtkTreeIter *iter,
 						gpointer search_data);
 static void prefs_filtering_register_cb	(gpointer action, gpointer data);
 static void prefs_filtering_substitute_cb	(gpointer action, gpointer data);
@@ -127,7 +127,7 @@ static void prefs_filtering_ok		(gpointer action, gpointer data);
 static void prefs_filtering_condition_define	(gpointer action, gpointer data);
 static void prefs_filtering_action_define	(gpointer action, gpointer data);
 static gint prefs_filtering_list_view_set_row	(gint row, FilteringProp * prop);
-					  
+
 static void prefs_filtering_reset_dialog	(void);
 static gboolean prefs_filtering_rename_tag_func(GNode *node, gpointer data);
 static gboolean prefs_filtering_rename_path_func(GNode *node, gpointer data);
@@ -143,11 +143,11 @@ static gint prefs_filtering_list_view_insert_rule	(GtkListStore *list_store,
 							 const gchar *name,
 							 gint account_id,
 							 const gchar *account_name,
-							 const gchar *rule, 
+							 const gchar *rule,
 							 gboolean prop);
-static gchar *prefs_filtering_list_view_get_rule	(GtkWidget *list, 
+static gchar *prefs_filtering_list_view_get_rule	(GtkWidget *list,
 							 gint row);
-static void prefs_filtering_list_view_get_rule_info	(GtkWidget *list, 
+static void prefs_filtering_list_view_get_rule_info	(GtkWidget *list,
 							 gint row,
 							 gboolean *enabled,
 							 gchar **name,
@@ -188,7 +188,7 @@ void prefs_filtering_open(GSList ** p_processing,
 
 	manage_window_set_transient(GTK_WINDOW(filtering.window));
 	gtk_widget_grab_focus(filtering.ok_btn);
-	
+
 	if (title != NULL)
 		gtk_window_set_title(GTK_WINDOW(filtering.window), title);
 	else
@@ -212,7 +212,7 @@ void prefs_filtering_open(GSList ** p_processing,
 	}
 
         p_processing_list = p_processing;
-        
+
 	prefs_filtering_set_dialog(header, key);
 	if (per_account_filtering) {
 		gtk_widget_show(filtering.account_label);
@@ -276,7 +276,7 @@ static GtkWidget *prefs_filtering_account_option_menu(Filtering *filtering)
 	GtkWidget *optmenu = NULL;
 	GtkWidget *optmenubox = NULL;
 	GtkListStore *menu = NULL;
-	
+
 	optmenubox = gtk_event_box_new();
 	optmenu = gtkut_sc_combobox_create(optmenubox, FALSE);
 	menu = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(optmenu)));
@@ -435,7 +435,7 @@ static void prefs_filtering_create(void)
 	g_signal_connect(G_OBJECT (action_btn), "clicked",
 			 G_CALLBACK(prefs_filtering_action_define),
 			 NULL);
-			 
+
 	/* register / substitute / delete */
 	reg_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
 	gtk_widget_show (reg_hbox);
@@ -497,7 +497,7 @@ static void prefs_filtering_create(void)
 					GTK_POLICY_AUTOMATIC,
 					GTK_POLICY_AUTOMATIC);
 
-	cond_list_view = prefs_filtering_list_view_create(); 	
+	cond_list_view = prefs_filtering_list_view_create();
 	gtk_widget_show (cond_list_view);
 	gtk_container_add (GTK_CONTAINER (cond_scrolledwin), cond_list_view);
 
@@ -595,11 +595,11 @@ void prefs_filtering_rename_tag(const gchar *old_tag, const gchar *new_tag)
 		g_node_traverse(folder->node, G_PRE_ORDER, G_TRAVERSE_ALL, -1,
 				prefs_filtering_rename_tag_func, tags);
 	}
-        
+
 	rename_tag(pre_global_processing, old_tag, new_tag);
 	rename_tag(post_global_processing, old_tag, new_tag);
 	rename_tag(filtering_rules, old_tag, new_tag);
-        
+
 	prefs_matcher_write_config();
 }
 
@@ -619,11 +619,11 @@ void prefs_filtering_rename_path(const gchar *old_path, const gchar *new_path)
 		g_node_traverse(folder->node, G_PRE_ORDER, G_TRAVERSE_ALL, -1,
 				prefs_filtering_rename_path_func, paths);
 	}
-        
+
 	rename_path(pre_global_processing, old_path, new_path);
 	rename_path(post_global_processing, old_path, new_path);
 	rename_path(filtering_rules, old_path, new_path);
-        
+
 	prefs_matcher_write_config();
 }
 
@@ -646,7 +646,7 @@ static gboolean prefs_filtering_rename_path_func(GNode *node, gpointer data)
         const gchar * new_path;
         const gchar ** paths;
 	FolderItem *item;
-        
+
         paths = data;
 	old_path = paths[0];
 	new_path = paths[1];
@@ -673,12 +673,12 @@ static void rename_tag(GSList * filters,
 
 	for (cur = filters; cur != NULL; cur = cur->next) {
 		FilteringProp   *filtering = (FilteringProp *)cur->data;
-                
+
                 for(action_cur = filtering->action_list ; action_cur != NULL ;
                     action_cur = action_cur->next) {
 
                         FilteringAction *action = action_cur->data;
-                        
+
                         if (action->type != MATCHACTION_SET_TAG &&
 			    action->type != MATCHACTION_UNSET_TAG)
 				continue;
@@ -699,7 +699,7 @@ static gboolean prefs_filtering_rename_tag_func(GNode *node, gpointer data)
         const gchar * new_tag;
         const gchar ** tags;
 	FolderItem *item;
-        
+
         tags = data;
 	old_tag = tags[0];
 	new_tag = tags[1];
@@ -730,7 +730,7 @@ void prefs_filtering_delete_path(const gchar *path)
         delete_path(&pre_global_processing, path);
         delete_path(&post_global_processing, path);
         delete_path(&filtering_rules, path);
-        
+
 	prefs_matcher_write_config();
 }
 
@@ -744,32 +744,32 @@ static void delete_path(GSList ** p_filters, const gchar * path)
 	gint pathlen;
         GSList * action_cur;
 	GSList * cur;
-        
+
 	filters = *p_filters;
 	pathlen = strlen(path);
 	duplist = g_slist_copy(filters);
 	for (cur = duplist ; cur != NULL; cur = g_slist_next(cur)) {
 		FilteringProp *filtering = (FilteringProp *) cur->data;
-                
+
                 for(action_cur = filtering->action_list ; action_cur != NULL ;
                     action_cur = action_cur->next) {
-                
+
                         FilteringAction *action;
-                        
+
                         action = action_cur->data;
-                        
+
                         if (action->type == MATCHACTION_SET_TAG ||
 			    action->type == MATCHACTION_UNSET_TAG)
 				continue;
-                        if (!action->destination) 
+                        if (!action->destination)
 				continue;
-                        
+
                         destlen = strlen(action->destination);
-                        
+
                         if (destlen > pathlen) {
                                 prefixlen = destlen - pathlen;
                                 suffix = action->destination + prefixlen;
-                                
+
                                 if ((suffix && !strncmp(path, suffix, pathlen)) && filtering) {
                                         filters = g_slist_remove(filters, filtering);
                                         filteringprop_free(filtering);
@@ -781,9 +781,9 @@ static void delete_path(GSList ** p_filters, const gchar * path)
                                 filtering = NULL;
                         }
                 }
-        }                
+        }
 	g_slist_free(duplist);
-        
+
         * p_filters = filters;
 }
 
@@ -792,7 +792,7 @@ static gboolean prefs_filtering_delete_path_func(GNode *node, gpointer data)
 	const gchar *path = data;
 	FolderItem *item;
         GSList ** p_filters;
-	
+
 	cm_return_val_if_fail(path != NULL, FALSE);
 	cm_return_val_if_fail(node != NULL, FALSE);
 
@@ -800,7 +800,7 @@ static gboolean prefs_filtering_delete_path_func(GNode *node, gpointer data)
         if (!item || !item->prefs)
                 return FALSE;
         p_filters = &item->prefs->processing;
-        
+
         delete_path(p_filters, path);
 
 	return FALSE;
@@ -811,7 +811,7 @@ static void prefs_filtering_clear_list(GtkListStore *list_store)
 	gtk_list_store_clear(list_store);
 
 	/* add the place holder (New) at row 0 */
-	prefs_filtering_list_view_insert_rule(list_store, -1, 
+	prefs_filtering_list_view_insert_rule(list_store, -1,
 					      FALSE,
 					      _("(New)"),
 						  0,
@@ -827,7 +827,7 @@ static void prefs_filtering_set_dialog(const gchar *header, const gchar *key)
 	GSList * prefs_filtering;
 	gchar *cond_str;
 	GtkListStore *list_store;
-	
+
 	list_store = GTK_LIST_STORE(gtk_tree_view_get_model(list_view));
 	prefs_filtering_clear_list(list_store);
 
@@ -849,13 +849,13 @@ static void prefs_filtering_set_dialog(const gchar *header, const gchar *key)
 		cond_str = filteringprop_to_string(prop);
 		subst_char(cond_str, '\t', ':');
 
-		prefs_filtering_list_view_insert_rule(list_store, -1, 
+		prefs_filtering_list_view_insert_rule(list_store, -1,
 						      prop->enabled,
 						      prop->name,
 							  prop->account_id,
 							  account_name,
 						      cond_str, TRUE);
-		
+
 		g_free(cond_str);
 	}
 
@@ -866,11 +866,11 @@ static void prefs_filtering_set_dialog(const gchar *header, const gchar *key)
 		gchar *match_str;
 
 		quoted_key = matcher_quote_str(key);
-		
+
 		match_str = g_strconcat(header, " ", get_matchparser_tab_str(MATCHTYPE_MATCHCASE),
 					" \"", quoted_key, "\"", NULL);
 		g_free(quoted_key);
-		
+
 		gtk_entry_set_text(GTK_ENTRY(filtering.cond_entry), match_str);
 		g_free(match_str);
 	}
@@ -884,8 +884,8 @@ static void prefs_filtering_reset_dialog(void)
 	gtk_entry_set_text(GTK_ENTRY(filtering.action_entry), "");
 }
 
-static gboolean prefs_filtering_search_func_cb (GtkTreeModel *model, gint column, const gchar *key, 
-						GtkTreeIter *iter, gpointer search_data) 
+static gboolean prefs_filtering_search_func_cb (GtkTreeModel *model, gint column, const gchar *key,
+						GtkTreeIter *iter, gpointer search_data)
 {
 	gchar *store_string;
 	gboolean retval;
@@ -920,7 +920,7 @@ static void prefs_filtering_set_list(void)
 		filteringprop_free((FilteringProp *) cur->data);
 	g_slist_free(prefs_filtering);
 	prefs_filtering = NULL;
-	
+
 
 	while (NULL != (filtering_str = prefs_filtering_list_view_get_rule
 						(filtering.cond_list_view, row))) {
@@ -941,15 +941,15 @@ static void prefs_filtering_set_list(void)
 					g_free(prop->name);
 				prop->name = name;
 				prop->account_id = account_id;
-				prefs_filtering = 
+				prefs_filtering =
 					g_slist_append(prefs_filtering, prop);
 			}
 		}
 
 		g_free(filtering_str);
 		row++;
-	}				
-	
+	}
+
         *p_processing_list = prefs_filtering;
 }
 
@@ -1019,7 +1019,7 @@ static void prefs_filtering_condition_define(gpointer action, gpointer data)
 		if (matchers == NULL)
 			alertpanel_error(_("Condition string is not valid."));
 	}
-	
+
 	g_free(cond_str);
 
 	prefs_matcher_open(matchers, prefs_filtering_condition_define_done);
@@ -1055,7 +1055,7 @@ static void prefs_filtering_action_define(gpointer action, gpointer data)
 		if (action_list == NULL)
 			alertpanel_error(_("Action string is not valid."));
 	}
-	
+
 	g_free(action_str);
 
 	prefs_filtering_action_open(action_list,
@@ -1085,7 +1085,7 @@ static FilteringProp * prefs_filtering_dialog_to_filtering(gboolean alert)
 	GSList * action_list;
 
 	name = gtk_editable_get_chars(GTK_EDITABLE(filtering.name_entry), 0, -1);
-	
+
 	account_id = combobox_get_active_data(GTK_COMBO_BOX(filtering.account_combobox));
 
 	cond_str = gtk_editable_get_chars(GTK_EDITABLE(filtering.cond_entry), 0, -1);
@@ -1093,7 +1093,7 @@ static FilteringProp * prefs_filtering_dialog_to_filtering(gboolean alert)
 		if(alert == TRUE) alertpanel_error(_("Condition string is empty."));
 		goto fail;
 	}
-	
+
 	action_str = gtk_editable_get_chars(GTK_EDITABLE(filtering.action_entry), 0, -1);
 	if (*action_str == '\0') {
 		if(alert == TRUE) alertpanel_error(_("Action string is empty."));
@@ -1106,9 +1106,9 @@ static FilteringProp * prefs_filtering_dialog_to_filtering(gboolean alert)
 		if(alert == TRUE) alertpanel_error(_("Condition string is not valid."));
 		goto fail;
 	}
-        
+
         action_list = matcher_parser_get_action_list(action_str);
-	
+
 
 	if (action_list == NULL) {
 		if(alert == TRUE) alertpanel_error(_("Action string is not valid."));
@@ -1127,12 +1127,12 @@ fail:
 static void prefs_filtering_register_cb(gpointer action, gpointer data)
 {
 	FilteringProp *prop;
-	
+
 	prop = prefs_filtering_dialog_to_filtering(TRUE);
 	if (prop == NULL)
 		return;
 	prefs_filtering_list_view_set_row(-1, prop);
-	
+
 	filteringprop_free(prop);
 
 	prefs_filtering_reset_dialog();
@@ -1147,16 +1147,16 @@ static void prefs_filtering_substitute_cb(gpointer action, gpointer data)
 	gboolean enabled;
 	gchar *name;
 	gint account_id;
-	
+
 	if (selected_row <= 0)
 		return;
 
 	prop = prefs_filtering_dialog_to_filtering(TRUE);
 
-	if (prop == NULL) 
+	if (prop == NULL)
 		return;
 
-	/* prop->emabled is always TRUE here, re-use the value from the selected row 
+	/* prop->emabled is always TRUE here, re-use the value from the selected row
 	   as we don't substitute this value from dialog */
 	prefs_filtering_list_view_get_rule_info(
 			filtering.cond_list_view, selected_row,
@@ -1180,10 +1180,10 @@ static void prefs_filtering_delete_cb(gpointer action, gpointer data)
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 	gint selected_row;
-	
+
 	selected_row = gtkut_list_view_get_selected_row(filtering.cond_list_view);
-	if (selected_row <= 0) 
-		return;	
+	if (selected_row <= 0)
+		return;
 
 	if (alertpanel(_("Delete rule"),
 		       _("Do you really want to delete this rule?"),
@@ -1191,7 +1191,7 @@ static void prefs_filtering_delete_cb(gpointer action, gpointer data)
 		       ALERTFOCUS_SECOND) == G_ALERTDEFAULT)
 		return;
 
-	model = gtk_tree_view_get_model(list_view);	
+	model = gtk_tree_view_get_model(list_view);
 	if (!gtk_tree_model_iter_nth_child(model, &iter, NULL, selected_row))
 		return;
 
@@ -1204,7 +1204,7 @@ static void prefs_filtering_delete_cb(gpointer action, gpointer data)
 static void prefs_filtering_delete_all_cb(gpointer action, gpointer data)
 {
 	GtkListStore *list_store;
-	
+
 	if (alertpanel(_("Delete all rules"),
 		       _("Do you really want to delete all the rules?"),
 		       NULL, _("_Cancel"), "edit-delete", _("D_elete"), NULL, NULL,
@@ -1226,20 +1226,20 @@ static void prefs_filtering_clear_cb(gpointer action, gpointer data)
 static void prefs_filtering_duplicate_cb(gpointer action, gpointer data)
 {
 	gint selected_row = gtkut_list_view_get_selected_row
-		(filtering.cond_list_view);	
+		(filtering.cond_list_view);
 	FilteringProp *prop;
 	gboolean enabled;
 	gchar *name;
 	gint account_id;
 
-	if (selected_row <= 0) 
-		return;	
-	
+	if (selected_row <= 0)
+		return;
+
 	prop = prefs_filtering_dialog_to_filtering(TRUE);
 	if (prop == NULL)
 		return;
 
-	/* prop->emabled is always TRUE here, re-use the value from the selected row 
+	/* prop->emabled is always TRUE here, re-use the value from the selected row
 	   as we don't substitute this value from dialog */
 	prefs_filtering_list_view_get_rule_info(
 			filtering.cond_list_view, selected_row,
@@ -1248,7 +1248,7 @@ static void prefs_filtering_duplicate_cb(gpointer action, gpointer data)
 	prop->enabled = enabled;
 
 	prefs_filtering_list_view_set_row(-selected_row-2, prop);
-	
+
 	filteringprop_free(prop);
 
 	prefs_filtering_reset_dialog();
@@ -1262,11 +1262,11 @@ static void prefs_filtering_top(gpointer action, gpointer data)
 	GtkTreeModel *model;
 
 	row = gtkut_list_view_get_selected_row(filtering.cond_list_view);
-	if (row <= 1) 
+	if (row <= 1)
 		return;
 
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));		
-	
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));
+
 	if (!gtk_tree_model_iter_nth_child(model, &top, NULL, 0)
 	||  !gtk_tree_model_iter_nth_child(model, &sel, NULL, row))
 		return;
@@ -1284,7 +1284,7 @@ static void prefs_filtering_page_up(gpointer action, gpointer data)
 	GtkTreePath *path;
 	GdkRectangle cell_rect, view_rect;
 
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));	
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));
 	row = gtkut_list_view_get_selected_row(filtering.cond_list_view);
 	if (row <= 1)
 		return;
@@ -1314,10 +1314,10 @@ static void prefs_filtering_up(gpointer action, gpointer data)
 	GtkTreeModel *model;
 
 	row = gtkut_list_view_get_selected_row(filtering.cond_list_view);
-	if (row <= 1) 
+	if (row <= 1)
 		return;
-		
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));	
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));
 
 	if (!gtk_tree_model_iter_nth_child(model, &top, NULL, row - 1)
 	||  !gtk_tree_model_iter_nth_child(model, &sel, NULL, row))
@@ -1334,7 +1334,7 @@ static void prefs_filtering_down(gpointer action, gpointer data)
 	GtkTreeIter top, sel;
 	GtkTreeModel *model;
 
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));	
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));
 	n_rows = gtk_tree_model_iter_n_children(model, NULL);
 	row = gtkut_list_view_get_selected_row(filtering.cond_list_view);
 	if (row < 1 || row >= n_rows - 1)
@@ -1343,7 +1343,7 @@ static void prefs_filtering_down(gpointer action, gpointer data)
 	if (!gtk_tree_model_iter_nth_child(model, &top, NULL, row)
 	||  !gtk_tree_model_iter_nth_child(model, &sel, NULL, row + 1))
 		return;
-			
+
 	gtk_list_store_swap(GTK_LIST_STORE(model), &top, &sel);
 	gtkut_list_view_select_row(filtering.cond_list_view, row + 1);
 	modified = TRUE;
@@ -1357,7 +1357,7 @@ static void prefs_filtering_page_down(gpointer action, gpointer data)
 	GtkTreePath *path;
 	GdkRectangle cell_rect, view_rect;
 
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));	
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));
 	n_rows = gtk_tree_model_iter_n_children(model, NULL);
 	row = gtkut_list_view_get_selected_row(filtering.cond_list_view);
 	if (row < 1 || row >= n_rows -1)
@@ -1388,7 +1388,7 @@ static void prefs_filtering_bottom(gpointer action, gpointer data)
 	GtkTreeIter top, sel;
 	GtkTreeModel *model;
 
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));	
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(filtering.cond_list_view));
 	n_rows = gtk_tree_model_iter_n_children(model, NULL);
 	row = gtkut_list_view_get_selected_row(filtering.cond_list_view);
 	if (row < 1 || row >= n_rows - 1)
@@ -1398,7 +1398,7 @@ static void prefs_filtering_bottom(gpointer action, gpointer data)
 	||  !gtk_tree_model_iter_nth_child(model, &sel, NULL, n_rows - 1))
 		return;
 
-	gtk_list_store_move_after(GTK_LIST_STORE(model), &top, &sel);		
+	gtk_list_store_move_after(GTK_LIST_STORE(model), &top, &sel);
 	gtkut_list_view_select_row(filtering.cond_list_view, n_rows - 1);
 	modified = TRUE;
 }
@@ -1414,12 +1414,12 @@ static void prefs_filtering_select_set(FilteringProp *prop)
 	if (matcher_str == NULL) {
 		return;
 	}
-	
+
 	if (prop->name != NULL)
 		gtk_entry_set_text(GTK_ENTRY(filtering.name_entry), prop->name);
 
 	combobox_select_by_data(GTK_COMBO_BOX(filtering.account_combobox), prop->account_id);
-		
+
 	gtk_entry_set_text(GTK_ENTRY(filtering.cond_entry), matcher_str);
 
         action_str = filteringaction_list_to_string(prop->action_list);
@@ -1442,7 +1442,7 @@ static gboolean prefs_filtering_key_pressed(GtkWidget *widget, GdkEventKey *even
 {
 	if (event && event->keyval == GDK_KEY_Escape) {
 		prefs_filtering_cancel(NULL, NULL);
-		return TRUE;			
+		return TRUE;
 	}
 	return FALSE;
 }
@@ -1454,9 +1454,9 @@ static gboolean prefs_filtering_check_mod(gboolean check_changed_list)
 	gchar * filtering_str;
 	gint row = 1;
 	AlertValue val;
-	
+
 	prop = prefs_filtering_dialog_to_filtering(FALSE);
-	
+
 	if (check_changed_list) {
 		if (modified && alertpanel(_("Filtering rules not saved"),
 					 _("The list of filtering rules have been modified. Close anyway?"),
@@ -1467,7 +1467,7 @@ static gboolean prefs_filtering_check_mod(gboolean check_changed_list)
 			return TRUE;
 		}
 	}
-	
+
 	/* check if a rule is being edited */
 	if (prop != NULL) {
 		str = filteringprop_to_string(prop);
@@ -1479,7 +1479,7 @@ static gboolean prefs_filtering_check_mod(gboolean check_changed_list)
 				break;
 			row++;
 			g_free(filtering_str);
-		}	
+		}
 
 		if (!filtering_str) {
 			val = alertpanel(_("Entry not saved"),
@@ -1492,7 +1492,7 @@ static gboolean prefs_filtering_check_mod(gboolean check_changed_list)
 				filteringprop_free(prop);
 				return TRUE;
 			}
-		}		
+		}
 
 		g_free(filtering_str);
 		g_free(str);
@@ -1502,8 +1502,8 @@ static gboolean prefs_filtering_check_mod(gboolean check_changed_list)
 		name = gtk_editable_get_chars(GTK_EDITABLE(filtering.name_entry), 0, -1);
 		condition = gtk_editable_get_chars(GTK_EDITABLE(filtering.cond_entry), 0, -1);
 		action = gtk_editable_get_chars(GTK_EDITABLE(filtering.action_entry), 0, -1);
-		if (strlen(name) || 
-		    strlen(condition) || 
+		if (strlen(name) ||
+		    strlen(condition) ||
 		    strlen(action)) {
 			val = alertpanel(_("Entry not saved"),
 				 _("The entry was not saved. Close anyway?"),
@@ -1580,7 +1580,7 @@ static gint prefs_filtering_list_view_insert_rule(GtkListStore *list_store,
 						  gint account_id,
 						  const gchar *account_name,
 						  const gchar *rule,
-						  gboolean prop) 
+						  gboolean prop)
 {
 	GtkTreeIter iter;
 	GtkTreeIter sibling;
@@ -1593,13 +1593,13 @@ static gint prefs_filtering_list_view_insert_rule(GtkListStore *list_store,
 	} else if (row < -1) {
 		if (!gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store),
 						   &sibling, NULL, -row-2))
-			row = -1;						   
+			row = -1;
 	}
 
 	if (row == -1 ) {
 		/* append new */
 		gtk_list_store_append(list_store, &iter);
-		gtk_list_store_set(list_store, &iter, 
+		gtk_list_store_set(list_store, &iter,
 				   PREFS_FILTERING_ENABLED, enabled,
 				   PREFS_FILTERING_NAME, name,
 				   PREFS_FILTERING_ACCOUNT_ID, account_id,
@@ -1612,7 +1612,7 @@ static gint prefs_filtering_list_view_insert_rule(GtkListStore *list_store,
 	} else if (row < -1) {
 		/* duplicate */
 		gtk_list_store_insert_after(list_store, &iter, &sibling);
-		gtk_list_store_set(list_store, &iter, 
+		gtk_list_store_set(list_store, &iter,
 				   PREFS_FILTERING_ENABLED, enabled,
 				   PREFS_FILTERING_NAME, name,
 				   PREFS_FILTERING_ACCOUNT_ID, account_id,
@@ -1624,14 +1624,14 @@ static gint prefs_filtering_list_view_insert_rule(GtkListStore *list_store,
 						      NULL) - 1;
 	} else {
 		/* change existing */
-		gtk_list_store_set(list_store, &iter, 
+		gtk_list_store_set(list_store, &iter,
 				   PREFS_FILTERING_ENABLED, enabled,
 				   PREFS_FILTERING_NAME, name,
 				   PREFS_FILTERING_ACCOUNT_ID, account_id,
 				   PREFS_FILTERING_ACCOUNT_NAME, account_name,
 				   PREFS_FILTERING_RULE, rule,
 				   -1);
-		return row;				   
+		return row;
 	}
 }
 
@@ -1639,7 +1639,7 @@ static gint prefs_filtering_list_view_insert_rule(GtkListStore *list_store,
  *\return	gchar * Rule at specified row - should be freed.
  */
 static gchar *prefs_filtering_list_view_get_rule(GtkWidget *list, gint row)
-{	
+{
 	GtkTreeView *list_view = GTK_TREE_VIEW(list);
 	GtkTreeModel *model = gtk_tree_view_get_model(list_view);
 	GtkTreeIter iter;
@@ -1647,17 +1647,17 @@ static gchar *prefs_filtering_list_view_get_rule(GtkWidget *list, gint row)
 
 	if (!gtk_tree_model_iter_nth_child(model, &iter, NULL, row))
 		return NULL;
-	
-	gtk_tree_model_get(model, &iter, 
+
+	gtk_tree_model_get(model, &iter,
 			   PREFS_FILTERING_RULE, &result,
 			   -1);
-	
+
 	return result;
 }
 
 static void prefs_filtering_list_view_get_rule_info(GtkWidget *list, gint row,
 				gboolean *enabled, gchar **name, gint *account_id)
-{	
+{
 	GtkTreeView *list_view = GTK_TREE_VIEW(list);
 	GtkTreeModel *model = gtk_tree_view_get_model(list_view);
 	GtkTreeIter iter;
@@ -1666,7 +1666,7 @@ static void prefs_filtering_list_view_get_rule_info(GtkWidget *list, gint row,
 	*name = NULL;
 
 	if (gtk_tree_model_iter_nth_child(model, &iter, NULL, row)) {
-		gtk_tree_model_get(model, &iter, 
+		gtk_tree_model_get(model, &iter,
 				   PREFS_FILTERING_ENABLED, enabled,
 				   PREFS_FILTERING_NAME, name,
 				   PREFS_FILTERING_ACCOUNT_ID, account_id,
@@ -1691,10 +1691,10 @@ static void prefs_filtering_row_selected(GtkTreeSelection *selection,
 	GtkTreePath *path;
 	GtkTreeIter iter;
 	GtkTreeModel *model;
-	
+
 	if (!gtk_tree_selection_get_selected(selection, &model, &iter))
 		return;
-	
+
 	path = gtk_tree_model_get_path(model, &iter);
 	prefs_filtering_select_row(list_view, path);
 	gtk_tree_path_free(path);
@@ -1756,10 +1756,10 @@ static gboolean prefs_filtering_list_popup_menu(GtkWidget *widget, gpointer data
 {
 	GtkTreeView *list_view = (GtkTreeView *)data;
 	GdkEventButton event;
-	
+
 	event.button = 3;
 	event.time = gtk_get_current_event_time();
-	
+
 	prefs_filtering_list_btn_pressed(NULL, &event, list_view);
 
 	return TRUE;
@@ -1784,7 +1784,7 @@ static GtkWidget *prefs_filtering_list_view_create(void)
 			G_CALLBACK(prefs_filtering_list_btn_pressed), list_view);
 
 	gtk_tree_view_set_reorderable(list_view, TRUE);
-	
+
 	selector = gtk_tree_view_get_selection(list_view);
 	gtk_tree_selection_set_mode(selector, GTK_SELECTION_BROWSE);
 	g_signal_connect(G_OBJECT(selector), "changed",
@@ -1856,7 +1856,7 @@ static void prefs_filtering_create_list_view_columns(GtkWidget *list_view)
 	gtk_tree_view_column_set_resizable(column, TRUE);
 
 	filtering.account_name_column = column;
-		
+
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes
 		(_("Rule"),
@@ -1866,8 +1866,8 @@ static void prefs_filtering_create_list_view_columns(GtkWidget *list_view)
 
 	gtk_tree_view_set_search_column(GTK_TREE_VIEW(list_view), PREFS_FILTERING_NAME);
 	gtk_tree_view_set_search_equal_func(GTK_TREE_VIEW(list_view), prefs_filtering_search_func_cb , NULL, NULL);
-	
-	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);		
+
+	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);
 }
 
 /*!
@@ -1912,7 +1912,7 @@ static void prefs_filtering_select_row(GtkTreeView *list_view, GtkTreePath *path
 				prop->account_id = account_id;
 				prefs_filtering_select_set(prop);
 				filteringprop_free(prop);
-			}				
+			}
 			g_free(name);
 			g_free(filtering_str);
 		} else

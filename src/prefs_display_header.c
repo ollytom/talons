@@ -111,11 +111,11 @@ static gchar *defaults[] =
 	"Cc",
 	"Bcc",
 	"Subject",
-	"Date",	
+	"Date",
 	"Reply-To",
 	"Sender",
 	"User-Agent",
-	"X-Mailer",	
+	"X-Mailer",
 	"Newsgroups",
 	"Followup-To",
 	"Organization",
@@ -194,7 +194,7 @@ static void prefs_display_header_create(void)
 
 	GtkWidget *checkbtn_other_headers;
 	gint i;
-	
+
 	debug_print("Creating display header setting window...\n");
 
 	window = gtkut_window_new(GTK_WINDOW_TOPLEVEL, "prefs_display_header");
@@ -323,13 +323,13 @@ static void prefs_display_header_create(void)
 	gtk_container_add(GTK_CONTAINER(list_view_scrolledwin), headers_list_view);
 	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(headers_list_view), TRUE);
 
-	g_signal_connect(G_OBJECT(headers_list_view), "drag_end", 			 
+	g_signal_connect(G_OBJECT(headers_list_view), "drag_end",
 			 G_CALLBACK(drag_end),
 			 headers_list_view);
-	
+
 	/* connect rows change for this list view's model */
 	g_signal_connect(G_OBJECT(gtk_tree_view_get_model(GTK_TREE_VIEW(headers_list_view))),
-			 "rows-reordered", 
+			 "rows-reordered",
 			 G_CALLBACK(headers_list_model_rows_reordered),
 			 headers_list_view);
 
@@ -480,7 +480,7 @@ static void prefs_display_header_set_dialog(void)
 
 		if (dp->hidden)
 			prefs_display_header_insert_header(GTK_LIST_STORE
-						(model_hidden), dp->name, dp);	
+						(model_hidden), dp->name, dp);
 		else
 			prefs_display_header_insert_header(GTK_LIST_STORE
 						(model_list), dp->name, dp);
@@ -507,7 +507,7 @@ static void prefs_display_header_set_list(void)
 		if (dp)
 			prefs_common.disphdr_list =
 				g_slist_append(prefs_common.disphdr_list, dp);
-		row++;				
+		row++;
 	}
 
 	model = gtk_tree_view_get_model
@@ -515,7 +515,7 @@ static void prefs_display_header_set_list(void)
 	row = 0;
 	while (gtk_tree_model_iter_nth_child(model, &iter, NULL, row)) {
 		gtk_tree_model_get(model, &iter, PREFS_HDR_DATA, &dp, -1);
-		if (dp) 
+		if (dp)
 			prefs_common.disphdr_list =
 				g_slist_append(prefs_common.disphdr_list, dp);
 		row++;
@@ -577,7 +577,7 @@ static void prefs_display_header_list_view_set_row(gboolean hidden)
 					   dp->name, dp);
 
 	prefs_display_header_set_list();
-	
+
 	g_free(entry_text);
 }
 
@@ -599,7 +599,7 @@ static void prefs_display_header_delete_cb(GtkButton *btn, gpointer list_view_da
 		return;
 
 	gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, PREFS_HDR_DATA, &dp, -1);
-	if (!dp) 
+	if (!dp)
 		return;
 
 	prefs_common.disphdr_list =
@@ -615,18 +615,18 @@ static void prefs_display_header_up(void)
 	GtkListStore *store = NULL;
 	GtkTreeModel *model = NULL;
 	GtkTreeIter iprev;
-	
+
 	if (!gtk_tree_selection_get_selected
 		(gtk_tree_view_get_selection
 			(GTK_TREE_VIEW(dispheader.headers_list_view)),
-		 &model,	
+		 &model,
 		 &isel))
 		return;
 	store = (GtkListStore *)model;
 	sel = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &isel);
 	if (!sel)
 		return;
-	
+
 	/* no move if we're at row 0... */
 	try = gtk_tree_path_copy(sel);
 	if (!gtk_tree_path_prev(try)) {
@@ -650,7 +650,7 @@ static void prefs_display_header_down(void)
 	GtkTreeModel *model = NULL;
 	GtkTreeIter next, sel;
 	GtkTreePath *try;
-	
+
 	if (!gtk_tree_selection_get_selected
 		(gtk_tree_view_get_selection
 			(GTK_TREE_VIEW(dispheader.headers_list_view)),
@@ -659,13 +659,13 @@ static void prefs_display_header_down(void)
 		return;
 	store = (GtkListStore *)model;
 	try = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &sel);
-	if (!try) 
+	if (!try)
 		return;
-	
+
 	next = sel;
 	if (gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &next))
 		gtk_list_store_swap(store, &next, &sel);
-		
+
 	gtk_tree_path_free(try);
 }
 
@@ -743,7 +743,7 @@ static GtkWidget *prefs_display_header_list_view_create(const gchar *name)
 	return list_view;
 }
 
-static void prefs_filtering_create_list_view_columns(GtkWidget *list_view, 
+static void prefs_filtering_create_list_view_columns(GtkWidget *list_view,
 						     const gchar *name)
 {
 	GtkTreeViewColumn *column;
@@ -752,14 +752,14 @@ static void prefs_filtering_create_list_view_columns(GtkWidget *list_view,
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes
 		(name, renderer, "text", PREFS_HDR_HEADER, NULL);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);		
+	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);
 }
 
 /*!
  *\brief	Called as a result of a gtk_list_store_swap()
  */
 static void headers_list_model_rows_reordered(GtkTreeModel *model,
-					      GtkTreePath  *path, 
+					      GtkTreePath  *path,
 					      GtkTreeIter  *iter,
 					      gpointer	    arg,
 					      GtkTreeView  *list_view)

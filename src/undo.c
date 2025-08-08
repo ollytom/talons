@@ -35,7 +35,7 @@
 
 typedef struct _UndoInfo UndoInfo;
 
-struct _UndoInfo 
+struct _UndoInfo
 {
 	UndoAction action;
 	gchar *text;
@@ -86,10 +86,10 @@ void undo_undo			(UndoMain	*undostruct);
 void undo_redo			(UndoMain	*undostruct);
 
 
-UndoMain *undo_init(GtkWidget *text) 
+UndoMain *undo_init(GtkWidget *text)
 {
 	UndoMain *undostruct;
-	GtkTextView *textview = GTK_TEXT_VIEW(text); 
+	GtkTextView *textview = GTK_TEXT_VIEW(text);
 	GtkTextBuffer *textbuf = gtk_text_view_get_buffer(textview);
 
 	cm_return_val_if_fail(text != NULL, NULL);
@@ -112,15 +112,15 @@ UndoMain *undo_init(GtkWidget *text)
 	return undostruct;
 }
 
-void undo_destroy (UndoMain *undostruct) 
+void undo_destroy (UndoMain *undostruct)
 {
 	undo_free_list(&undostruct->undo);
 	undo_free_list(&undostruct->redo);
 	g_free(undostruct);
 }
 
-static UndoInfo *undo_object_new(gchar *text, gint start_pos, gint end_pos, 
-				 UndoAction action, gfloat window_position) 
+static UndoInfo *undo_object_new(gchar *text, gint start_pos, gint end_pos,
+				 UndoAction action, gfloat window_position)
 {
 	UndoInfo *undoinfo;
 	undoinfo = g_new (UndoInfo, 1);
@@ -132,7 +132,7 @@ static UndoInfo *undo_object_new(gchar *text, gint start_pos, gint end_pos,
 	return undoinfo;
 }
 
-static void undo_object_free(UndoInfo *undo) 
+static void undo_object_free(UndoInfo *undo)
 {
 	g_free (undo->text);
 	g_free (undo);
@@ -144,7 +144,7 @@ static void undo_object_free(UndoInfo *undo)
  *
  * frees and undo structure list
  **/
-static void undo_free_list(GList **list_pointer) 
+static void undo_free_list(GList **list_pointer)
 {
 	UndoInfo *undo;
 	GList *cur, *list = *list_pointer;
@@ -177,7 +177,7 @@ void undo_set_change_state_func(UndoMain *undostruct, UndoChangeStateFunc func,
  * frees any undo level above sett->undo_level.
  *
  **/
-static void undo_check_size(UndoMain *undostruct) 
+static void undo_check_size(UndoMain *undostruct)
 {
 	UndoInfo *last_undo;
 	guint length;
@@ -208,7 +208,7 @@ static void undo_check_size(UndoMain *undostruct)
  * Return Value: TRUE is merge was sucessful, FALSE otherwise
  **/
 static gint undo_merge(GList *list, guint start_pos, guint end_pos,
-		       gint action, const guchar *text) 
+		       gint action, const guchar *text)
 {
 	guchar *temp_string;
 	UndoInfo *last_undo;
@@ -288,9 +288,9 @@ static gint undo_merge(GList *list, guint start_pos, guint end_pos,
  * of undo levels and deltes the redo list
  **/
 
-static void undo_add(const gchar *text, 
+static void undo_add(const gchar *text,
 		     gint start_pos, gint end_pos,
-		     UndoAction action, UndoMain *undostruct) 
+		     UndoAction action, UndoMain *undostruct)
 {
 	UndoInfo *undoinfo;
 	GtkAdjustment *vadj;
@@ -308,10 +308,10 @@ static void undo_add(const gchar *text,
 	if (undostruct->paste != 0) {
 		if (action == UNDO_ACTION_INSERT)
 			action = UNDO_ACTION_REPLACE_INSERT;
-		else 
+		else
 			action = UNDO_ACTION_REPLACE_DELETE;
 		undostruct->paste = undostruct->paste + 1;
-		if (undostruct->paste == 3) 
+		if (undostruct->paste == 3)
 			undostruct->paste = 0;
 	}
 
@@ -344,7 +344,7 @@ static void undo_add(const gchar *text,
  *
  * Executes an undo request on the current document
  **/
-void undo_undo(UndoMain *undostruct) 
+void undo_undo(UndoMain *undostruct)
 {
 	UndoInfo *undoinfo;
 	GtkTextView *textview;
@@ -378,7 +378,7 @@ void undo_undo(UndoMain *undostruct)
 	gtk_adjustment_set_value
 		(GTK_ADJUSTMENT(gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(textview))),
 		 undoinfo->window_position);
-	
+
 	switch (undoinfo->action) {
 	case UNDO_ACTION_DELETE:
 		gtk_text_buffer_get_iter_at_offset(buffer, &iter, undoinfo->start_pos);
@@ -422,7 +422,7 @@ void undo_undo(UndoMain *undostruct)
 		g_assert_not_reached();
 		break;
 	}
-	
+
 	undostruct->change_state_func(undostruct,
 				      UNDO_STATE_UNCHANGED, UNDO_STATE_TRUE,
 				      undostruct->change_state_data);
@@ -443,7 +443,7 @@ void undo_undo(UndoMain *undostruct)
  *
  * executes a redo request on the current document
  **/
-void undo_redo(UndoMain *undostruct) 
+void undo_redo(UndoMain *undostruct)
 {
 	UndoInfo *redoinfo;
 	GtkTextView *textview;
@@ -471,7 +471,7 @@ void undo_redo(UndoMain *undostruct)
 	gtk_text_buffer_place_cursor(buffer, &iter);
 
 	/* Move the view to the right position. */
-	gtk_adjustment_set_value(gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(textview)), 
+	gtk_adjustment_set_value(gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(textview)),
 				 redoinfo->window_position);
 
 	switch (redoinfo->action) {
@@ -518,7 +518,7 @@ void undo_redo(UndoMain *undostruct)
 	}
 
 	undostruct->change_state_func(undostruct,
-				      UNDO_STATE_TRUE, UNDO_STATE_UNCHANGED, 
+				      UNDO_STATE_TRUE, UNDO_STATE_UNCHANGED,
 				      undostruct->change_state_data);
 
 	if (undostruct->redo == NULL)
@@ -652,7 +652,7 @@ cleanup:
 	undostruct->wrap_info = NULL;
 }
 
-static void update_wrap_undo(UndoMain *undostruct, const gchar *text, int start, 
+static void update_wrap_undo(UndoMain *undostruct, const gchar *text, int start,
 			     int end, UndoAction action)
 {
 	gint len = end - start;
@@ -708,7 +708,7 @@ void undo_wrapping(UndoMain *undostruct, gboolean wrap)
 
 void undo_insert_text_cb(GtkTextBuffer *textbuf, GtkTextIter *iter,
 			 gchar *new_text, gint new_text_length,
-			 UndoMain *undostruct) 
+			 UndoMain *undostruct)
 {
 	gchar *text_to_insert;
 	gint pos;
@@ -721,7 +721,7 @@ void undo_insert_text_cb(GtkTextBuffer *textbuf, GtkTextIter *iter,
 	utf8_len = g_utf8_strlen(text_to_insert, -1);
 
 	if (undostruct->wrap_info != NULL) {
-		update_wrap_undo(undostruct, text_to_insert, 
+		update_wrap_undo(undostruct, text_to_insert,
 				 pos, pos + utf8_len, UNDO_ACTION_INSERT);
 		return;
 	}
@@ -732,7 +732,7 @@ void undo_insert_text_cb(GtkTextBuffer *textbuf, GtkTextIter *iter,
 }
 
 void undo_delete_text_cb(GtkTextBuffer *textbuf, GtkTextIter *start,
-			 GtkTextIter *end, UndoMain *undostruct) 
+			 GtkTextIter *end, UndoMain *undostruct)
 {
 	gchar *text_to_delete;
 	gint start_pos, end_pos;
@@ -748,7 +748,7 @@ void undo_delete_text_cb(GtkTextBuffer *textbuf, GtkTextIter *start,
 	if (undostruct->wrap_info != NULL) {
 		update_wrap_undo(undostruct, text_to_delete, start_pos, end_pos, UNDO_ACTION_DELETE);
 		return;
-	} 
+	}
 	debug_print("del:undo add %d-%d\n", start_pos, end_pos);
 	undo_add(text_to_delete, start_pos, end_pos, UNDO_ACTION_DELETE,
 		 undostruct);
@@ -777,7 +777,7 @@ static void undo_paste_clipboard_cb(GtkTextView *textview, UndoMain *undostruct)
  *
  * Return Value: TRUE if there is a selection active, FALSE if not
  **/
-static gint undo_get_selection(GtkTextView *textview, guint *start, guint *end) 
+static gint undo_get_selection(GtkTextView *textview, guint *start, guint *end)
 {
 	GtkTextBuffer *buffer;
 	GtkTextIter start_iter, end_iter;
@@ -799,7 +799,7 @@ static gint undo_get_selection(GtkTextView *textview, guint *start, guint *end)
 
 	if (start != NULL)
 		*start = start_pos;
-		
+
 	if (end != NULL)
 		*end = end_pos;
 

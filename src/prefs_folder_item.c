@@ -16,8 +16,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* alfons - all folder item specific settings should migrate into 
- * folderlist.xml!!! the old folderitemrc file will only serve for a few 
+/* alfons - all folder item specific settings should migrate into
+ * folderlist.xml!!! the old folderitemrc file will only serve for a few
  * versions (for compatibility) */
 
 #ifdef HAVE_CONFIG_H
@@ -239,7 +239,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	GtkWidget *hbox, *hbox2, *hbox_spc;
 	GtkWidget *box1, *box2;
 	GtkWidget *label;
-	
+
 	GtkListStore *folder_type_menu;
 	GtkWidget *folder_type;
 	GtkTreeIter iter;
@@ -304,7 +304,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 		gtk_grid_attach(GTK_GRID(table), no_save_warning, 0, rowcount, 1, 1);
 		rowcount++;
 	}
-	
+
 	/* Apply to subfolders */
 	label = gtk_label_new(_("Apply to\nsubfolders"));
 	gtk_grid_attach(GTK_GRID(table), label, 2, rowcount, 1, 1);
@@ -368,7 +368,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 
 	checkbtn_simplify_subject = gtk_check_button_new_with_label(_("Simplify Subject RegExp"));
 	gtk_box_pack_start(GTK_BOX(box2), checkbtn_simplify_subject, FALSE, FALSE, 0);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_simplify_subject), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_simplify_subject),
 				     item->prefs->enable_simplify_subject);
 	g_signal_connect(G_OBJECT(checkbtn_simplify_subject), "toggled",
 			G_CALLBACK(folder_regexp_set_subject_example_cb), page);
@@ -376,7 +376,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	entry_simplify_subject = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(box2), entry_simplify_subject, TRUE, TRUE, 0);
 	SET_TOGGLE_SENSITIVITY(checkbtn_simplify_subject, entry_simplify_subject);
-	gtk_entry_set_text(GTK_ENTRY(entry_simplify_subject), 
+	gtk_entry_set_text(GTK_ENTRY(entry_simplify_subject),
 			   SAFE_STRING(item->prefs->simplify_subject_regexp));
 
 	g_signal_connect(G_OBJECT(entry_simplify_subject), "changed",
@@ -401,14 +401,14 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	entry_regexp_test_string = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(box2), entry_regexp_test_string, TRUE, TRUE, 0);
 	gtk_grid_attach(GTK_GRID(table), box1, 0, rowcount, 1, 1);
-	
+
 	SET_TOGGLE_SENSITIVITY(checkbtn_simplify_subject, entry_regexp_test_string);
 
 	g_signal_connect(G_OBJECT(entry_regexp_test_string), "changed",
 			G_CALLBACK(folder_regexp_test_cb), page);
 
 	rowcount++;
-	
+
 	/* Test result */
 	box1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	box2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
@@ -435,7 +435,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	checkbtn_folder_chmod = gtk_check_button_new_with_label(_("Folder chmod"));
 	gtk_box_pack_start(GTK_BOX(box2), checkbtn_folder_chmod, FALSE, FALSE, 0);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_folder_chmod), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_folder_chmod),
 				     item->prefs->enable_folder_chmod);
 
 	entry_folder_chmod = gtk_entry_new();
@@ -448,13 +448,13 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 		gtk_entry_set_text(GTK_ENTRY(entry_folder_chmod), buf);
 		g_free(buf);
 	}
-	
+
 	gtk_grid_attach(GTK_GRID(table), box1, 0, rowcount, 1, 1);
 	folder_chmod_rec_checkbtn = gtk_check_button_new();
 	gtk_grid_attach(GTK_GRID(table), folder_chmod_rec_checkbtn, 2, rowcount, 1, 1);
 
 	rowcount++;
-	
+
 	/* Folder color */
 	box1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	box2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
@@ -489,12 +489,12 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 		gtk_check_button_new_with_label(_("Run Processing rules at start-up"));
 	gtk_grid_attach(GTK_GRID(table), checkbtn_enable_processing, 0, rowcount, 1, 1);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_processing), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_processing),
 				     item->prefs->enable_processing);
 
 	enable_processing_rec_checkbtn = gtk_check_button_new();
 	gtk_grid_attach(GTK_GRID(table), enable_processing_rec_checkbtn, 2, rowcount, 1, 1);
-	
+
 	rowcount++;
 
 	/* Enable processing rules when opening folder */
@@ -502,7 +502,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 		gtk_check_button_new_with_label(_("Run Processing rules when opening"));
 	gtk_grid_attach(GTK_GRID(table), checkbtn_enable_processing_when_opening, 0, rowcount, 1, 1);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_processing_when_opening), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_processing_when_opening),
 				     item->prefs->enable_processing_when_opening);
 
 	enable_processing_when_opening_rec_checkbtn = gtk_check_button_new();
@@ -623,11 +623,11 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	gtk_grid_attach(GTK_GRID(table), skip_on_goto_unread_or_new_rec_checkbtn, 2, rowcount, 1, 1);
 
 	rowcount++;
-        
+
 	/* Synchronise folder for offline use */
 	checkbtn_offlinesync = gtk_check_button_new_with_label(_("Synchronise for offline use"));
 	gtk_grid_attach(GTK_GRID(table), checkbtn_offlinesync, 0, rowcount, 1, 1);
-	
+
 	offlinesync_rec_checkbtn = gtk_check_button_new();
 	gtk_grid_attach(GTK_GRID(table), offlinesync_rec_checkbtn, 2, rowcount, 1, 1);
 
@@ -672,7 +672,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 
 	SET_TOGGLE_SENSITIVITY (checkbtn_offlinesync, hbox);
 	SET_TOGGLE_SENSITIVITY (checkbtn_offlinesync, hbox2);
-	
+
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	clean_cache_btn = gtk_button_new_with_label(_("Discard folder cache"));
 	gtk_box_pack_start (GTK_BOX (hbox), clean_cache_btn, FALSE, FALSE, 0);
@@ -691,7 +691,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	gtk_widget_set_size_request(label_regexp_test, MAX(100, MAX(wreq1, wreq2)), -1);
 	gtk_widget_set_size_request(label_regexp_result, MAX(100, MAX(wreq1, wreq2)), -1);
 
-	if (item->folder && (item->folder->klass->type != F_IMAP && 
+	if (item->folder && (item->folder->klass->type != F_IMAP &&
 	    item->folder->klass->type != F_NEWS)) {
 		item->prefs->offlinesync = TRUE;
 		item->prefs->offlinesync_days = 0;
@@ -710,7 +710,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 		gtk_widget_hide(GTK_WIDGET(label_end_offlinesync));
 		gtk_widget_hide(GTK_WIDGET(checkbtn_remove_old_offlinesync));
 		gtk_widget_hide(GTK_WIDGET(clean_cache_btn));
-	
+
 	}
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_offlinesync),
 								 item->prefs->offlinesync);
@@ -761,14 +761,14 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	folder_regexp_set_subject_example_cb(NULL, page);
 }
 
-static void prefs_folder_item_general_destroy_widget_func(PrefsPage *page_) 
+static void prefs_folder_item_general_destroy_widget_func(PrefsPage *page_)
 {
 	/* FolderItemGeneralPage *page = (FolderItemGeneralPage *) page_; */
 }
 
 /** \brief  Save the prefs in page to folder.
  *
- *  If the folder is not the one specified in page->item, then only those properties 
+ *  If the folder is not the one specified in page->item, then only those properties
  *  that have the relevant 'apply to sub folders' button checked are saved
  */
 static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage *page)
@@ -787,7 +787,7 @@ static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage 
 
 	cm_return_if_fail(prefs != NULL);
 
-	if (page->item == folder) 
+	if (page->item == folder)
 		all = TRUE;
 
 	type = combobox_get_active_data(GTK_COMBO_BOX(page->folder_type));
@@ -824,7 +824,7 @@ static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage 
 	}
 
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->folder_chmod_rec_checkbtn))) {
-		prefs->enable_folder_chmod = 
+		prefs->enable_folder_chmod =
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_folder_chmod));
 		buf = gtk_editable_get_chars(GTK_EDITABLE(page->entry_folder_chmod), 0, -1);
 		prefs->folder_chmod = prefs_chmod_mode(buf);
@@ -835,36 +835,36 @@ static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage 
 		GdkRGBA old_color = prefs->color;
 		gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(page->folder_color_btn),
 				   &prefs->color);
-	
+
 		/* update folder view */
 		if (!gdk_rgba_equal(&prefs->color, &old_color))
 			folder_item_update(folder, F_ITEM_UPDATE_MSGCNT);
 	}
 
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->enable_processing_rec_checkbtn))) {
-		prefs->enable_processing = 
+		prefs->enable_processing =
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_enable_processing));
 	}
 
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->enable_processing_when_opening_rec_checkbtn))) {
-		prefs->enable_processing_when_opening = 
+		prefs->enable_processing_when_opening =
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_enable_processing_when_opening));
 	}
 
 	if (all ||  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->newmailcheck_rec_checkbtn))) {
-		prefs->newmailcheck = 
+		prefs->newmailcheck =
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_newmailcheck));
 	}
 
 	if (all ||  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->skip_on_goto_unread_or_new_rec_checkbtn))) {
-		prefs->skip_on_goto_unread_or_new = 
+		prefs->skip_on_goto_unread_or_new =
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_skip_on_goto_unread_or_new));
 	}
 
 	if (all ||  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->offlinesync_rec_checkbtn))) {
-		prefs->offlinesync = 
+		prefs->offlinesync =
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_offlinesync));
-		prefs->offlinesync_days = 
+		prefs->offlinesync_days =
 			atoi(gtk_entry_get_text(GTK_ENTRY(page->entry_offlinesync)));
 		prefs->remove_old_bodies =
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_remove_old_offlinesync));
@@ -875,8 +875,8 @@ static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage 
 	if (folder->opened && summary_update_needed) {
 		summary_set_prefs_from_folderitem(folderview->summaryview, folder);
 		summary_show(folderview->summaryview, folder, FALSE);
-	}	
-}	
+	}
+}
 
 static gboolean general_save_recurse_func(GNode *node, gpointer data)
 {
@@ -906,17 +906,17 @@ static gboolean general_save_recurse_func(GNode *node, gpointer data)
 		  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->promote_html_part_rec_checkbtn))
 			))
 		return TRUE;
-	else 
+	else
 		return FALSE;
 }
 
-static void prefs_folder_item_general_save_func(PrefsPage *page_) 
+static void prefs_folder_item_general_save_func(PrefsPage *page_)
 {
 	FolderItemGeneralPage *page = (FolderItemGeneralPage *) page_;
 
 	g_node_traverse(page->item->node, G_PRE_ORDER, G_TRAVERSE_ALL,
 			-1, general_save_recurse_func, page);
-	
+
 	main_window_set_menu_sensitive(mainwindow_get_mainwindow());
 
 }
@@ -945,7 +945,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	GtkWidget *table;
 	GtkWidget *hbox;
 	GtkWidget *label;
-	
+
 	GtkWidget *no_save_warning = NULL;
 	GtkWidget *checkbtn_request_return_receipt = NULL;
 	GtkWidget *checkbtn_save_copy_to_folder = NULL;
@@ -1014,7 +1014,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		gtk_grid_attach(GTK_GRID(table), no_save_warning, 0, rowcount, 1, 1);
 		rowcount++;
 	}
-	
+
 	/* Apply to subfolders */
 	label = gtk_label_new(_("Apply to\nsubfolders"));
 	gtk_grid_attach(GTK_GRID(table), label, 2, rowcount, 1, 1);
@@ -1049,7 +1049,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		text = g_strdup_printf(tr, prefs_common_translated_header_name("From:"));
 		checkbtn_default_from = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_from, 0, rowcount, 1, 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_from), 
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_from),
 					     item->prefs->enable_default_from);
 		g_free(text);
 		g_free(tr);
@@ -1074,7 +1074,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		text = g_strdup_printf(tr, prefs_common_translated_header_name("To:"));
 		checkbtn_default_to = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_to, 0, rowcount, 1, 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_to), 
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_to),
 					     item->prefs->enable_default_to);
 		g_free(text);
 		g_free(tr);
@@ -1099,7 +1099,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		text = g_strdup_printf(tr, prefs_common_translated_header_name("To:"));
 		checkbtn_default_reply_to = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_reply_to, 0, rowcount, 1, 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_reply_to), 
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_reply_to),
 					     item->prefs->enable_default_reply_to);
 		g_free(text);
 		g_free(tr);
@@ -1124,7 +1124,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		text = g_strdup_printf(tr, prefs_common_translated_header_name("Cc:"));
 		checkbtn_default_cc = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_cc, 0, rowcount, 1, 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_cc), 
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_cc),
 					     item->prefs->enable_default_cc);
 		g_free(text);
 		g_free(tr);
@@ -1149,7 +1149,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		text = g_strdup_printf(tr, prefs_common_translated_header_name("Bcc:"));
 		checkbtn_default_bcc = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_bcc, 0, rowcount, 1, 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_bcc), 
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_bcc),
 					     item->prefs->enable_default_bcc);
 		g_free(text);
 		g_free(tr);
@@ -1174,7 +1174,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		text = g_strdup_printf(tr, prefs_common_translated_header_name("Reply-To:"));
 		checkbtn_default_replyto = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_replyto, 0, rowcount, 1, 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_replyto), 
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_replyto),
 					     item->prefs->enable_default_replyto);
 		g_free(text);
 		g_free(tr);
@@ -1196,7 +1196,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	/* Default account */
 	checkbtn_enable_default_account = gtk_check_button_new_with_label(_("Default account"));
 	gtk_grid_attach(GTK_GRID(table), checkbtn_enable_default_account, 0, rowcount, 1, 1);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_default_account), 
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_default_account),
 				     item->prefs->enable_default_account);
 
  	optmenu_default_account = gtkut_sc_combobox_create(NULL, FALSE);
@@ -1209,7 +1209,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		ac_prefs = (PrefsAccount *)cur_ac->data;
 		if (item->folder->account &&
 	    	    ( (item_protocol(item) == A_NNTP && ac_prefs->protocol != A_NNTP)
-		    ||(item_protocol(item) != A_NNTP && ac_prefs->protocol == A_NNTP))) 
+		    ||(item_protocol(item) != A_NNTP && ac_prefs->protocol == A_NNTP)))
 			continue;
 
 		if (item->folder->klass->type != F_NEWS && ac_prefs->protocol == A_NNTP)
@@ -1269,7 +1269,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 
 	default_dictionary_rec_checkbtn = gtk_check_button_new();
 	gtk_grid_attach(GTK_GRID(table), default_dictionary_rec_checkbtn, 2, rowcount, 1, 1);
-	
+
 	rowcount++;
 
 	/* Default alternate dictionary */
@@ -1300,7 +1300,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 
 	default_alt_dictionary_rec_checkbtn = gtk_check_button_new();
 	gtk_grid_attach(GTK_GRID(table), default_alt_dictionary_rec_checkbtn, 2, rowcount, 1, 1);
-	
+
 	rowcount++;
 #endif
 
@@ -1415,7 +1415,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	page->page.widget = table;
 }
 
-static void prefs_folder_item_compose_destroy_widget_func(PrefsPage *page_) 
+static void prefs_folder_item_compose_destroy_widget_func(PrefsPage *page_)
 {
 	FolderItemComposePage *page = (FolderItemComposePage *) page_;
 
@@ -1435,7 +1435,7 @@ static void prefs_folder_item_compose_destroy_widget_func(PrefsPage *page_)
 
 /** \brief  Save the prefs in page to folder.
  *
- *  If the folder is not the one  specified in page->item, then only those properties 
+ *  If the folder is not the one  specified in page->item, then only those properties
  *  that have the relevant 'apply to sub folders' button checked are saved
  */
 static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage *page)
@@ -1447,40 +1447,40 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 	if (folder->path == NULL)
 		return;
 
-	if (page->item == folder) 
+	if (page->item == folder)
 		all = TRUE;
 
 	cm_return_if_fail(prefs != NULL);
 
 	if (item_protocol(folder) != A_NNTP) {
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->request_return_receipt_rec_checkbtn))) {
-			prefs->request_return_receipt = 
+			prefs->request_return_receipt =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_request_return_receipt));
-			/* MIGRATION */    
+			/* MIGRATION */
 			folder->ret_rcpt = prefs->request_return_receipt;
 		}
 
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->save_copy_to_folder_rec_checkbtn))) {
-			prefs->save_copy_to_folder = 
+			prefs->save_copy_to_folder =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_save_copy_to_folder));
 		}
 
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_from_rec_checkbtn))) {
-			prefs->enable_default_from = 
+			prefs->enable_default_from =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_default_from));
 			ASSIGN_STRING(prefs->default_from,
 				      gtk_editable_get_chars(GTK_EDITABLE(page->entry_default_from), 0, -1));
 		}
 
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_to_rec_checkbtn))) {
-			prefs->enable_default_to = 
+			prefs->enable_default_to =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_default_to));
 			ASSIGN_STRING(prefs->default_to,
 				      gtk_editable_get_chars(GTK_EDITABLE(page->entry_default_to), 0, -1));
 		}
 
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_reply_to_rec_checkbtn))) {
-			prefs->enable_default_reply_to = 
+			prefs->enable_default_reply_to =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_default_reply_to));
 			ASSIGN_STRING(prefs->default_reply_to,
 				      gtk_editable_get_chars(GTK_EDITABLE(page->entry_default_reply_to), 0, -1));
@@ -1488,7 +1488,7 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_cc_rec_checkbtn))) {
 
-			prefs->enable_default_cc = 
+			prefs->enable_default_cc =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_default_cc));
 			ASSIGN_STRING(prefs->default_cc,
 				      gtk_editable_get_chars(GTK_EDITABLE(page->entry_default_cc), 0, -1));
@@ -1496,7 +1496,7 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_bcc_rec_checkbtn))) {
 
-			prefs->enable_default_bcc = 
+			prefs->enable_default_bcc =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_default_bcc));
 			ASSIGN_STRING(prefs->default_bcc,
 				      gtk_editable_get_chars(GTK_EDITABLE(page->entry_default_bcc), 0, -1));
@@ -1504,7 +1504,7 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_replyto_rec_checkbtn))) {
 
-			prefs->enable_default_replyto = 
+			prefs->enable_default_replyto =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_default_replyto));
 			ASSIGN_STRING(prefs->default_replyto,
 				      gtk_editable_get_chars(GTK_EDITABLE(page->entry_default_replyto), 0, -1));
@@ -1523,7 +1523,7 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 
 	if (all || gtk_toggle_button_get_active(
 				GTK_TOGGLE_BUTTON(page->default_account_rec_checkbtn))) {
-		prefs->enable_default_account = 
+		prefs->enable_default_account =
 			gtk_toggle_button_get_active(
 					GTK_TOGGLE_BUTTON(page->checkbtn_enable_default_account));
 		prefs->default_account = combobox_get_active_data(
@@ -1547,16 +1547,16 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 	}
 #endif
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_sign_rec_checkbtn))) {
-		prefs->always_sign = 
+		prefs->always_sign =
 				combobox_get_active_data(GTK_COMBO_BOX(page->always_sign));
 	}
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_encrypt_rec_checkbtn))) {
-		prefs->always_encrypt = 
+		prefs->always_encrypt =
 				combobox_get_active_data(GTK_COMBO_BOX(page->always_encrypt));
 	}
 
 	folder_item_prefs_save_config(folder);
-}	
+}
 
 static gboolean compose_save_recurse_func(GNode *node, gpointer data)
 {
@@ -1590,7 +1590,7 @@ static gboolean compose_save_recurse_func(GNode *node, gpointer data)
 			))
 		return TRUE;
 	else if ((node == page->item->node) && item_protocol(item) == A_NNTP &&
-	    !(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_account_rec_checkbtn)) 
+	    !(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_account_rec_checkbtn))
 #if USE_ENCHANT
 	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_dictionary_rec_checkbtn))
 	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_alt_dictionary_rec_checkbtn))
@@ -1599,11 +1599,11 @@ static gboolean compose_save_recurse_func(GNode *node, gpointer data)
 	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_encrypt_rec_checkbtn))
 		    ))
 		return TRUE;
-	else 
+	else
 		return FALSE;
 }
 
-static void prefs_folder_item_compose_save_func(PrefsPage *page_) 
+static void prefs_folder_item_compose_save_func(PrefsPage *page_)
 {
 	FolderItemComposePage *page = (FolderItemComposePage *) page_;
 
@@ -1628,13 +1628,13 @@ static void prefs_folder_item_templates_create_widget_func(PrefsPage * page_,
 	GtkWidget *forward_format_rec_checkbtn;
 	GtkWidget *hbox;
 	GtkWidget *vbox_format;
-	
+
 	page->item = item;
 
 	page_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (page_vbox), VBOX_BORDER);
 	gtk_widget_show (page_vbox);
-	
+
 	if (!can_save) {
 		no_save_warning = prefs_folder_no_save_warning_create_widget();
 		gtk_box_pack_start(GTK_BOX(page_vbox),
@@ -1661,14 +1661,14 @@ static void prefs_folder_item_templates_create_widget_func(PrefsPage * page_,
 				FALSE, FALSE);
 	address_completion_register_entry(GTK_ENTRY(page->compose_override_from_format),
 			TRUE);
-	
+
 	vbox_format = gtk_widget_get_parent(
 			gtk_widget_get_parent(page->compose_body_format));
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_end (GTK_BOX(vbox_format), hbox, FALSE, FALSE, 0);
 	quotefmt_add_info_button(window, hbox);
-	
+
 	new_msg_format_rec_checkbtn = gtk_check_button_new_with_label(
 			_("Apply to subfolders"));
 	gtk_box_pack_end (GTK_BOX(hbox), new_msg_format_rec_checkbtn, FALSE, FALSE, 0);
@@ -1768,21 +1768,21 @@ static void prefs_folder_item_templates_create_widget_func(PrefsPage * page_,
 	page->page.widget = page_vbox;
 }
 
-static void prefs_folder_item_templates_destroy_widget_func(PrefsPage *page_) 
+static void prefs_folder_item_templates_destroy_widget_func(PrefsPage *page_)
 {
 	FolderItemTemplatesPage *page = (FolderItemTemplatesPage *) page_;
 
 	if (page->compose_override_from_format)
-		address_completion_unregister_entry(GTK_ENTRY(page->compose_override_from_format));		
+		address_completion_unregister_entry(GTK_ENTRY(page->compose_override_from_format));
 	if (page->reply_override_from_format)
-		address_completion_unregister_entry(GTK_ENTRY(page->reply_override_from_format));		
+		address_completion_unregister_entry(GTK_ENTRY(page->reply_override_from_format));
 	if (page->forward_override_from_format)
-		address_completion_unregister_entry(GTK_ENTRY(page->forward_override_from_format));		
+		address_completion_unregister_entry(GTK_ENTRY(page->forward_override_from_format));
 }
 
 /** \brief  Save the prefs in page to folder.
  *
- *  If the folder is not the one  specified in page->item, then only those properties 
+ *  If the folder is not the one  specified in page->item, then only those properties
  *  that have the relevant 'apply to sub folders' button checked are saved
  */
 static void templates_save_folder_prefs(FolderItem *folder, FolderItemTemplatesPage *page)
@@ -1793,7 +1793,7 @@ static void templates_save_folder_prefs(FolderItem *folder, FolderItemTemplatesP
 	if (folder->path == NULL)
 		return;
 
-	if (page->item == folder) 
+	if (page->item == folder)
 		all = TRUE;
 
 	cm_return_if_fail(prefs != NULL);
@@ -1801,7 +1801,7 @@ static void templates_save_folder_prefs(FolderItem *folder, FolderItemTemplatesP
 	/* save and check formats */
 
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->new_msg_format_rec_checkbtn))) {
-		
+
 		prefs->compose_with_format =
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_compose_with_format));
 		prefs->compose_override_from_format = pref_get_pref_from_entry(
@@ -1847,7 +1847,7 @@ static void templates_save_folder_prefs(FolderItem *folder, FolderItemTemplatesP
 	}
 
 	folder_item_prefs_save_config(folder);
-}	
+}
 
 static gboolean templates_save_recurse_func(GNode *node, gpointer data)
 {
@@ -1867,13 +1867,13 @@ static gboolean templates_save_recurse_func(GNode *node, gpointer data)
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->reply_format_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->forward_format_rec_checkbtn))))
 		return TRUE;
-	else 
+	else
 		return FALSE;
 
 	return FALSE;
 }
 
-static void prefs_folder_item_templates_save_func(PrefsPage *page_) 
+static void prefs_folder_item_templates_save_func(PrefsPage *page_)
 {
 	FolderItemTemplatesPage *page = (FolderItemTemplatesPage *) page_;
 
@@ -1889,14 +1889,14 @@ static void clean_cache_cb(GtkWidget *widget, gpointer data)
 	gboolean was_open = FALSE;
 	FolderView *folderview = NULL;
 
-	if (alertpanel_full(_("Discard cache"), 
+	if (alertpanel_full(_("Discard cache"),
 			    _("Do you really want to discard the local cached "
 			      "data for this folder?"),
 			    NULL, _("_Cancel"), NULL, _("Discard"), NULL, NULL,
 			    ALERTFOCUS_SECOND, FALSE, NULL, ALERT_WARNING)
 		!= G_ALERTALTERNATE)
 		return;
-	
+
 	if (mainwindow_get_mainwindow())
 		folderview = mainwindow_get_mainwindow()->folderview;
 
@@ -1944,7 +1944,7 @@ static void folder_regexp_test_cb(GtkWidget *widget, gpointer data)
 				GTK_STATE_NORMAL, NULL);
 		if (test_string)
 			gtk_entry_set_text(GTK_ENTRY(page->entry_regexp_test_result), test_string);
-			
+
 		g_free(test_string);
 		g_free(regexp);
 		return;
@@ -2012,7 +2012,7 @@ static void register_general_page()
         folder_item_general_page.page.create_widget = prefs_folder_item_general_create_widget_func;
         folder_item_general_page.page.destroy_widget = prefs_folder_item_general_destroy_widget_func;
         folder_item_general_page.page.save_page = prefs_folder_item_general_save_func;
-        
+
 	prefs_folder_item_register_page((PrefsPage *) &folder_item_general_page, NULL);
 }
 
@@ -2029,7 +2029,7 @@ static void register_compose_page(void)
         folder_item_compose_page.page.create_widget = prefs_folder_item_compose_create_widget_func;
         folder_item_compose_page.page.destroy_widget = prefs_folder_item_compose_destroy_widget_func;
         folder_item_compose_page.page.save_page = prefs_folder_item_compose_save_func;
-        
+
 	prefs_folder_item_register_page((PrefsPage *) &folder_item_compose_page, NULL);
 }
 
@@ -2045,7 +2045,7 @@ static void register_templates_page(void)
         folder_item_templates_page.page.create_widget = prefs_folder_item_templates_create_widget_func;
         folder_item_templates_page.page.destroy_widget = prefs_folder_item_templates_destroy_widget_func;
         folder_item_templates_page.page.save_page = prefs_folder_item_templates_save_func;
-        
+
 	prefs_folder_item_register_page((PrefsPage *) &folder_item_templates_page, NULL);
 }
 
@@ -2079,7 +2079,7 @@ void prefs_folder_item_open(FolderItem *item)
 		id = g_strdup(item->name);
 		can_save = FALSE;
 	}
-	
+
 	pages = g_slist_concat(
 			g_slist_copy(prefs_pages),
 			g_slist_copy(item->folder->klass->prefs_pages));

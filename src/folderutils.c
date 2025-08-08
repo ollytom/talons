@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #include "config.h"
@@ -38,10 +38,10 @@ gint folderutils_delete_duplicates(FolderItem *item,
 	GHashTable *table;
 	GSList *msglist, *cur, *duplist = NULL;
 	guint dups;
-	
+
 	if (item->folder->klass->remove_msg == NULL)
 		return -1;
-	
+
 	debug_print("Deleting duplicated messages...\n");
 
 	msglist = folder_item_get_msg_list(item);
@@ -56,12 +56,12 @@ gint folderutils_delete_duplicates(FolderItem *item,
 
 		if (!msginfo || !msginfo->msgid || !*msginfo->msgid)
 			continue;
-		
+
 		msginfo_dup = g_hash_table_lookup(table, msginfo->msgid);
 		if (msginfo_dup == NULL)
 			g_hash_table_insert(table, msginfo->msgid, msginfo);
 		else {
-			if ((MSG_IS_UNREAD(msginfo->flags) && !MSG_IS_UNREAD(msginfo_dup->flags)) || 
+			if ((MSG_IS_UNREAD(msginfo->flags) && !MSG_IS_UNREAD(msginfo_dup->flags)) ||
 			    (MSG_IS_UNREAD(msginfo->flags) == MSG_IS_UNREAD(msginfo_dup->flags))) {
 				duplist = g_slist_prepend(duplist, msginfo);
 			} else {
@@ -87,7 +87,7 @@ gint folderutils_delete_duplicates(FolderItem *item,
 
 			if (folder_has_parent_of_type(item, F_TRASH) || trash == NULL || in_trash)
 				folder_item_remove_msgs(item, duplist);
-			else 			
+			else
 				folder_item_move_msgs(trash, duplist);
 			break;
 		}
@@ -96,7 +96,7 @@ gint folderutils_delete_duplicates(FolderItem *item,
 				MsgInfo *msginfo = (MsgInfo *) cur->data;
 
 				procmsg_msginfo_set_to_folder(msginfo, NULL);
-				procmsg_msginfo_unset_flags(msginfo, MSG_MARKED, 
+				procmsg_msginfo_unset_flags(msginfo, MSG_MARKED,
 					MSG_MOVE | MSG_COPY | MSG_MOVE_DONE);
 				procmsg_msginfo_set_flags(msginfo, MSG_DELETED, 0);
 			}

@@ -96,12 +96,12 @@ void uri_opener_open(MessageView *msgview, GSList *uris)
 
 	manage_window_set_transient(GTK_WINDOW(opener.window));
 	gtk_widget_grab_focus(opener.close_btn);
-	
+
 	if (uris == NULL) {
 		alertpanel_notice(_("There are no URLs in this email."));
 		return;
 	}
-	
+
 	opener.msgview = msgview;
 	opener.uris = g_slist_copy(uris);
 	uri_opener_load_uris();
@@ -130,7 +130,7 @@ static void uri_opener_create_list_view_columns(GtkWidget *list_view)
 		 renderer,
 		 "markup", URI_OPENER_URL,
 		 NULL);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);		
+	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);
 }
 
 static GtkWidget *uri_opener_list_view_create(void)
@@ -141,7 +141,7 @@ static GtkWidget *uri_opener_list_view_create(void)
 
 	model = GTK_TREE_MODEL(uri_opener_create_data_store());
 	list_view = GTK_TREE_VIEW(gtk_tree_view_new_with_model(model));
-	g_object_unref(model);	
+	g_object_unref(model);
 
 	selector = gtk_tree_view_get_selection(list_view);
 	gtk_tree_selection_set_mode(selector, GTK_SELECTION_MULTIPLE);
@@ -172,10 +172,10 @@ static GtkWidget *uri_opener_scrolled_win_create(void)
 					    GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin),
 				       GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-				       
+
 	gtk_widget_set_size_request(scrolledwin, 200, 250);
 	gtk_widget_show(scrolledwin);
-	
+
 	return scrolledwin;
 }
 
@@ -187,7 +187,7 @@ static void uri_opener_size_allocate_cb(GtkWidget *widget, GtkAllocation *alloca
 		&prefs_common.uriopenerwin_width, &prefs_common.uriopenerwin_height);
 }
 
-static void uri_opener_create(void) 
+static void uri_opener_create(void)
 {
 	GtkWidget *window;
 	GtkWidget *hbox_scroll;
@@ -219,7 +219,7 @@ static void uri_opener_create(void)
 	MANAGE_WINDOW_SIGNALS_CONNECT (window);
 
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-	gtkut_stock_button_set_create(&hbox1, 
+	gtkut_stock_button_set_create(&hbox1,
 				      &open_btn, NULL, _("Open in browser"),
 				      &close_btn, NULL, _("Close"),
 				      NULL, NULL, NULL);
@@ -231,18 +231,18 @@ static void uri_opener_create(void)
 			 G_CALLBACK(uri_opener_close_cb), NULL);
 
 	urilist = uri_opener_list_view_create();
-	
+
 	label = gtk_label_new(_("Any phishing URLs are shown in red, followed by the actual URL."));
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
 	gtk_box_pack_start(GTK_BOX(vbox1), label, FALSE, TRUE, 0);
-	
+
 	scrolledwin = uri_opener_scrolled_win_create();
 	hbox_scroll = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start(GTK_BOX(hbox_scroll), scrolledwin, TRUE, TRUE, 0);
-	
+
 	select_all_btn = gtk_button_new_with_label(_("Select All"));
 	g_signal_connect(G_OBJECT(select_all_btn), "clicked",
-			 G_CALLBACK(uri_opener_select_all_cb), NULL);	
+			 G_CALLBACK(uri_opener_select_all_cb), NULL);
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), select_all_btn, FALSE, FALSE, 0);
@@ -281,13 +281,13 @@ static void uri_opener_create(void)
 
 static void uri_opener_list_view_insert_uri(GtkWidget *list_view,
 						  GtkTreeIter *row_iter,
-						  ClickableText *uri) 
+						  ClickableText *uri)
 {
 	GtkTreeIter iter;
 	GtkListStore *list_store = GTK_LIST_STORE(gtk_tree_view_get_model
 					(GTK_TREE_VIEW(list_view)));
 	gchar *visible = textview_get_visible_uri(opener.msgview->mimeview->textview, uri);
-	
+
 	gchar *label = NULL;
 
 	if (visible && strcmp(visible, uri->uri)) {
@@ -334,7 +334,7 @@ static void uri_opener_list_view_clear_uris(GtkWidget *list_view)
 	gtk_list_store_clear(list_store);
 }
 
-static void uri_opener_load_uris(void) 
+static void uri_opener_load_uris(void)
 {
 	GSList *cur = opener.uris;
 	GtkTreeModel *model;
@@ -346,17 +346,17 @@ static void uri_opener_load_uris(void)
 		ClickableText *uri = (ClickableText *)cur->data;
 		uri_opener_list_view_insert_uri(opener.urilist, NULL, uri);
 	}
-	
+
 	g_object_ref(opener.urilist);
 	gtk_container_remove(GTK_CONTAINER(opener.scrolledwin), opener.urilist);
 	gtk_widget_destroy(opener.scrolledwin);
-	
+
 	opener.scrolledwin = uri_opener_scrolled_win_create();
 	gtk_container_add(GTK_CONTAINER(opener.scrolledwin), opener.urilist);
 	gtk_box_pack_start(GTK_BOX(opener.hbox_scroll),
 			   opener.scrolledwin, TRUE, TRUE, 0);
 	g_object_unref(opener.urilist);
-	
+
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(opener.urilist));
 	if (!gtk_tree_model_get_iter_first(model, &iter))
 		return;
@@ -364,7 +364,7 @@ static void uri_opener_load_uris(void)
 	gtk_tree_selection_select_iter(selection, &iter);
 }
 
-static void uri_opener_close(void) 
+static void uri_opener_close(void)
 {
 	g_slist_free(opener.uris);
 	opener.uris = NULL;
@@ -373,7 +373,7 @@ static void uri_opener_close(void)
 }
 
 static void uri_opener_close_cb(GtkWidget *widget,
-			         gpointer data) 
+			         gpointer data)
 {
 	uri_opener_close();
 }
@@ -406,7 +406,7 @@ static void uri_opener_double_clicked(GtkTreeView		*list_view,
 	if (!gtk_tree_model_get_iter(model, &iter, path))
 		return;
 
-	gtk_tree_model_get(model, &iter, 
+	gtk_tree_model_get(model, &iter,
 			   URI_OPENER_DATA, &uri,
 			   -1);
 
@@ -414,13 +414,13 @@ static void uri_opener_double_clicked(GtkTreeView		*list_view,
 		return;
 
 	if (textview_uri_security_check(opener.msgview->mimeview->textview, uri,
-					FALSE) == TRUE) 
+					FALSE) == TRUE)
 		open_uri(uri->uri,
 			 prefs_common_get_uri_cmd());
 }
 
-static void uri_opener_open_cb(GtkWidget *widget, 
-			        gpointer data) 
+static void uri_opener_open_cb(GtkWidget *widget,
+			        gpointer data)
 {
 	ClickableText *uri;
 	GtkTreeIter sel;
@@ -433,10 +433,10 @@ static void uri_opener_open_cb(GtkWidget *widget,
 	cm_return_if_fail(selected);
 
 	for(cur = selected; cur != NULL; cur = g_list_next(cur))
-	{ 
+	{
 		if(!gtk_tree_model_get_iter(model, &sel, (GtkTreePath *)cur->data))
 			continue;
-		
+
 		gtk_tree_model_get(model, &sel,
 			   URI_OPENER_DATA, &uri,
 			   -1);
@@ -444,16 +444,16 @@ static void uri_opener_open_cb(GtkWidget *widget,
 			continue;
 
 		if (textview_uri_security_check(opener.msgview->mimeview->textview, uri,
-						FALSE) == TRUE) 
+						FALSE) == TRUE)
 			open_uri(uri->uri,
 				 prefs_common_get_uri_cmd());
 	}
-	
+
 	g_list_foreach(selected, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(selected);
 }
 
-static void uri_opener_select_all_cb(GtkWidget *widget, 
+static void uri_opener_select_all_cb(GtkWidget *widget,
 				     gpointer data)
 {
 	GtkTreeSelection *selection = gtk_tree_view_get_selection(
@@ -475,7 +475,7 @@ static void uri_opener_list_copy_cb(gpointer action, gpointer data)
 	cm_return_if_fail(selected);
 
 	for(cur = selected; cur != NULL; cur = g_list_next(cur))
-	{ 
+	{
 		if(!gtk_tree_model_get_iter(model, &sel, (GtkTreePath *)cur->data))
 			continue;
 
@@ -502,7 +502,7 @@ static void uri_opener_list_copy_cb(gpointer action, gpointer data)
 		}
 		g_string_free(uri_list_str, TRUE);
 	}
-	
+
 	g_list_foreach(selected, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(selected);
 }
@@ -539,10 +539,10 @@ static gboolean uri_opener_list_popup_menu(GtkWidget *widget, gpointer data)
 {
 	GtkTreeView *list_view = (GtkTreeView *)data;
 	GdkEventButton event;
-	
+
 	event.button = 3;
 	event.time = gtk_get_current_event_time();
-	
+
 	uri_opener_list_btn_pressed(NULL, &event, list_view);
 
 	return TRUE;

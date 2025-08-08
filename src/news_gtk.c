@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -96,27 +96,27 @@ static void add_menuitems(GtkUIManager *ui_manager, FolderItem *item)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "CheckNewMessages", "FolderViewPopup/CheckNewMessages", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "SeparatorNews3", "FolderViewPopup/---", GTK_UI_MANAGER_SEPARATOR)
 }
-	
+
 static void set_sensitivity(GtkUIManager *ui_manager, FolderItem *item)
 {
 	MainWindow *mainwin = mainwindow_get_mainwindow();
-	
+
 #define SET_SENS(name, sens) \
 	cm_menu_set_sensitive_full(ui_manager, "Popup/"name, sens)
 
-	SET_SENS("FolderViewPopup/Subscribe", 
-			folder_item_parent(item) == NULL 
+	SET_SENS("FolderViewPopup/Subscribe",
+			folder_item_parent(item) == NULL
 			&& mainwin->lock_count == 0
 			&& news_folder_locked(item->folder) == 0);
-	SET_SENS("FolderViewPopup/Unsubscribe",     
-			folder_item_parent(item) != NULL 
+	SET_SENS("FolderViewPopup/Unsubscribe",
+			folder_item_parent(item) != NULL
 			&& mainwin->lock_count == 0
 			&& news_folder_locked(item->folder) == 0);
-	SET_SENS("FolderViewPopup/CheckNewMessages",    
-			folder_item_parent(item) == NULL 
+	SET_SENS("FolderViewPopup/CheckNewMessages",
+			folder_item_parent(item) == NULL
 			&& mainwin->lock_count == 0
 			&& news_folder_locked(item->folder) == 0);
-	SET_SENS("FolderViewPopup/Synchronise",    
+	SET_SENS("FolderViewPopup/Synchronise",
 			item ? (folder_item_parent(item) != NULL
 			&& folder_want_synchronise(item->folder))
 			: FALSE);
@@ -125,7 +125,7 @@ static void set_sensitivity(GtkUIManager *ui_manager, FolderItem *item)
 			&& !item->no_select)
 			: FALSE);
 	SET_SENS("FolderViewPopup/RenameFolder",
-			folder_item_parent(item) != NULL 
+			folder_item_parent(item) != NULL
 			&& mainwin->lock_count == 0
 			&& news_folder_locked(item->folder) == 0);
 #undef SET_SENS
@@ -157,7 +157,7 @@ static void subscribe_newsgroup_cb(GtkAction *action, gpointer data)
 	GSList *cur;
 	GNode *gnode;
 	MainWindow *mainwin = mainwindow_get_mainwindow();
-	
+
 	if ((item = folderview_get_selected_item(folderview)) == NULL) return;
 
 	if (mainwin->lock_count || news_folder_locked(item->folder))
@@ -231,7 +231,7 @@ static void unsubscribe_newsgroup_cb(GtkAction *action, gpointer data)
 	gchar *old_id;
 	AlertValue avalue;
 	MainWindow *mainwin = mainwindow_get_mainwindow();
-	
+
 	if (!folderview->selected) return;
 
 	item = folderview_get_selected_item(folderview);
@@ -271,9 +271,9 @@ static void unsubscribe_newsgroup_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	g_free(name);
-	
+
 	folder_write_list();
-	
+
 	prefs_filtering_delete_path(old_id);
 	g_free(old_id);
 }
@@ -327,7 +327,7 @@ static void update_tree_cb(GtkAction *action, gpointer data)
 	FolderView *folderview = (FolderView *)data;
 	FolderItem *item;
 	MainWindow *mainwin = mainwindow_get_mainwindow();
-	
+
 	item = folderview_get_selected_item(folderview);
 	cm_return_if_fail(item != NULL);
 

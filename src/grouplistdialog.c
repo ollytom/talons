@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -148,8 +148,8 @@ static void grouplist_dialog_create(void)
 	GtkWidget *hgrid;
 	GtkWidget *msg_label;
 	GtkWidget *search_button;
-	GtkWidget *cancel_button;	
-	GtkWidget *refresh_button;	
+	GtkWidget *cancel_button;
+	GtkWidget *refresh_button;
 	GtkWidget *scrolledwin;
 	static GdkGeometry geometry;
 	gchar *titles[3];
@@ -221,7 +221,7 @@ static void grouplist_dialog_create(void)
 		(GTK_CMCLIST(ctree), 0, GROUPLIST_COL_NAME_WIDTH);
 	gtk_cmclist_set_column_auto_resize(GTK_CMCLIST(ctree), 0, TRUE);
 	gtk_cmclist_set_selection_mode(GTK_CMCLIST(ctree), GTK_SELECTION_MULTIPLE);
-	
+
 	gtk_cmctree_set_expander_style(GTK_CMCTREE(ctree),
 				GTK_CMCTREE_EXPANDER_TRIANGLE);
 
@@ -424,7 +424,7 @@ static void grouplist_dialog_set_list(const gchar *pattern, gboolean refresh)
 	gdk_window_set_cursor(window, watch_cursor);
 	main_window_cursor_wait(mainwindow_get_mainwindow());
 	GTK_EVENTS_FLUSH();
-	
+
 	if (refresh) {
 		ack = TRUE;
 		grouplist_clear();
@@ -519,7 +519,7 @@ static gboolean grouplist_recv_func(SockInfo *sock, gint count, gint read_bytes,
 static void grouplist_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 {
 	cm_return_if_fail( allocation != NULL );
-	
+
 	gtk_window_get_size(GTK_WINDOW(widget),
 		&prefs_common.news_subscribe_width, &prefs_common.news_subscribe_height);
 }
@@ -548,7 +548,7 @@ static void cancel_clicked(GtkWidget *widget, gpointer data)
 }
 
 static void refresh_clicked(GtkWidget *widget, gpointer data)
-{ 
+{
 	gchar *str;
 
 	if (locked) return;
@@ -585,7 +585,7 @@ static gboolean button_press_cb(GtkCMCTree *ctree, GdkEventButton *button,
 	if (button->button != 1) return TRUE;
 	if (button->window != GTK_CMCLIST(ctree)->clist_window) return TRUE;
 
-	if (!gtk_cmclist_get_selection_info(GTK_CMCLIST(ctree), 
+	if (!gtk_cmclist_get_selection_info(GTK_CMCLIST(ctree),
 				     button->x, button->y, &row, &col))
 		return TRUE;
 	node = gtk_cmctree_node_nth(ctree, row);

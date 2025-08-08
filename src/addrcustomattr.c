@@ -90,7 +90,7 @@ void addressbook_custom_attr_edit()
 
 	manage_window_set_transient(GTK_WINDOW(custom_attr_window.window));
 	gtk_widget_grab_focus(custom_attr_window.ok_btn);
-	
+
 	custom_attr_window_load_list(prefs_common.addressbook_custom_attributes);
 
 	gtk_widget_show(custom_attr_window.window);
@@ -106,13 +106,13 @@ static gint custom_attr_cmp_func (GtkTreeModel *model, GtkTreeIter *a,
 
 	gtk_tree_model_get(model, a, CUSTOM_ATTR_NAME, &name1, -1);
 	gtk_tree_model_get(model, b, CUSTOM_ATTR_NAME, &name2, -1);
-	
+
 	if (name1 == NULL)
 		return name2 == NULL ? 0:1;
-	
+
 	if (name2 == NULL)
 		return 1;
-	
+
 	res = g_utf8_collate(name1, name2);
 	g_free(name1);
 	g_free(name2);
@@ -177,11 +177,11 @@ static void custom_attr_popup_delete (void *obj, void *data)
 {
 	GtkTreeIter sel;
 	GtkTreeModel *model;
-	
+
 	if (!gtk_tree_selection_get_selected(gtk_tree_view_get_selection
 				(GTK_TREE_VIEW(custom_attr_window.attr_list)),
 				&model, &sel))
-		return;				
+		return;
 
 	if (alertpanel(_("Delete attribute name"),
 		       _("Do you really want to delete this attribute name?"),
@@ -255,10 +255,10 @@ static gboolean custom_attr_list_popup_menu(GtkWidget *widget, gpointer data)
 {
 	GtkTreeView *list_view = (GtkTreeView *)data;
 	GdkEventButton event;
-	
+
 	event.button = 3;
 	event.time = gtk_get_current_event_time();
-	
+
 	custom_attr_list_btn_pressed(NULL, &event, list_view);
 
 	return TRUE;
@@ -289,7 +289,7 @@ static GtkWidget *custom_attr_window_list_view_create	(void)
 	return GTK_WIDGET(list_view);
 }
 
-static void custom_attr_window_close(void) 
+static void custom_attr_window_close(void)
 {
 	if (dirty)
 		custom_attr_window_save_list();
@@ -301,14 +301,14 @@ static void custom_attr_window_close(void)
 }
 
 static void custom_attr_window_cancel_cb(GtkWidget *widget,
-			         gpointer data) 
+			         gpointer data)
 {
 	dirty = FALSE;
 	custom_attr_window_close();
 }
 
 static void custom_attr_window_ok_cb(GtkWidget *widget,
-			         gpointer data) 
+			         gpointer data)
 {
 	custom_attr_window_close();
 }
@@ -353,7 +353,7 @@ static gboolean find_attr_in_store(GtkTreeModel *model,
 		return TRUE;
 	}
 	g_free(attr);
-	return FALSE; 
+	return FALSE;
 }
 
 static void custom_attr_window_add_attr(void)
@@ -370,7 +370,7 @@ static void custom_attr_window_add_attr(void)
 		fis.attr = new_attr;
 		fis.path = NULL;
 		gtk_tree_model_foreach(gtk_tree_view_get_model
-				(GTK_TREE_VIEW(custom_attr_window.attr_list)), 
+				(GTK_TREE_VIEW(custom_attr_window.attr_list)),
 				(GtkTreeModelForeachFunc) find_attr_in_store,
 				&fis);
 
@@ -385,7 +385,7 @@ static void custom_attr_window_add_attr(void)
 			gtk_tree_selection_select_iter(selection, &fis.iter);
 
 			path = gtk_tree_model_get_path(model, &fis.iter);
-			/* XXX returned path may not be valid??? create new one to be sure */ 
+			/* XXX returned path may not be valid??? create new one to be sure */
 			gtk_tree_view_set_cursor(GTK_TREE_VIEW(custom_attr_window.attr_list),
 						path, NULL, FALSE);
 
@@ -411,7 +411,7 @@ static void custom_attr_window_add_attr(void)
 }
 
 static void custom_attr_window_add_attr_cb(GtkWidget *widget,
-			         gpointer data) 
+			         gpointer data)
 {
 	custom_attr_window_add_attr();
 	gtk_entry_set_text(GTK_ENTRY(custom_attr_window.add_entry), "");
@@ -419,7 +419,7 @@ static void custom_attr_window_add_attr_cb(GtkWidget *widget,
 }
 
 static void custom_attr_window_del_attr_cb(GtkWidget *widget,
-			         gpointer data) 
+			         gpointer data)
 {
 	custom_attr_popup_delete(NULL, NULL);
 	gtk_widget_grab_focus(custom_attr_window.attr_list);
@@ -446,7 +446,7 @@ static gboolean custom_attr_window_add_key_pressed(GtkWidget *widget,
 	return FALSE;
 }
 
-static void custom_attr_window_create(void) 
+static void custom_attr_window_create(void)
 {
 	GtkWidget *window;
 	GtkWidget *hbox1;
@@ -477,22 +477,22 @@ static void custom_attr_window_create(void)
 
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-	
+
 	new_attr_label = gtk_label_new(_("New attribute name:"));
 	gtk_label_set_xalign(GTK_LABEL(new_attr_label), 0.0);
 	gtk_box_pack_start(GTK_BOX(hbox1), new_attr_label, FALSE, FALSE, 0);
-	
+
 	new_attr_entry = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox1), new_attr_entry, FALSE, FALSE, 0);
 	g_signal_connect(G_OBJECT(new_attr_entry), "key_press_event",
 			 G_CALLBACK(custom_attr_window_add_key_pressed), NULL);
-	
+
 	add_btn = gtkut_stock_button("list-add", _("_Add"));
 	gtk_box_pack_start(GTK_BOX(hbox1), add_btn, FALSE, FALSE, 0);
-	
+
 	del_btn = gtkut_stock_button("edit-delete", _("D_elete"));
 	gtk_box_pack_start(GTK_BOX(hbox1), del_btn, FALSE, FALSE, 0);
-	
+
 	gtkut_stock_button_set_create(&hbox2, &cancel_btn, NULL, _("_Cancel"),
 				      &ok_btn, NULL, _("_OK"),
 				      NULL, NULL, NULL);
@@ -514,25 +514,25 @@ static void custom_attr_window_create(void)
 			 G_CALLBACK(custom_attr_window_del_attr_cb), NULL);
 
 	attr_list = custom_attr_window_list_view_create();
-	
+
 	label = gtk_label_new(_("Adding or removing attribute names won't "
 				"affect attributes already set for contacts."));
 	gtk_widget_set_size_request(GTK_WIDGET(label), 380, -1);
 	gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
 	gtk_box_pack_start(GTK_BOX(vbox1), label, FALSE, TRUE, 0);
-	
+
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin),
 				       GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
-				       
+
 	gtk_widget_set_size_request(scrolledwin, 400, 250);
 
 	gtk_container_add(GTK_CONTAINER(scrolledwin), attr_list);
 	gtk_box_pack_start(GTK_BOX(vbox1), scrolledwin, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox1), hbox1, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox1), hbox2, FALSE, FALSE, 0);
-	
+
 	gtk_widget_show(label);
 	gtk_widget_show(scrolledwin);
 	gtk_widget_show(attr_list);
@@ -553,7 +553,7 @@ static void custom_attr_window_create(void)
 	custom_attr_window.add_entry = new_attr_entry;
 }
 
-static void custom_attr_window_load_list (GList *list) 
+static void custom_attr_window_load_list (GList *list)
 {
 	/* copy attribute names list from prefs to store */
 	GList *cur;
@@ -562,7 +562,7 @@ static void custom_attr_window_load_list (GList *list)
 					(GTK_TREE_VIEW(custom_attr_window.attr_list)));
 
 	custom_attr_window_list_view_clear_list(custom_attr_window.attr_list, FALSE);
-	
+
 	cur = list;
 	while (cur) {
 		gtk_list_store_append(list_store, &iter);
@@ -590,7 +590,7 @@ static gboolean custom_attr_store_to_glist (GtkTreeModel *model,
 	return FALSE;
 }
 
-static void custom_attr_window_save_list (void) 
+static void custom_attr_window_save_list (void)
 {
 	GList *cur;
 
@@ -604,7 +604,7 @@ static void custom_attr_window_save_list (void)
 
 	/* copy attribute names list from store to prefs */
 	gtk_tree_model_foreach(gtk_tree_view_get_model
-			(GTK_TREE_VIEW(custom_attr_window.attr_list)), 
+			(GTK_TREE_VIEW(custom_attr_window.attr_list)),
 			(GtkTreeModelForeachFunc) custom_attr_store_to_glist,
 		    NULL);
 	prefs_common.addressbook_custom_attributes = g_list_reverse(store_to_glist);

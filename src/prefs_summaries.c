@@ -141,7 +141,7 @@ static void foldersel_cb(GtkWidget *widget, gpointer data)
 	FolderItem *item;
 	gchar *item_id;
 	gint newpos = 0;
-	
+
 	item = foldersel_folder_sel(NULL, FOLDER_SEL_ALL, NULL, FALSE, NULL);
 	if (item && (item_id = folder_item_get_identifier(item)) != NULL) {
 		gtk_editable_delete_text(GTK_EDITABLE(entry), 0, -1);
@@ -265,21 +265,21 @@ static GtkWidget *date_format_create(GtkButton *button, void *data)
 			(_("Specifier"), renderer, "text", DATEFMT_FMT,
 			 NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(datefmt_list_view), column);
-	
+
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes
 			(_("Description"), renderer, "text", DATEFMT_TXT,
 			 NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(datefmt_list_view), column);
-	
+
 	/* gtk_cmclist_set_column_width(GTK_CMCLIST(datefmt_clist), 0, 80); */
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(datefmt_list_view));
 	gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
 
-	g_signal_connect(G_OBJECT(datefmt_list_view), "row_activated", 
+	g_signal_connect(G_OBJECT(datefmt_list_view), "row_activated",
 			 G_CALLBACK(date_format_select_row),
 			 datefmt_win);
-	
+
 	table = gtk_grid_new();
 	gtk_widget_show(table);
 	gtk_box_pack_start(GTK_BOX(vbox1), table, FALSE, FALSE, 0);
@@ -355,11 +355,11 @@ static GtkWidget *date_format_create(GtkButton *button, void *data)
 	return datefmt_win;
 }
 
-static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window, 
+static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
 	SummariesPage *prefs_summaries = (SummariesPage *) _page;
-	
+
 	GtkWidget *notebook;
 	GtkWidget *hbox0, *hbox1, *hbox2;
 	GtkWidget *vbox1, *vbox2, *vbox3, *vbox4;
@@ -416,7 +416,7 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox1,
 				 gtk_label_new(_("Folder list")));
-	
+
 	hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox0);
 	gtk_box_pack_start(GTK_BOX(vbox1), hbox0, FALSE, TRUE, 0);
@@ -443,7 +443,7 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	menu = GTK_LIST_STORE(gtk_combo_box_get_model(
 				GTK_COMBO_BOX(optmenu_folder_unread)));
 	gtk_widget_show (optmenu_folder_unread);
- 	
+
 	COMBOBOX_ADD (menu, _("No"), 0);
 	COMBOBOX_ADD (menu, _("Unread messages"), 1);
 	COMBOBOX_ADD (menu, _("Unread and Total messages"), 2);
@@ -514,7 +514,7 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox0);
 	gtk_box_pack_start(GTK_BOX(vbox1), hbox0, FALSE, TRUE, 0);
-	
+
 	label = gtk_label_new(_("Displayed columns"));
 	gtk_widget_show(label);
 	gtk_box_pack_start(GTK_BOX(hbox0), label, FALSE, FALSE, 0);
@@ -634,7 +634,7 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	label = gtk_label_new (_("Show \"no unread (or new) message\" dialog"));
 	gtk_widget_show (label);
 	gtk_box_pack_start(GTK_BOX(hbox1), label, FALSE, FALSE, 0);
-	
+
 	optmenu_nextunreadmsgdialog = gtkut_sc_combobox_create(NULL, FALSE);
 	menu = GTK_LIST_STORE(gtk_combo_box_get_model(
 				GTK_COMBO_BOX(optmenu_nextunreadmsgdialog)));
@@ -667,7 +667,7 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	PACK_CHECK_BUTTON
 		(vbox1, checkbtn_ask_override_colorlabel,
 		 _("Confirm when changing color labels"));
-	
+
 	PACK_CHECK_BUTTON
 		(vbox1, checkbtn_show_tooltips,
 		 _("Show tooltips"));
@@ -783,7 +783,7 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			 spinbtn_mark_as_read_delay);
 
 	prefs_summaries->window			= GTK_WIDGET(window);
-	
+
 	combobox_select_by_data(GTK_COMBO_BOX(optmenu_folder_unread),
 			prefs_common.display_folder_unread);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_useaddrbook),
@@ -794,8 +794,8 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			prefs_common.thread_by_subject);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_ng_abbrev_len),
 			prefs_common.ng_abbrev_len);
-	gtk_entry_set_text(GTK_ENTRY(entry_datefmt), 
-			prefs_common.date_format?prefs_common.date_format:"");	
+	gtk_entry_set_text(GTK_ENTRY(entry_datefmt),
+			prefs_common.date_format?prefs_common.date_format:"");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_reopen_last_folder),
 			prefs_common.goto_last_folder_on_startup);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_startup_folder),
@@ -854,7 +854,7 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			prefs_common.summary_col_lock);
 
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
-		
+
 	prefs_summaries->page.widget = notebook;
 }
 
@@ -873,10 +873,10 @@ static void prefs_summaries_save(PrefsPage *_page)
 			GTK_TOGGLE_BUTTON(page->checkbtn_threadsubj));
 	prefs_common.ng_abbrev_len = gtk_spin_button_get_value_as_int(
 			GTK_SPIN_BUTTON(page->spinbtn_ng_abbrev_len));
-	
-	g_free(prefs_common.date_format); 
+
+	g_free(prefs_common.date_format);
 	prefs_common.date_format = gtk_editable_get_chars(
-			GTK_EDITABLE(page->entry_datefmt), 0, -1);	
+			GTK_EDITABLE(page->entry_datefmt), 0, -1);
 
 	prefs_common.goto_last_folder_on_startup = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_reopen_last_folder));
@@ -1032,7 +1032,7 @@ static void date_format_entry_on_change(GtkEditable *editable,
 	buffer[0] = 0;
 	text = gtk_editable_get_chars(editable, 0, -1);
 	if (text)
-		fast_strftime(buffer, sizeof buffer, text, cal_time); 
+		fast_strftime(buffer, sizeof buffer, text, cal_time);
 
 	gtk_label_set_text(example, buffer);
 
@@ -1051,11 +1051,11 @@ static void date_format_select_row(GtkTreeView *list_view,
 	GtkWidget *datefmt_sample;
 	GtkTreeIter iter;
 	GtkTreeModel *model;
-	
+
 	cm_return_if_fail(date_format != NULL);
 
 	/* only on double click */
-	datefmt_sample = GTK_WIDGET(g_object_get_data(G_OBJECT(date_format), 
+	datefmt_sample = GTK_WIDGET(g_object_get_data(G_OBJECT(date_format),
 						      "datefmt_sample"));
 
 	cm_return_if_fail(datefmt_sample != NULL);
@@ -1066,8 +1066,8 @@ static void date_format_select_row(GtkTreeView *list_view,
 	if (!gtk_tree_model_get_iter(model, &iter, path))
 		return;
 
-	gtk_tree_model_get(model, &iter, DATEFMT_FMT, &format, -1);		
-	
+	gtk_tree_model_get(model, &iter, DATEFMT_FMT, &format, -1);
+
 	cur_pos = gtk_editable_get_position(GTK_EDITABLE(datefmt_sample));
 	old_format = gtk_entry_get_text(GTK_ENTRY(datefmt_sample));
 
@@ -1108,4 +1108,4 @@ static void mark_as_read_toggled(GtkToggleButton *button, GtkWidget *spinbtn)
        gtk_widget_set_sensitive(spinbtn,
                gtk_toggle_button_get_active(button));
 }
- 
+

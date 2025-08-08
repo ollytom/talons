@@ -86,13 +86,13 @@ static void prefs_summary_open_insert_action		(GtkListStore *store,
 							 gchar *name,
 							 gint act);
 static GtkWidget *prefs_summary_open_list_view_create	(const gchar *name);
-static void prefs_summary_open_create_list_view_columns	(GtkWidget *list_view, 
+static void prefs_summary_open_create_list_view_columns	(GtkWidget *list_view,
 							 const gchar *name);
-static void actions_list_model_row_changed		(GtkTreeModel *model, 
-							 GtkTreePath *path, 
-							 GtkTreeIter *iter, 
+static void actions_list_model_row_changed		(GtkTreeModel *model,
+							 GtkTreePath *path,
+							 GtkTreeIter *iter,
 							 GtkTreeView *list_view);
-							 
+
 static void drag_begin	(GtkTreeView *list_view,
 			 GdkDragContext *context,
 			 gpointer data);
@@ -103,7 +103,7 @@ static void drag_end	(GtkTreeView *list_view,
 
 static EntryAction saved_summary_select_prio[SUMMARY_OPEN_ACTIONS-1];
 
-static gchar *action_name[SUMMARY_OPEN_ACTIONS] = 
+static gchar *action_name[SUMMARY_OPEN_ACTIONS] =
 {	  ("UNSET (!)"),
 	 N_("oldest marked email"),
 	 N_("oldest new email"),
@@ -128,7 +128,7 @@ void prefs_summary_open_open(void)
 	gtk_widget_grab_focus(summaryopen.ok_btn);
 
 	prefs_summary_open_set_dialog();
-	
+
 	for (i = 0; i < SUMMARY_OPEN_ACTIONS-1; i++)
 		saved_summary_select_prio[i] = prefs_common.summary_select_prio[i];
 
@@ -161,7 +161,7 @@ static void prefs_summary_open_create(void)
 	GtkWidget *list_view_scrolledwin;
 	GtkWidget *possible_actions_list_view;
 	GtkWidget *actions_list_view;
-	
+
 	window = gtkut_window_new(GTK_WINDOW_TOPLEVEL, "prefs_summary_open");
 	gtk_container_set_border_width (GTK_CONTAINER (window), 8);
 	gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER);
@@ -273,14 +273,14 @@ static void prefs_summary_open_create(void)
 			   actions_list_view);
 
 	gtk_tree_view_set_reorderable(GTK_TREE_VIEW(actions_list_view), TRUE);
-	g_signal_connect(G_OBJECT(actions_list_view), "drag_begin", 			 
+	g_signal_connect(G_OBJECT(actions_list_view), "drag_begin",
 			 G_CALLBACK(drag_begin),
 			 actions_list_view);
-			 
-	g_signal_connect(G_OBJECT(actions_list_view), "drag_end", 			 
+
+	g_signal_connect(G_OBJECT(actions_list_view), "drag_end",
 			 G_CALLBACK(drag_end),
 			 actions_list_view);
-	
+
 	btn_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 	gtk_widget_show (btn_vbox);
 	gtk_box_pack_start (GTK_BOX (list_view_hbox2), btn_vbox, FALSE, FALSE, 0);
@@ -363,13 +363,13 @@ fill:
 	for (i = 0; i < SUMMARY_OPEN_ACTIONS-1; i++) {
 		EntryAction act = prefs_common.summary_select_prio[i];
 
-		if (act == ACTION_UNSET) 
+		if (act == ACTION_UNSET)
 			continue;
-		
+
 		set = TRUE;
 		used[act-1] = TRUE;
 		prefs_summary_open_insert_action(GTK_LIST_STORE
-					(model_act), action_name[act], act);	
+					(model_act), action_name[act], act);
 	}
 	if (!set) {
 		/* backward compat */
@@ -380,7 +380,7 @@ fill:
 	for (i = 1; i < SUMMARY_OPEN_ACTIONS; i++) {
 		if (!used[i-1]) {
 			prefs_summary_open_insert_action(GTK_LIST_STORE
-					(model_poss), action_name[i], i);	
+					(model_poss), action_name[i], i);
 		}
 	}
 }
@@ -396,7 +396,7 @@ static void prefs_summary_open_set_list(void)
 	while (gtk_tree_model_iter_nth_child(model, &iter, NULL, row)) {
 		gtk_tree_model_get(model, &iter, PREFS_SUMMARY_OPEN_DATA, &data, -1);
 		prefs_common.summary_select_prio[row] = GPOINTER_TO_INT(data);
-		row++;				
+		row++;
 	}
 	for (; row < SUMMARY_OPEN_ACTIONS-1; row++) {
 		prefs_common.summary_select_prio[row] = ACTION_UNSET;
@@ -421,15 +421,15 @@ static void prefs_summary_open_delete_cb(GtkButton *btn, gpointer list_view_data
 		return;
 
 	gtk_tree_model_get(model, &iter, PREFS_SUMMARY_OPEN_DATA, &data, -1);
-	if (!data) 
+	if (!data)
 		return;
 
 	gtk_list_store_remove(store, &iter);
 
 	i = GPOINTER_TO_INT(data);
 	prefs_summary_open_insert_action(GTK_LIST_STORE
-					(model_poss), action_name[i], i);	
-	
+					(model_poss), action_name[i], i);
+
 	prefs_summary_open_set_list();
 }
 
@@ -451,15 +451,15 @@ static void prefs_summary_open_register_cb(GtkButton *btn, gpointer list_view_da
 		return;
 
 	gtk_tree_model_get(model_poss, &iter, PREFS_SUMMARY_OPEN_DATA, &data, -1);
-	if (!data) 
+	if (!data)
 		return;
 
 	gtk_list_store_remove(store, &iter);
 
 	i = GPOINTER_TO_INT(data);
 	prefs_summary_open_insert_action(GTK_LIST_STORE
-					(model), action_name[i], i);	
-	
+					(model), action_name[i], i);
+
 	prefs_summary_open_set_list();
 }
 
@@ -470,18 +470,18 @@ static void prefs_summary_open_up(void)
 	GtkListStore *store = NULL;
 	GtkTreeModel *model = NULL;
 	GtkTreeIter iprev;
-	
+
 	if (!gtk_tree_selection_get_selected
 		(gtk_tree_view_get_selection
 			(GTK_TREE_VIEW(summaryopen.actions_list_view)),
-		 &model,	
+		 &model,
 		 &isel))
 		return;
 	store = (GtkListStore *)model;
 	sel = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &isel);
 	if (!sel)
 		return;
-	
+
 	/* no move if we're at row 0... */
 	try = gtk_tree_path_copy(sel);
 	if (!gtk_tree_path_prev(try)) {
@@ -506,7 +506,7 @@ static void prefs_summary_open_down(void)
 	GtkTreeModel *model = NULL;
 	GtkTreeIter next, sel;
 	GtkTreePath *try;
-	
+
 	if (!gtk_tree_selection_get_selected
 		(gtk_tree_view_get_selection
 			(GTK_TREE_VIEW(summaryopen.actions_list_view)),
@@ -515,13 +515,13 @@ static void prefs_summary_open_down(void)
 		return;
 	store = (GtkListStore *)model;
 	try = gtk_tree_model_get_path(GTK_TREE_MODEL(store), &sel);
-	if (!try) 
+	if (!try)
 		return;
-	
+
 	next = sel;
 	if (gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &next))
 		gtk_list_store_swap(store, &next, &sel);
-		
+
 	gtk_tree_path_free(try);
 	prefs_summary_open_set_list();
 }
@@ -607,7 +607,7 @@ static GtkWidget *prefs_summary_open_list_view_create(const gchar *name)
 	return list_view;
 }
 
-static void prefs_summary_open_create_list_view_columns(GtkWidget *list_view, 
+static void prefs_summary_open_create_list_view_columns(GtkWidget *list_view,
 						     const gchar *name)
 {
 	GtkTreeViewColumn *column;
@@ -616,15 +616,15 @@ static void prefs_summary_open_create_list_view_columns(GtkWidget *list_view,
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes
 		(name, renderer, "text", PREFS_SUMMARY_OPEN_HEADER, NULL);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);		
+	gtk_tree_view_append_column(GTK_TREE_VIEW(list_view), column);
 }
 
 /*!
  *\brief	Called as a result of a drag & drop
  */
-static void actions_list_model_row_changed(GtkTreeModel *model, 
-					   GtkTreePath *path, 
-					   GtkTreeIter *iter, 
+static void actions_list_model_row_changed(GtkTreeModel *model,
+					   GtkTreePath *path,
+					   GtkTreeIter *iter,
 					   GtkTreeView *list_view)
 {
 }
@@ -636,7 +636,7 @@ static void drag_begin(GtkTreeView *list_view,
 		      GdkDragContext *context,
 		      gpointer data)
 {
-	/* XXX unfortunately a completed drag & drop does not emit 
+	/* XXX unfortunately a completed drag & drop does not emit
 	 * a "rows_reordered" signal, but a "row_changed" signal.
 	 * So during drag and drop, listen to "row_changed", and
 	 * update the account list accordingly */

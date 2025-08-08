@@ -46,7 +46,7 @@ GtkWidget *statusbar_create(void)
 	GtkWidget *hbox;
 
 	statusbar = gtk_statusbar_new();
-	
+
 	gtk_widget_set_margin_top(GTK_WIDGET(statusbar), 0);
 	gtk_widget_set_margin_bottom(GTK_WIDGET(statusbar), 0);
 	statusbar_list = g_list_append(statusbar_list, statusbar);
@@ -62,7 +62,7 @@ GtkWidget *statusbar_create(void)
 	gtk_container_add(GTK_CONTAINER(parent), hbox);
 	gtk_widget_show(hbox);
 	gtk_box_pack_start(GTK_BOX(hbox), child, TRUE, TRUE, 0);
-	g_object_unref(child);	
+	g_object_unref(child);
 
 	return statusbar;
 }

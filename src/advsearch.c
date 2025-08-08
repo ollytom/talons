@@ -364,7 +364,7 @@ do {										\
 
 static void prepare_matcher_tag(AdvancedSearch *search)
 {
-	gchar **words = search->request.matchstring 
+	gchar **words = search->request.matchstring
 			? g_strsplit(search->request.matchstring, " ", -1)
 			: NULL;
 	gint i = 0;

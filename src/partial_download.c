@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /* Partial download:
@@ -24,12 +24,12 @@
  *
  * A mail which has been partially downloaded will have some special headers,
  * and its entry in the uidl file will first be 1 (POP3_PARTIALLY_RECEIVED);
- * the special headers will be including "SC-Marked-For-Download" which can 
+ * the special headers will be including "SC-Marked-For-Download" which can
  * have three values:
  * 0 (POP3_PARTIAL_DLOAD_UNKN) meaning that the user has not yet chosen to
  *  download the mail or let it be deleted - this header is absent until the
  *  user first chooses an action
- * 1 (POP3_PARTIAL_DLOAD_DLOAD) meaning that the user wants to finish 
+ * 1 (POP3_PARTIAL_DLOAD_DLOAD) meaning that the user wants to finish
  *  downloading the mail
  * 2 (POP3_PARTIAL_DLOAD_DELE) meaning that the user does not want to finish
  *  downloading the mail
@@ -74,19 +74,19 @@ int partial_msg_in_uidl_list(MsgInfo *msginfo)
 	time_t recv_time;
 	time_t now;
 	gchar *sanitized_uid = NULL;
-	
+
 	if (!msginfo->extradata)
 		return FALSE;
 
 	sanitized_uid = g_strdup(msginfo->extradata->account_login);
-	
+
 	subst_for_filename(sanitized_uid);
 
 	if (!msginfo->extradata->account_server
 	||  !msginfo->extradata->account_login
 	||  !msginfo->extradata->partial_recv)
 		return FALSE;
-	
+
 	path = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 			   "uidl", G_DIR_SEPARATOR_S, msginfo->extradata->account_server,
 			   "-", msginfo->extradata->account_login, NULL);
@@ -112,8 +112,8 @@ int partial_msg_in_uidl_list(MsgInfo *msginfo)
 		gchar tmp[POPBUFSIZE];
 		strretchomp(buf);
 		recv_time = RECV_TIME_NONE;
-		
-		if (sscanf(buf, "%s\t%ld\t%s", uidl, (long int *) &recv_time, 
+
+		if (sscanf(buf, "%s\t%ld\t%s", uidl, (long int *) &recv_time,
 			   tmp) < 2) {
 			if (sscanf(buf, "%s", uidl) != 1)
 				continue;
@@ -127,7 +127,7 @@ int partial_msg_in_uidl_list(MsgInfo *msginfo)
 		}
 	}
 
-	claws_fclose(fp);	
+	claws_fclose(fp);
 	return FALSE;
 }
 
@@ -145,7 +145,7 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 	int err = -1;
 	gchar *filename;
 	MsgInfo *tinfo;
-	gchar *sanitized_uid = NULL;	
+	gchar *sanitized_uid = NULL;
 
 	filename = procmsg_get_message_file_path(msginfo);
 	if (!filename) {
@@ -153,7 +153,7 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 		return err;
 	}
 	tinfo = procheader_parse_file(filename, msginfo->flags, TRUE, TRUE);
-	
+
 	if (!tinfo->extradata) {
 		g_free(filename);
 		return err;
@@ -187,7 +187,7 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 	pathnew = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 			   "uidl", G_DIR_SEPARATOR_S, tinfo->extradata->account_server,
 			   "-", sanitized_uid, ".new", NULL);
-	
+
 	g_free(sanitized_uid);
 
 	if ((fpnew = claws_fopen(pathnew, "wb")) == NULL) {
@@ -197,15 +197,15 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 		g_free(pathnew);
 		goto bail;
 	}
-	
+
 	now = time(NULL);
 
 	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
 		strretchomp(buf);
 		recv_time = RECV_TIME_NONE;
 		sprintf(partial_recv,"0");
-		
-		if (sscanf(buf, "%s\t%ld\t%s", 
+
+		if (sscanf(buf, "%s\t%ld\t%s",
 			   uidl, (long int *) &recv_time, partial_recv) < 2) {
 			if (sscanf(buf, "%s", uidl) != 1)
 				continue;
@@ -214,7 +214,7 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 			}
 		}
 		if (strcmp(tinfo->extradata->partial_recv, uidl)) {
-			if (fprintf(fpnew, "%s\t%ld\t%s\n", 
+			if (fprintf(fpnew, "%s\t%ld\t%s\n",
 				uidl, (long int) recv_time, partial_recv) < 0) {
 				FILE_OP_ERROR(pathnew, "fprintf");
 				claws_fclose(fpnew);
@@ -236,8 +236,8 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 				stat = g_strdup("1");
 			else if (download == POP3_PARTIAL_DLOAD_DELE)
 				stat = g_strdup("0");
-			
-			if (fprintf(fpnew, "%s\t%ld\t%s\n", 
+
+			if (fprintf(fpnew, "%s\t%ld\t%s\n",
 				uidl, (long int) recv_time, stat) < 0) {
 				FILE_OP_ERROR(pathnew, "fprintf");
 				claws_fclose(fpnew);
@@ -262,7 +262,7 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 
 	g_free(path);
 	g_free(pathnew);
-	
+
 	if ((fp = claws_fopen(filename,"rb")) == NULL) {
 		FILE_OP_ERROR(filename, "claws_fopen");
 		goto bail;
@@ -274,8 +274,8 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 		g_free(pathnew);
 		goto bail;
 	}
-	
-	if (fprintf(fpnew, "SC-Marked-For-Download: %d\n", 
+
+	if (fprintf(fpnew, "SC-Marked-For-Download: %d\n",
 			download) < 0) {
 		FILE_OP_ERROR(pathnew, "fprintf");
 		claws_fclose(fpnew);
@@ -285,9 +285,9 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 	}
 	while (claws_fgets(buf, sizeof(buf)-1, fp) != NULL) {
 		if(strlen(buf) > strlen("SC-Marked-For-Download: x\n")
-		&& !strncmp(buf, "SC-Marked-For-Download:", 
+		&& !strncmp(buf, "SC-Marked-For-Download:",
 		            strlen("SC-Marked-For-Download:"))) {
-			if (fprintf(fpnew, "%s", 
+			if (fprintf(fpnew, "%s",
 			 buf+strlen("SC-Marked-For-Download: x\n")) < 0) {
 				FILE_OP_ERROR(pathnew, "fprintf");
 				claws_fclose(fpnew);
@@ -297,7 +297,7 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 			}
 			continue;
 		} else if (strlen(buf) == strlen("SC-Marked-For-Download: x\n")
-		&& !strncmp(buf, "SC-Marked-For-Download:", 
+		&& !strncmp(buf, "SC-Marked-For-Download:",
 		            strlen("SC-Marked-For-Download:"))) {
 			continue;
 		}
@@ -330,10 +330,10 @@ static int partial_uidl_mark_mail(MsgInfo *msginfo, int download)
 bail:
 	g_free(filename);
 	procmsg_msginfo_free(&tinfo);
-	
+
 	return err;
 }
- 
+
 int partial_mark_for_delete(MsgInfo *msginfo)
 {
 	return partial_uidl_mark_mail(msginfo, POP3_PARTIAL_DLOAD_DELE);
@@ -349,7 +349,7 @@ int partial_unmark(MsgInfo *msginfo)
 	return partial_uidl_mark_mail(msginfo, POP3_PARTIAL_DLOAD_UNKN);
 }
 
-void partial_delete_old(const gchar *file) 
+void partial_delete_old(const gchar *file)
 {
 	gchar *id = g_strdup(file);
 	gchar *snum = strrchr(file, ':');
@@ -374,7 +374,7 @@ void partial_delete_old(const gchar *file)
 	if (item) {
 		debug_print("removing %d in %s\n", num, id);
 		folder_item_remove_msg(item, num);
-	} 
+	}
 	g_free(id);
 }
 
@@ -388,12 +388,12 @@ gchar *partial_get_filename(const gchar *server, const gchar *login,
 	gchar uidl[POPBUFSIZE];
 	time_t recv_time;
 	time_t now;
-	gchar *sanitized_uid = g_strdup(login);	
+	gchar *sanitized_uid = g_strdup(login);
 
 	subst_for_filename(sanitized_uid);
 
 	path = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
-			   "uidl", G_DIR_SEPARATOR_S, 
+			   "uidl", G_DIR_SEPARATOR_S,
 			   server, "-", sanitized_uid, NULL);
 	if ((fp = claws_fopen(path, "rb")) == NULL) {
 		if (ENOENT != errno) FILE_OP_ERROR(path, "claws_fopen");
@@ -417,8 +417,8 @@ gchar *partial_get_filename(const gchar *server, const gchar *login,
 		gchar tmp[POPBUFSIZE];
 		strretchomp(buf);
 		recv_time = RECV_TIME_NONE;
-		
-		if (sscanf(buf, "%s\t%ld\t%s", uidl, (long int *) &recv_time, 
+
+		if (sscanf(buf, "%s\t%ld\t%s", uidl, (long int *) &recv_time,
 			   tmp) < 2) {
 			if (sscanf(buf, "%s", uidl) != 1)
 				continue;
@@ -433,6 +433,6 @@ gchar *partial_get_filename(const gchar *server, const gchar *login,
 	}
 
 	claws_fclose(fp);
-	
+
 	return result;
 }

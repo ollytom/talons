@@ -128,7 +128,7 @@ static void image_viewer_load_image(ImageViewer *imageviewer)
 	}
 
 	if (!pixbuf && !animation) {
-		g_warning("couldn't load the image");	
+		g_warning("couldn't load the image");
 		return;
 	}
 
@@ -145,7 +145,7 @@ static void image_viewer_load_image(ImageViewer *imageviewer)
 
 	gtk_widget_show(imageviewer->image);
 
-	g_signal_handlers_unblock_by_func(G_OBJECT(imageviewer->scrolledwin), 
+	g_signal_handlers_unblock_by_func(G_OBJECT(imageviewer->scrolledwin),
 			 G_CALLBACK(scrolledwin_resize_cb), imageviewer);
 
 	if (pixbuf)
@@ -479,7 +479,7 @@ MimeViewerFactory image_viewer_factory =
 {
 	content_types,
 	0,
-	
+
 	image_viewer_create,
 };
 

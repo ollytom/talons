@@ -147,7 +147,7 @@ static GtkWidget *ssl_manager_list_view_create	(void)
 
 	model = GTK_TREE_MODEL(ssl_manager_create_data_store());
 	list_view = GTK_TREE_VIEW(gtk_tree_view_new_with_model(model));
-	
+
  	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                              0, GTK_SORT_ASCENDING);
 	g_object_unref(model);
@@ -269,9 +269,9 @@ void ssl_manager_create(void)
 
 static void ssl_manager_list_view_insert_cert(GtkWidget *list_view,
 						  GtkTreeIter *row_iter,
-						  gchar *host, 
+						  gchar *host,
 						  gchar *port,
-						  SSLCertificate *cert) 
+						  SSLCertificate *cert)
 {
 	char *sig_status, *exp_date;
 	char buf[100];
@@ -326,7 +326,7 @@ static void ssl_manager_list_view_insert_cert(GtkWidget *list_view,
 	g_free(exp_date);
 }
 
-static void ssl_manager_load_certs (void) 
+static void ssl_manager_load_certs (void)
 {
 	GDir *dir;
 	const gchar *d;
@@ -340,7 +340,7 @@ static void ssl_manager_load_certs (void)
 
 	gtk_list_store_clear(store);
 
-	path = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, 
+	path = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 			  "certs", G_DIR_SEPARATOR_S, NULL);
 
 	if((dir = g_dir_open(path, 0, &error)) == NULL) {
@@ -350,12 +350,12 @@ static void ssl_manager_load_certs (void)
         g_free(path);
 		return;
 	}
-	
+
 	while ((d = g_dir_read_name(dir)) != NULL) {
 		gchar *server = NULL, *port = NULL, *fp = NULL;
 		SSLCertificate *cert;
 
-		if(strstr(d, ".cert") != d + (strlen(d) - strlen(".cert"))) 
+		if(strstr(d, ".cert") != d + (strlen(d) - strlen(".cert")))
 			continue;
 
 		if (get_serverportfp_from_filename(d, &server, &port, &fp)) {
@@ -381,13 +381,13 @@ static void ssl_manager_load_certs (void)
 	g_free(path);
 }
 
-static void ssl_manager_close(void) 
+static void ssl_manager_close(void)
 {
 	gtk_widget_hide(manager.window);
 }
 
 static void ssl_manager_close_cb(GtkWidget *widget,
-			         gpointer data) 
+			         gpointer data)
 {
 	ssl_manager_close();
 }
@@ -417,7 +417,7 @@ static void ssl_manager_double_clicked(GtkTreeView		*list_view,
 	if (!gtk_tree_model_get_iter(model, &iter, path))
 		return;
 
-	gtk_tree_model_get(model, &iter, 
+	gtk_tree_model_get(model, &iter,
 			   SSL_MANAGER_CERT, &cert,
 			   -1);
 
@@ -431,8 +431,8 @@ static void ssl_manager_double_clicked(GtkTreeView		*list_view,
 
 
 
-static void ssl_manager_delete_cb(GtkWidget *widget, 
-			      gpointer data) 
+static void ssl_manager_delete_cb(GtkWidget *widget,
+			      gpointer data)
 {
 	SSLCertificate *cert;
 	int val;
@@ -451,17 +451,17 @@ static void ssl_manager_delete_cb(GtkWidget *widget,
 		 	      NULL, _("_Cancel"), "edit-delete-symbolic", _("D_elete"), NULL, NULL,
 			      ALERTFOCUS_FIRST, FALSE, NULL, ALERT_WARNING);
 
-			     
+
 	if (val != G_ALERTALTERNATE)
 		return;
-	
+
 	ssl_certificate_delete_from_disk(cert);
 	ssl_certificate_destroy(cert);
 	gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
 }
 
-static void ssl_manager_view_cb(GtkWidget *widget, 
-			        gpointer data) 
+static void ssl_manager_view_cb(GtkWidget *widget,
+			        gpointer data)
 {
 	SSLCertificate *cert;
 

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #include "config.h"
@@ -58,7 +58,7 @@ SourceWindow *source_window_create(void)
 	static PangoFontDescription *font_desc = NULL;
 
 	static GdkGeometry geometry;
-	
+
 	debug_print("Creating source window...\n");
 	sourcewin = g_new0(SourceWindow, 1);
 
@@ -66,7 +66,7 @@ SourceWindow *source_window_create(void)
 	gtk_window_set_title(GTK_WINDOW(window), _("Source of the message"));
 	gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
-	
+
 	if (!geometry.min_height) {
 		geometry.min_width = 400;
 		geometry.min_height = 320;
@@ -142,7 +142,7 @@ void source_window_show_msg(SourceWindow *sourcewin, MsgInfo *msginfo)
 	sourcewin->updating = TRUE;
 	file = procmsg_get_message_file(msginfo);
 	sourcewin->updating = FALSE;
-	
+
 	if (sourcewin->deferred_destroy) {
 		g_free(file);
 		source_window_destroy(sourcewin);
