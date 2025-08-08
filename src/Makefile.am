@@ -547,8 +547,7 @@ claws_mail_LDADD = \
 	$(LIBICONV) \
 	$(STARTUP_NOTIFICATION_LIBS) \
 	$(LIBETPAN_LIBS) \
-	$(SVG_LIBS) \
-	$(CONTACTS_LIBS)
+	$(SVG_LIBS)
 
 pixmapdir=$(datadir)/icons/hicolor/48x48/apps
 
@@ -569,15 +568,11 @@ AM_CPPFLAGS = \
 	$(LIBETPAN_CPPFLAGS) \
 	$(STARTUP_NOTIFICATION_CFLAGS) \
 	$(SVG_CFLAGS) \
-	$(VALGRIND_CFLAGS) \
-	$(CONTACTS_CFLAGS)
+	$(VALGRIND_CFLAGS)
 
+#no-unused-function because of bison stuff
 matcher_parser_lex.$(OBJEXT) : AM_CFLAGS += -Wno-unused-function
 quote_fmt_lex.$(OBJEXT) : AM_CFLAGS += -Wno-unused-function
-
-#no-unused-function is there because of bison stuff
-#no-deprecated-declarations because of gpgme_data_rewind, which we have
-#to call inside gpgme due to our lack of LARGEFILE support
 
 AM_YFLAGS = -d
 
