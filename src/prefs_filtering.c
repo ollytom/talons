@@ -327,10 +327,8 @@ static void prefs_filtering_create(void)
 	GtkWidget *top_btn;
 	GtkWidget *up_btn;
 	GtkWidget *down_btn;
-#ifndef GENERIC_UMPC
 	GtkWidget *page_up_btn;
 	GtkWidget *page_down_btn;
-#endif
 	GtkWidget *bottom_btn;
 	GtkWidget *table;
 	static GdkGeometry geometry;
@@ -515,7 +513,6 @@ static void prefs_filtering_create(void)
 	CLAWS_SET_TIP(top_btn,
 			_("Move the selected rule to the top"));
 
-#ifndef GENERIC_UMPC
 	page_up_btn = gtk_button_new_with_mnemonic (_("Page u_p"));
 	gtk_button_set_image(GTK_BUTTON(page_up_btn),
 			gtk_image_new_from_icon_name("go-up-symbolic",GTK_ICON_SIZE_BUTTON));
@@ -525,7 +522,6 @@ static void prefs_filtering_create(void)
 			 G_CALLBACK(prefs_filtering_page_up), NULL);
 	CLAWS_SET_TIP(page_up_btn,
 			_("Move the selected rule one page up"));
-#endif
 
 	up_btn = gtkut_stock_button("go-up", _("_Up"));
 	gtk_widget_show (up_btn);
@@ -543,7 +539,6 @@ static void prefs_filtering_create(void)
 	CLAWS_SET_TIP(down_btn,
 			_("Move the selected rule down"));
 
-#ifndef GENERIC_UMPC
 	page_down_btn = gtk_button_new_with_mnemonic (_("Page dow_n"));
 	gtk_button_set_image(GTK_BUTTON(page_down_btn),
 			gtk_image_new_from_icon_name("go-down-symbolic",GTK_ICON_SIZE_BUTTON));
@@ -553,7 +548,6 @@ static void prefs_filtering_create(void)
 			 G_CALLBACK(prefs_filtering_page_down), NULL);
 	CLAWS_SET_TIP(page_down_btn,
 			_("Move the selected rule one page down"));
-#endif
 
 	bottom_btn = gtkut_stock_button("go-bottom", _("_Bottom"));
 	gtk_widget_show (bottom_btn);
@@ -1689,11 +1683,6 @@ static GtkActionEntry prefs_filtering_popup_entries[] =
 	{"PrefsFilteringPopup/Delete",		NULL, N_("_Delete"), NULL, NULL, G_CALLBACK(prefs_filtering_delete_cb) },
 	{"PrefsFilteringPopup/DeleteAll",	NULL, N_("Delete _all"), NULL, NULL, G_CALLBACK(prefs_filtering_delete_all_cb) },
 	{"PrefsFilteringPopup/Duplicate",	NULL, N_("D_uplicate"), NULL, NULL, G_CALLBACK(prefs_filtering_duplicate_cb) },
-#ifdef GENERIC_UMPC
-	{"PrefsFilteringPopup/---",		NULL, "---", NULL, NULL, NULL },
-	{"PrefsFilteringPopup/PageUp",		NULL, N_("Move one page up"), NULL, NULL, G_CALLBACK(prefs_filtering_page_up) },
-	{"PrefsFilteringPopup/PageDown",	NULL, N_("Move one page down"), NULL, NULL, G_CALLBACK(prefs_filtering_page_down) },
-#endif
 };
 
 static void prefs_filtering_row_selected(GtkTreeSelection *selection,
@@ -1741,11 +1730,6 @@ static gint prefs_filtering_list_btn_pressed(GtkWidget *widget, GdkEventButton *
 				MENUITEM_ADDUI("/Menus/PrefsFilteringPopup", "Delete", "PrefsFilteringPopup/Delete", GTK_UI_MANAGER_MENUITEM)
 				MENUITEM_ADDUI("/Menus/PrefsFilteringPopup", "DeleteAll", "PrefsFilteringPopup/DeleteAll", GTK_UI_MANAGER_MENUITEM)
 				MENUITEM_ADDUI("/Menus/PrefsFilteringPopup", "Duplicate", "PrefsFilteringPopup/Duplicate", GTK_UI_MANAGER_MENUITEM)
-#ifdef GENERIC_UMPC
-				MENUITEM_ADDUI("/Menus/PrefsFilteringPopup", "Separator1", "PrefsFilteringPopup/---", GTK_UI_MANAGER_SEPARATOR)
-				MENUITEM_ADDUI("/Menus/PrefsFilteringPopup", "PageUp", "PrefsFilteringPopup/PageUp", GTK_UI_MANAGER_MENUITEM)
-				MENUITEM_ADDUI("/Menus/PrefsFilteringPopup", "PageDown", "PrefsFilteringPopup/PageDown", GTK_UI_MANAGER_MENUITEM)
-#endif
 				prefs_filtering_popup_menu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(
 					gtk_ui_manager_get_widget(gtkut_ui_manager(), "/Menus/PrefsFilteringPopup")) );
 			}
@@ -1793,9 +1777,6 @@ static GtkWidget *prefs_filtering_list_view_create(void)
 	list_view = GTK_TREE_VIEW(gtk_tree_view_new_with_model(
 				GTK_TREE_MODEL(store)));
 	g_object_unref(store);
-#ifdef GENERIC_UMPC
-	g_object_set(list_view, "allow-checkbox-mode", FALSE, NULL);
-#endif
 
 	g_signal_connect(G_OBJECT(list_view), "popup-menu",
 			 G_CALLBACK(prefs_filtering_list_popup_menu), list_view);

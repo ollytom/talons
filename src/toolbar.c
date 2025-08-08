@@ -647,43 +647,28 @@ static void toolbar_set_default_generic(ToolbarType toolbar_type, DefaultToolbar
 void toolbar_set_default(ToolbarType source)
 {
 	DefaultToolbar default_toolbar_main[] = {
-#ifdef GENERIC_UMPC
-		{ A_GO_FOLDERS},
-		{ A_OPEN_MAIL},
-		{ A_SEPARATOR},
-#endif
 		{ A_RECEIVE_ALL},
 		{ A_SEPARATOR},
 		{ A_SEND_QUEUED},
 		{ A_COMPOSE_EMAIL},
 		{ A_SEPARATOR},
 		{ A_REPLY_MESSAGE},
-#ifndef GENERIC_UMPC
 		{ A_REPLY_ALL},
 		{ A_REPLY_SENDER},
-#endif
 		{ A_FORWARD},
 		{ A_SEPARATOR},
 		{ A_TRASH},
-#ifndef GENERIC_UMPC
 		{ A_LEARN_SPAM},
-#endif
 		{ A_SEPARATOR},
 		{ A_GOTO_NEXT},
 		{ N_ACTION_VAL}
 	};
 	DefaultToolbar default_toolbar_compose[] = {
-#ifdef GENERIC_UMPC
-		{ A_CLOSE},
-		{ A_SEPARATOR},
-#endif
 		{ A_SEND},
 		{ A_SEND_LATER},
 		{ A_DRAFT},
 		{ A_SEPARATOR},
-#ifndef GENERIC_UMPC
 		{ A_INSERT},
-#endif
 		{ A_ATTACH},
 		{ A_SEPARATOR},
 		{ A_ADDRBOOK},
@@ -691,19 +676,13 @@ void toolbar_set_default(ToolbarType source)
 	};
 
 	DefaultToolbar default_toolbar_msgview[] = {
-#ifdef GENERIC_UMPC
-		{ A_CLOSE},
-		{ A_SEPARATOR},
-#endif
 		{ A_REPLY_MESSAGE},
 		{ A_REPLY_ALL},
 		{ A_REPLY_SENDER},
 		{ A_FORWARD},
 		{ A_SEPARATOR},
 		{ A_TRASH},
-#ifndef GENERIC_UMPC
 		{ A_LEARN_SPAM},
-#endif
 		{ A_GOTO_NEXT},
 		{ N_ACTION_VAL}
 	};
@@ -955,17 +934,13 @@ static void activate_compose_button (Toolbar           *toolbar,
 		gtk_tool_button_set_icon_widget(
 			GTK_TOOL_BUTTON(toolbar->compose_mail_btn),
 			toolbar->compose_news_icon);
-#ifndef GENERIC_UMPC
 		CLAWS_SET_TOOL_ITEM_TIP(GTK_TOOL_ITEM(toolbar->compose_mail_btn), _("Write News message"));
-#endif
 		gtk_widget_show(toolbar->compose_news_icon);
 	} else {
 		gtk_tool_button_set_icon_widget(
 			GTK_TOOL_BUTTON(toolbar->compose_mail_btn),
 			toolbar->compose_mail_icon);
-#ifndef GENERIC_UMPC
 		CLAWS_SET_TOOL_ITEM_TIP(GTK_TOOL_ITEM(toolbar->compose_mail_btn), _("Write Email"));
-#endif
 		gtk_widget_show(toolbar->compose_mail_icon);
 	}
 	toolbar->compose_btn_type = type;
@@ -994,9 +969,7 @@ static void activate_learn_button (Toolbar           *toolbar,
 		gtk_tool_button_set_label(
 			GTK_TOOL_BUTTON(toolbar->learn_spam_btn),
 			_("Spam"));
-#ifndef GENERIC_UMPC
 		CLAWS_SET_TOOL_ITEM_TIP(GTK_TOOL_ITEM(toolbar->learn_spam_btn), _("Learn spam"));
-#endif
 		gtk_widget_show(toolbar->learn_spam_icon);
 	} else {
 		gtk_tool_button_set_icon_widget(
@@ -1005,9 +978,7 @@ static void activate_learn_button (Toolbar           *toolbar,
 		gtk_tool_button_set_label(
 			GTK_TOOL_BUTTON(toolbar->learn_spam_btn),
 			_("Ham"));
-#ifndef GENERIC_UMPC
 		CLAWS_SET_TOOL_ITEM_TIP(GTK_TOOL_ITEM(toolbar->learn_spam_btn), _("Learn ham"));
-#endif
 		gtk_widget_show(toolbar->learn_ham_icon);
 	}
 	toolbar->learn_btn_type = type;
@@ -1459,13 +1430,11 @@ static void toolbar_prev_unread_cb(GtkWidget *widget, gpointer data)
 
 		/* Now we need to update the messageview window */
 		if (msgview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 			MsgInfo * msginfo = summary_get_selected_msg(msgview->mainwin->summaryview);
 
 			if (msginfo)
 				messageview_show(msgview, msginfo,
 					 msgview->all_headers);
-#endif
 		} else {
 			gtk_widget_destroy(msgview->window);
 		}
@@ -1506,13 +1475,11 @@ static void toolbar_next_unread_cb(GtkWidget *widget, gpointer data)
 
 		/* Now we need to update the messageview window */
 		if (msgview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 			MsgInfo * msginfo = summary_get_selected_msg(msgview->mainwin->summaryview);
 
 			if (msginfo)
 				messageview_show(msgview, msginfo,
 					 msgview->all_headers);
-#endif
 		} else {
 			gtk_widget_destroy(msgview->window);
 		}
@@ -2115,7 +2082,7 @@ static void toolbar_buttons_cb(GtkWidget   *widget,
 		}
 	}
 }
-#ifndef GENERIC_UMPC
+
 #define TOOLBAR_ITEM(item,icon,text,tooltip) {								\
 	item = GTK_WIDGET(gtk_tool_button_new(icon, text));						\
 	gtk_widget_set_can_focus(gtk_bin_get_child(GTK_BIN(item)), FALSE);				\
@@ -2164,50 +2131,6 @@ static void toolbar_buttons_cb(GtkWidget   *widget,
 	g_list_free(gchild);										\
 }
 
-#else
-
-#define TOOLBAR_ITEM(item,icon,text,tooltip) {								\
-	item = GTK_WIDGET(gtk_tool_button_new(icon, text));						\
-	gtk_widget_set_can_focus(gtk_bin_get_child(GTK_BIN(item)), FALSE);				\
-	gtk_tool_item_set_homogeneous(GTK_TOOL_ITEM(item), FALSE);					\
-	gtk_tool_item_set_is_important(GTK_TOOL_ITEM(item), TRUE);					\
-	g_signal_connect (G_OBJECT(item), "clicked", G_CALLBACK(toolbar_buttons_cb), toolbar_item);	\
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), GTK_TOOL_ITEM(item), -1);				\
-}
-
-#define TOOLBAR_TOGGLE_ITEM(item,icon,text,tooltip) {							\
-	item = GTK_WIDGET(gtk_toggle_tool_button_new());						\
-	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(item), icon);					\
-	gtk_tool_button_set_label(GTK_TOOL_BUTTON(item), text);						\
-	gtk_widget_set_can_focus(gtk_bin_get_child(GTK_BIN(item)), FALSE);				\
-	gtk_tool_item_set_homogeneous(GTK_TOOL_ITEM(item), FALSE);					\
-	gtk_tool_item_set_is_important(GTK_TOOL_ITEM(item), TRUE);					\
-	g_signal_connect (G_OBJECT(item), "clicked", G_CALLBACK(toolbar_buttons_cb), toolbar_item);	\
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), GTK_TOOL_ITEM(item), -1);				\
-}
-
-#define TOOLBAR_MENUITEM(item,icon,text,tooltip,menutip) {						\
-	GtkWidget *child = NULL, *btn = NULL, *arr = NULL;						\
-	GList *gchild = NULL;										\
-	item = GTK_WIDGET(gtk_menu_tool_button_new(icon, text));					\
-	gtk_tool_item_set_homogeneous(GTK_TOOL_ITEM(item), FALSE);				\
-	gtk_tool_item_set_is_important(GTK_TOOL_ITEM(item), TRUE);					\
-	g_signal_connect (G_OBJECT(item), "clicked", G_CALLBACK(toolbar_buttons_cb), toolbar_item);	\
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), GTK_TOOL_ITEM(item), -1);				\
-	child = gtk_bin_get_child(GTK_BIN(item)); 							\
-	gchild = gtk_container_get_children(								\
-			GTK_CONTAINER(child)); 								\
-	btn = (GtkWidget *)gchild->data;								\
-	gtk_widget_set_can_focus(btn, FALSE);								\
-	arr = (GtkWidget *)(gchild->next?gchild->next->data:NULL);					\
-	gtk_widget_set_can_focus(arr, FALSE);								\
-	g_list_free(gchild);										\
-	gchild = gtk_container_get_children(GTK_CONTAINER(arr));					\
-	gtk_widget_set_size_request(GTK_WIDGET(gchild->data), 9, -1);					\
-	g_list_free(gchild);										\
-}
-#endif
-
 #define ADD_MENU_ITEM(name,cb,data) {							\
 	item = gtk_menu_item_new_with_mnemonic(name);					\
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);				\
@@ -2218,7 +2141,6 @@ static void toolbar_buttons_cb(GtkWidget   *widget,
 	gtk_widget_show(item);								\
 }
 
-#ifndef GENERIC_UMPC
 static void toolbar_reply_menu_cb(GtkWidget *widget, gpointer data)
 {
 	gpointer int_value = g_object_get_data(G_OBJECT(widget), "int-value");
@@ -2234,7 +2156,6 @@ static void toolbar_delete_dup_menu_cb(GtkWidget *widget, gpointer data)
 
 	toolbar_delete_dup(toolbar_item, GPOINTER_TO_INT(int_value));
 }
-#endif
 
 static void toolbar_learn_menu_cb(GtkWidget *widget, gpointer data)
 {
@@ -2332,7 +2253,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			toolbar_data->open_mail_btn = item;
 			break;
 		case A_COMPOSE_EMAIL:
-#ifndef GENERIC_UMPC
 			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
 				_("Write Email"),
 				_("Write with selected Account"));
@@ -2343,15 +2263,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			icon_news = stock_pixmap_widget(STOCK_PIXMAP_NEWS_COMPOSE);
 			toolbar_data->compose_news_icon = icon_news;
 			g_object_ref_sink(toolbar_data->compose_news_icon);
-#else
-			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,
-				_("Write Email"));
-			toolbar_data->compose_mail_btn = item;
-			toolbar_data->compose_mail_icon = icon_wid;
-
-			icon_news = stock_pixmap_widget(STOCK_PIXMAP_NEWS_COMPOSE);
-			toolbar_data->compose_news_icon = icon_news;
-#endif
 			break;
 		case A_LEARN_SPAM:
 			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
@@ -2371,7 +2282,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolbar_data->learn_spam_btn), menu);
 			break;
 		case A_DELETE_DUP:
-#ifndef GENERIC_UMPC
 			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
 				_("Delete duplicates"),
 				_("Delete duplicates options"));
@@ -2381,13 +2291,8 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			ADD_MENU_ITEM(_("Delete duplicates in selected folder"), toolbar_delete_dup_menu_cb, FALSE);
 			ADD_MENU_ITEM(_("Delete duplicates in all folders"), toolbar_delete_dup_menu_cb, TRUE);
 			gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolbar_data->delete_dup_btn), menu);
-#else
-			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,_("Delete duplicates"));
-			toolbar_data->delete_dup_btn = item;
-#endif
 			break;
 		case A_REPLY_MESSAGE:
-#ifndef GENERIC_UMPC
 			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
 				_("Reply to Message"),
 				_("Reply to Message options"));
@@ -2397,14 +2302,8 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			ADD_MENU_ITEM(_("_Reply with quote"), toolbar_reply_menu_cb, COMPOSE_REPLY_WITH_QUOTE);
 			ADD_MENU_ITEM(_("Reply without _quote"), toolbar_reply_menu_cb, COMPOSE_REPLY_WITHOUT_QUOTE);
 			gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolbar_data->reply_btn), menu);
-#else
-			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,
-				_("Reply to Message"));
-			toolbar_data->reply_btn = item;
-#endif
 			break;
 		case A_REPLY_SENDER:
-#ifndef GENERIC_UMPC
 			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
 				_("Reply to Sender"),
 				_("Reply to Sender options"));
@@ -2414,14 +2313,8 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			ADD_MENU_ITEM(_("_Reply with quote"), toolbar_reply_menu_cb, COMPOSE_REPLY_TO_SENDER_WITH_QUOTE);
 			ADD_MENU_ITEM(_("Reply without _quote"), toolbar_reply_menu_cb, COMPOSE_REPLY_TO_SENDER_WITHOUT_QUOTE);
 			gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolbar_data->replysender_btn), menu);
-#else
-			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,
-				_("Reply to Sender"));
-			toolbar_data->replysender_btn = item;
-#endif
 			break;
 		case A_REPLY_ALL:
-#ifndef GENERIC_UMPC
 			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
 				_("Reply to All"),
 				_("Reply to All options"));
@@ -2431,14 +2324,8 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			ADD_MENU_ITEM(_("_Reply with quote"), toolbar_reply_menu_cb, COMPOSE_REPLY_TO_ALL_WITH_QUOTE);
 			ADD_MENU_ITEM(_("Reply without _quote"), toolbar_reply_menu_cb, COMPOSE_REPLY_TO_ALL_WITHOUT_QUOTE);
 			gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolbar_data->replyall_btn), menu);
-#else
-			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,
-				_("Reply to All"));
-			toolbar_data->replyall_btn = item;
-#endif
 			break;
 		case A_REPLY_ML:
-#ifndef GENERIC_UMPC
 			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
 				_("Reply to Mailing-list"),
 				_("Reply to Mailing-list options"));
@@ -2448,14 +2335,8 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			ADD_MENU_ITEM(_("_Reply with quote"), toolbar_reply_menu_cb, COMPOSE_REPLY_TO_LIST_WITH_QUOTE);
 			ADD_MENU_ITEM(_("Reply without _quote"), toolbar_reply_menu_cb, COMPOSE_REPLY_TO_LIST_WITHOUT_QUOTE);
 			gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolbar_data->replylist_btn), menu);
-#else
-			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,
-				_("Reply to Mailing-list"));
-			toolbar_data->replylist_btn = item;
-#endif
 			break;
 		case A_FORWARD:
-#ifndef GENERIC_UMPC
 			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
 				_("Forward Message"),
 				_("Forward Message options"));
@@ -2466,11 +2347,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			ADD_MENU_ITEM(_("For_ward as attachment"), toolbar_reply_menu_cb, COMPOSE_FORWARD_AS_ATTACH);
 			ADD_MENU_ITEM(_("Redirec_t"), toolbar_reply_menu_cb, COMPOSE_REDIRECT);
 			gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolbar_data->fwd_btn), menu);
-#else
-			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,
-				_("Forward Message"));
-			toolbar_data->fwd_btn = item;
-#endif
 			break;
 		case A_TRASH:
 			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,_("Trash Message"));
@@ -2596,16 +2472,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 	gtk_widget_show_all(toolbar);
 
 	if (type == TOOLBAR_MAIN) {
-#ifdef GENERIC_UMPC
-		MainWindow *mainwin = mainwindow_get_mainwindow();
-		GtkWidget *progressbar = gtk_progress_bar_new();
-		item = GTK_WIDGET(gtk_tool_item_new());
-		gtk_container_add (GTK_CONTAINER (item), progressbar);
-		gtk_widget_show(item);
-		gtk_widget_set_size_request(progressbar, 84, -1);
-		gtk_toolbar_insert(GTK_TOOLBAR(toolbar), GTK_TOOL_ITEM(item), -1);
-		mainwin->progressbar = progressbar;
-#endif
 		activate_compose_button(toolbar_data,
 					prefs_common.toolbar_style,
 					toolbar_data->compose_btn_type);
@@ -2658,7 +2524,6 @@ void toolbar_update(ToolbarType type, gpointer data)
 	Compose    *compose = (Compose*)data;
 	MessageView *msgview = (MessageView*)data;
 
-#ifndef GENERIC_UMPC
 	switch(type) {
 	case TOOLBAR_MAIN:
 		toolbar_data = mainwin->toolbar;
@@ -2681,26 +2546,6 @@ void toolbar_update(ToolbarType type, gpointer data)
 
 	toolbar_init(toolbar_data);
  	toolbar_data = toolbar_create(type, handlebox, data);
-#else
-	switch(type) {
-	case TOOLBAR_MAIN:
-		toolbar_data = mainwin->toolbar;
-		handlebox    = mainwin->window;
-		break;
-	case TOOLBAR_COMPOSE:
-		toolbar_data = compose->toolbar;
-		handlebox    = compose->window;
-		break;
-	case TOOLBAR_MSGVIEW:
-		toolbar_data = msgview->toolbar;
-		handlebox    = msgview->window;
-		break;
-	default:
-		return;
-	}
-	toolbar_init(toolbar_data);
- 	toolbar_data = toolbar_create(type, handlebox, data);
-#endif
 
 	switch(type) {
 	case TOOLBAR_MAIN:

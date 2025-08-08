@@ -92,19 +92,18 @@ static void prefs_display_header_insert_header		(GtkListStore *store,
 							 gchar *name,
 							 DisplayHeaderProp *dp);
 static GtkWidget *prefs_display_header_list_view_create	(const gchar *name);
-static void prefs_filtering_create_list_view_columns	(GtkWidget *list_view, 
+static void prefs_filtering_create_list_view_columns	(GtkWidget *list_view,
 							 const gchar *name);
 static void headers_list_model_rows_reordered		(GtkTreeModel *model,
-							 GtkTreePath  *path, 
+							 GtkTreePath  *path,
 							 GtkTreeIter  *iter,
 							 gpointer      arg,
 							 GtkTreeView  *list_view);
-							 
+
 static void drag_end	(GtkTreeView *list_view,
 			 GdkDragContext *context,
 			 gpointer data);
 
-#ifndef GENERIC_UMPC
 static gchar *defaults[] =
 {
 	"From",
@@ -134,37 +133,7 @@ static gchar *defaults[] =
 	"-Priority",
 	"-X-Face"
 };
-#else
-static gchar *defaults[] =
-{
-	"From",
-	"To",
-	"Cc",
-	"Bcc",
-	"Subject",
-	"Date",	
-	"Newsgroups",
-	"Followup-To",
-	"-Reply-To",
-	"-Sender",
-	"-User-Agent",
-	"-X-Mailer",	
-	"-Organization",
-	"-X-Newsreader",
-	"-Received",
-	"-Message-ID",
-	"-In-Reply-To",
-	"-References",
-	"-MIME-Version",
-	"-Content-Type",
-	"-Content-Transfer-Encoding",
-	"-X-UIDL",
-	"-Precedence",
-	"-Status",
-	"-Priority",
-	"-X-Face"
-};
-#endif
+
 static void prefs_display_header_set_default(void)
 {
 	gint i;

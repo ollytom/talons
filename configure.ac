@@ -258,10 +258,6 @@ AC_ARG_ENABLE(crash-dialog,
 		[  --enable-crash-dialog           Build crash dialog],
 		[enable_crash_dialog=$enableval], [enable_crash_dialog=no])
 
-AC_ARG_ENABLE(generic-umpc,
-		[  --enable-generic-umpc           Build generic UMPC code],
-		[enable_generic_umpc=$enableval], [enable_generic_umpc=no])
-
 AC_ARG_ENABLE(pthread,
 		[  --disable-pthread               Do not build pthread support],
 		[enable_pthread=$enableval], [enable_pthread=yes])
@@ -538,12 +534,6 @@ dnl check if GDB is somewhere
 		AC_DEFINE(CRASH_DIALOG, 1, Pop up crash dialog)
 	fi
 	AC_MSG_RESULT($enable_crash_dialog)
-fi
-
-dnl generic umpc
-if test $enable_generic_umpc = yes; then
-	AC_DEFINE(GENERIC_UMPC, 1, Generic UMPC code)
-	AC_MSG_RESULT($enable_generic_umpc)
 fi
 
 dnl check for pthread support
@@ -973,7 +963,6 @@ echo "IMAP4 (libetpan)     : $enable_libetpan"
 echo "NNTP (libetpan)      : $enable_libetpan"
 echo "Crash dialog         : $enable_crash_dialog"
 echo "Manual               : $enable_manual"
-echo "Generic UMPC code    : $enable_generic_umpc"
 echo "SVG support          : $enable_svg"
 echo "Unit tests           : $enable_tests"
 echo "pthread              : $enable_pthread"

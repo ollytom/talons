@@ -267,11 +267,7 @@ static void prefs_template_window_create(void)
 		}
 	}
 	gtk_widget_show(text_value);
-#ifndef GENERIC_UMPC
 	gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll2), 120);
-#else
-	gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll2), 60);
-#endif
 	gtk_container_add(GTK_CONTAINER(scroll2), text_value);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(text_value), TRUE);
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_value), GTK_WRAP_WORD);

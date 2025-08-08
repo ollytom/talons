@@ -491,9 +491,6 @@ MimeView *mimeview_create(MainWindow *mainwin)
 
 	gtk_widget_show(hbox);
 	gtk_widget_hide(ctree_mainbox);
-#ifdef GENERIC_UMPC
-	gtk_widget_set_size_request(mime_toggle, -1, r.height + 8);
-#endif
 	mimeview->hbox          = hbox;
 	mimeview->paned         = paned;
 	mimeview->scrolledwin   = scrolledwin;
@@ -2466,24 +2463,21 @@ static gboolean icon_popup_menu(GtkWidget *widget, gpointer data)
 	return TRUE;
 }
 
-static void icon_list_append_icon (MimeView *mimeview, MimeInfo *mimeinfo) 
+static void icon_list_append_icon (MimeView *mimeview, MimeInfo *mimeinfo)
 {
 	GtkWidget *pixmap = NULL;
 	GtkWidget *grid;
 	GtkWidget *button;
 	gchar *tip;
 	gchar *tiptmp;
-	const gchar *desc = NULL; 
+	const gchar *desc = NULL;
 	gchar *sigshort = NULL;
 	gchar *content_type;
 	StockPixmap stockp;
 	MimeInfo *partinfo;
 	MimeInfo *siginfo = NULL;
 	MimeInfo *encrypted = NULL;
-#ifdef GENERIC_UMPC
-	GtkRequisition r;
-#endif
-	
+
 	if (!prefs_common.show_inline_attachments && mimeinfo->id)
 		return;
 
@@ -2635,33 +2629,28 @@ static void icon_list_append_icon (MimeView *mimeview, MimeInfo *mimeinfo)
 	gtk_widget_set_tooltip_markup(button, tip);
 	g_free(tip);
 	gtk_widget_show_all(button);
-	gtk_drag_source_set(button, GDK_BUTTON1_MASK|GDK_BUTTON3_MASK, 
+	gtk_drag_source_set(button, GDK_BUTTON1_MASK|GDK_BUTTON3_MASK,
 			    mimeview_mime_types, 1, GDK_ACTION_COPY);
 
 	g_signal_connect(G_OBJECT(button), "popup-menu",
 			 G_CALLBACK(icon_popup_menu), mimeview);
-	g_signal_connect(G_OBJECT(button), "button_release_event", 
+	g_signal_connect(G_OBJECT(button), "button_release_event",
 			 G_CALLBACK(icon_clicked_cb), mimeview);
-	g_signal_connect(G_OBJECT(button), "key_press_event", 
+	g_signal_connect(G_OBJECT(button), "key_press_event",
 			 G_CALLBACK(icon_key_pressed), mimeview);
 	g_signal_connect(G_OBJECT(button), "drag_data_get",
 			 G_CALLBACK(mimeview_drag_data_get), mimeview);
 	gtk_container_add(GTK_CONTAINER(grid), button);
-#ifdef GENERIC_UMPC
-	gtk_widget_get_preferred_size(pixmap, &r, NULL);
-	gtk_widget_set_size_request(button, -1, r.height + 4);
-#endif
-
 }
 
 static void icon_list_clear (MimeView *mimeview)
 {
 	GList     *child, *orig;
 	GtkAdjustment *adj;
-		
+
 	orig = gtk_container_get_children(GTK_CONTAINER(mimeview->icon_grid));
 	for (child = orig; child != NULL; child = g_list_next(child)) {
-		gtk_container_remove(GTK_CONTAINER(mimeview->icon_grid), 
+		gtk_container_remove(GTK_CONTAINER(mimeview->icon_grid),
 				     GTK_WIDGET(child->data));
 	}
 	g_list_free(orig);

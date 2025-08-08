@@ -462,11 +462,8 @@ static void messageview_add_toolbar(MessageView *msgview, GtkWidget *window)
  	GtkWidget *handlebox;
 	GtkWidget *vbox;
 	GtkWidget *menubar;
-#ifndef GENERIC_UMPC
 	GtkWidget *statusbar = NULL;
-#endif
 	GtkActionGroup *action_group;
-
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_show(vbox);
@@ -679,17 +676,12 @@ static void messageview_add_toolbar(MessageView *msgview, GtkWidget *window)
 	gtk_widget_realize(handlebox);
 	msgview->toolbar = toolbar_create(TOOLBAR_MSGVIEW, handlebox,
 					  (gpointer)msgview);
-#ifndef GENERIC_UMPC
 	statusbar = gtk_statusbar_new();
 	gtk_widget_show(statusbar);
 	gtk_box_pack_end(GTK_BOX(vbox), statusbar, FALSE, FALSE, 0);
 	msgview->statusbar = statusbar;
 	msgview->statusbar_cid = gtk_statusbar_get_context_id
 		(GTK_STATUSBAR(statusbar), "Message View");
-#else
-	msgview->statusbar = NULL;
-	msgview->statusbar_cid = 0;
-#endif
 
 
 	msgview->handlebox = handlebox;
@@ -1442,9 +1434,7 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 
 	summary_open_msg(messageview->mainwin->summaryview, FALSE, TRUE);
 
-#ifndef GENERIC_UMPC
 	messageview_set_position(messageview, 0);
-#endif
 
 	if (messageview->window && msginfo->subject) {
 		subject = g_strdup(msginfo->subject);
@@ -1702,11 +1692,6 @@ void messageview_delete(MessageView *msgview)
 
 		procmsg_msginfo_free(&msginfo);
 	}
-#ifdef GENERIC_UMPC
-	if (msgview->window && !prefs_common.always_show_msg) {
-		messageview_destroy(msgview);
-	}
-#endif
 }
 
 /*
@@ -2386,13 +2371,11 @@ static void prev_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2411,13 +2394,11 @@ static void next_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2436,13 +2417,11 @@ static void prev_unread_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2461,13 +2440,11 @@ static void next_unread_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2486,13 +2463,11 @@ static void prev_new_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2511,13 +2486,11 @@ static void next_new_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2536,13 +2509,11 @@ static void prev_marked_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2561,13 +2532,11 @@ static void next_marked_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2586,13 +2555,11 @@ static void prev_labeled_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2611,13 +2578,11 @@ static void next_labeled_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2672,13 +2637,11 @@ static void parent_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2698,13 +2661,11 @@ static void goto_unread_folder_cb(GtkAction *action, gpointer data)
 		return;
 	}
 	if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 		MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 		if (msginfo)
 			messageview_show(messageview, msginfo,
 					 messageview->all_headers);
-#endif
 	} else {
 		gtk_widget_destroy(messageview->window);
 	}
@@ -2727,13 +2688,11 @@ static void goto_folder_cb(GtkAction *action, gpointer data)
 			return;
 		}
 		if (messageview->mainwin->summaryview->selected) {
-#ifndef GENERIC_UMPC
 			MsgInfo * msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 
 			if (msginfo)
 				messageview_show(messageview, msginfo,
 						 messageview->all_headers);
-#endif
 		} else {
 			gtk_widget_destroy(messageview->window);
 		}

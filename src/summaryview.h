@@ -97,10 +97,6 @@ struct _SummaryView
 	GtkWidget *statlabel_msgs;
 	GtkWidget *toggle_eventbox;
 	GtkWidget *toggle_arrow;
-#ifdef GENERIC_UMPC
-	GtkWidget *multiple_sel_togbtn;
-	GtkWidget *multiple_sel_image;
-#endif
 	GtkWidget *toggle_search;
 	GtkWidget *quick_search_pixmap;
 	GtkWidget *popupmenu;

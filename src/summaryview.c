@@ -249,11 +249,7 @@ static GtkWidget *summary_ctree_create	(SummaryView	*summaryview);
 static gint summary_toggle_pressed	(GtkWidget		*eventbox,
 					 GdkEventButton		*event,
 					 SummaryView		*summaryview);
-#ifdef GENERIC_UMPC
-static void summary_toggle_multiple_pressed
-					(GtkWidget		*widget,
-					 SummaryView		*summaryview);
-#endif
+
 static gint summary_folder_eventbox_pressed
 					(GtkWidget		*eventbox,
 					 GdkEventButton		*event,
@@ -433,9 +429,7 @@ static GtkActionEntry summary_popup_entries[] =
 	{"SummaryViewPopup/ColorLabel",           NULL, N_("Color la_bel"), NULL, NULL, NULL },
 	{"SummaryViewPopup/Tags",                 NULL, N_("Ta_gs"), NULL, NULL, NULL },
 	{"SummaryViewPopup/CreateFilterRule",     NULL, N_("Create _filter rule"), NULL, NULL, NULL },
-#ifndef GENERIC_UMPC
 	{"SummaryViewPopup/CreateProcessingRule", NULL, N_("Create processing rule"), NULL, NULL, NULL },
-#endif
 	{"SummaryViewPopup/View",                 NULL, N_("_View"), NULL, NULL, NULL },
 };
 
@@ -555,9 +549,6 @@ SummaryView *summary_create(MainWindow *mainwin)
 	GtkWidget *statlabel_msgs;
 	GtkWidget *hbox_spc;
 	GtkWidget *toggle_eventbox;
-#ifdef GENERIC_UMPC
-	GtkWidget *multiple_sel_togbtn;
-#endif
 	GtkWidget *toggle_arrow;
 	GtkWidget *toggle_search;
 	QuickSearch *quicksearch;
@@ -620,17 +611,6 @@ SummaryView *summary_create(MainWindow *mainwin)
 			 G_CALLBACK(summary_toggle_pressed),
 			 summaryview);
 
-#ifdef GENERIC_UMPC
-	multiple_sel_togbtn = gtk_toggle_button_new();
-	gtk_widget_show(multiple_sel_togbtn);
-	gtk_box_pack_end(GTK_BOX(hbox), multiple_sel_togbtn, FALSE, FALSE, HSPACING_NARROW);
-	CLAWS_SET_TIP(multiple_sel_togbtn,
-			     _("Toggle multiple selection"));
-	g_signal_connect(G_OBJECT(multiple_sel_togbtn), "toggled",
-			 G_CALLBACK(summary_toggle_multiple_pressed),
-			 summaryview);
-#endif
-
 	statlabel_msgs = gtk_label_new("");
 	gtk_widget_show(statlabel_msgs);
 	gtk_box_pack_end(GTK_BOX(stat_box), statlabel_msgs, FALSE, FALSE, HSPACING_NARROW);
@@ -647,11 +627,10 @@ SummaryView *summary_create(MainWindow *mainwin)
 	summaryview->mainwidget_book = gtk_notebook_new();
         gtk_notebook_set_show_tabs(GTK_NOTEBOOK(summaryview->mainwidget_book), FALSE);
         gtk_notebook_set_show_border(GTK_NOTEBOOK(summaryview->mainwidget_book), FALSE);
-#ifndef GENERIC_UMPC
+
 	gtk_container_add(GTK_CONTAINER(summaryview->mainwidget_book),
 		scrolledwin);
 	gtk_box_pack_start(GTK_BOX(vbox), summaryview->mainwidget_book, TRUE, TRUE, 0);
-#endif
 
 	ctree = summary_ctree_create(summaryview);
 	gtk_widget_show(ctree);
@@ -666,15 +645,9 @@ SummaryView *summary_create(MainWindow *mainwin)
 	gtk_widget_show_all(stat_vbox);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-	/* quick search */
 	quicksearch = quicksearch_new();
 	gtk_box_pack_start(GTK_BOX(vbox), quicksearch_get_widget(quicksearch), FALSE, FALSE, 0);
 
-#ifdef GENERIC_UMPC
-	gtk_container_add(GTK_CONTAINER(summaryview->mainwidget_book),
-		scrolledwin);
-	gtk_box_pack_start(GTK_BOX(vbox), summaryview->mainwidget_book, TRUE, TRUE, 0);
-#endif
 	quicksearch_set_execute_callback(quicksearch, quicksearch_execute_cb, summaryview);
 
   	g_signal_connect (G_OBJECT(toggle_search), "toggled",
@@ -704,41 +677,29 @@ SummaryView *summary_create(MainWindow *mainwin)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus", "SummaryViewPopup", "SummaryViewPopup", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Reedit", "SummaryViewPopup/Reedit", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Reply", "SummaryViewPopup/Reply", GTK_UI_MANAGER_MENUITEM)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "ReplyTo", "SummaryViewPopup/ReplyTo", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Separator1", "Message/---", GTK_UI_MANAGER_SEPARATOR)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Forward", "SummaryViewPopup/Forward", GTK_UI_MANAGER_MENUITEM)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "ForwardAtt", "SummaryViewPopup/ForwardAtt", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Redirect", "SummaryViewPopup/Redirect", GTK_UI_MANAGER_MENUITEM)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Separator2", "Message/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Move", "Message/Move", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Copy", "Message/Copy", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Trash", "Message/Trash", GTK_UI_MANAGER_MENUITEM)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Delete", "Message/Delete", GTK_UI_MANAGER_MENUITEM)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Separator3", "Message/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Marks", "SummaryViewPopup/Marks", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "ColorLabel", "SummaryViewPopup/ColorLabel", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Tags", "SummaryViewPopup/Tags", GTK_UI_MANAGER_MENU)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Separator4", "Message/---", GTK_UI_MANAGER_SEPARATOR)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "AddSenderToAB", "Tools/AddSenderToAB", GTK_UI_MANAGER_MENUITEM)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "CreateFilterRule", "SummaryViewPopup/CreateFilterRule", GTK_UI_MANAGER_MENU)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "CreateProcessingRule", "SummaryViewPopup/CreateProcessingRule", GTK_UI_MANAGER_MENU)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Separator5", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "View", "SummaryViewPopup/View", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "SaveAs", "File/SaveAs", GTK_UI_MANAGER_MENUITEM)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Print", "File/Print", GTK_UI_MANAGER_MENUITEM)
-#endif
 
 	/* submenus - replyto */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/ReplyTo", "All", "SummaryViewPopup/ReplyTo/All", GTK_UI_MANAGER_MENUITEM)
@@ -774,21 +735,17 @@ SummaryView *summary_create(MainWindow *mainwin)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateFilterRule", "BySubject", "Tools/CreateFilterRule/BySubject", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateFilterRule", "BySender", "Tools/CreateFilterRule/BySender", GTK_UI_MANAGER_MENUITEM)
 
-#ifndef GENERIC_UMPC
 	/* submenus - createprocessingrule */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "Automatically", "Tools/CreateProcessingRule/Automatically", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "ByFrom", "Tools/CreateProcessingRule/ByFrom", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "ByTo", "Tools/CreateProcessingRule/ByTo", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "BySubject", "Tools/CreateProcessingRule/BySubject", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "BySender", "Tools/CreateProcessingRule/BySender", GTK_UI_MANAGER_MENUITEM)
-#endif
 
 	/* submenus - view */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/View", "OpenNewWindow", "View/OpenNewWindow", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/View", "MessageSource", "View/MessageSource", GTK_UI_MANAGER_MENUITEM)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/View", "AllHeaders", "View/AllHeaders", GTK_UI_MANAGER_MENUITEM)
-#endif
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus", "SummaryViewHeaderPopup", "SummaryViewHeaderPopup", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewHeaderPopup", "LockColumnHeaders", "SummaryViewHeaderPopup/LockColumnHeaders", GTK_UI_MANAGER_MENUITEM)
@@ -812,9 +769,6 @@ SummaryView *summary_create(MainWindow *mainwin)
 	summaryview->statlabel_msgs = statlabel_msgs;
 	summaryview->toggle_eventbox = toggle_eventbox;
 	summaryview->toggle_arrow = toggle_arrow;
-#ifdef GENERIC_UMPC
-	summaryview->multiple_sel_togbtn = multiple_sel_togbtn;
-#endif
 	summaryview->toggle_search = toggle_search;
 	summaryview->lock_count = 0;
 	summaryview->msginfo_update_callback_id =
@@ -1012,13 +966,6 @@ void summary_init(SummaryView *summaryview)
 	gtk_container_add (GTK_CONTAINER(summaryview->toggle_search), pixmap);
 	gtk_widget_show(pixmap);
 	summaryview->quick_search_pixmap = pixmap;
-
-#ifdef GENERIC_UMPC
-	pixmap = stock_pixmap_widget(STOCK_PIXMAP_SELECTION);
-	gtk_container_add(GTK_CONTAINER(summaryview->multiple_sel_togbtn), pixmap);
-	gtk_widget_show(pixmap);
-	summaryview->multiple_sel_image = pixmap;
-#endif
 
 	/* Init summaryview prefs */
 	summaryview->sort_key = SORT_BY_NONE;
@@ -1822,25 +1769,21 @@ void summary_set_menu_sensitive(SummaryView *summaryview)
 }
 	SET_SENSITIVE("Menus/SummaryViewPopup/Reedit", M_ALLOW_REEDIT);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Reply", M_HAVE_ACCOUNT, M_TARGET_EXIST);
-#ifndef GENERIC_UMPC
+
 	SET_SENSITIVE("Menus/SummaryViewPopup/ReplyTo", M_HAVE_ACCOUNT, M_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/ReplyTo/All", M_HAVE_ACCOUNT, M_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/ReplyTo/Sender", M_HAVE_ACCOUNT, M_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/ReplyTo/MailingList", M_HAVE_ACCOUNT, M_TARGET_EXIST);
-#endif
 
 	SET_SENSITIVE("Menus/SummaryViewPopup/Forward", M_HAVE_ACCOUNT, M_TARGET_EXIST);
-#ifndef GENERIC_UMPC
+
 	SET_SENSITIVE("Menus/SummaryViewPopup/ForwardAtt", M_HAVE_ACCOUNT, M_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Redirect", M_HAVE_ACCOUNT, M_TARGET_EXIST);
-#endif
 
 	SET_SENSITIVE("Menus/SummaryViewPopup/Move", M_TARGET_EXIST, M_ALLOW_DELETE, M_NOT_NEWS);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Copy", M_TARGET_EXIST, M_EXEC);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Trash", M_TARGET_EXIST, M_ALLOW_DELETE, M_NOT_NEWS, M_NOT_TRASH);
-#ifndef GENERIC_UMPC
 	SET_SENSITIVE("Menus/SummaryViewPopup/Delete", M_TARGET_EXIST, M_ALLOW_DELETE);
-#endif
 
 	SET_SENSITIVE("Menus/SummaryViewPopup/Marks", M_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Marks/Mark", M_TARGET_EXIST);
@@ -1860,36 +1803,27 @@ void summary_set_menu_sensitive(SummaryView *summaryview)
 	SET_SENSITIVE("Menus/SummaryViewPopup/ColorLabel", M_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Tags", M_TARGET_EXIST);
 
-#ifndef GENERIC_UMPC
 	SET_SENSITIVE("Menus/SummaryViewPopup/AddSenderToAB", M_SINGLE_TARGET_EXIST);
-#endif
 	SET_SENSITIVE("Menus/SummaryViewPopup/CreateFilterRule", M_SINGLE_TARGET_EXIST, M_UNLOCKED);
-#ifndef GENERIC_UMPC
 	SET_SENSITIVE("Menus/SummaryViewPopup/CreateProcessingRule", M_SINGLE_TARGET_EXIST, M_UNLOCKED);
-#endif
 
 	SET_SENSITIVE("Menus/SummaryViewPopup/View", M_SINGLE_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/View/OpenNewWindow", M_SINGLE_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/View/MessageSource", M_SINGLE_TARGET_EXIST);
-#ifndef GENERIC_UMPC
 	SET_SENSITIVE("Menus/SummaryViewPopup/View/AllHeaders", M_SINGLE_TARGET_EXIST);
-#endif
 	SET_SENSITIVE("Menus/SummaryViewPopup/SaveAs", M_TARGET_EXIST);
-#ifndef GENERIC_UMPC
 	SET_SENSITIVE("Menus/SummaryViewPopup/Print", M_TARGET_EXIST);
-#endif
 #undef SET_SENSITIVE
 
 	summary_lock(summaryview);
-#ifndef GENERIC_UMPC
 	if (summaryview->messageview
 	&&  summaryview->messageview->mimeview
 	&&  summaryview->messageview->mimeview->textview)
 		cm_toggle_menu_set_active_full(summaryview->mainwin->ui_manager, "Menus/SummaryViewPopup/View/AllHeaders",
 			prefs_common.show_all_headers);
-#endif
 	summary_unlock(summaryview);
 }
+
 void summary_select_prev(SummaryView *summaryview)
 {
 	GtkCMCTreeNode *node = summaryview->selected;
@@ -2894,9 +2828,6 @@ static void summary_set_column_titles(SummaryView *summaryview)
 
 		hbox  = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
 		label = gtk_label_new(title);
-#ifdef GENERIC_UMPC
-	gtk_widget_set_size_request(hbox, -1, 20);
-#endif
 
 		if (justify == GTK_JUSTIFY_RIGHT)
 			gtk_box_pack_end(GTK_BOX(hbox), label,
@@ -6511,7 +6442,6 @@ static gboolean summary_popup_menu(GtkWidget *widget, gpointer data)
 	return TRUE;
 }
 
-#if !GENERIC_UMPC
 static gchar *summaryview_get_tooltip_text(SummaryView *summaryview, MsgInfo *info, gint column)
 {
 	MsgFlags flags;
@@ -6577,6 +6507,7 @@ static gchar *summaryview_get_tooltip_text(SummaryView *summaryview, MsgInfo *in
 			return NULL;
 	}
 }
+
 static gboolean tooltip_cb (GtkWidget  *widget,
                             gint        x,
                             gint        y,
@@ -6650,7 +6581,6 @@ static gboolean tooltip_cb (GtkWidget  *widget,
 
 	return TRUE;
 }
-#endif
 
 static gboolean summary_header_button_pressed(GtkWidget *widget,
 		GdkEvent *_event,
@@ -6851,12 +6781,10 @@ static GtkWidget *summary_ctree_create(SummaryView *summaryview)
 			 G_CALLBACK(summary_drag_motion_cb),
 			 summaryview);
 
-#if !GENERIC_UMPC
 	g_object_set (G_OBJECT(ctree), "has-tooltip", TRUE, NULL);
 	g_signal_connect(G_OBJECT(ctree), "query-tooltip",
 			 G_CALLBACK(tooltip_cb),
 			summaryview);
-#endif
 	return ctree;
 }
 
@@ -6924,14 +6852,7 @@ static gint summary_toggle_pressed(GtkWidget *eventbox, GdkEventButton *event,
 		summary_toggle_view(summaryview);
 	return TRUE;
 }
-#ifdef GENERIC_UMPC
-static void summary_toggle_multiple_pressed(GtkWidget *widget,
-				   SummaryView *summaryview)
-{
-	GTK_SCTREE(summaryview->ctree)->force_additive_sel =
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-}
-#endif
+
 static gboolean summary_button_pressed(GtkWidget *ctree, GdkEventButton *event,
 				       SummaryView *summaryview)
 {
@@ -7028,12 +6949,8 @@ static gboolean summary_key_pressed(GtkWidget *widget, GdkEventKey *event,
 		case GDK_KEY_KP_Enter:
 			handled = TRUE;
 			if (summaryview->displayed != summaryview->selected) {
-#ifndef GENERIC_UMPC
 				summary_display_msg(summaryview,
 						    summaryview->selected);
-#else
-				summary_open_row(NULL, summaryview);
-#endif
 				break;
 			}
 			mimeview_scroll_one_line(messageview->mimeview, mod_pressed);
@@ -8224,15 +8141,6 @@ void summary_reflect_prefs_pixmap_theme(SummaryView *summaryview)
 	gtk_container_add(GTK_CONTAINER(summaryview->toggle_search), pixmap);
 	gtk_widget_show(pixmap);
 	summaryview->quick_search_pixmap = pixmap;
-
-#ifdef GENERIC_UMPC
-	pixmap = stock_pixmap_widget(STOCK_PIXMAP_SELECTION);
-	gtk_container_remove (GTK_CONTAINER(summaryview->multiple_sel_togbtn),
-			      summaryview->multiple_sel_image);
-	gtk_container_add(GTK_CONTAINER(summaryview->multiple_sel_togbtn), pixmap);
-	gtk_widget_show(pixmap);
-	summaryview->multiple_sel_togbtn = pixmap;
-#endif
 
 	folderview_unselect(summaryview->folderview);
 	folderview_select(summaryview->folderview, summaryview->folder_item);

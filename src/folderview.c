@@ -213,10 +213,8 @@ static void folderview_drag_received_cb  (GtkWidget        *widget,
 					  guint             info,
 					  guint             time,
 					  FolderView       *folderview);
-#ifndef GENERIC_UMPC
 static void folderview_start_drag	 (GtkWidget *widget, gint button, GdkEvent *event,
 			                  FolderView       *folderview);
-#endif
 static void folderview_drag_data_get     (GtkWidget        *widget,
 					  GdkDragContext   *drag_context,
 					  GtkSelectionData *selection_data,
@@ -389,20 +387,10 @@ static void folderview_column_set_titles(FolderView *folderview)
 	gtk_widget_show_all(hbox_unread);
 	gtk_widget_show_all(hbox_total);
 
-#ifdef GENERIC_UMPC
-	gtk_widget_set_size_request(hbox_new, -1, 20);
-	gtk_widget_set_size_request(hbox_unread, -1, 20);
-	gtk_widget_set_size_request(hbox_total, -1, 20);
-#endif
-
 	gtk_cmclist_set_column_widget(GTK_CMCLIST(ctree),col_pos[F_COL_FOLDER],hbox_folder);
 	gtk_cmclist_set_column_widget(GTK_CMCLIST(ctree),col_pos[F_COL_NEW],hbox_new);
 	gtk_cmclist_set_column_widget(GTK_CMCLIST(ctree),col_pos[F_COL_UNREAD],hbox_unread);
 	gtk_cmclist_set_column_widget(GTK_CMCLIST(ctree),col_pos[F_COL_TOTAL],hbox_total);
-
-#ifdef GENERIC_UMPC
-	GTK_EVENTS_FLUSH();
-#endif
 
 	gtk_sctree_set_column_tooltip(GTK_SCTREE(ctree), col_pos[F_COL_NEW], _("New"));
 	gtk_sctree_set_column_tooltip(GTK_SCTREE(ctree), col_pos[F_COL_UNREAD], _("Unread"));
@@ -510,12 +498,8 @@ static GtkWidget *folderview_ctree_create(FolderView *folderview)
 			 folderview);
 	g_signal_connect(G_OBJECT(ctree), "tree_select_row",
 			 G_CALLBACK(folderview_selected), folderview);
-#ifndef GENERIC_UMPC
-	/* drag-n-dropping folders on maemo is impractical as this 
-	 * opens the folder almost everytime */
 	g_signal_connect(G_OBJECT(ctree), "start_drag",
 			 G_CALLBACK(folderview_start_drag), folderview);
-#endif
 	g_signal_connect(G_OBJECT(ctree), "drag_data_get",
 			 G_CALLBACK(folderview_drag_data_get),
 			 folderview);
@@ -2136,21 +2120,11 @@ static gboolean folderview_key_pressed(GtkWidget *widget, GdkEventKey *event,
 						       folderview->selected);
 		}
 		break;
-#ifdef GENERIC_UMPC
-	case GDK_KEY_Return:
-		if (folderview->selected && GTK_CMCTREE_ROW(folderview->selected)->children) {
-			gtk_cmctree_toggle_expansion(
-				GTK_CMCTREE(folderview->ctree),
-				folderview->selected);
-		}
-		break;	
-#else
 	case GDK_KEY_Return:
 	case GDK_KEY_KP_Enter:
 		if (folderview->selected)
 			folderview_select_node(folderview, folderview->selected);
 		break;
-#endif
 	case GDK_KEY_space:
 		BREAK_ON_MODIFIER_KEY();
 		if (folderview->selected) {
@@ -2898,14 +2872,14 @@ static void drag_state_start(FolderView *folderview, GtkCMCTreeNode *node, Folde
 	drag_state_stop(folderview);
 	/* request expansion */
 	if (0 != (folderview->drag_timer_id = g_timeout_add
-			(prefs_common.hover_timeout, 
+			(prefs_common.hover_timeout,
 			 (GSourceFunc)folderview_defer_expand,
 			 folderview))) {
 		folderview->drag_node = node;
 		folderview->drag_item = item;
-	}			 
+	}
 }
-#ifndef GENERIC_UMPC
+
 static void folderview_start_drag(GtkWidget *widget, gint button, GdkEvent *event,
 			          FolderView       *folderview)
 {

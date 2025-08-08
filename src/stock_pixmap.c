@@ -94,11 +94,7 @@
 #include "pixmaps/claws_mail_icon.xpm"
 #include "pixmaps/claws_mail_icon_64.xpm"
 #include "pixmaps/claws_mail_compose_logo.xpm"
-#ifndef GENERIC_UMPC
 #include "pixmaps/claws_mail_logo.xpm"
-#else
-#include "pixmaps/claws_mail_logo_small.xpm"
-#endif
 #include "pixmaps/address_book.xpm"
 #include "pixmaps/unread.xpm"
 #include "pixmaps/read.xpm"
@@ -280,11 +276,7 @@ static PrivPixmapData privpixmaps[] =
 {
     {claws_mail_icon_xpm              , NULL, NULL, "claws_mail_icon", NULL, NULL},
     {claws_mail_icon_64_xpm           , NULL, NULL, "claws_mail_icon_64", NULL, NULL},
-#ifndef GENERIC_UMPC
     {claws_mail_logo_xpm              , NULL, NULL, "claws_mail_logo", NULL, NULL},
-#else
-    {claws_mail_logo_small_xpm        , NULL, NULL, "claws_mail_logo_small", NULL, NULL},
-#endif
     {empty_xpm                        , NULL, NULL, "empty", NULL, NULL}
 };
 

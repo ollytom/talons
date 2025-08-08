@@ -82,38 +82,8 @@ static void close_all_pages(GSList *prefs_pages)
 			page->destroy_widget(page);
 			page->page_open = FALSE;
 		}
-	}	
+	}
 }
-
-#ifdef GENERIC_UMPC
-static void prefs_show_sections(PrefsWindow *prefswindow)
-{
-	gint max;
-	GtkWidget *paned = prefswindow->paned;
-	
-        g_object_get (G_OBJECT(paned),
-                        "max-position",
-                        &max, NULL);
-
-	gtk_widget_show(gtk_paned_get_child1(GTK_PANED(paned)));
-	gtk_widget_hide(gtk_paned_get_child2(GTK_PANED(paned)));
-	gtk_paned_set_position(GTK_PANED(paned), max);
-}
-
-static void prefs_show_page(PrefsWindow *prefswindow)
-{
-	gint min;
-	GtkWidget *paned = prefswindow->paned;
-	
-        g_object_get (G_OBJECT(paned),
-                        "min-position",
-                        &min, NULL);
-
-	gtk_widget_hide(gtk_paned_get_child1(GTK_PANED(paned)));
-	gtk_widget_show(gtk_paned_get_child2(GTK_PANED(paned)));
-	gtk_paned_set_position(GTK_PANED(paned), min);
-}
-#endif
 
 static void apply_button_clicked(GtkButton *button, gpointer user_data)
 {
@@ -122,10 +92,6 @@ static void apply_button_clicked(GtkButton *button, gpointer user_data)
 	prefswindow->dialog_response = PREFSWINDOW_RESPONSE_APPLY;
 
 	save_all_pages(prefswindow->prefs_pages);
-#ifdef GENERIC_UMPC
-	prefs_show_sections(prefswindow);
-#endif
-
 	if (prefswindow->apply_cb)
 		prefswindow->apply_cb(prefswindow);
 }
@@ -169,11 +135,7 @@ static gboolean window_closed(GtkWidget *widget, GdkEvent *event, gpointer user_
 {
 	PrefsWindow *prefswindow = (PrefsWindow *) user_data;
 
-#ifdef GENERIC_UMPC
-	save_all_pages(prefswindow->prefs_pages);
-#endif
 	close_prefs_window(prefswindow);
-
 	return FALSE;
 }
 
@@ -292,10 +254,8 @@ static void prefswindow_build_tree(GtkWidget *tree_view, GSList *prefs_pages,
 			(GTK_TREE_VIEW(tree_view)));
 	GSList *cur;
 	gint index; /* index in pages list */
-#ifndef GENERIC_UMPC
 	GtkTreeSelection *selection;
 	GtkTreeIter iter;
-#endif
 
 	for (cur = prefs_pages, index = 0; cur != NULL; cur = g_slist_next(cur), index++) {
 		PrefsPage *page = (PrefsPage *)cur->data;
@@ -377,7 +337,6 @@ static void prefswindow_build_tree(GtkWidget *tree_view, GSList *prefs_pages,
 		prefs_pages = prefswindow_build_all_pages(prefswindow, prefs_pages);
 
 	/* select first one or its first child if necessary */
-#ifndef GENERIC_UMPC
 	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree_view));
 	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter)) {
 		if (gtk_tree_model_iter_has_child(GTK_TREE_MODEL(store), &iter)) {
@@ -387,7 +346,6 @@ static void prefswindow_build_tree(GtkWidget *tree_view, GSList *prefs_pages,
 		}
 		gtk_tree_selection_select_iter(selection, &iter);
 	}
-#endif
 }
 
 void prefswindow_open_full(const gchar *title, GSList *prefs_pages,
@@ -501,38 +459,23 @@ void prefswindow_open_full(const gchar *title, GSList *prefs_pages,
 
 	gtk_widget_grab_focus(prefswindow->tree_view);
 
-#ifndef GENERIC_UMPC
 	gtkut_stock_button_set_create(&prefswindow->confirm_area,
 				      &prefswindow->apply_btn, NULL, _("_Apply"),
 				      &prefswindow->cancel_btn, NULL, _("_Cancel"),
 				      &prefswindow->ok_btn, NULL, _("_OK"));
-#else
-	gtkut_stock_button_set_create(&prefswindow->confirm_area,
-				      &prefswindow->apply_btn, NULL, _("_Apply"),
-				      &prefswindow->ok_btn, "window-close", _("_Close"),
-				      NULL, NULL, NULL);
-#endif
 	gtk_widget_show_all(prefswindow->confirm_area);
 	gtk_widget_show(prefswindow->vbox);
 	gtk_widget_show(prefswindow->scrolledwindow1);
 
 	gtk_box_pack_start(GTK_BOX(prefswindow->vbox), prefswindow->confirm_area, FALSE, FALSE, 0);
 
-#ifndef GENERIC_UMPC
-	g_signal_connect(G_OBJECT(prefswindow->ok_btn), "clicked", 
+	g_signal_connect(G_OBJECT(prefswindow->ok_btn), "clicked",
 			 G_CALLBACK(ok_button_clicked), prefswindow);
-	g_signal_connect(G_OBJECT(prefswindow->cancel_btn), "clicked", 
+	g_signal_connect(G_OBJECT(prefswindow->cancel_btn), "clicked",
 			 G_CALLBACK(cancel_button_clicked), prefswindow);
-	g_signal_connect(G_OBJECT(prefswindow->apply_btn), "clicked", 
+	g_signal_connect(G_OBJECT(prefswindow->apply_btn), "clicked",
 			 G_CALLBACK(apply_button_clicked), prefswindow);
-#else
-	g_signal_connect(G_OBJECT(prefswindow->ok_btn), "clicked", 
-			 G_CALLBACK(ok_button_clicked), prefswindow);
-	g_signal_connect(G_OBJECT(prefswindow->apply_btn), "clicked", 
-			 G_CALLBACK(apply_button_clicked), prefswindow);
-#endif
-
-	g_signal_connect(G_OBJECT(prefswindow->window), "delete_event", 
+	g_signal_connect(G_OBJECT(prefswindow->window), "delete_event",
 			 G_CALLBACK(window_closed), prefswindow);
 	g_signal_connect(G_OBJECT(prefswindow->window), "key_press_event",
 			   G_CALLBACK(prefswindow_key_pressed), &(prefswindow->window));
@@ -568,9 +511,6 @@ void prefswindow_open_full(const gchar *title, GSList *prefs_pages,
 					    *(prefswindow->save_height));
 	}
 
-#ifdef GENERIC_UMPC
-	prefs_show_sections(prefswindow);
-#endif
 	gtk_widget_show(prefswindow->window);
 	adj = gtk_scrolled_window_get_vadjustment(
 			GTK_SCROLLED_WINDOW(prefswindow->scrolledwindow1));
@@ -666,10 +606,8 @@ static gboolean prefswindow_row_selected(GtkTreeSelection *selector,
 	GtkAdjustment *adj;
 	gchar *markup;
 
-#ifndef GENERIC_UMPC
-	if (currently_selected) 
+	if (currently_selected)
 		return TRUE;
-#endif
 	if (!gtk_tree_model_get_iter(GTK_TREE_MODEL(model), &iter, path))
 		return TRUE;
 
@@ -710,10 +648,5 @@ static gboolean prefswindow_row_selected(GtkTreeSelection *selector,
 	adj = gtk_scrolled_window_get_hadjustment(
 			GTK_SCROLLED_WINDOW(page->widget));
 	gtk_adjustment_set_value(adj, lower);
-
-#ifdef GENERIC_UMPC
-	prefs_show_page(prefswindow);
-#endif
 	return TRUE;
 }
-

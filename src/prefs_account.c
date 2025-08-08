@@ -551,15 +551,9 @@ static PrefParam receive_param[] = {
 	 &receive_page.rmmail_checkbtn,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
 
-#ifndef GENERIC_UMPC
 	{"message_leave_time", "7", &tmp_ac_prefs.msg_leave_time, P_INT,
 	 &receive_page.leave_time_spinbtn,
 	 prefs_set_data_from_spinbtn, prefs_set_spinbtn},
-#else
-	{"message_leave_time", "30", &tmp_ac_prefs.msg_leave_time, P_INT,
-	 &receive_page.leave_time_spinbtn,
-	 prefs_set_data_from_spinbtn, prefs_set_spinbtn},
-#endif
 	{"message_leave_hour", "0", &tmp_ac_prefs.msg_leave_hour, P_INT,
 	 &receive_page.leave_hour_spinbtn,
 	 prefs_set_data_from_spinbtn, prefs_set_spinbtn},
@@ -1240,12 +1234,8 @@ static void basic_create_widget_func(PrefsPage * _page,
 
 	default_checkbtn = gtk_check_button_new_with_label (_("Set as default"));
 	gtk_widget_show (default_checkbtn);
-#ifndef GENERIC_UMPC
 	gtk_box_pack_end (GTK_BOX (hbox), default_checkbtn, TRUE, FALSE, 0);
-#else
-	gtk_box_pack_start (GTK_BOX (vbox1), default_checkbtn, FALSE, FALSE, 0);
-	
-#endif
+
 	PACK_FRAME (vbox1, frame1, _("Personal information"));
 
 	table1 = gtk_grid_new();
@@ -2104,17 +2094,6 @@ static void send_create_widget_func(PrefsPage * _page,
 			G_CALLBACK(prefs_account_entry_changed_newline_check_cb),
 			GINT_TO_POINTER(ac_prefs->protocol));
 
-#ifdef GENERIC_UMPC
-	PACK_SPACER(vbox4, vbox_spc, VSPACING_NARROW_2);
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox);
-	gtk_box_pack_start (GTK_BOX (vbox4), hbox, FALSE, FALSE, 0);
-
-	hbox_spc = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_widget_show (hbox_spc);
-	gtk_box_pack_start (GTK_BOX (hbox), hbox_spc, FALSE, FALSE, 0);
-	gtk_widget_set_size_request (hbox_spc, 12, -1);
-#endif
 	label = gtk_label_new (_("Password"));
 	gtk_widget_show (label);
 	gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);

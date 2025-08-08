@@ -194,13 +194,8 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"confirm_send_queued_messages", "FALSE", &prefs_common.confirm_send_queued_messages,
 	 P_BOOL, NULL, NULL, NULL},
-#ifndef GENERIC_UMPC
 	{"send_dialog_mode", "0", &prefs_common.send_dialog_invisible, P_BOOL,
 	 NULL, NULL, NULL},
-#else
-	{"send_dialog_mode", "1", &prefs_common.send_dialog_invisible, P_BOOL,
-	 NULL, NULL, NULL},
-#endif
 	{"sendwin_width", "460", &prefs_common.sendwin_width, P_INT,
 	 NULL, NULL, NULL},
 	{"sendwin_height", "-1", &prefs_common.sendwin_height, P_INT,
@@ -305,13 +300,8 @@ static PrefParam param[] = {
 	{"default_reply_list", "TRUE", &prefs_common.default_reply_list, P_BOOL,
 	 NULL, NULL, NULL},
 
-#ifndef GENERIC_UMPC
 	{"show_ruler", "TRUE", &prefs_common.show_ruler, P_BOOL,
 	 NULL, NULL, NULL},
-#else
-	{"show_ruler", "FALSE", &prefs_common.show_ruler, P_BOOL,
-	 NULL, NULL, NULL},
-#endif
 
 	/* Quote */
 	{"reply_quote_mark", "> ", &prefs_common.quotemark, P_STRING,
@@ -331,8 +321,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 
 	/* Display */
-	/* fonts */
-#ifndef GENERIC_UMPC
 	{"message_font_gtk2",	"Monospace 9",
 	 &SPECIFIC_PREFS.textfont,			P_STRING, NULL, NULL, NULL},
         {"print_font_gtk2",     "Monospace 9",
@@ -343,18 +331,6 @@ static PrefParam param[] = {
 	  &SPECIFIC_PREFS.normalfont,		P_STRING, NULL, NULL, NULL},
 	{"bold_font_gtk2",	"Sans Bold 9",
 	  &SPECIFIC_PREFS.boldfont,		P_STRING, NULL, NULL, NULL},
-#else
-	{"message_font_gtk2",	"Monospace 8",
-	 &SPECIFIC_PREFS.textfont,			P_STRING, NULL, NULL, NULL},
-        {"print_font_gtk2",     "Monospace 8",
-         &SPECIFIC_PREFS.printfont,             P_STRING, NULL, NULL, NULL},
-	{"small_font_gtk2",	"Sans 8",
-	  &SPECIFIC_PREFS.smallfont,		P_STRING, NULL, NULL, NULL},
-	{"normal_font_gtk2",	"Sans 8",
-	  &SPECIFIC_PREFS.normalfont,		P_STRING, NULL, NULL, NULL},
-	{"bold_font_gtk2",	"Sans Bold 8",
-	  &SPECIFIC_PREFS.boldfont,		P_STRING, NULL, NULL, NULL},
-#endif
 
 	{"use_different_print_font", "FALSE", &prefs_common.use_different_print_font, P_BOOL,
 	 NULL, NULL, NULL},
@@ -470,26 +446,14 @@ static PrefParam param[] = {
 	 {"bold_marked", "FALSE", &prefs_common.bold_marked, P_BOOL,
 	 NULL, NULL, NULL},
 
-#ifndef GENERIC_UMPC
 	{"toolbar_style", "3", &prefs_common.toolbar_style, P_ENUM,
 	 NULL, NULL, NULL},
-#else
-	{"toolbar_style", "1", &prefs_common.toolbar_style, P_ENUM,
-	 NULL, NULL, NULL},
-#endif
 	{"show_col_headers", "TRUE", &prefs_common.show_col_headers, P_BOOL,
 	 NULL, NULL, NULL},
-#ifndef GENERIC_UMPC
 	{"show_statusbar", "TRUE", &prefs_common.show_statusbar, P_BOOL,
 	 NULL, NULL, NULL},
 	{"show_searchbar", "TRUE", &prefs_common.show_searchbar, P_BOOL,
 	 NULL, NULL, NULL},
-#else
-	{"show_statusbar", "FALSE", &prefs_common.show_statusbar, P_BOOL,
-	 NULL, NULL, NULL},
-	{"show_searchbar", "FALSE", &prefs_common.show_searchbar, P_BOOL,
-	 NULL, NULL, NULL},
-#endif
 
 	{"summary_col_show_mark", "TRUE",
 	 &prefs_common.summary_col_visible[S_COL_MARK], P_BOOL, NULL, NULL, NULL},
@@ -550,22 +514,12 @@ static PrefParam param[] = {
 	 &prefs_common.summary_col_size[S_COL_STATUS], P_INT, NULL, NULL, NULL},
 	{"summary_col_size_mime", "10",
 	 &prefs_common.summary_col_size[S_COL_MIME], P_INT, NULL, NULL, NULL},
-#ifndef GENERIC_UMPC
 	{"summary_col_size_subject", "200",
 	 &prefs_common.summary_col_size[S_COL_SUBJECT], P_INT, NULL, NULL, NULL},
 	{"summary_col_size_from", "120",
 	 &prefs_common.summary_col_size[S_COL_FROM], P_INT, NULL, NULL, NULL},
 	{"summary_col_size_to", "120",
 	 &prefs_common.summary_col_size[S_COL_TO], P_INT, NULL, NULL, NULL},
-#else
-	{"summary_col_size_subject", "300",
-	 &prefs_common.summary_col_size[S_COL_SUBJECT], P_INT, NULL, NULL, NULL},
-	{"summary_col_size_from", "150",
-	 &prefs_common.summary_col_size[S_COL_FROM], P_INT, NULL, NULL, NULL},
-	{"summary_col_size_to", "150",
-	 &prefs_common.summary_col_size[S_COL_TO], P_INT, NULL, NULL, NULL},
-
-#endif
 	{"summary_col_size_date", "118",
 	 &prefs_common.summary_col_size[S_COL_DATE], P_INT, NULL, NULL, NULL},
 	{"summary_col_size_size", "45",
@@ -609,7 +563,6 @@ static PrefParam param[] = {
 	{"folder_col_pos_total", "3",
 	 &prefs_common.folder_col_pos[F_COL_TOTAL], P_INT, NULL, NULL, NULL},
 
-#ifndef GENERIC_UMPC
 	{"folder_col_size_folder", "120",
 	 &prefs_common.folder_col_size[F_COL_FOLDER], P_INT, NULL, NULL, NULL},
 	{"folder_col_size_new", "32",
@@ -618,16 +571,6 @@ static PrefParam param[] = {
 	 &prefs_common.folder_col_size[F_COL_UNREAD], P_INT, NULL, NULL, NULL},
 	{"folder_col_size_total", "32",
 	 &prefs_common.folder_col_size[F_COL_TOTAL], P_INT, NULL, NULL, NULL},
-#else
-	{"folder_col_size_folder", "400",
-	 &prefs_common.folder_col_size[F_COL_FOLDER], P_INT, NULL, NULL, NULL},
-	{"folder_col_size_new", "32",
-	 &prefs_common.folder_col_size[F_COL_NEW], P_INT, NULL, NULL, NULL},
-	{"folder_col_size_unread", "32",
-	 &prefs_common.folder_col_size[F_COL_UNREAD], P_INT, NULL, NULL, NULL},
-	{"folder_col_size_total", "32",
-	 &prefs_common.folder_col_size[F_COL_TOTAL], P_INT, NULL, NULL, NULL},
-#endif
 
 	{"folder_default_thread", "TRUE", &prefs_common.folder_default_thread, P_BOOL,
 	 NULL, NULL, NULL},
@@ -674,7 +617,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"mainwin_menubar", "TRUE", &prefs_common.mainwin_menubar, P_BOOL,
 	 NULL, NULL, NULL},
-#ifndef GENERIC_UMPC
 	{"mainwin_width", "800", &prefs_common.mainwin_width, P_INT,
 	 NULL, NULL, NULL},
 	{"mainwin_height", "600", &prefs_common.mainwin_height, P_INT,
@@ -693,24 +635,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"compose_height", "560", &prefs_common.compose_height, P_INT,
 	 NULL, NULL, NULL},
-#else
-	{"mainwin_width", "700", &prefs_common.mainwin_width, P_INT,
-	 NULL, NULL, NULL},
-	{"mainwin_height", "470", &prefs_common.mainwin_height, P_INT,
-	 NULL, NULL, NULL},
-	{"messagewin_width", "700", &prefs_common.msgwin_width, P_INT,
-	 NULL, NULL, NULL},
-	{"messagewin_height", "470", &prefs_common.msgwin_height, P_INT,
-	 NULL, NULL, NULL},
-	{"sourcewin_width", "700", &prefs_common.sourcewin_width, P_INT,
-	 NULL, NULL, NULL},
-	{"sourcewin_height", "470", &prefs_common.sourcewin_height, P_INT,
-	 NULL, NULL, NULL},
-	{"compose_width", "700", &prefs_common.compose_width, P_INT,
-	 NULL, NULL, NULL},
-	{"compose_height", "470", &prefs_common.compose_height, P_INT,
-	 NULL, NULL, NULL},
-#endif
 	{"compose_notebook_height", "180", &prefs_common.compose_notebook_height, P_INT,
 	 NULL, NULL, NULL},
 	{"compose_x", "0", &prefs_common.compose_x, P_INT,
@@ -818,13 +742,8 @@ static PrefParam param[] = {
 	 &prefs_common.show_inline_attachments, P_BOOL, NULL, NULL, NULL},
 
 	/* Interface */
-#ifndef GENERIC_UMPC
 	{"layout_mode", "0", &prefs_common.layout_mode, P_INT,
 	 NULL, NULL, NULL},
-#else
-	{"layout_mode", "5", &prefs_common.layout_mode, P_INT,
-	 NULL, NULL, NULL},
-#endif
 	/* {"emulate_emacs", "FALSE", &prefs_common.emulate_emacs, P_BOOL,
 	 NULL, NULL, NULL}, */
 	{"open_selected_message_on_folder_open", "FALSE",
@@ -951,21 +870,13 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"summary_quicksearch_type", "0", &prefs_common.summary_quicksearch_type, P_INT,
 	 NULL, NULL, NULL},
-#ifndef GENERIC_UMPC
+
 	{"summary_quicksearch_recurse", "1", &prefs_common.summary_quicksearch_recurse, P_INT,
 	 NULL, NULL, NULL},
-#else
-	{"summary_quicksearch_recurse", "0", &prefs_common.summary_quicksearch_recurse, P_INT,
-	 NULL, NULL, NULL},
-#endif
 
-#if defined(__OpenBSD__)
-	{"io_timeout_secs", "80", &prefs_common.io_timeout_secs,
-	 P_INT, NULL, NULL, NULL},
-#else
 	{"io_timeout_secs", "60", &prefs_common.io_timeout_secs,
 	 P_INT, NULL, NULL, NULL},
-#endif
+
 	{"hide_score", "-9999", &prefs_common.kill_score, P_INT,
 	 NULL, NULL, NULL},
 	{"important_score", "1", &prefs_common.important_score, P_INT,
@@ -975,7 +886,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"log_length", "500", &prefs_common.loglength, P_INT,
 	 NULL, NULL, NULL},
-#ifndef GENERIC_UMPC
     	{"enable_log_standard", "TRUE", &prefs_common.enable_log_standard, P_BOOL,
 	 NULL, NULL, NULL},
     	{"enable_log_warning", "TRUE", &prefs_common.enable_log_warning, P_BOOL,
@@ -984,16 +894,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
     	{"enable_log_status", "TRUE", &prefs_common.enable_log_status, P_BOOL,
 	 NULL, NULL, NULL},
-#else
-    	{"enable_log_standard", "FALSE", &prefs_common.enable_log_standard, P_BOOL,
-	 NULL, NULL, NULL},
-    	{"enable_log_warning", "FALSE", &prefs_common.enable_log_warning, P_BOOL,
-	 NULL, NULL, NULL},
-    	{"enable_log_error", "FALSE", &prefs_common.enable_log_error, P_BOOL,
-	 NULL, NULL, NULL},
-    	{"enable_log_status", "FALSE", &prefs_common.enable_log_status, P_BOOL,
-	 NULL, NULL, NULL},
-#endif
 	{"log_msg_color", "#00af00", &prefs_common.color[COL_LOG_MSG],
 	 P_COLOR, NULL, NULL, NULL},
 	{"log_warn_color", "#af0000", &prefs_common.color[COL_LOG_WARN],
@@ -1190,13 +1090,10 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"stripes_color_offset", "4000", &prefs_common.stripes_color_offset, P_INT,
 	 NULL, NULL, NULL},
-#ifndef GENERIC_UMPC
+
 	{"enable_hscrollbar", "FALSE", &prefs_common.enable_hscrollbar, P_BOOL,
 	 NULL, NULL, NULL},
-#else
-	{"enable_hscrollbar", "TRUE", &prefs_common.enable_hscrollbar, P_BOOL,
-	 NULL, NULL, NULL},
-#endif
+
 	{"folderview_vscrollbar_policy", "0",
 	 &prefs_common.folderview_vscrollbar_policy, P_ENUM,
 	 NULL, NULL, NULL},
@@ -1205,17 +1102,12 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"hover_timeout", "500", &prefs_common.hover_timeout, P_INT,
 	 NULL, NULL, NULL},
-#ifndef GENERIC_UMPC
+
 	{"cache_max_mem_usage", "4096", &prefs_common.cache_max_mem_usage, P_INT,
 	 NULL, NULL, NULL},
 	{"cache_min_keep_time", "15", &prefs_common.cache_min_keep_time, P_INT,
 	 NULL, NULL, NULL},
-#else
-	{"cache_max_mem_usage", "4096", &prefs_common.cache_max_mem_usage, P_INT,
-	 NULL, NULL, NULL},
-	{"cache_min_keep_time", "0", &prefs_common.cache_min_keep_time, P_INT,
-	 NULL, NULL, NULL},
-#endif
+
 	{"thread_by_subject_max_age", "10", &prefs_common.thread_by_subject_max_age,
 	P_INT, NULL, NULL, NULL },
 	{"last_opened_folder", "", &prefs_common.last_opened_folder,
@@ -1246,13 +1138,8 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"unsafe_ssl_certs", "FALSE", &prefs_common.unsafe_ssl_certs, P_BOOL,
 	 NULL, NULL, NULL},
-#ifndef GENERIC_UMPC
 	{"real_time_sync", "FALSE", &prefs_common.real_time_sync, P_BOOL,
 	 NULL, NULL, NULL},
-#else
-	{"real_time_sync", "TRUE", &prefs_common.real_time_sync, P_BOOL,
-	 NULL, NULL, NULL},
-#endif
 
 	{"print_paper_type", NULL, &prefs_common.print_paper_type, P_STRING,
 	 NULL, NULL, NULL},

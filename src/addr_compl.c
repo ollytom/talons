@@ -1409,7 +1409,6 @@ static gboolean address_completion_complete_address_in_entry(GtkEntry *entry,
 		new = get_next_complete_address();
 		g_free( new );
 	}
-#if (!defined(USE_LDAP) && !defined(GENERIC_UMPC))
 	/* Select the address if there is only one match */
 	if (ncount == 2) {
 		/* Display selected address in entry field */
@@ -1422,9 +1421,7 @@ static gboolean address_completion_complete_address_in_entry(GtkEntry *entry,
 		g_free(addr);
 	}
 	/* Make sure that drop-down appears uniform! */
-	else
-#endif
-	if( ncount == 0 ) {
+	else if( ncount == 0 ) {
 		addrcompl_add_queue( searchTerm );
 	} else {
 		g_free( searchTerm );

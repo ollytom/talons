@@ -789,9 +789,6 @@ static void prefs_toolbar_create(ToolbarPage *prefs_toolbar)
 	GtkWidget *reg_hbox;
 	GtkWidget *arrow;
 	GtkWidget *btn_hbox;
-#ifdef GENERIC_UMPC
-	GtkWidget *hbox;
-#endif
 	GtkWidget *reg_btn;
 	GtkWidget *subst_btn;
 	GtkWidget *del_btn;
@@ -929,13 +926,7 @@ static void prefs_toolbar_create(ToolbarPage *prefs_toolbar)
 			  prefs_toolbar);
 
 	default_btn = gtk_button_new_with_label(_(" Use default "));
-#ifndef GENERIC_UMPC
 	gtk_box_pack_end(GTK_BOX(reg_hbox), default_btn, FALSE, TRUE, 0);
-#else
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_start(GTK_BOX(main_vbox), hbox, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), default_btn, FALSE, FALSE, 0);
-#endif
 	g_signal_connect(G_OBJECT(default_btn), "clicked",
 			 G_CALLBACK(prefs_toolbar_default),
 			 prefs_toolbar);

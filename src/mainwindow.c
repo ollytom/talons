@@ -109,18 +109,17 @@ static void main_window_menu_callback_block	(MainWindow	*mainwin);
 static void main_window_menu_callback_unblock	(MainWindow	*mainwin);
 
 static void main_window_show_cur_account	(MainWindow	*mainwin);
-#ifndef GENERIC_UMPC
+
 static void main_window_separation_change	(MainWindow	*mainwin,
 						 LayoutType	 layout_mode);
-#endif
+
 static void main_window_set_widgets		(MainWindow	*mainwin,
 						 LayoutType	 layout_mode);
 
-#ifndef GENERIC_UMPC
 static gboolean ac_label_button_pressed		(GtkWidget	*widget,
 						 GdkEventButton	*event,
 						 gpointer	 data);
-#endif
+
 static gint main_window_close_cb		(GtkWidget	*widget,
 						 GdkEventAny	*event,
 						 gpointer	 data);
@@ -169,11 +168,11 @@ static void toggle_message_cb	 (GtkAction	*action,
 static void toggle_toolbar_cb	 (GtkAction *action, GtkRadioAction *current, gpointer data);
 static void toggle_col_headers_cb(GtkAction	*action,
 				  gpointer	 data);
-#ifndef GENERIC_UMPC
+
 static void toggle_statusbar_cb	 (GtkAction	*action,
 				  gpointer	 data);
 static void set_layout_cb	 (GtkAction *action, GtkRadioAction *current, gpointer data);
-#endif
+
 static void addressbook_open_cb	(GtkAction	*action,
 				  gpointer	 data);
 static void log_window_show_cb	(GtkAction	*action,
@@ -386,10 +385,10 @@ static void account_selector_menu_cb	 (GtkMenuItem	*menuitem,
 					  gpointer	 data);
 static void account_receive_menu_cb	 (GtkMenuItem	*menuitem,
 					  gpointer	 data);
-#ifndef GENERIC_UMPC
+
 static void account_compose_menu_cb	 (GtkMenuItem	*menuitem,
 					  gpointer	 data);
-#endif
+
 static void prefs_open_cb	(GtkAction	*action,
 				  gpointer	 data);
 
@@ -547,7 +546,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Edit/SearchFolder",			NULL, N_("_Search folder..."), "<shift><control>F", NULL, G_CALLBACK(search_folder_cb) },
 	{"Edit/QuickSearch",			NULL, N_("_Quick search"), "slash", NULL, G_CALLBACK(mainwindow_quicksearch) },
 
-/* View menu */
 	{"View/ShowHide",               NULL, N_("Show or hi_de"), NULL, NULL, NULL },
 	{"View/ShowHide/Toolbar",       NULL, N_("_Toolbar"), NULL, NULL, NULL },
 
@@ -556,10 +554,7 @@ static GtkActionEntry mainwin_entries[] =
 	{"View/SetColumns/Messagelist", NULL, N_("In _message list..."), NULL, NULL, G_CALLBACK(set_summary_display_item_cb) },
 	{"View/---",                    NULL, "---", NULL, NULL, NULL },
 
-
-#ifndef GENERIC_UMPC
 	{"View/Layout",                 NULL, N_("La_yout"), NULL, NULL, NULL },
-#endif
 	{"View/Sort",                   NULL, N_("_Sort"), NULL, NULL, NULL },
 	{"View/Sort/---",               NULL, "---", NULL, NULL, NULL },
 	{"View/Sort/AttractSubj",		NULL, N_("_Attract by subject"), NULL, NULL, G_CALLBACK(attract_by_subject_cb) },
@@ -811,9 +806,7 @@ static GtkToggleActionEntry mainwin_toggle_entries[] = {
 	{"File/OfflineMode",                     NULL, N_("Offline _mode"), "<control>W", NULL, G_CALLBACK(toggle_work_offline_cb), FALSE }, /*toggle*/
 	{"View/ShowHide/MenuBar",                NULL, N_("Men_ubar"), "<control>F12", NULL, G_CALLBACK(toggle_menubar_cb), FALSE }, /* toggle */
 	{"View/ShowHide/MessageView",            NULL, N_("_Message view"), "V", NULL, G_CALLBACK(toggle_message_cb), FALSE }, /* toggle */
-#ifndef GENERIC_UMPC
 	{"View/ShowHide/StatusBar",              NULL, N_("Status _bar"), NULL, NULL, G_CALLBACK(toggle_statusbar_cb), FALSE }, /* toggle */
-#endif
 	{"View/ShowHide/ColumnHeaders",          NULL, N_("Column headers"), NULL, NULL, G_CALLBACK(toggle_col_headers_cb), FALSE }, /* toggle */
 	{"View/ThreadView",                      NULL, N_("Th_read view"), "<control>T", NULL, G_CALLBACK(thread_cb), FALSE }, /* toggle */
 	{"View/HideReadThreads",                 NULL, N_("Hide read threads"), NULL, NULL, G_CALLBACK(hide_read_threads), FALSE }, /* toggle */
@@ -831,11 +824,9 @@ static GtkRadioActionEntry mainwin_showhide_radio_entries[] = { /* toggle_toolba
 	{"View/ShowHide/Toolbar/TextBesideIcon", NULL, N_("Text be_side icons"), NULL, NULL, TOOLBAR_BOTH_HORIZ }, /* radio TOOLBAR_BOTH_HORIZ */
 	{"View/ShowHide/Toolbar/IconOnly",       NULL, N_("_Icons only"), NULL, NULL, TOOLBAR_ICON }, /* radio TOOLBAR_ICON */
 	{"View/ShowHide/Toolbar/TextOnly",       NULL, N_("_Text only"), NULL, NULL, TOOLBAR_TEXT }, /* radio TOOLBAR_TEXT */
-#ifndef GENERIC_UMPC
 	{"View/ShowHide/Toolbar/Hide",           NULL, N_("_Hide"), NULL, NULL, TOOLBAR_NONE }, /* radio TOOLBAR_NONE */
-#endif
 };
-#ifndef GENERIC_UMPC
+
 static GtkRadioActionEntry mainwin_layout_radio_entries[] = { /* set_layout_cb */
 	{"View/Layout/Standard",                 NULL, N_("_Standard"), NULL, NULL, NORMAL_LAYOUT }, /* radio NORMAL_LAYOUT */
 	{"View/Layout/ThreeColumns",             NULL, N_("_Three columns"), NULL, NULL, VERTICAL_LAYOUT }, /* radio VERTICAL_LAYOUT */
@@ -843,7 +834,7 @@ static GtkRadioActionEntry mainwin_layout_radio_entries[] = { /* set_layout_cb *
 	{"View/Layout/WideMessageList",          NULL, N_("W_ide message list"), NULL, NULL, WIDE_MSGLIST_LAYOUT }, /* radio WIDE_MSGLIST_LAYOUT */
 	{"View/Layout/SmallScreen",              NULL, N_("S_mall screen"), NULL, NULL, SMALL_LAYOUT }, /* radio SMALL_LAYOUT */
 };
-#endif
+
 static GtkRadioActionEntry mainwin_sort_radio_entries[] = { /* sort_summary_cb */
 	{"View/Sort/Number",                     NULL, N_("By _number"), NULL, NULL, SORT_BY_NUMBER }, /* radio SORT_BY_NUMBER */
 	{"View/Sort/Size",                       NULL, N_("By s_ize"), NULL, NULL, SORT_BY_SIZE }, /* radio SORT_BY_SIZE */
@@ -1298,7 +1289,7 @@ static void mainwindow_tags_menu_create(MainWindow *mainwin, gboolean refresh)
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(label_menuitem), menu);
 	mainwin->tags_menu = menu;
 }
-#ifndef GENERIC_UMPC
+
 static void warning_btn_pressed(GtkButton *btn, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
@@ -1330,7 +1321,7 @@ static gboolean warning_enter_notify(GtkWidget *widget,
 	gdk_window_set_cursor(gtk_widget_get_window(mainwindow->warning_btn), hand_cursor);
 	return FALSE;
 }
-#endif
+
 void mainwindow_show_error(void)
 {
 	MainWindow *mainwin = mainwindow_get_mainwindow();
@@ -1403,7 +1394,6 @@ MainWindow *main_window_create()
 	GtkWidget *handlebox;
 	GtkWidget *vbox_body;
 	GtkWidget *menuitem;
-#ifndef GENERIC_UMPC
 	GtkWidget *hbox_stat;
 	GtkWidget *statusbar;
 	GtkWidget *progressbar;
@@ -1413,7 +1403,6 @@ MainWindow *main_window_create()
  	GtkWidget *online_pixmap;
 	GtkWidget *offline_pixmap;
 	GtkWidget *warning_btn;
-#endif
 	GtkWidget *online_switch;
 	GtkWidget *offline_switch;
 	FolderView *folderview;
@@ -1431,9 +1420,6 @@ MainWindow *main_window_create()
 	window = GTK_WIDGET(gtkut_window_new(GTK_WINDOW_TOPLEVEL, "mainwindow"));
 	gtk_window_set_title(GTK_WINDOW(window), PROG_VERSION);
 	gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
-#ifdef GENERIC_UMPC
-	prefs_common.layout_mode = SMALL_LAYOUT;
-#endif
 	if (!geometry.min_height) {
 		geometry.min_width = 320;
 		geometry.min_height = 200;
@@ -1474,10 +1460,10 @@ MainWindow *main_window_create()
 			G_N_ELEMENTS(mainwin_toggle_entries), (gpointer)mainwin);
 	gtk_action_group_add_radio_actions(mainwin->action_group, mainwin_showhide_radio_entries,
 			G_N_ELEMENTS(mainwin_showhide_radio_entries), C_AUTO, G_CALLBACK(toggle_toolbar_cb), (gpointer)mainwin);
-#ifndef GENERIC_UMPC
+
 	gtk_action_group_add_radio_actions(mainwin->action_group, mainwin_layout_radio_entries,
 			G_N_ELEMENTS(mainwin_layout_radio_entries), C_AUTO, G_CALLBACK(set_layout_cb), (gpointer)mainwin);
-#endif
+
 	gtk_action_group_add_radio_actions(mainwin->action_group, mainwin_sort_radio_entries,
 			G_N_ELEMENTS(mainwin_sort_radio_entries), C_AUTO, G_CALLBACK(sort_summary_cb), (gpointer)mainwin);
 	gtk_action_group_add_radio_actions(mainwin->action_group, mainwin_sorttype_radio_entries,
@@ -1536,13 +1522,9 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/ShowHide/Toolbar", "TextBesideIcon", "View/ShowHide/Toolbar/TextBesideIcon", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/ShowHide/Toolbar", "IconOnly", "View/ShowHide/Toolbar/IconOnly", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/ShowHide/Toolbar", "TextOnly", "View/ShowHide/Toolbar/TextOnly", GTK_UI_MANAGER_MENUITEM)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/ShowHide/Toolbar", "Hide", "View/ShowHide/Toolbar/Hide", GTK_UI_MANAGER_MENUITEM)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/ShowHide", "MessageView", "View/ShowHide/MessageView", GTK_UI_MANAGER_MENUITEM)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/ShowHide", "StatusBar", "View/ShowHide/StatusBar", GTK_UI_MANAGER_MENUITEM)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/ShowHide", "ColumnHeaders", "View/ShowHide/ColumnHeaders", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "SetColumns", "View/SetColumns", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/SetColumns", "Folderlist", "View/SetColumns/Folderlist", GTK_UI_MANAGER_MENUITEM)
@@ -1550,7 +1532,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "Separator1", "View/---", GTK_UI_MANAGER_SEPARATOR)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "FullScreen", "View/FullScreen", GTK_UI_MANAGER_MENUITEM)
-#ifndef GENERIC_UMPC
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "Layout", "View/Layout", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Layout", "Standard", "View/Layout/Standard", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Layout", "ThreeColumns", "View/Layout/ThreeColumns", GTK_UI_MANAGER_MENUITEM)
@@ -1558,8 +1539,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Layout", "WideMessageList", "View/Layout/WideMessageList", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Layout", "SmallScreen", "View/Layout/SmallScreen", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "Separator2", "View/---", GTK_UI_MANAGER_SEPARATOR)
-#endif
-
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "Sort", "View/Sort", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "Number", "View/Sort/Number", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "Size", "View/Sort/Size", GTK_UI_MANAGER_MENUITEM)
@@ -1901,7 +1880,6 @@ MainWindow *main_window_create()
 	gtk_container_set_border_width(GTK_CONTAINER(vbox_body), BORDER_WIDTH);
 	gtk_box_pack_start(GTK_BOX(vbox), vbox_body, TRUE, TRUE, 0);
 
-#ifndef GENERIC_UMPC
 	hbox_stat = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 	gtk_widget_set_name(GTK_WIDGET(hbox_stat), "hbox_stat");
 	gtk_box_pack_end(GTK_BOX(vbox_body), hbox_stat, FALSE, FALSE, 0);
@@ -1972,12 +1950,7 @@ MainWindow *main_window_create()
 	gtk_widget_hide(offline_switch);
 	gtk_widget_hide(progressbar);
 	gtk_widget_hide(warning_btn);
-#else
-	online_switch = gtk_button_new ();
-	offline_switch = gtk_button_new ();
-	g_signal_connect (G_OBJECT(online_switch), "clicked", G_CALLBACK(online_switch_clicked), mainwin);
-	g_signal_connect (G_OBJECT(offline_switch), "clicked", G_CALLBACK(online_switch_clicked), mainwin);
-#endif
+
 	/* create views */
 	mainwin->folderview  = folderview  = folderview_create(mainwin);
 	mainwin->summaryview = summaryview = summary_create(mainwin);
@@ -2025,7 +1998,6 @@ MainWindow *main_window_create()
 	mainwin->vbox_body      = vbox_body;
 	mainwin->online_switch  = online_switch;
 	mainwin->offline_switch    = offline_switch;
-#ifndef GENERIC_UMPC
 	messageview->statusbar  = statusbar;
 	mainwin->statusbar      = statusbar;
 	mainwin->hbox_stat      = hbox_stat;
@@ -2045,18 +2017,6 @@ MainWindow *main_window_create()
 	mainwin->messageview_cid = gtk_statusbar_get_context_id
 		(GTK_STATUSBAR(statusbar), "Message View");
 	messageview->statusbar_cid = mainwin->messageview_cid;
-
-#else
-	messageview->statusbar  = NULL;
-	mainwin->statusbar 	= NULL;
-	mainwin->hbox_stat	= NULL;
-	/* mainwin->progressbar is set in toolbar.c */
-	mainwin->statuslabel    = NULL;
-	mainwin->online_pixmap  = NULL;
-	mainwin->offline_pixmap = NULL;
-	mainwin->ac_button      = NULL;
-	mainwin->ac_label       = NULL;
-#endif
 
 	/* allocate colors for summary view and folder view */
 	summaryview->color_marked.red = summaryview->color_marked.green = 0;
@@ -2103,12 +2063,12 @@ MainWindow *main_window_create()
 	toolbar_set_style(mainwin->toolbar->toolbar,
 			  mainwin->handlebox,
 			  prefs_common.toolbar_style);
-#ifndef GENERIC_UMPC
+
 	gtk_widget_hide(mainwin->hbox_stat);
 	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/View/ShowHide/StatusBar");
 	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem),
 				       prefs_common.show_statusbar);
-#endif
+
 	menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/View/ShowHide/ColumnHeaders");
 	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem),
 				       prefs_common.show_col_headers);
@@ -2266,9 +2226,8 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 	gboolean pixmap_theme_changed = GPOINTER_TO_INT(data);
 	GList *cur;
 	MainWindow *mainwin;
-#ifndef GENERIC_UMPC
 	GtkWidget *pixmap;
-#endif
+
 	for (cur = mainwin_list; cur != NULL; cur = cur->next) {
 		mainwin = (MainWindow *)cur->data;
 
@@ -2286,7 +2245,6 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 			summary_reflect_prefs_pixmap_theme(mainwin->summaryview);
 			foldersel_reflect_prefs_pixmap_theme();
 			addressbook_reflect_prefs_pixmap_theme();
-#ifndef GENERIC_UMPC
 			pixmap = stock_pixmap_widget(STOCK_PIXMAP_ONLINE);
 			gtk_container_remove(GTK_CONTAINER(mainwin->online_switch),
 					     mainwin->online_pixmap);
@@ -2299,7 +2257,6 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 			gtk_container_add (GTK_CONTAINER(mainwin->offline_switch), pixmap);
 			gtk_widget_show(pixmap);
 			mainwin->offline_pixmap = pixmap;
-#endif
 			hooks_invoke(THEME_CHANGED_HOOKLIST, NULL);
 		}
 
@@ -2309,9 +2266,7 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 		textview_reflect_prefs(mainwin->messageview->mimeview->textview);
 		folderview_reflect_prefs();
 		summary_reflect_prefs();
-#ifndef GENERIC_UMPC
 		summary_redisplay_msg(mainwin->summaryview);
-#endif
 		if (prefs_common.layout_mode == SMALL_LAYOUT) {
 			if (mainwin->in_folder) {
 				mainwindow_enter_folder(mainwin);
@@ -2532,7 +2487,6 @@ static void main_window_set_toolbar_combo_receive_menu(MainWindow *mainwin,
 static void main_window_set_toolbar_combo_compose_menu(MainWindow *mainwin,
 						       GList *account_list)
 {
-#ifndef GENERIC_UMPC
 	GList *cur_ac;
 	GtkWidget *menuitem;
 	PrefsAccount *ac_prefs;
@@ -2559,7 +2513,6 @@ static void main_window_set_toolbar_combo_compose_menu(MainWindow *mainwin,
 				 ac_prefs);
 	}
 	gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(mainwin->toolbar->compose_mail_btn), menu);
-#endif
 }
 
 void main_window_set_account_menu(GList *account_list)
@@ -2613,7 +2566,7 @@ static void main_window_show_cur_account(MainWindow *mainwin)
 
 	g_free(ac_name);
 }
-#ifndef GENERIC_UMPC
+
 static void main_window_separation_change(MainWindow *mainwin, LayoutType layout_mode)
 {
 	GtkWidget *folder_wid  = GTK_WIDGET_PTR(mainwin->folderview);
@@ -2645,7 +2598,7 @@ static void main_window_separation_change(MainWindow *mainwin, LayoutType layout
 	g_object_unref(summary_wid);
 	g_object_unref(message_wid);
 }
-#endif
+
 void mainwindow_reset_paned(GtkPaned *paned)
 {
 		gint min, max, mid;
@@ -3583,11 +3536,9 @@ void main_window_show(MainWindow *mainwin)
 {
 	gtk_widget_show(mainwin->window);
 	gtk_widget_show(mainwin->vbox_body);
-#ifndef GENERIC_UMPC
         gtk_window_move(GTK_WINDOW(mainwin->window),
                                  prefs_common.mainwin_x,
                                  prefs_common.mainwin_y);
-#endif
 }
 
 void main_window_hide(MainWindow *mainwin)
@@ -3609,10 +3560,8 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 	gboolean first_set = (mainwin->hpaned == NULL);
 	debug_print("Setting widgets...\n");
 
-#ifndef GENERIC_UMPC
 	mainwin->messageview->statusbar = mainwin->statusbar;
 	mainwin->messageview->statusbar_cid = mainwin->messageview_cid;
-#endif
 	/* clean top-most container */
 	if (mainwin->hpaned) {
 		if (gtk_widget_get_parent(mainwin->hpaned) == mainwin->vpaned)
@@ -3780,7 +3729,6 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 	cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/View/ShowHide/MessageView",
 		 messageview_is_visible(mainwin->messageview));
 
-#ifndef GENERIC_UMPC
 	switch (prefs_common.layout_mode) {
 	case NORMAL_LAYOUT:
 		cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/View/Layout/Standard", TRUE);
@@ -3798,7 +3746,6 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 		cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/View/Layout/SmallScreen", TRUE);
 		break;
 	}
-#endif
 
 	if (folderwin) {
 		g_signal_connect
@@ -3838,7 +3785,6 @@ void main_window_destroy_all(void)
 	mainwin_list = NULL;
 }
 
-#ifndef GENERIC_UMPC
 static gboolean ac_label_button_pressed(GtkWidget *widget, GdkEventButton *event,
 				    gpointer data)
 {
@@ -3855,7 +3801,7 @@ static gboolean ac_label_button_pressed(GtkWidget *widget, GdkEventButton *event
 
 	return TRUE;
 }
-#endif
+
 static gint main_window_close_cb(GtkWidget *widget, GdkEventAny *event,
 				 gpointer data)
 {
@@ -4080,7 +4026,6 @@ static void toggle_col_headers_cb(GtkAction *gaction, gpointer data)
 	}
 }
 
-#ifndef GENERIC_UMPC
 static void toggle_statusbar_cb(GtkAction *gaction, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
@@ -4129,7 +4074,6 @@ static void set_layout_cb(GtkAction *action, GtkRadioAction *current, gpointer d
 	summary_relayout(mainwin->summaryview);
 	summary_update_unread(mainwin->summaryview, NULL);
 }
-#endif
 
 void main_window_toggle_work_offline (MainWindow *mainwin, gboolean offline,
 					gboolean ask_sync)
@@ -4199,10 +4143,8 @@ static void online_switch_clicked (GtkButton *btn, gpointer data)
 	cm_return_if_fail(mainwin != NULL);
 
 	if (btn == GTK_BUTTON(mainwin->online_switch)) {
-#ifndef GENERIC_UMPC
 		gtk_widget_hide (mainwin->online_switch);
 		gtk_widget_show (mainwin->offline_switch);
-#endif
 		cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/File/OfflineMode", TRUE);
 
 		inc_autocheck_timer_remove();
@@ -4220,10 +4162,8 @@ static void online_switch_clicked (GtkButton *btn, gpointer data)
 		/*go online */
 		if (!prefs_common.work_offline)
 			return;
-#ifndef GENERIC_UMPC
 		gtk_widget_hide (mainwin->offline_switch);
 		gtk_widget_show (mainwin->online_switch);
-#endif
 		cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/File/OfflineMode", FALSE);
 		prefs_common.work_offline = FALSE;
 		inc_autocheck_timer_set();
@@ -5068,14 +5008,14 @@ static void account_receive_menu_cb(GtkMenuItem *menuitem, gpointer data)
 
 	inc_account_mail(mainwin, account);
 }
-#ifndef GENERIC_UMPC
+
 static void account_compose_menu_cb(GtkMenuItem *menuitem, gpointer data)
 {
 	PrefsAccount *account = (PrefsAccount *)data;
 
 	compose_new_with_folderitem(account, NULL, NULL);
 }
-#endif
+
 static void prefs_open_cb(GtkAction *action, gpointer data)
 {
 	prefs_gtk_open();

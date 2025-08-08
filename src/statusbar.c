@@ -148,19 +148,14 @@ void statusbar_verbosity_set(gboolean verbose)
 	}
 }
 
-void statusbar_progress_all (gint done, gint total, gint step) 
+void statusbar_progress_all (gint done, gint total, gint step)
 {
 	GtkProgressBar *progressbar = GTK_PROGRESS_BAR(
 					mainwindow_get_mainwindow()->progressbar);
 	gchar buf[32];
-	
+
 	if (total && done % step == 0) {
-#ifdef GENERIC_UMPC
-		/* use a more compact format */
-		const gchar *format = "%d/%d";
-#else
 		const gchar *format = "%d / %d";
-#endif
 		g_snprintf(buf, sizeof(buf), format, done, total);
 		gtk_progress_bar_set_show_text(progressbar, TRUE);
 		gtk_progress_bar_set_text(progressbar, buf);

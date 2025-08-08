@@ -4884,15 +4884,11 @@ static void compose_set_title(Compose *compose)
 	subject = gtk_editable_get_chars(
 			GTK_EDITABLE(compose->subject_entry), 0, -1);
 
-#ifndef GENERIC_UMPC
 	if (subject && strlen(subject))
 		str = g_strdup_printf(_("%s - Write message%s"),
 				      subject, edited);
 	else
 		str = g_strdup_printf(_("[no subject] - Write message%s"), edited);
-#else
-	str = g_strdup(_("Write message"));
-#endif
 
 	gtk_window_set_title(GTK_WINDOW(compose->window), str);
 	g_free(str);
@@ -7791,11 +7787,9 @@ static Compose *compose_create(PrefsAccount *account,
 	gtk_window_set_geometry_hints(GTK_WINDOW(window), NULL,
 				      &geometry, GDK_HINT_MIN_SIZE);
 
-#ifndef GENERIC_UMPC
 	if (compose_force_window_origin)
 		gtk_window_move(GTK_WINDOW(window), prefs_common.compose_x,
 				 prefs_common.compose_y);
-#endif
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(compose_delete_cb), compose);
 	MANAGE_WINDOW_SIGNALS_CONNECT(window);
@@ -11069,22 +11063,14 @@ static void entry_allsel(GtkWidget *entry)
 static void compose_cut_cb(GtkAction *action, gpointer data)
 {
 	Compose *compose = (Compose *)data;
-	if (compose->focused_editable
-#ifndef GENERIC_UMPC
-	    && gtk_widget_has_focus(compose->focused_editable)
-#endif
-	    )
+	if (compose->focused_editable && gtk_widget_has_focus(compose->focused_editable))
 		entry_cut_clipboard(compose->focused_editable);
 }
 
 static void compose_copy_cb(GtkAction *action, gpointer data)
 {
 	Compose *compose = (Compose *)data;
-	if (compose->focused_editable
-#ifndef GENERIC_UMPC
-	    && gtk_widget_has_focus(compose->focused_editable)
-#endif
-	    )
+	if (compose->focused_editable && gtk_widget_has_focus(compose->focused_editable))
 		entry_copy_clipboard(compose->focused_editable);
 }
 
@@ -11094,21 +11080,14 @@ static void compose_paste_cb(GtkAction *action, gpointer data)
 	gint prev_autowrap;
 	GtkTextBuffer *buffer;
 	BLOCK_WRAP();
-	if (compose->focused_editable
-#ifndef GENERIC_UMPC
-	    && gtk_widget_has_focus(compose->focused_editable)
-#endif
-		)
+	if (compose->focused_editable && gtk_widget_has_focus(compose->focused_editable))
 		entry_paste_clipboard(compose, compose->focused_editable,
 				prefs_common.linewrap_pastes,
 				GDK_SELECTION_CLIPBOARD, NULL);
 	UNBLOCK_WRAP();
 
 #ifdef USE_ENCHANT
-	if (
-#ifndef GENERIC_UMPC
-		gtk_widget_has_focus(compose->text) &&
-#endif
+	if (gtk_widget_has_focus(compose->text) &&
 	    compose->gtkaspell &&
             compose->gtkaspell->check_while_typing)
 	    	gtkaspell_highlight_all(compose->gtkaspell);
@@ -11119,11 +11098,7 @@ static void compose_paste_as_quote_cb(GtkAction *action, gpointer data)
 {
 	Compose *compose = (Compose *)data;
 	gint wrap_quote = prefs_common.linewrap_quote;
-	if (compose->focused_editable
-#ifndef GENERIC_UMPC
-	    && gtk_widget_has_focus(compose->focused_editable)
-#endif
-	    ) {
+	if (compose->focused_editable && gtk_widget_has_focus(compose->focused_editable)) {
 		/* let text_insert() (called directly or at a later time
 		 * after the gtk_editable_paste_clipboard) know that
 		 * text is to be inserted as a quotation. implemented
@@ -11148,20 +11123,13 @@ static void compose_paste_no_wrap_cb(GtkAction *action, gpointer data)
 	gint prev_autowrap;
 	GtkTextBuffer *buffer;
 	BLOCK_WRAP();
-	if (compose->focused_editable
-#ifndef GENERIC_UMPC
-	    && gtk_widget_has_focus(compose->focused_editable)
-#endif
-	    )
+	if (compose->focused_editable && gtk_widget_has_focus(compose->focused_editable))
 		entry_paste_clipboard(compose, compose->focused_editable, FALSE,
 			GDK_SELECTION_CLIPBOARD, NULL);
 	UNBLOCK_WRAP();
 
 #ifdef USE_ENCHANT
-	if (
-#ifndef GENERIC_UMPC
-		gtk_widget_has_focus(compose->text) &&
-#endif
+	if (gtk_widget_has_focus(compose->text) &&
 	    compose->gtkaspell &&
             compose->gtkaspell->check_while_typing)
 	    	gtkaspell_highlight_all(compose->gtkaspell);
@@ -11174,20 +11142,13 @@ static void compose_paste_wrap_cb(GtkAction *action, gpointer data)
 	gint prev_autowrap;
 	GtkTextBuffer *buffer;
 	BLOCK_WRAP();
-	if (compose->focused_editable
-#ifndef GENERIC_UMPC
-	    && gtk_widget_has_focus(compose->focused_editable)
-#endif
-	    )
+	if (compose->focused_editable && gtk_widget_has_focus(compose->focused_editable))
 		entry_paste_clipboard(compose, compose->focused_editable, TRUE,
 			GDK_SELECTION_CLIPBOARD, NULL);
 	UNBLOCK_WRAP();
 
 #ifdef USE_ENCHANT
-	if (
-#ifndef GENERIC_UMPC
-		gtk_widget_has_focus(compose->text) &&
-#endif
+	if (gtk_widget_has_focus(compose->text) &&
 	    compose->gtkaspell &&
             compose->gtkaspell->check_while_typing)
 	    	gtkaspell_highlight_all(compose->gtkaspell);
@@ -11197,11 +11158,7 @@ static void compose_paste_wrap_cb(GtkAction *action, gpointer data)
 static void compose_allsel_cb(GtkAction *action, gpointer data)
 {
 	Compose *compose = (Compose *)data;
-	if (compose->focused_editable
-#ifndef GENERIC_UMPC
-	    && gtk_widget_has_focus(compose->focused_editable)
-#endif
-	    )
+	if (compose->focused_editable && gtk_widget_has_focus(compose->focused_editable))
 		entry_allsel(compose->focused_editable);
 }
 
@@ -11554,53 +11511,12 @@ static void compose_grab_focus_cb(GtkWidget *widget, Compose *compose)
 
 	if (GTK_IS_EDITABLE(widget) || GTK_IS_TEXT_VIEW(widget))
 		compose->focused_editable = widget;
-
-#ifdef GENERIC_UMPC
-	if (GTK_IS_TEXT_VIEW(widget)
-	    && gtk_paned_get_child1(GTK_PANED(compose->paned)) != compose->edit_vbox) {
-		g_object_ref(compose->notebook);
-		g_object_ref(compose->edit_vbox);
-		gtk_container_remove(GTK_CONTAINER(compose->paned), compose->notebook);
-		gtk_container_remove(GTK_CONTAINER(compose->paned), compose->edit_vbox);
-		gtk_paned_add1(GTK_PANED(compose->paned), compose->edit_vbox);
-		gtk_paned_add2(GTK_PANED(compose->paned), compose->notebook);
-		g_object_unref(compose->notebook);
-		g_object_unref(compose->edit_vbox);
-		g_signal_handlers_block_by_func(G_OBJECT(widget),
-					G_CALLBACK(compose_grab_focus_cb),
-					compose);
-		gtk_widget_grab_focus(widget);
-		g_signal_handlers_unblock_by_func(G_OBJECT(widget),
-					G_CALLBACK(compose_grab_focus_cb),
-					compose);
-	} else if (!GTK_IS_TEXT_VIEW(widget)
-		   && gtk_paned_get_child1(GTK_PANED(compose->paned)) != compose->notebook) {
-		g_object_ref(compose->notebook);
-		g_object_ref(compose->edit_vbox);
-		gtk_container_remove(GTK_CONTAINER(compose->paned), compose->notebook);
-		gtk_container_remove(GTK_CONTAINER(compose->paned), compose->edit_vbox);
-		gtk_paned_add1(GTK_PANED(compose->paned), compose->notebook);
-		gtk_paned_add2(GTK_PANED(compose->paned), compose->edit_vbox);
-		g_object_unref(compose->notebook);
-		g_object_unref(compose->edit_vbox);
-		g_signal_handlers_block_by_func(G_OBJECT(widget),
-					G_CALLBACK(compose_grab_focus_cb),
-					compose);
-		gtk_widget_grab_focus(widget);
-		g_signal_handlers_unblock_by_func(G_OBJECT(widget),
-					G_CALLBACK(compose_grab_focus_cb),
-					compose);
-	}
-#endif
 }
 
 static void compose_changed_cb(GtkTextBuffer *textbuf, Compose *compose)
 {
 	compose->modified = TRUE;
-/*	compose_beautify_paragraph(compose, NULL, TRUE); */
-#ifndef GENERIC_UMPC
 	compose_set_title(compose);
-#endif
 }
 
 static void compose_wrap_cb(GtkAction *action, gpointer data)

@@ -799,9 +799,6 @@ static void recursive_add_parts(TextView *textview, GNode *node)
         mimeinfo = (MimeInfo *) node->data;
 
         textview_add_part(textview, mimeinfo);
-#ifdef GENERIC_UMPC
-	textview_set_position(textview, 0);
-#endif
         if ((mimeinfo->type != MIMETYPE_MULTIPART) &&
             (mimeinfo->type != MIMETYPE_MESSAGE)) {
 	    	END_TIMING();
@@ -910,9 +907,7 @@ void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 	const gchar *name;
 	gchar *content_type;
 	GtkUIManager *ui_manager;
-#ifndef GENERIC_UMPC
 	gchar *shortcut;
-#endif
 
 	if (!partinfo) return;
 
@@ -947,38 +942,31 @@ void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 		g_free(content_type);
 	}
 	TEXTVIEW_INSERT(_("  The following can be performed on this part\n"));
-#ifndef GENERIC_UMPC
 	TEXTVIEW_INSERT(_("  by right-clicking the icon or list item:"));
-#endif
 	TEXTVIEW_INSERT("\n");
 
 	TEXTVIEW_INSERT(_("     - To save, select "));
 	TEXTVIEW_INSERT_LINK(_("'Save as...'"), "cm://save_as", NULL);
-#ifndef GENERIC_UMPC
 	TEXTVIEW_INSERT(_(" (Shortcut key: '"));
 	shortcut = cm_menu_item_get_shortcut(ui_manager, "Menu/File/SavePartAs");
 	TEXTVIEW_INSERT(shortcut);
 	g_free(shortcut);
 	TEXTVIEW_INSERT(_("')"));
-#endif
 	TEXTVIEW_INSERT("\n");
 
 	TEXTVIEW_INSERT(_("     - To display as text, select "));
 	TEXTVIEW_INSERT_LINK(_("'Display as text'"), "cm://display_as_text", NULL);
 
-#ifndef GENERIC_UMPC
 	TEXTVIEW_INSERT(_(" (Shortcut key: '"));
 	shortcut = cm_menu_item_get_shortcut(ui_manager, "Menu/View/Part/AsText");
 	TEXTVIEW_INSERT(shortcut);
 	g_free(shortcut);
 	TEXTVIEW_INSERT(_("')"));
-#endif
 	TEXTVIEW_INSERT("\n");
 
 	TEXTVIEW_INSERT(_("     - To open with an external program, select "));
 	TEXTVIEW_INSERT_LINK(_("'Open'"), "cm://open", NULL);
 
-#ifndef GENERIC_UMPC
 	TEXTVIEW_INSERT(_(" (Shortcut key: '"));
 	shortcut = cm_menu_item_get_shortcut(ui_manager, "Menu/View/Part/Open");
 	TEXTVIEW_INSERT(shortcut);
@@ -994,7 +982,6 @@ void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 	TEXTVIEW_INSERT(shortcut);
 	g_free(shortcut);
 	TEXTVIEW_INSERT(_("')"));
-#endif
 #endif
 	TEXTVIEW_INSERT("\n");
 

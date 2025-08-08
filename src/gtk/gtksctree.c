@@ -449,9 +449,8 @@ sctree_is_hot_spot (GtkSCTree     *sctree,
      yu = (ROW_TOP_YPIXEL (clist, row) + (clist->row_height/2 - hotspot_size) / 2 -
 	(clist->row_height/2 - 1) % 2);
 
-#ifndef GENERIC_UMPC
   if (clist->column[ctree->tree_column].justification == GTK_JUSTIFY_RIGHT)
-    xl = clist->column[ctree->tree_column].area.x + 
+    xl = clist->column[ctree->tree_column].area.x +
 	  clist->column[ctree->tree_column].area.width - 1 + clist->hoffset -
 	  (tree_row->level - 1) * ctree->tree_indent - hotspot_size;
   else
@@ -459,35 +458,18 @@ sctree_is_hot_spot (GtkSCTree     *sctree,
 	  (tree_row->level - 1) * ctree->tree_indent;
 
   xmax = xl + hotspot_size;
-#else
-  if (clist->column[ctree->tree_column].justification == GTK_JUSTIFY_RIGHT) {
-    xl = clist->column[ctree->tree_column].area.x + 
-	  clist->column[ctree->tree_column].area.width - 1 + clist->hoffset -
-	  (tree_row->level - 1) * ctree->tree_indent - hotspot_size;
-    xmax = xl + hotspot_size;
-  } else if (ctree->tree_column == 0) {
-    xl = clist->column[ctree->tree_column].area.x + clist->hoffset;
-    xmax = clist->column[ctree->tree_column].area.x + clist->hoffset +
-	   (tree_row->level - 1) * ctree->tree_indent +
-	   hotspot_size;
-  } else {
-    xl = clist->column[ctree->tree_column].area.x + clist->hoffset +
-	  (tree_row->level - 1) * ctree->tree_indent;
-    xmax = xl + hotspot_size;
-  }
-#endif
   return (x >= xl && x <= xmax && y >= yu && y <= yu + hotspot_size);
 }
 
 gboolean
-gtk_sctree_is_hot_spot (GtkSCTree *ctree, 
-		       gint      x, 
+gtk_sctree_is_hot_spot (GtkSCTree *ctree,
+		       gint      x,
 		       gint      y)
 {
   GtkCMCTreeNode *node;
   gint column;
   gint row;
-  
+
   cm_return_val_if_fail (GTK_IS_SCTREE (ctree), FALSE);
 
   if (gtk_cmclist_get_selection_info (GTK_CMCLIST (ctree), x, y, &row, &column))
@@ -673,14 +655,9 @@ gtk_sctree_motion (GtkWidget *widget, GdkEventMotion *event)
 		return FALSE;
 
 	/* This is the same threshold value that is used in gtkdnd.c */
-
-#ifndef GENERIC_UMPC
-#define THRESHOLD 3
-#else
-#define THRESHOLD 8
-#endif
+	int threshold = 3;
 	if (MAX (ABS (sctree->dnd_press_x - event->x),
-		 ABS (sctree->dnd_press_y - event->y)) <= THRESHOLD)
+		 ABS (sctree->dnd_press_y - event->y)) <= threshold)
 		return FALSE;
 
 	/* Handle any pending selections */

@@ -1210,18 +1210,13 @@ static void update_io_dialog(Children *children)
 
 	if (children->progress_bar) {
 		gchar *text;
-#ifdef GENERIC_UMPC
-		/* use a more compact format */
-		const gchar *format = "%s %d/%d";
-#else
 		const gchar *format = "%s %d / %d";
-#endif
-		
+
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(children->progress_bar),
 						  (children->initial_nb == 0) ? 0 :
 					      (gdouble) (children->initial_nb - children->nb) /
 					      (gdouble) children->initial_nb);
-		text = g_strdup_printf(format, _("Completed"), 
+		text = g_strdup_printf(format, _("Completed"),
 				       children->initial_nb - children->nb,
 				       children->initial_nb);
 		gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(children->progress_bar), TRUE);
@@ -1382,20 +1377,15 @@ static void create_io_dialog(Children *children)
 
 	if (children->initial_nb > 1) {
 		gchar *text;
-#ifdef GENERIC_UMPC
-		/* use a more compact format */
-		const gchar *format = "%s 0/%d\n";
-#else
 		const gchar *format = "%s 0 / %d\n";
-#endif
-		
+
 		progress_bar = gtk_progress_bar_new();
 		gtk_orientable_set_orientation(GTK_ORIENTABLE(progress_bar),
 				GTK_ORIENTATION_HORIZONTAL);
 		gtk_progress_bar_set_inverted(GTK_PROGRESS_BAR(progress_bar),
 				FALSE);
 
-		text = g_strdup_printf(format, _("Completed"), 
+		text = g_strdup_printf(format, _("Completed"),
 		                       children->initial_nb);
 		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(progress_bar),
 					  text);

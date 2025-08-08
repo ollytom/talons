@@ -159,11 +159,6 @@ static GtkWidget *about_create_child_page_info(void)
 	gtk_text_buffer_create_tag(buffer, "underlined-list-title",
 				"underline", PANGO_UNDERLINE_SINGLE,
 				NULL);
-#ifdef GENERIC_UMPC
-	ADD_TEXT("\n\n");
-	ADD_TEXT(_("Copyright (C) 1999-2025\nThe Claws Mail Team\n"
-				"and Hiroyuki Yamamoto"));
-#endif
 	ADD_TEXT("\n\n");
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter,
 			(_("System Information\n")), -1, "underlined-list-title", NULL);
@@ -836,7 +831,6 @@ static void about_create(void)
 
 	button = gtk_link_button_new(HOMEPAGE_URI);
 	gtk_container_add(GTK_CONTAINER(grid2), button);
-#ifndef GENERIC_UMPC
 	label = gtk_label_new
 		(_("Copyright (C) 1999-2025\nThe Claws Mail Team\n"
 		 "and Hiroyuki Yamamoto"));
@@ -844,7 +838,6 @@ static void about_create(void)
 	gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
 	gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
 	gtk_container_add(GTK_CONTAINER(grid2), label);
-#endif
 
 	notebook = gtk_notebook_new();
 	gtk_widget_show(notebook);
