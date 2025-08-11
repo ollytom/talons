@@ -40,10 +40,6 @@
 
 #include <glib/gi18n.h>
 
-#ifdef USE_PTHREAD
-#include <pthread.h>
-#endif
-
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
