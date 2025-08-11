@@ -25,10 +25,6 @@
 #include "claws-features.h"
 #endif
 
-#ifdef USE_PTHREAD
-#include <pthread.h>
-#endif
-
 #include <sys/stat.h>
 #include <errno.h>
 #include <time.h>

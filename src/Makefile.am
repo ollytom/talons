@@ -536,7 +536,7 @@ claws_mail_LDADD = \
 	$(GTK_LIBS) \
 	$(GNUTLS_LIBS) \
 	$(NETTLE_LIBS) \
-	$(PTHREAD_LIBS) \
+	-lpthread \
 	$(LIBICONV) \
 	$(STARTUP_NOTIFICATION_LIBS) \
 	$(LIBETPAN_LIBS) \

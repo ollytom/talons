@@ -27,10 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-
-#ifdef USE_PTHREAD
 #include <pthread.h>
-#endif
 
 #include "defs.h"
 #include "utils.h"
@@ -651,14 +648,11 @@ static gboolean matcherprop_header_line_match(MatcherProp *prop, const gchar *hd
 	return res;
 }
 
-#ifdef USE_PTHREAD
 typedef struct _thread_data {
 	const gchar *cmd;
 	gboolean done;
 } thread_data;
-#endif
 
-#ifdef USE_PTHREAD
 static void *matcher_test_thread(void *data)
 {
 	thread_data *td = (thread_data *)data;
@@ -671,7 +665,6 @@ static void *matcher_test_thread(void *data)
 	td->done = TRUE; /* let the caller thread join() */
 	return GINT_TO_POINTER(result);
 }
-#endif
 
 /*!
  *\brief	Execute a command defined in the matcher structure
@@ -687,31 +680,24 @@ static gboolean matcherprop_match_test(const MatcherProp *prop,
 	gchar *file;
 	gchar *cmd;
 	gint retval;
-#ifdef USE_PTHREAD
 	pthread_t pt;
 	thread_data *td = g_new0(thread_data, 1);
 	void *res = NULL;
 	time_t start_time = time(NULL);
-#endif
 
 	file = procmsg_get_message_file(info);
 	if (file == NULL) {
-#ifdef USE_PTHREAD
 		g_free(td);
-#endif
 		return FALSE;
 	}
 	g_free(file);
 
 	cmd = matching_build_command(prop->expr, info);
 	if (cmd == NULL) {
-#ifdef USE_PTHREAD
 		g_free(td);
-#endif
 		return FALSE;
-}
+	}
 
-#ifdef USE_PTHREAD
 	/* debug output */
 	if (debug_filtering_session
 			&& prefs_common.filtering_debug_level >= FILTERING_DEBUG_LEVEL_HIGH) {
@@ -742,17 +728,6 @@ static gboolean matcherprop_match_test(const MatcherProp *prop,
 		debug_print(" test thread returned %d\n", retval);
 	}
 	g_free(td);
-#else
-	/* debug output */
-	if (debug_filtering_session
-			&& prefs_common.filtering_debug_level >= FILTERING_DEBUG_LEVEL_HIGH) {
-		log_print(LOG_DEBUG_FILTERING,
-				"starting synchronous command [ %s ]\n",
-				cmd);
-	}
-
-	retval = system(cmd);
-#endif
 	debug_print("Command exit code: %d\n", retval);
 
 	/* debug output */

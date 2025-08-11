@@ -94,7 +94,7 @@ AM_CPPFLAGS = \
 libclawscommon_la_LIBADD = \
 	$(GLIB_LIBS) \
 	$(CRYPT_LIBS) \
-	$(PTHREAD_LIBS)
+	-lpthread
 
 EXTRA_DIST = \
 	version.h.in

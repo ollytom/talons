@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -46,16 +46,12 @@ GCRY_THREAD_OPTION_PTHREAD_IMPL;
 #include <libetpan/mailstream_ssl.h>
 #endif
 
-#ifdef USE_PTHREAD
 #include <pthread.h>
-#endif
 
-#ifdef USE_PTHREAD
 typedef struct _thread_data {
 	gnutls_session_t ssl;
 	gboolean done;
 } thread_data;
-#endif
 
 #if GNUTLS_VERSION_NUMBER < 0x030400
 #define DEFAULT_GNUTLS_PRIORITY "NORMAL:-VERS-SSL3.0"
@@ -91,7 +87,7 @@ static int gnutls_cert_cb(gnutls_session_t session,
 	hookdata.cert_path = NULL;
 	hookdata.password = NULL;
 	hookdata.is_smtp = sockinfo->is_smtp;
-	hooks_invoke(SSLCERT_GET_CLIENT_CERT_HOOKLIST, &hookdata);	
+	hooks_invoke(SSLCERT_GET_CLIENT_CERT_HOOKLIST, &hookdata);
 
 	if (hookdata.cert_path == NULL) {
 		g_free(hookdata.password);
@@ -102,7 +98,7 @@ static int gnutls_cert_cb(gnutls_session_t session,
 	sockinfo->client_key = ssl_certificate_get_pkey_from_pem_file(hookdata.cert_path);
 	if (!(sockinfo->client_crt && sockinfo->client_key)) {
 		/* try pkcs12 format */
-		ssl_certificate_get_x509_and_pkey_from_p12_file(hookdata.cert_path, hookdata.password, 
+		ssl_certificate_get_x509_and_pkey_from_p12_file(hookdata.cert_path, hookdata.password,
 			&crt, &key);
 		sockinfo->client_crt = crt;
 		sockinfo->client_key = key;
@@ -241,7 +237,7 @@ const gchar *claws_ssl_get_cert_dir(void)
 		"/usr/lib/ssl/certs",
 		NULL};
 	int i;
-    	
+
 	for (i = 0; cert_dirs[i]; i++) {
 		if (is_dir_exist(cert_dirs[i]))
 			return cert_dirs[i];
@@ -259,7 +255,7 @@ void ssl_init(void)
 #endif
 #ifdef HAVE_LIBETPAN
 	mailstream_gnutls_init_not_required();
-#endif	
+#endif
 	gnutls_global_init();
 }
 
@@ -268,7 +264,6 @@ void ssl_done(void)
 	gnutls_global_deinit();
 }
 
-#ifdef USE_PTHREAD
 static void *SSL_connect_thread(void *data)
 {
 	thread_data *td = (thread_data *)data;
@@ -284,23 +279,21 @@ static void *SSL_connect_thread(void *data)
 	td->done = TRUE; /* let the caller thread join() */
 	return GINT_TO_POINTER(result);
 }
-#endif
 
 static gint SSL_connect_nb(gnutls_session_t ssl)
 {
 	int result;
-#ifdef USE_PTHREAD
 	thread_data *td = g_new0(thread_data, 1);
 	pthread_t pt;
 	void *res = NULL;
 	time_t start_time = time(NULL);
 	gboolean killed = FALSE;
-	
+
 	td->ssl  = ssl;
 	td->done = FALSE;
-	
+
 	/* try to create a thread to initialize the SSL connection,
-	 * fallback to blocking method in case of problem 
+	 * fallback to blocking method in case of problem
 	 */
 	if (pthread_create(&pt, NULL, SSL_connect_thread, td) != 0) {
 		do {
@@ -322,19 +315,14 @@ static gint SSL_connect_nb(gnutls_session_t ssl)
 	/* get the thread's return value and clean its resources */
 	pthread_join(pt, &res);
 	g_free(td);
-	
+
 	if (killed) {
 		res = GINT_TO_POINTER(-1);
 	}
-	debug_print("SSL_connect thread returned %d\n", 
+	debug_print("SSL_connect thread returned %d\n",
 			GPOINTER_TO_INT(res));
-	
+
 	return GPOINTER_TO_INT(res);
-#else /* USE_PTHREAD */
-	do {
-		result = gnutls_handshake(ssl);
-	} while (result == GNUTLS_E_AGAIN || result == GNUTLS_E_INTERRUPTED);
-#endif
 }
 
 gnutls_x509_crt_t *ssl_get_certificate_chain(gnutls_session_t session, unsigned int *list_len)
@@ -430,7 +418,7 @@ gboolean ssl_init_socket(SockInfo *sockinfo)
 		r = gnutls_certificate_set_x509_trust_file(xcred, claws_ssl_get_cert_file(),  GNUTLS_X509_FMT_PEM);
 		if (r < 0)
 			g_warning("can't read SSL_CERT_FILE '%s': %s",
-				claws_ssl_get_cert_file(), 
+				claws_ssl_get_cert_file(),
 				gnutls_strerror(r));
 	} else {
 		debug_print("Can't find SSL ca-certificates file\n");

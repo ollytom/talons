@@ -27,7 +27,6 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gdk/gdkwin32.h>
-#include <pthread.h>
 
 #include <windows.h>
 #include <shlobj.h>
@@ -111,9 +110,6 @@ static const gboolean _file_open_dialog(const gchar *path, const gchar *title,
 	glong conv_items, sz;
 	GError *error = NULL;
 	WinChooserCtx *ctx;
-#ifdef USE_PTHREAD
-	pthread_t pt;
-#endif
 
 	/* Path needs to be converted to UTF-16, so that the native chooser
 	 * can understand it. */
@@ -185,22 +181,7 @@ static const gboolean _file_open_dialog(const gchar *path, const gchar *title,
 	ctx->data = &o;
 	ctx->done = FALSE;
 
-#ifdef USE_PTHREAD
-	if (pthread_create(&pt, NULL, threaded_GetOpenFileName,
-				(void *)ctx) != 0) {
-		debug_print("Couldn't run in a thread, continuing unthreaded.\n");
-		threaded_GetOpenFileName(ctx);
-	} else {
-		while (!ctx->done) {
-			claws_do_idle();
-		}
-		pthread_join(pt, NULL);
-	}
-	ret = ctx->return_value;
-#else
-	debug_print("No threads available, continuing unthreaded.\n");
 	ret = GetOpenFileName(&o);
-#endif
 
 	g_free(win_filter16);
 	if (path16 != NULL) {
@@ -329,9 +310,6 @@ gchar *filesel_select_file_save(const gchar *title, const gchar *path)
 	glong conv_items;
 	GError *error = NULL;
 	WinChooserCtx *ctx;
-#ifdef USE_PTHREAD
-	pthread_t pt;
-#endif
 
 	/* Find the filename part, if any */
 	if (path == NULL || path[strlen(path)-1] == G_DIR_SEPARATOR) {
@@ -392,22 +370,7 @@ gchar *filesel_select_file_save(const gchar *title, const gchar *path)
 	ctx->return_value = FALSE;
 	ctx->done = FALSE;
 
-#ifdef USE_PTHREAD
-	if (pthread_create(&pt, NULL, threaded_GetSaveFileName,
-				(void *)ctx) != 0) {
-		debug_print("Couldn't run in a thread, continuing unthreaded.\n");
-		threaded_GetSaveFileName(ctx);
-	} else {
-		while (!ctx->done) {
-			claws_do_idle();
-		}
-		pthread_join(pt, NULL);
-	}
-	ret = ctx->return_value;
-#else
-	debug_print("No threads available, continuing unthreaded.\n");
 	ret = GetSaveFileName(&o);
-#endif
 
 	g_free(filename16);
 	g_free(path16);
@@ -453,9 +416,6 @@ gchar *filesel_select_file_open_folder(const gchar *title, const gchar *path)
 	glong conv_items;
 	GError *error = NULL;
 	WinChooserCtx *ctx;
-#ifdef USE_PTHREAD
-	pthread_t pt;
-#endif
 
 	/* Path needs to be converted to UTF-16, so that the native chooser
 	 * can understand it. */
@@ -493,23 +453,7 @@ gchar *filesel_select_file_open_folder(const gchar *title, const gchar *path)
 	ctx = g_new0(WinChooserCtx, 1);
 	ctx->data = &b;
 	ctx->done = FALSE;
-
-#ifdef USE_PTHREAD
-	if (pthread_create(&pt, NULL, threaded_SHBrowseForFolder,
-				(void *)ctx) != 0) {
-		debug_print("Couldn't run in a thread, continuing unthreaded.\n");
-		threaded_SHBrowseForFolder(ctx);
-	} else {
-		while (!ctx->done) {
-			claws_do_idle();
-		}
-		pthread_join(pt, NULL);
-	}
-	pidl = ctx->return_value_pidl;
-#else
-	debug_print("No threads available, continuing unthreaded.\n");
 	pidl = SHBrowseForFolder(&b);
-#endif
 
 	g_free(b.pszDisplayName);
 	g_free(title16);

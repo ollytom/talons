@@ -199,18 +199,13 @@ if test $USE_MAINTAINER_MODE = yes; then
 	AM_CFLAGS="$AM_CFLAGS -g"
 fi
 
-pthread_name=
 case "$target" in
 *-darwin*)
 	AM_CFLAGS="$AM_CFLAGS -fno-common"
 	;;
 *-*-mingw*)
-	# Note that we need to link to pthread in all cases. This
-	# is because some locking is used even when pthread support is
-	# disabled.
-	pthread_name=pthread
 	AM_CFLAGS="$AM_CFLAGS -mms-bitfields"
-	LIBS="$LIBS -l${pthread_name} -lws2_32 -lregex"
+	LIBS="$LIBS -lws2_32 -lregex"
 	;;
 *-*-solaris*)
 	AM_CFLAGS="$AM_CFLAGS -std=gnu99"
@@ -257,10 +252,6 @@ AC_ARG_ENABLE(enchant,
 AC_ARG_ENABLE(crash-dialog,
 		[  --enable-crash-dialog           Build crash dialog],
 		[enable_crash_dialog=$enableval], [enable_crash_dialog=no])
-
-AC_ARG_ENABLE(pthread,
-		[  --disable-pthread               Do not build pthread support],
-		[enable_pthread=$enableval], [enable_pthread=yes])
 
 AC_ARG_ENABLE(startup-notification,
 		[  --disable-startup-notification  Do not startup notification support],
@@ -535,34 +526,6 @@ dnl check if GDB is somewhere
 	fi
 	AC_MSG_RESULT($enable_crash_dialog)
 fi
-
-dnl check for pthread support
-AC_MSG_CHECKING([whether to use pthread])
-if test x$enable_pthread = xno; then
-	AC_MSG_RESULT(no)
-else
-	AC_MSG_RESULT(yes)
-
-        # For W32 we need to use a special ptrhead lib. In this case we can't
-        # use AC_CHECK_LIB because it has no means of checking for a
-        # library installed under a different name.  Checking for the
-        # header is okay.
-        if test -n "${pthread_name}" ; then
-           enable_pthread=yes
-        else
-	AC_CHECK_LIB(pthread, pthread_create, :, enable_pthread=no)
-        fi
-	AC_CHECK_HEADERS(pthread.h, :, enable_pthread=no)
-
-	if test x$enable_pthread = xyes; then
-		AC_DEFINE(USE_PTHREAD, 1, Define if you have pthread)
-                if test -z "${pthread_name}" ; then
-		PTHREAD_LIBS="-lpthread"
-	fi
-	fi
-
-fi
-AC_SUBST(PTHREAD_LIBS)
 
 dnl
 dnl Check whether we need to pass -lresolv
@@ -965,7 +928,6 @@ echo "Crash dialog         : $enable_crash_dialog"
 echo "Manual               : $enable_manual"
 echo "SVG support          : $enable_svg"
 echo "Unit tests           : $enable_tests"
-echo "pthread              : $enable_pthread"
 echo "Startup notification : $enable_startup_notification"
 echo "Valgrind support     : $enable_valgrind"
 
