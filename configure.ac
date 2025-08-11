@@ -233,10 +233,6 @@ AC_ARG_ENABLE(manual,
 		[  --disable-manual                Do not build user manual],
 		[enable_manual=$enableval], [enable_manual=yes])
 
-AC_ARG_ENABLE(ipv6,
-		[  --disable-ipv6                  Do not build IPv6 support],
-		[enable_ipv6=$enableval], [enable_ipv6=yes])
-
 AC_ARG_ENABLE(gnutls,
 		[  --disable-gnutls                Do not build GnuTLS support for TLS],
 		    [enable_gnutls=$enableval], [enable_gnutls=yes])
@@ -372,38 +368,6 @@ AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
 PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0 >= 2.26])
-
-dnl check for IPv6 option
-dnl automated checks for IPv6 support.
-AC_MSG_CHECKING([whether to use IPv6])
-if test x"$enable_ipv6" = xyes; then
-	AC_MSG_RESULT(yes)
-	AC_MSG_CHECKING([for IPv6 support])
-	if test x"$platform_win32" = xyes; then
-		AC_CACHE_VAL(ac_cv_ipv6,[
-			AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-					#include <ws2tcpip.h>
-				]], [[struct in6_addr a;]])],[ac_cv_ipv6=yes],[ac_cv_ipv6=no])
-		])
-	else
-		AC_CACHE_VAL(ac_cv_ipv6,[
-			AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-					#define INET6
-					#include <sys/types.h>
-					#include <netinet/in.h>
-				]], [[int x = IPPROTO_IPV6; struct in6_addr a;]])],[ac_cv_ipv6=yes],[ac_cv_ipv6=no])
-		])
-	fi
-	AC_MSG_RESULT($ac_cv_ipv6)
-	if test $ac_cv_ipv6 = yes; then
-		AC_DEFINE(INET6, 1, Define if you want IPv6 support.)
-	else
-		AC_MSG_WARN(*** IPv6 will not be supported ***)
-		enable_ipv6=no
-	fi
-else
-	AC_MSG_RESULT(no)
-fi
 
 dnl GNUTLS
 AC_MSG_CHECKING([whether to use GnuTLS])
@@ -920,7 +884,6 @@ echo ""
 echo "gnuTLS               : $enable_gnutls"
 echo "OAuth2               : $enable_oauth2"
 echo "iconv                : $am_cv_func_iconv"
-echo "IPv6                 : $enable_ipv6"
 echo "enchant              : $enable_enchant"
 echo "IMAP4 (libetpan)     : $enable_libetpan"
 echo "NNTP (libetpan)      : $enable_libetpan"

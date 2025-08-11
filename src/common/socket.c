@@ -242,7 +242,7 @@ static int fd_is_w32_socket(gint fd)
 {
         gint optval;
         gint retval = sizeof(optval);
-        
+
         return !getsockopt(fd, SOL_SOCKET, SO_TYPE, (char*)&optval, &retval);
 }
 #endif
@@ -377,7 +377,7 @@ gint fd_open_unix(const gchar *path)
 		perror(buf);
 		g_free(buf);
 		close(sock);
-		return -1;		
+		return -1;
 	}
 
 	return sock;
@@ -463,7 +463,7 @@ static gboolean ssl_sock_check(GSource *source)
 	struct timeval timeout = {0, 0};
 	fd_set fds;
 	GIOCondition condition = 0;
-        
+
 	if (!sock || !sock->sock)
 		return FALSE;
 
@@ -582,7 +582,7 @@ static gint sock_connect_with_timeout(gint sock,
 	gint ret, saved_errno;
 #ifdef G_OS_UNIX
 	void (*prev_handler)(gint);
-	
+
 	alarm(0);
 	prev_handler = signal(SIGALRM, timeout_handler);
 	if (sigsetjmp(jmpenv, 1)) {
@@ -621,13 +621,7 @@ static gint sock_connect_by_getaddrinfo(const gchar *hostname, gushort	port)
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = AI_ADDRCONFIG;
-
-#ifdef INET6
 	hints.ai_family = AF_UNSPEC;
-#else
-	hints.ai_family = AF_INET;
-#endif
-
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 
@@ -641,11 +635,6 @@ static gint sock_connect_by_getaddrinfo(const gchar *hostname, gushort	port)
 	}
 
 	for (ai = res; ai != NULL; ai = ai->ai_next) {
-#ifndef INET6
-		if (ai->ai_family == AF_INET6)
-			continue;
-#endif
-
 		sock = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 		if (sock < 0 )
 			continue;
@@ -908,7 +897,7 @@ static gboolean sock_get_address_info_async_cb(GIOChannel *source,
 	gchar *canonical_name = NULL;
 	gchar len = 0;
 	GError *err = NULL;
-	
+
 	g_io_channel_set_encoding(source, NULL, &err);
 	if (err) {
 		g_warning("can't unset encoding: %s", err->message);
@@ -922,7 +911,7 @@ static gboolean sock_get_address_info_async_cb(GIOChannel *source,
 			g_warning("g_io_channel_read_chars: %s", err->message);
 			g_error_free(err);
 			return FALSE;
-		} 
+		}
 		if (bytes_read == sizeof(len) && len > 0) {
 			gchar *cur = NULL;
 			gint todo = len;
@@ -950,18 +939,18 @@ static gboolean sock_get_address_info_async_cb(GIOChannel *source,
 				      break;
 				}
 			}
-		}	      
+		}
 	}
 	for (;;) {
 		if (g_io_channel_read_chars(source, (gchar *)ai_member,
-				      sizeof(ai_member), &bytes_read, &err) 
+				      sizeof(ai_member), &bytes_read, &err)
 		    != G_IO_STATUS_NORMAL) {
 			if (err != NULL) {
 				g_warning("g_io_channel_read_chars: addr len %s", err->message);
 				g_error_free(err);
 				err = NULL;
 				break;
-			} 
+			}
 		}
 
 		if (bytes_read == 0 || bytes_read != sizeof(ai_member))
@@ -976,7 +965,7 @@ static gboolean sock_get_address_info_async_cb(GIOChannel *source,
 
 		addr = g_malloc(ai_member[3]);
 		if (g_io_channel_read_chars(source, (gchar *)addr, ai_member[3],
-				      &bytes_read, &err) 
+				      &bytes_read, &err)
 		    != G_IO_STATUS_NORMAL) {
 			if (err != NULL) {
 				g_warning("g_io_channel_read_chars: addr data read %s", err->message);
@@ -984,7 +973,7 @@ static gboolean sock_get_address_info_async_cb(GIOChannel *source,
 				err = NULL;
 				g_free(addr);
 				break;
-			} 
+			}
 		}
 
 		if (bytes_read != ai_member[3]) {
@@ -1046,11 +1035,7 @@ static void address_info_async_child(void *opaque)
 
         memset(&hints, 0, sizeof(hints));
         hints.ai_flags = AI_CANONNAME | AI_ADDRCONFIG;
-#ifdef INET6
         hints.ai_family = AF_UNSPEC;
-#else
-				hints.ai_family = AF_INET;
-#endif
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_protocol = IPPROTO_TCP;
 
@@ -1082,7 +1067,7 @@ static void address_info_async_child(void *opaque)
 	                fd_write_all(parm->pipe_fds[1], &len,
                              sizeof(len));
 	                fd_write_all(parm->pipe_fds[1], res->ai_canonname,
-                             len);			 
+                             len);
 		} else {
 			gchar len = 0;
 	                fd_write_all(parm->pipe_fds[1], &len,
@@ -1125,7 +1110,7 @@ static SockLookupData *sock_get_address_info_async(const gchar *hostname,
 						   gpointer data)
 {
 	SockLookupData *lookup_data = NULL;
-	
+
 	refresh_resolvers();
 
         lookup_data = g_new0(SockLookupData, 1);
@@ -1163,7 +1148,7 @@ static SockLookupData *sock_get_address_info_async(const gchar *hostname,
         close(lookup_data->pipe_fds[1]);
         lookup_data->pipe_fds[1] = -1;
 #endif  /*!G_OS_WIN32 */
-        
+
 #ifndef G_OS_WIN32
         lookup_data->channel = g_io_channel_unix_new(lookup_data->pipe_fds[0]);
 #else
@@ -1298,7 +1283,7 @@ gint sock_read(SockInfo *sock, gchar *buf, gint len)
 	else
 #endif
 		ret = fd_read(sock->sock, buf, len);
-	
+
 	if (ret < 0)
 		sock->state = CONN_DISCONNECTED;
 	return ret;
@@ -1447,13 +1432,13 @@ gint fd_gets(gint fd, gchar *buf, gint len)
 	do {
 /*
 XXX:tm try nonblock
-MSKB Article ID: Q147714 
+MSKB Article ID: Q147714
 Windows Sockets 2 Service Provider Interface Limitations
-Polling with recv(MSG_PEEK) to determine when a complete message 
+Polling with recv(MSG_PEEK) to determine when a complete message
 has arrived.
     Reason and Workaround not available.
 
-Single-byte send() and recv(). 
+Single-byte send() and recv().
     Reason: Couple one-byte sends with Nagle disabled.
     Workaround: Send modest amounts and receive as much as possible.
 (still unused)

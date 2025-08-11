@@ -624,12 +624,6 @@ static void main_dump_features_list(gboolean show_debug_only)
 	else
 		g_print(" GnuTLS\n");
 #endif
-#if INET6
-	if (show_debug_only)
-		debug_print(" IPv6\n");
-	else
-		g_print(" IPv6\n");
-#endif
 #if HAVE_ICONV
 	if (show_debug_only)
 		debug_print(" iconv\n");

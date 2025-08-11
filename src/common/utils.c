@@ -1930,7 +1930,7 @@ const gchar *get_domain_name(void)
 }
 
 /* Tells whether the given host address string is a valid representation of a
- * numerical IP (v4 or, if supported, v6) address.
+ * numerical IP address.
  */
 gboolean is_numeric_host_address(const gchar *hostaddress)
 {

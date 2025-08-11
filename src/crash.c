@@ -415,9 +415,6 @@ static void crash_debug(unsigned long crash_pid,
 static gchar *get_compiled_in_features(void)
 {
 	return g_strdup_printf("%s",
-#if INET6
-		   " IPv6"
-#endif
 #if HAVE_ICONV
 		   " iconv"
 #endif
