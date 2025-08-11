@@ -11,7 +11,7 @@ etpan_dir =
 etpan_library =
 endif
 
-SUBDIRS = common gtk $(etpan_dir) .
+SUBDIRS = common gtk $(etpan_dir) fence .
 if BUILD_TESTS
 include $(top_srcdir)/tests.mk
 SUBDIRS += tests
@@ -522,7 +522,13 @@ IFLAGS = \
 	-I$(srcdir)/etpan
 
 claws_mail_LDFLAGS = \
-	$(claws_mail_platform_ldflags)
+	$(claws_mail_platform_ldflags) \
+	-Lfence/zig-out/lib \
+	-Wl,-z,nobtcfi
+
+# The linker flag -Wl... disables "Mandatory enforcement of indirect
+# branch targets" which I think(?) trips up my shit code.
+# https://www.openbsd.org/innovations.html
 
 claws_mail_DEPENDENCIES = $(claws_mail_deps) \
 	$(etpan_library) \
@@ -540,7 +546,8 @@ claws_mail_LDADD = \
 	$(LIBICONV) \
 	$(STARTUP_NOTIFICATION_LIBS) \
 	$(LIBETPAN_LIBS) \
-	$(SVG_LIBS)
+	$(SVG_LIBS) \
+	-lfence
 
 pixmapdir=$(datadir)/icons/hicolor/48x48/apps
 

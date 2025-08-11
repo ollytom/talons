@@ -56,6 +56,7 @@
 #  include <wctype.h>
 #endif
 #include <stdlib.h>
+#include <stdint.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdarg.h>
@@ -80,9 +81,9 @@
 #include "utils.h"
 #include "socket.h"
 #include "codeconv.h"
-#include "tlds.h"
 #include "timing.h"
 #include "file-utils.h"
+#include "fence.h"
 
 #define BUFFSIZE	8192
 
@@ -3080,26 +3081,6 @@ int subject_get_prefix_length(const gchar *subject)
 		return 0;
 }
 
-static guint g_stricase_hash(gconstpointer gptr)
-{
-	guint hash_result = 0;
-	const char *str;
-
-	for (str = gptr; str && *str; str++) {
-		hash_result += toupper(*str);
-	}
-
-	return hash_result;
-}
-
-static gint g_stricase_equal(gconstpointer gptr1, gconstpointer gptr2)
-{
-	const char *str1 = gptr1;
-	const char *str2 = gptr2;
-
-	return !strcasecmp(str1, str2);
-}
-
 gint g_int_compare(gconstpointer a, gconstpointer b)
 {
 	return GPOINTER_TO_INT(a) - GPOINTER_TO_INT(b);
@@ -3521,18 +3502,7 @@ gchar *make_uri_string(const gchar *bp, const gchar *ep)
 #define IS_ASCII_ALNUM(ch)	(IS_ASCII(ch) && g_ascii_isalnum(ch))
 #define IS_QUOTE(ch) ((ch) == '\'' || (ch) == '"')
 
-static GHashTable *create_domain_tab(void)
-{
-	gint n;
-	GHashTable *htab = g_hash_table_new(g_stricase_hash, g_stricase_equal);
-
-	cm_return_val_if_fail(htab, NULL);
-	for (n = 0; n < sizeof toplvl_domains / sizeof toplvl_domains[0]; n++)
-		g_hash_table_insert(htab, (gpointer) toplvl_domains[n], (gpointer) toplvl_domains[n]);
-	return htab;
-}
-
-static gboolean is_toplvl_domain(GHashTable *tab, const gchar *first, const gchar *last)
+static gboolean is_toplvl_domain(const gchar *first, const gchar *last)
 {
 	gchar buf[BUFFSIZE + 1];
 	const gchar *m = buf + BUFFSIZE + 1;
@@ -3545,7 +3515,7 @@ static gboolean is_toplvl_domain(GHashTable *tab, const gchar *first, const gcha
 		;
 	*p = 0;
 
-	return g_hash_table_lookup(tab, buf) != NULL;
+	return fence_is_top_level_domain(buf);
 }
 
 /* get_email_part() - retrieves an email address. Returns TRUE if successful */
@@ -3557,7 +3527,6 @@ gboolean get_email_part(const gchar *start, const gchar *scanpos,
 	gboolean result = FALSE;
 	const gchar *bp_ = NULL;
 	const gchar *ep_ = NULL;
-	static GHashTable *dom_tab;
 	const gchar *last_dot = NULL;
 	const gchar *prelast_dot = NULL;
 	const gchar *last_tld_char = NULL;
@@ -3635,10 +3604,6 @@ search_again:
 			return FALSE;
 	}
 
-	if (!dom_tab)
-		dom_tab = create_domain_tab();
-	cm_return_val_if_fail(dom_tab, FALSE);
-
 	/* scan start of address */
 	for (bp_ = scanpos - 1;
 	     bp_ >= start && IS_RFC822_CHAR(*(const guchar *)bp_); bp_--)
@@ -3682,8 +3647,7 @@ search_again:
 			if (*last_tld_char == '?')
 				break;
 
-		if (is_toplvl_domain(dom_tab, last_dot, last_tld_char))
-			result = TRUE;
+		result = is_toplvl_domain(last_dot, last_tld_char);
 
 		*ep = ep_;
 		*bp = bp_;

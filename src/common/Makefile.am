@@ -74,7 +74,6 @@ clawscommoninclude_HEADERS = $(arch_headers) \
 	tags.h \
 	template.h \
 	timing.h \
-	tlds.h \
 	utils.h \
 	uuencode.h \
 	version.h \
@@ -89,7 +88,8 @@ AM_CPPFLAGS = \
 	-DLOCALEDIR=\""$(localedir)"\" \
 	-DDATAROOTDIR=\""$(datarootdir)"\" \
 	-DDESKTOPFILEPATH=\"$(DESKTOPFILEPATH)\" \
-	-DGTK_DISABLE_DEPRECATED
+	-DGTK_DISABLE_DEPRECATED \
+	-I../fence/zig-out/include
 
 libclawscommon_la_LIBADD = \
 	$(GLIB_LIBS) \

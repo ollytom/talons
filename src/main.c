@@ -672,7 +672,6 @@ int main(int argc, char *argv[])
 	guint num_folder_class = 0;
 	gboolean asked_for_migration = FALSE;
 	gboolean start_done = TRUE;
-	GSList *plug_list = NULL;
 	gboolean never_ran = FALSE;
 	gboolean mainwin_shown = FALSE;
 	gint ret;
