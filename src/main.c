@@ -137,17 +137,12 @@
 
 #include "version.h"
 
-#include "crash.h"
-
 #include "timing.h"
 #ifdef G_OS_WIN32
 #include <windows.h>
 #endif
 
 gchar *prog_version;
-#ifdef CRASH_DIALOG
-gchar *argv0;
-#endif
 
 #ifdef HAVE_STARTUP_NOTIFICATION
 static SnLauncheeContext *sn_context = NULL;
@@ -182,9 +177,7 @@ static struct RemoteCmd {
 	GPtrArray *status_folders;
 	GPtrArray *status_full_folders;
 	gboolean send;
-	gboolean crash;
 	int online_mode;
-	gchar   *crash_params;
 	gboolean exit;
 	gboolean subscribe;
 	const gchar *subscribe_uri;
@@ -198,7 +191,6 @@ static void parse_cmd_opt(int argc, char *argv[]);
 
 static gint prohibit_duplicate_launch	(int		*argc,
 					 char		***argv);
-static gchar * get_crashfile_name	(void);
 static gint lock_socket_remove		(void);
 static void lock_socket_input_cb	(gpointer	   data,
 					 gint		   source,
@@ -425,11 +417,6 @@ backup_mode:
 
 static gboolean sc_exiting = FALSE;
 static gboolean show_at_startup = TRUE;
-static gboolean claws_crashed_bool = FALSE;
-
-gboolean claws_crashed(void) {
-	return claws_crashed_bool;
-}
 
 void main_set_show_at_startup(gboolean show)
 {
@@ -645,7 +632,6 @@ int main(int argc, char *argv[])
 	MainWindow *mainwin;
 	FolderView *folderview;
 	GdkPixbuf *icon;
-	gboolean crash_file_present = FALSE;
 	guint num_folder_class = 0;
 	gboolean asked_for_migration = FALSE;
 	gboolean start_done = TRUE;
@@ -668,9 +654,6 @@ int main(int argc, char *argv[])
 	}
 
 	prog_version = PROG_VERSION;
-#ifdef CRASH_DIALOG
-	argv0 = g_strdup(argv[0]);
-#endif
 
 	parse_cmd_opt(argc, argv);
 
@@ -692,18 +675,6 @@ int main(int argc, char *argv[])
 
 	main_dump_features_list(TRUE);
 	prefs_prepare_cache();
-
-#ifdef CRASH_DIALOG
-	if (cmd.crash) {
-		gtk_init(&argc, &argv);
-		crash_main(cmd.crash_params);
-#ifdef G_OS_WIN32
-		win32_close_log();
-#endif
-		return 0;
-	}
-	crash_install_handlers();
-#endif
 	install_basic_sighandlers();
 
 	if (cmd.status || cmd.status_full || cmd.search ||
@@ -802,13 +773,8 @@ int main(int argc, char *argv[])
 	MAKE_DIR_IF_NOT_EXIST(get_tmp_dir());
 	MAKE_DIR_IF_NOT_EXIST(UIDL_DIR);
 
-	crash_file_present = is_file_exist(get_crashfile_name());
-	/* remove temporary files */
 	remove_all_files(get_tmp_dir());
 	remove_all_files(get_mime_tmp_dir());
-
-	if (!cmd.crash && crash_file_present)
-		claws_crashed_bool = TRUE;
 
 	if (is_file_exist("claws.log")) {
 		if (rename_force("claws.log", "claws.log.bak") < 0)
@@ -985,13 +951,6 @@ int main(int argc, char *argv[])
 	toolbar_main_set_sensitive(mainwin);
 	main_window_set_menu_sensitive(mainwin);
 
-	/* if crashed, show window early so that the user
-	 * sees what's happening */
-	if (claws_crashed()) {
-		main_window_popup(mainwin);
-		mainwin_shown = TRUE;
-	}
-
 	account_set_missing_folder();
 	folder_set_missing_folders();
 	folderview_set(folderview);
@@ -1003,26 +962,7 @@ int main(int argc, char *argv[])
 	main_window_cursor_wait(mainwin);
 	folder_func_to_all_folders(initial_processing, (gpointer *)mainwin);
 
-	/* if claws crashed, rebuild caches */
-	if (claws_crashed()) {
-		GTK_EVENTS_FLUSH();
-		debug_print("Claws Mail crashed, checking for new messages in local folders\n");
-		folder_item_update_thaw();
-		folderview_check_new(NULL);
-		folder_clean_cache_memory_force();
-		folder_item_update_freeze();
-	}
-	/* make the crash-indicator file */
-	if (str_write_to_file("foo", get_crashfile_name(), FALSE) < 0) {
-		g_warning("can't create the crash-indicator file");
-	}
-
 	inc_autocheck_timer_init(mainwin);
-
-	/* ignore SIGPIPE signal for preventing sudden death of program */
-#ifdef G_OS_UNIX
-	signal(SIGPIPE, SIG_IGN);
-#endif
 	if (cmd.online_mode == ONLINE_MODE_OFFLINE) {
 		main_window_toggle_work_offline(mainwin, TRUE, FALSE);
 	}
@@ -1055,7 +995,6 @@ int main(int argc, char *argv[])
 		prefs_common_write_config();
 	}
 
-	/* if not crashed, show window now */
 	if (!mainwin_shown) {
 		/* apart if something told not to show */
 		if (show_at_startup)
@@ -1109,12 +1048,10 @@ int main(int argc, char *argv[])
 	}
 
 	if (!cmd.target && prefs_common.goto_folder_on_startup &&
-	    folder_find_item_from_identifier(prefs_common.startup_folder) != NULL &&
-	    !claws_crashed()) {
+	    folder_find_item_from_identifier(prefs_common.startup_folder) != NULL) {
 		cmd.target = prefs_common.startup_folder;
 	} else if (!cmd.target && prefs_common.goto_last_folder_on_startup &&
-	    folder_find_item_from_identifier(prefs_common.last_opened_folder) != NULL &&
-	    !claws_crashed()) {
+	    folder_find_item_from_identifier(prefs_common.last_opened_folder) != NULL) {
 		cmd.target = prefs_common.last_opened_folder;
 	}
 
@@ -1235,9 +1172,6 @@ static void exit_claws(MainWindow *mainwin)
 	imap_main_done(TRUE);
 	nntp_main_done(TRUE);
 #endif
-	/* delete crashfile */
-	if (!cmd.crash)
-		claws_unlink(get_crashfile_name());
 
 	lock_socket_remove();
 
@@ -1575,10 +1509,6 @@ static void parse_cmd_opt(int argc, char *argv[])
 
 			g_free(base);
 			exit(1);
-		} else if (!strcmp(argv[i], "--crash")) {
-			cmd.crash = TRUE;
-			cmd.crash_params = g_strdup((i+1 < argc)?argv[i+1]:NULL);
-			i++;
 		} else if (!strcmp(argv[i], "--config-dir")) {
 			g_print(RC_DIR "\n");
 			exit(0);
@@ -1784,10 +1714,6 @@ gboolean claws_is_starting(void)
 }
 
 #ifdef G_OS_UNIX
-/*
- * CLAWS: want this public so crash dialog can delete the
- * lock file too
- */
 gchar *claws_get_socket_name(void)
 {
 	static gchar *filename = NULL;
@@ -1828,18 +1754,6 @@ gchar *claws_get_socket_name(void)
 	return filename;
 }
 #endif
-
-static gchar *get_crashfile_name(void)
-{
-	static gchar *filename = NULL;
-
-	if (filename == NULL) {
-		filename = g_strdup_printf("%s%cclaws-crashed",
-					   get_tmp_dir(), G_DIR_SEPARATOR);
-	}
-
-	return filename;
-}
 
 static gint prohibit_duplicate_launch(int *argc, char ***argv)
 {

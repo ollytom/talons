@@ -649,10 +649,7 @@ void folder_item_set_xml(Folder *folder, FolderItem *item, XMLTag *tag)
 		} else if (!strcmp(attr->name, "apply_sub")) {
 			item->apply_sub = *attr->value == '1' ? TRUE : FALSE;
 		} else if (!strcmp(attr->name, "last_seen")) {
-			if (!claws_crashed())
-				item->last_seen = atoi(attr->value);
-			else
-				item->last_seen = 0;
+			item->last_seen = atoi(attr->value);
 		}
 	}
 	/* options without meaning in drafts */

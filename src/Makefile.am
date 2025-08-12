@@ -87,7 +87,6 @@ claws_mail_SOURCES = \
 	autofaces.c \
 	avatars.c \
 	compose.c \
-	crash.c \
 	customheader.c \
 	displayheader.c \
 	edittags.c \
@@ -206,7 +205,6 @@ claws_mailinclude_HEADERS = \
 	autofaces.h \
 	avatars.h \
 	compose.h \
-	crash.h \
 	customheader.h \
 	displayheader.h \
 	edittags.h \

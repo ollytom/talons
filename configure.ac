@@ -238,10 +238,6 @@ AC_ARG_ENABLE(enchant,
 		[  --disable-enchant               Do not build Enchant support for spell-checking],
 		[enable_enchant=$enableval], [enable_enchant=yes])
 
-AC_ARG_ENABLE(crash-dialog,
-		[  --enable-crash-dialog           Build crash dialog],
-		[enable_crash_dialog=$enableval], [enable_crash_dialog=no])
-
 AC_ARG_ENABLE(startup-notification,
 		[  --disable-startup-notification  Do not startup notification support],
 		[enable_startup_notification=$enableval], [enable_startup_notification=yes])
@@ -463,17 +459,6 @@ if test $enable_enchant = yes; then
 		])
 	AC_SUBST(ENCHANT_CFLAGS)
 	AC_SUBST(ENCHANT_LIBS)
-fi
-
-dnl want crash dialog
-if test $enable_crash_dialog = yes; then
-dnl check if GDB is somewhere
-	AC_CHECK_PROG(enable_crash_dialog, gdb, yes, no)
-	AC_MSG_CHECKING([whether to use crash dialog])
-	if test $enable_crash_dialog = yes; then
-		AC_DEFINE(CRASH_DIALOG, 1, Pop up crash dialog)
-	fi
-	AC_MSG_RESULT($enable_crash_dialog)
 fi
 
 dnl
@@ -756,7 +741,6 @@ echo "iconv                : $am_cv_func_iconv"
 echo "enchant              : $enable_enchant"
 echo "IMAP4 (libetpan)     : $enable_libetpan"
 echo "NNTP (libetpan)      : $enable_libetpan"
-echo "Crash dialog         : $enable_crash_dialog"
 echo "Manual               : $enable_manual"
 echo "SVG support          : $enable_svg"
 echo "Unit tests           : $enable_tests"
