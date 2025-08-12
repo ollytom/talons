@@ -257,7 +257,6 @@ static gchar *compose_parse_references		(const gchar	*ref,
 static gchar *compose_quote_fmt			(Compose	*compose,
 						 MsgInfo	*msginfo,
 						 const gchar	*fmt,
-						 const gchar	*qmark,
 						 const gchar	*body,
 						 gboolean	 rewrap,
 						 gboolean	 need_unescape,
@@ -1149,9 +1148,7 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 			gtk_text_buffer_get_iter_at_offset(buffer, &end, -1);
 			tmp = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
-			compose_quote_fmt(compose, dummyinfo,
-			        	  body_format,
-			        	  NULL, tmp, FALSE, TRUE,
+			compose_quote_fmt(compose, dummyinfo, body_format, tmp, FALSE, TRUE,
 						  _("The body of the \"New message\" template has an error at line %d."));
 			compose_attach_from_list(compose, quote_fmt_get_attachments_list(), FALSE);
 			quote_fmt_reset_vartable();
@@ -1537,7 +1534,6 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 	GtkTextView *textview;
 	GtkTextBuffer *textbuf;
 	gboolean quote = FALSE;
-	const gchar *qmark = NULL;
 	const gchar *body_fmt = NULL;
 	gchar *s_system = NULL;
 	START_TIMING("");
@@ -1629,19 +1625,16 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 			(quote_mode == COMPOSE_QUOTE_CHECK && prefs_common.reply_with_quote)) {
 		/* use the reply format of folder (if enabled), or the account's one
 		   (if enabled) or fallback to the global reply format, which is always
-		   enabled (even if empty), and use the relevant quotemark */
+		   enabled (even if empty). */
 		quote = TRUE;
 		if (msginfo->folder && msginfo->folder->prefs &&
 				msginfo->folder->prefs->reply_with_format) {
-			qmark = msginfo->folder->prefs->reply_quotemark;
 			body_fmt = msginfo->folder->prefs->reply_body_format;
 
 		} else if (account->reply_with_format) {
-			qmark = account->reply_quotemark;
 			body_fmt = account->reply_body_format;
 
 		} else {
-			qmark = prefs_common.quotemark;
 			if (prefs_common.quotefmt && *prefs_common.quotefmt)
 				body_fmt = gettext(prefs_common.quotefmt);
 			else
@@ -1650,11 +1643,8 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 	}
 
 	if (quote) {
-		/* empty quotemark is not allowed */
-		if (qmark == NULL || *qmark == '\0')
-			qmark = "> ";
 		compose_quote_fmt(compose, compose->replyinfo,
-			          body_fmt, qmark, body, FALSE, TRUE,
+			          body_fmt, body, FALSE, TRUE,
 					  _("The body of the \"Reply\" template has an error at line %d."));
 		compose_attach_from_list(compose, quote_fmt_get_attachments_list(), FALSE);
 		quote_fmt_reset_vartable();
@@ -1833,7 +1823,6 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 
 		g_free(msgfile);
 	} else {
-		const gchar *qmark = NULL;
 		const gchar *body_fmt = NULL;
 		MsgInfo *full_msginfo;
 
@@ -1841,32 +1830,26 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 		if (!full_msginfo)
 			full_msginfo = procmsg_msginfo_copy(msginfo);
 
-		/* use the forward format of folder (if enabled), or the account's one
-		   (if enabled) or fallback to the global forward format, which is always
-		   enabled (even if empty), and use the relevant quotemark */
+		/*
+		 * use the forward format of folder (if enabled), or the account's one
+		 * (if enabled) or fallback to the global forward format, which is always
+		 * enabled (even if empty).
+		 */
 		if (msginfo->folder && msginfo->folder->prefs &&
 				msginfo->folder->prefs->forward_with_format) {
-			qmark = msginfo->folder->prefs->forward_quotemark;
 			body_fmt = msginfo->folder->prefs->forward_body_format;
 
 		} else if (account->forward_with_format) {
-			qmark = account->forward_quotemark;
 			body_fmt = account->forward_body_format;
-
 		} else {
-			qmark = prefs_common.fw_quotemark;
 			if (prefs_common.fw_quotefmt && *prefs_common.fw_quotefmt)
 				body_fmt = gettext(prefs_common.fw_quotefmt);
 			else
 				body_fmt = "";
 		}
 
-		/* empty quotemark is not allowed */
-		if (qmark == NULL || *qmark == '\0')
-			qmark = "> ";
-
 		compose_quote_fmt(compose, full_msginfo,
-			          body_fmt, qmark, body, FALSE, TRUE,
+			          body_fmt, body, FALSE, TRUE,
 					  _("The body of the \"Forward\" template has an error at line %d."));
 		compose_attach_from_list(compose, quote_fmt_get_attachments_list(), FALSE);
 		quote_fmt_reset_vartable();
@@ -2571,7 +2554,7 @@ Compose *compose_redirect(PrefsAccount *account, MsgInfo *msginfo,
 				   msginfo->subject);
 	gtk_editable_set_editable(GTK_EDITABLE(compose->subject_entry), FALSE);
 
-	compose_quote_fmt(compose, msginfo, "%M", NULL, NULL, FALSE, FALSE,
+	compose_quote_fmt(compose, msginfo, "%M", NULL, FALSE, FALSE,
 					  _("The body of the \"Redirect\" template has an error at line %d."));
 	quote_fmt_reset_vartable();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(compose->text), FALSE);
@@ -3108,8 +3091,8 @@ static gchar *compose_parse_references(const gchar *ref, const gchar *msgid)
 }
 
 static gchar *compose_quote_fmt(Compose *compose, MsgInfo *msginfo,
-				const gchar *fmt, const gchar *qmark,
-				const gchar *body, gboolean rewrap,
+				const gchar *fmt, const gchar *body,
+				gboolean rewrap,
 				gboolean need_unescape,
 				const gchar *err_msg)
 {
@@ -3124,7 +3107,6 @@ static gchar *compose_quote_fmt(Compose *compose, MsgInfo *msginfo,
 	GtkTextIter iter;
 	GtkTextMark *mark;
 
-
 	SIGNAL_BLOCK(buffer);
 
 	if (!msginfo) {
@@ -3132,26 +3114,23 @@ static gchar *compose_quote_fmt(Compose *compose, MsgInfo *msginfo,
 		msginfo = dummyinfo;
 	}
 
-	if (qmark != NULL) {
+	const char *qmark = "> ";
 #ifdef USE_ENCHANT
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
+	quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
+			compose->gtkaspell);
 #else
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
+	quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
 #endif
-		quote_fmt_scan_string(qmark);
-		quote_fmt_parse();
+	quote_fmt_scan_string(qmark);
+	quote_fmt_parse();
 
-		buf = quote_fmt_get_buffer();
-
-		if (buf == NULL)
-			alertpanel_error(_("The \"Quotation mark\" of the template is invalid."));
-		else
-			Xstrdup_a(quote_str, buf, goto error)
-	}
+	buf = quote_fmt_get_buffer();
+	if (buf == NULL)
+		alertpanel_error(_("The \"Quotation mark\" of the template is invalid."));
+	else
+		Xstrdup_a(quote_str, buf, goto error)
 
 	if (fmt && *fmt != '\0') {
-
 		if (trimmed_body)
 			while (*trimmed_body == '\n')
 				trimmed_body++;
@@ -8776,44 +8755,6 @@ void compose_reflect_prefs_pixmap_theme(void)
 	}
 }
 
-static const gchar *compose_quote_char_from_context(Compose *compose)
-{
-	const gchar *qmark = NULL;
-
-	cm_return_val_if_fail(compose != NULL, NULL);
-
-	switch (compose->mode) {
-		/* use forward-specific quote char */
-		case COMPOSE_FORWARD:
-		case COMPOSE_FORWARD_AS_ATTACH:
-		case COMPOSE_FORWARD_INLINE:
-			if (compose->folder && compose->folder->prefs &&
-					compose->folder->prefs->forward_with_format)
-				qmark = compose->folder->prefs->forward_quotemark;
-			else if (compose->account->forward_with_format)
-				qmark = compose->account->forward_quotemark;
-			else
-				qmark = prefs_common.fw_quotemark;
-			break;
-
-		/* use reply-specific quote char in all other modes */
-		default:
-			if (compose->folder && compose->folder->prefs &&
-					compose->folder->prefs->reply_with_format)
-				qmark = compose->folder->prefs->reply_quotemark;
-			else if (compose->account->reply_with_format)
-				qmark = compose->account->reply_quotemark;
-			else
-				qmark = prefs_common.quotemark;
-			break;
-	}
-
-	if (qmark == NULL || *qmark == '\0')
-		qmark = "> ";
-
-	return qmark;
-}
-
 static void compose_template_apply(Compose *compose, Template *tmpl,
 				   gboolean replace)
 {
@@ -8821,7 +8762,6 @@ static void compose_template_apply(Compose *compose, Template *tmpl,
 	GtkTextBuffer *buffer;
 	GtkTextMark *mark;
 	GtkTextIter iter;
-	const gchar *qmark;
 	gchar *parsed_str = NULL;
 	gint cursor_pos = 0;
 	const gchar *err_msg = _("The body of the template has an error at line %d.");
@@ -8833,17 +8773,14 @@ static void compose_template_apply(Compose *compose, Template *tmpl,
 	buffer = gtk_text_view_get_buffer(text);
 
 	if (tmpl->value) {
-		qmark = compose_quote_char_from_context(compose);
-
 		if (compose->replyinfo != NULL) {
-
 			if (replace)
 				gtk_text_buffer_set_text(buffer, "", -1);
 			mark = gtk_text_buffer_get_insert(buffer);
 			gtk_text_buffer_get_iter_at_mark(buffer, &iter, mark);
 
 			parsed_str = compose_quote_fmt(compose, compose->replyinfo,
-						   tmpl->value, qmark, NULL, FALSE, FALSE, err_msg);
+						   tmpl->value, NULL, FALSE, FALSE, err_msg);
 
 		} else if (compose->fwdinfo != NULL) {
 
@@ -8853,7 +8790,7 @@ static void compose_template_apply(Compose *compose, Template *tmpl,
 			gtk_text_buffer_get_iter_at_mark(buffer, &iter, mark);
 
 			parsed_str = compose_quote_fmt(compose, compose->fwdinfo,
-						   tmpl->value, qmark, NULL, FALSE, FALSE, err_msg);
+						   tmpl->value, NULL, FALSE, FALSE, err_msg);
 
 		} else {
 			MsgInfo* dummyinfo = compose_msginfo_new_from_compose(compose);
@@ -8870,7 +8807,7 @@ static void compose_template_apply(Compose *compose, Template *tmpl,
 				gtk_text_buffer_set_text(buffer, "", -1);
 
 			parsed_str = compose_quote_fmt(compose, dummyinfo,
-							   tmpl->value, qmark, tmp, FALSE, FALSE, err_msg);
+							   tmpl->value, tmp, FALSE, FALSE, err_msg);
 			procmsg_msginfo_free( &dummyinfo );
 
 			g_free( tmp );
@@ -11927,7 +11864,6 @@ static void text_inserted(GtkTextBuffer *buffer, GtkTextIter *iter,
 					compose);
 	if (paste_as_quotation) {
 		gchar *new_text;
-		const gchar *qmark;
 		guint pos = 0;
 		GtkTextIter start_iter;
 
@@ -11936,14 +11872,12 @@ static void text_inserted(GtkTextBuffer *buffer, GtkTextIter *iter,
 
 		new_text = g_strndup(text, len);
 
-		qmark = compose_quote_char_from_context(compose);
-
 		mark = gtk_text_buffer_create_mark(buffer, NULL, iter, FALSE);
 		gtk_text_buffer_place_cursor(buffer, iter);
 
 		pos = gtk_text_iter_get_offset(iter);
 
-		compose_quote_fmt(compose, NULL, "%Q", qmark, new_text, TRUE, FALSE,
+		compose_quote_fmt(compose, NULL, "%Q", new_text, TRUE, FALSE,
 						  _("Quote format error at line %d."));
 		quote_fmt_reset_vartable();
 		g_free(new_text);

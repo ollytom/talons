@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef PREFS_ACCOUNT_H
@@ -85,7 +85,7 @@ struct _PrefsAccount
 	SSLType ssl_imap;
 	SSLType ssl_nntp;
 	SSLType ssl_smtp;
-	
+
 	gchar *out_ssl_client_cert_file;
 	gchar *out_ssl_client_cert_pass;
 	gchar *in_ssl_client_cert_file;
@@ -163,10 +163,8 @@ struct _PrefsAccount
 	gchar	 *compose_subject_format;
 	gchar	 *compose_body_format;
 	gboolean  reply_with_format;
-	gchar	 *reply_quotemark;
 	gchar	 *reply_body_format;
 	gboolean  forward_with_format;
-	gchar	 *forward_quotemark;
 	gchar	 *forward_body_format;
 
 	/* Privacy */

@@ -210,9 +210,7 @@ struct _PrefsCommon
 
 	/* Quote */
 	gboolean reply_with_quote;
-	gchar *quotemark;
 	gchar *quotefmt;
-	gchar *fw_quotemark;
 	gchar *fw_quotefmt;
 	gboolean forward_as_attachment;
 	gboolean redirect_keep_from;

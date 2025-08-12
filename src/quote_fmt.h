@@ -62,7 +62,6 @@ void quotefmt_create_reply_fmt_widgets(GtkWindow *parent_window,
 						GtkWidget *parent_box,
 						GtkWidget **checkbtn_reply_with_format,
 						GtkWidget **override_from_format,
-						GtkWidget **edit_reply_quotemark,
 						GtkWidget **edit_reply_format,
 						gboolean add_info_button,
 						void(*set_defaults_func)(void));
@@ -70,7 +69,6 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 						GtkWidget *parent_box,
 						GtkWidget **checkbtn_forward_with_format,
 						GtkWidget **override_from_format,
-						GtkWidget **edit_fw_quotemark,
 						GtkWidget **edit_fw_format,
 						gboolean add_info_button,
 						void(*set_defaults_func)(void));
@@ -85,11 +83,9 @@ void quotefmt_check_new_msg_formats(gboolean use_format,
 									gchar *body_fmt);
 void quotefmt_check_reply_formats(gboolean use_format,
 									gchar *override_from_fmt,
-									gchar *quotation_mark,
 									gchar *body_fmt);
 void quotefmt_check_forward_formats(gboolean use_format,
 									gchar *override_from_fmt,
-									gchar *quotation_mark,
 									gchar *body_fmt);
 
 #endif /* __QUOTE_FMT_H__ */

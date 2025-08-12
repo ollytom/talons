@@ -52,9 +52,7 @@ typedef struct _QuotePage
 	GtkWidget *checkbtn_compose_with_format;
 	GtkWidget *entry_subject;
 	GtkWidget *text_format;
-	GtkWidget *entry_quotemark;
 	GtkWidget *text_quotefmt;
-	GtkWidget *entry_fw_quotemark;
 	GtkWidget *text_fw_quotefmt;
 	GtkWidget *btn_quotedesc;
 } QuotePage;
@@ -128,7 +126,6 @@ static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 				vbox2,
 				NULL,
 				NULL,
-				&prefs_quote->entry_quotemark,
 				&prefs_quote->text_quotefmt,
 				TRUE, prefs_quote_set_default_reply_fmt);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(C_("Templates", "Reply")));
@@ -143,7 +140,6 @@ static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 				vbox2,
 				NULL,
 				NULL,
-				&prefs_quote->entry_fw_quotemark,
 				&prefs_quote->text_fw_quotefmt,
 				TRUE, prefs_quote_set_default_forward_fmt);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(C_("Templates", "Forward")));
@@ -158,16 +154,12 @@ static void prefs_quote_create_widget(PrefsPage *_page, GtkWindow *window,
 	else
 		prefs_quote_set_default_new_msg_fmt();
 
-	gtk_entry_set_text(GTK_ENTRY(prefs_quote->entry_quotemark),
-			prefs_common.quotemark?prefs_common.quotemark:"");
 	if (prefs_common.quotefmt)
 		pref_set_textview_from_pref(GTK_TEXT_VIEW(prefs_quote->text_quotefmt),
 				prefs_common.quotefmt);
 	else
 		prefs_quote_set_default_reply_fmt();
 
-	gtk_entry_set_text(GTK_ENTRY(prefs_quote->entry_fw_quotemark),
-			prefs_common.fw_quotemark?prefs_common.fw_quotemark:"");
 	if (prefs_common.fw_quotefmt)
 		pref_set_textview_from_pref(GTK_TEXT_VIEW(prefs_quote->text_fw_quotefmt),
 				prefs_common.fw_quotefmt);
@@ -190,10 +182,6 @@ static void prefs_quote_save(PrefsPage *_page)
 	prefs_common.quotefmt = NULL;
 	g_free(prefs_common.fw_quotefmt);
 	prefs_common.fw_quotefmt = NULL;
-	g_free(prefs_common.quotemark);
-	prefs_common.quotemark = NULL;
-	g_free(prefs_common.fw_quotemark);
-	prefs_common.fw_quotemark = NULL;
 
 	prefs_common.compose_with_format =
 		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_compose_with_format));
@@ -206,23 +194,13 @@ static void prefs_quote_save(PrefsPage *_page)
 								   prefs_common.compose_subject_format,
 								   prefs_common.compose_body_format);
 
-	prefs_common.quotemark = gtk_editable_get_chars(
-			GTK_EDITABLE(page->entry_quotemark), 0, -1);
 	prefs_common.quotefmt = pref_get_pref_from_textview(
 			GTK_TEXT_VIEW(page->text_quotefmt));
-	quotefmt_check_reply_formats(TRUE,
-								 NULL,
-								 prefs_common.quotemark,
-								 prefs_common.quotefmt);
+	quotefmt_check_reply_formats(TRUE, NULL, prefs_common.quotefmt);
 
-	prefs_common.fw_quotemark = gtk_editable_get_chars(
-			GTK_EDITABLE(page->entry_fw_quotemark), 0, -1);
 	prefs_common.fw_quotefmt = pref_get_pref_from_textview(
 			GTK_TEXT_VIEW(page->text_fw_quotefmt));
-	quotefmt_check_forward_formats(TRUE,
-								   NULL,
-								   prefs_common.fw_quotemark,
-								   prefs_common.fw_quotefmt);
+	quotefmt_check_forward_formats(TRUE, NULL, prefs_common.fw_quotefmt);
 }
 
 static void prefs_quote_destroy_widget(PrefsPage *_page)

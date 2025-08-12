@@ -263,7 +263,6 @@ void quotefmt_create_reply_fmt_widgets(GtkWindow *parent_window,
 						GtkWidget *parent_box,
 						GtkWidget **checkbtn_reply_with_format,
 						GtkWidget **override_from_format,
-						GtkWidget **edit_reply_quotemark,
 						GtkWidget **edit_reply_format,
 						gboolean add_info_button,
 						void(*set_defaults_func)(void))
@@ -273,8 +272,6 @@ void quotefmt_create_reply_fmt_widgets(GtkWindow *parent_window,
 	GtkWidget *hbox1;
 	GtkWidget *hbox2;
 	GtkWidget *hbox3;
-	GtkWidget *label_quotemark;
-	GtkWidget *entry_quotemark;
 	GtkWidget *label_from = NULL;
 	GtkWidget *entry_from = NULL;
 	GtkWidget *scrolledwin_quotefmt;
@@ -287,7 +284,6 @@ void quotefmt_create_reply_fmt_widgets(GtkWindow *parent_window,
 	if (checkbtn_reply_with_format)
 		cm_return_if_fail(checkbtn_reply_with_format != NULL);
 
-	cm_return_if_fail(edit_reply_quotemark != NULL);
 	cm_return_if_fail(edit_reply_format != NULL);
 
 	size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
@@ -328,17 +324,6 @@ void quotefmt_create_reply_fmt_widgets(GtkWindow *parent_window,
 	gtk_widget_show (hbox2);
 	gtk_box_pack_start (GTK_BOX (hbox1), hbox2, FALSE, FALSE, 0);
 
-	label_quotemark = gtk_label_new (_("Quotation mark"));
-	gtk_label_set_xalign(GTK_LABEL(label_quotemark), 1.0);
-	gtk_widget_show (label_quotemark);
-	gtk_box_pack_start (GTK_BOX (hbox2), label_quotemark, FALSE, FALSE, 0);
-	gtk_size_group_add_widget(size_group, label_quotemark);
-
-	entry_quotemark = gtk_entry_new ();
-	gtk_widget_show (entry_quotemark);
-	gtk_box_pack_start (GTK_BOX (hbox2), entry_quotemark, FALSE, FALSE, 0);
-	gtk_widget_set_size_request (entry_quotemark, 64, -1);
-
 	scrolledwin_quotefmt = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (scrolledwin_quotefmt);
 	gtk_box_pack_start (GTK_BOX (vbox_quote), scrolledwin_quotefmt,
@@ -366,8 +351,6 @@ void quotefmt_create_reply_fmt_widgets(GtkWindow *parent_window,
 	gtk_text_view_set_editable (GTK_TEXT_VIEW (text_quotefmt), TRUE);
 
 	if (checkbtn_reply_with_format) {
-		SET_TOGGLE_SENSITIVITY(checkbtn_use_format, label_quotemark);
-		SET_TOGGLE_SENSITIVITY(checkbtn_use_format, entry_quotemark);
 		if (override_from_format) {
 			SET_TOGGLE_SENSITIVITY(checkbtn_use_format, entry_from);
 			SET_TOGGLE_SENSITIVITY(checkbtn_use_format, label_from);
@@ -380,7 +363,6 @@ void quotefmt_create_reply_fmt_widgets(GtkWindow *parent_window,
 
 	if (checkbtn_reply_with_format)
 		*checkbtn_reply_with_format = checkbtn_use_format;
-	*edit_reply_quotemark = entry_quotemark;
 	if (override_from_format)
 		*override_from_format = entry_from;
 	*edit_reply_format = text_quotefmt;
@@ -392,7 +374,6 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 						GtkWidget *parent_box,
 						GtkWidget **checkbtn_forward_with_format,
 						GtkWidget **override_from_format,
-						GtkWidget **edit_fw_quotemark,
 						GtkWidget **edit_fw_format,
 						gboolean add_info_button,
 						void(*set_defaults_func)(void))
@@ -402,8 +383,6 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 	GtkWidget *hbox1;
 	GtkWidget *hbox2;
 	GtkWidget *hbox3;
-	GtkWidget *label_quotemark;
-	GtkWidget *entry_fw_quotemark;
 	GtkWidget *label_from = NULL;
 	GtkWidget *entry_from = NULL;
 	GtkWidget *scrolledwin_quotefmt;
@@ -416,7 +395,6 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 	if (checkbtn_forward_with_format) {
 		cm_return_if_fail(checkbtn_forward_with_format != NULL);
 	}
-	cm_return_if_fail(edit_fw_quotemark != NULL);
 	cm_return_if_fail(edit_fw_format != NULL);
 
 	size_group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
@@ -457,18 +435,6 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 	gtk_widget_show (hbox2);
 	gtk_box_pack_start (GTK_BOX (hbox1), hbox2, FALSE, FALSE, 0);
 
-	label_quotemark = gtk_label_new (_("Quotation mark"));
-	gtk_label_set_xalign(GTK_LABEL(label_quotemark), 1.0);
-	gtk_widget_show (label_quotemark);
-	gtk_box_pack_start (GTK_BOX (hbox2), label_quotemark, FALSE, FALSE, 0);
-	gtk_size_group_add_widget(size_group, label_quotemark);
-
-	entry_fw_quotemark = gtk_entry_new ();
-	gtk_widget_show (entry_fw_quotemark);
-	gtk_box_pack_start (GTK_BOX (hbox2), entry_fw_quotemark,
-			    FALSE, FALSE, 0);
-	gtk_widget_set_size_request (entry_fw_quotemark, 64, -1);
-
 	scrolledwin_quotefmt = gtk_scrolled_window_new (NULL, NULL);
 	gtk_widget_show (scrolledwin_quotefmt);
 	gtk_box_pack_start (GTK_BOX (vbox_quote), scrolledwin_quotefmt,
@@ -497,8 +463,6 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 	gtk_text_view_set_editable (GTK_TEXT_VIEW (text_fw_quotefmt), TRUE);
 
 	if (checkbtn_forward_with_format) {
-		SET_TOGGLE_SENSITIVITY(checkbtn_use_format, label_quotemark);
-		SET_TOGGLE_SENSITIVITY(checkbtn_use_format, entry_fw_quotemark);
 		if (override_from_format) {
 			SET_TOGGLE_SENSITIVITY(checkbtn_use_format, entry_from);
 			SET_TOGGLE_SENSITIVITY(checkbtn_use_format, label_from);
@@ -511,7 +475,6 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 
 	if (checkbtn_forward_with_format)
 		*checkbtn_forward_with_format = checkbtn_use_format;
-	*edit_fw_quotemark = entry_fw_quotemark;
 	if (override_from_format)
 		*override_from_format = entry_from;
 	*edit_fw_format = text_fw_quotefmt;
@@ -569,15 +532,10 @@ void quotefmt_check_new_msg_formats(gboolean use_format,
 
 void quotefmt_check_reply_formats(gboolean use_format,
 				  gchar *override_from_fmt,
-				  gchar *quotation_mark,
 				  gchar *body_fmt)
 {
 	if (use_format) {
-		gint line;
-
-		if (!prefs_template_string_is_valid(quotation_mark, NULL, TRUE, FALSE))
-			alertpanel_error(_("The \"Quotation mark\" field of the \"Reply\" template is invalid."));
-
+		int line;
 		if (override_from_fmt && !prefs_template_string_is_valid(override_from_fmt, NULL, TRUE, TRUE))
 			alertpanel_error(_("The \"From\" field of the \"Reply\" template contains an invalid email address."));
 
@@ -589,15 +547,10 @@ void quotefmt_check_reply_formats(gboolean use_format,
 
 void quotefmt_check_forward_formats(gboolean use_format,
 				    gchar *override_from_fmt,
-				    gchar *quotation_mark,
 				    gchar *body_fmt)
 {
 	if (use_format) {
-		gint line;
-
-		if (!prefs_template_string_is_valid(quotation_mark, NULL, TRUE, FALSE))
-			alertpanel_error(_("The \"Quotation mark\" field of the \"Forward\" template is invalid."));
-
+		int line;
 		if (override_from_fmt && !prefs_template_string_is_valid(override_from_fmt, NULL, TRUE, TRUE))
 			alertpanel_error(_("The \"From\" field of the \"Forward\" template contains an invalid email address."));
 

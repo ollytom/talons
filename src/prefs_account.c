@@ -276,10 +276,8 @@ typedef struct TemplatesPage
 	GtkWidget *compose_subject_format;
 	GtkWidget *compose_body_format;
 	GtkWidget *checkbtn_reply_with_format;
-	GtkWidget *reply_quotemark;
 	GtkWidget *reply_body_format;
 	GtkWidget *checkbtn_forward_with_format;
-	GtkWidget *forward_quotemark;
 	GtkWidget *forward_body_format;
 } TemplatesPage;
 
@@ -800,10 +798,6 @@ static PrefParam templates_param[] = {
 	 &templates_page.checkbtn_reply_with_format,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
 
-	{"reply_quotemark", NULL, &tmp_ac_prefs.reply_quotemark, P_STRING,
-	 &templates_page.reply_quotemark,
-	 prefs_set_data_from_entry, prefs_set_entry_from_escaped},
-
 	{"reply_body_format", NULL, &tmp_ac_prefs.reply_body_format, P_STRING,
 	 &templates_page.reply_body_format,
 	 prefs_set_escaped_data_from_text, prefs_set_text_from_escaped},
@@ -811,10 +805,6 @@ static PrefParam templates_param[] = {
 	{"forward_with_format", "FALSE", &tmp_ac_prefs.forward_with_format, P_BOOL,
 	 &templates_page.checkbtn_forward_with_format,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"forward_quotemark", NULL, &tmp_ac_prefs.forward_quotemark, P_STRING,
-	 &templates_page.forward_quotemark,
-	 prefs_set_data_from_entry, prefs_set_entry_from_escaped},
 
 	{"forward_body_format", NULL, &tmp_ac_prefs.forward_body_format, P_STRING,
 	 &templates_page.forward_body_format,
@@ -2698,7 +2688,6 @@ static void templates_create_widget_func(PrefsPage * _page,
 				vbox2,
 				&page->checkbtn_reply_with_format,
 				NULL,
-				&page->reply_quotemark,
 				&page->reply_body_format,
 				TRUE, NULL);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(C_("Templates", "Reply")));
@@ -2713,7 +2702,6 @@ static void templates_create_widget_func(PrefsPage * _page,
 				vbox2,
 				&page->checkbtn_forward_with_format,
 				NULL,
-				&page->forward_quotemark,
 				&page->forward_body_format,
 				TRUE, NULL);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(C_("Templates", "Forward")));
@@ -4058,11 +4046,9 @@ static void templates_save_func(PrefsPage *_page)
 									tmp_ac_prefs.compose_body_format);
 	quotefmt_check_reply_formats(tmp_ac_prefs.reply_with_format,
 									NULL,
-									tmp_ac_prefs.reply_quotemark,
 									tmp_ac_prefs.reply_body_format);
 	quotefmt_check_forward_formats(tmp_ac_prefs.forward_with_format,
 									NULL,
-									tmp_ac_prefs.forward_quotemark,
 									tmp_ac_prefs.forward_body_format);
 	if (prefs_templates_apply() >= 0)
 		cancelled = FALSE;

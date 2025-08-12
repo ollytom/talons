@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef FOLDER_ITEM_PREFS_H
@@ -99,11 +99,9 @@ struct _FolderItemPrefs {
 	gchar *compose_subject_format;
 	gchar *compose_body_format;
 	gboolean reply_with_format;
-	gchar *reply_quotemark;
 	gchar *reply_override_from_format;
 	gchar *reply_body_format;
 	gboolean forward_with_format;
-	gchar *forward_quotemark;
 	gchar *forward_override_from_format;
 	gchar *forward_body_format;
 };

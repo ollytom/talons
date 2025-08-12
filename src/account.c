@@ -1035,10 +1035,8 @@ static void account_clone(GtkWidget *widget, gpointer data)
 	ACP_FDUP(compose_subject_format);
 	ACP_FDUP(compose_body_format);
 	ACP_FASSIGN(reply_with_format);
-	ACP_FDUP(reply_quotemark);
 	ACP_FDUP(reply_body_format);
 	ACP_FASSIGN(forward_with_format);
-	ACP_FDUP(forward_quotemark);
 	ACP_FDUP(forward_body_format);
 
         /* privacy */
