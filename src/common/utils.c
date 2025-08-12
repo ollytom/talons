@@ -67,10 +67,6 @@
 #include <time.h>
 #include <regex.h>
 
-#ifdef G_OS_UNIX
-#include <sys/utsname.h>
-#endif
-
 #include <fcntl.h>
 
 #ifdef G_OS_WIN32

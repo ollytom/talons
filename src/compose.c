@@ -5540,7 +5540,6 @@ static gint compose_redirect_write_headers(Compose *compose, FILE *fp)
 	gchar buf[BUFFSIZE];
 	gchar *str;
 	const gchar *entstr;
-	/* struct utsname utsbuf; */
 	gboolean err = FALSE;
 
 	cm_return_val_if_fail(fp != NULL, -1);

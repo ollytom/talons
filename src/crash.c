@@ -37,10 +37,6 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#if HAVE_SYS_UTSNAME_H
-#	include <sys/utsname.h>
-#endif
-
 #if defined(__GNU_LIBRARY__) && !defined(__UCLIBC__)
 #	include <gnu/libc-version.h>
 #endif
@@ -73,7 +69,6 @@ static void		 crash_debug			(unsigned long crash_pid,
 							 GString *debug_output);
 static gchar		*get_compiled_in_features   (void);
 static gchar		*get_lib_version        (void);
-static gchar		*get_operating_system       (void);
 static gboolean		 is_crash_dialog_allowed	(void);
 static void		 crash_handler			(int sig);
 static void		 crash_cleanup_exit		(void);
@@ -229,13 +224,12 @@ static GtkWidget *crash_dialog_show(const gchar *text, const gchar *debug_output
 		"GTK version %d.%d.%d / GLib %d.%d.%d\n"
 		"Locale: %s (charset: %s)\n"
 		"Features:%s\n"
-		"Operating system: %s\n"
 		"C Library: %s\n--\n%s",
 		VERSION,
 		gtk_major_version, gtk_minor_version, gtk_micro_version,
 		glib_major_version, glib_minor_version, glib_micro_version,
 		conv_get_current_locale(), conv_get_locale_charset_str(),
-		features, os, lversion, debug_output);
+		features, lversion, debug_output);
 	g_free(features);
 	g_free(os);
 	g_free(lversion);
@@ -430,8 +424,6 @@ static gchar *get_compiled_in_features(void)
 	"");
 }
 
-/***/
-
 /*!
  *\brief	library version
  */
@@ -445,28 +437,6 @@ static gchar *get_lib_version(void)
 	return g_strdup(_("Unknown"));
 #endif
 }
-
-/***/
-
-/*!
- *\brief	operating system
- */
-static gchar *get_operating_system(void)
-{
-#if HAVE_SYS_UTSNAME_H
-	struct utsname utsbuf;
-	uname(&utsbuf);
-	return g_strdup_printf("%s %s (%s)",
-			       utsbuf.sysname,
-			       utsbuf.release,
-			       utsbuf.machine);
-#else
-	return g_strdup(_("Unknown"));
-
-#endif
-}
-
-/***/
 
 /*!
  *\brief	see if the crash dialog is allowed (because some
