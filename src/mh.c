@@ -139,7 +139,6 @@ static int mh_item_close		(Folder		*folder,
 static gint mh_get_flags		(Folder *folder, FolderItem *item,
                            		 MsgInfoList *msginfo_list, GHashTable *msgflags);
 #endif
-static void mh_write_sequences		(FolderItem 	*item, gboolean remove_unseen);
 
 static FolderClass mh_class;
 
@@ -459,8 +458,6 @@ static gint mh_add_msgs(Folder *folder, FolderItem *dest, GSList *file_list,
 		g_free(destfile);
 		dest->last_num++;
 	}
-	if (prefs_common.mh_compat_mode)
-		mh_write_sequences(dest, TRUE);
 
 	return dest->last_num;
 }
@@ -606,8 +603,6 @@ static gint mh_copy_msgs(Folder *folder, FolderItem *dest, MsgInfoList *msglist,
 	}
 
 	g_free(srcpath);
-	if (prefs_common.mh_compat_mode)
-		mh_write_sequences(dest, TRUE);
 
 	if (dest->mtime == last_dest_mtime && !dest_need_scan) {
 		mh_set_mtime(folder, dest);
@@ -624,8 +619,6 @@ static gint mh_copy_msgs(Folder *folder, FolderItem *dest, MsgInfoList *msglist,
 	return dest->last_num;
 err_reset_status:
 	g_free(srcpath);
-	if (prefs_common.mh_compat_mode)
-		mh_write_sequences(dest, TRUE);
 	if (total > 100) {
 		statusbar_progress_all(0,0,0);
 		statusbar_pop_all();
@@ -732,10 +725,6 @@ static gint mh_remove_all_msg(Folder *folder, FolderItem *item)
 	cm_return_val_if_fail(path != NULL, -1);
 	val = remove_all_numbered_files(path);
 	g_free(path);
-
-	if (prefs_common.mh_compat_mode)
-		mh_write_sequences(item, TRUE);
-
 	return val;
 }
 
@@ -1027,17 +1016,6 @@ static FolderItem *mh_create_folder(Folder *folder, FolderItem *parent,
 	folder_item_append(parent, new_item);
 
 	g_free(path);
-
-	if (prefs_common.mh_compat_mode) {
-		path = folder_item_get_path(new_item);
-		mh_sequences_filename = g_strconcat(path, G_DIR_SEPARATOR_S,
-						".mh_sequences", NULL);
-		if ((mh_sequences_file = claws_fopen(mh_sequences_filename, "a+b")) != NULL) {
-			claws_fclose(mh_sequences_file);
-		}
-		g_free(mh_sequences_filename);
-		g_free(path);
-	}
 
 	return new_item;
 }
@@ -1371,106 +1349,11 @@ static gchar *get_unseen_seq_name(void)
 	return seq_name;
 }
 
-static void mh_write_sequences(FolderItem *item, gboolean remove_unseen)
-{
-	gchar *mh_sequences_old, *mh_sequences_new;
-	FILE *mh_sequences_old_fp, *mh_sequences_new_fp;
-	gchar buf[BUFFSIZE];
-	gchar *path = NULL;
-	gboolean err = FALSE;
-	START_TIMING("");
-
-	if (!item)
-		return;
-
-	path = folder_item_get_path(item);
-
-	mh_sequences_old = g_strconcat(path, G_DIR_SEPARATOR_S,
-					    ".mh_sequences", NULL);
-	mh_sequences_new = g_strconcat(path, G_DIR_SEPARATOR_S,
-					    ".mh_sequences.new", NULL);
-	if ((mh_sequences_new_fp = claws_fopen(mh_sequences_new, "w+b")) != NULL) {
-		GSList *msglist = folder_item_get_msg_list(item);
-		GSList *cur;
-		MsgInfo *info = NULL;
-		gint start = -1, end = -1;
-		gchar *sequence = g_strdup("");
-		gint seq_len = 0;
-		msglist = g_slist_sort(msglist, sort_cache_list_by_msgnum);
-		cur = msglist;
-
-		/* write the unseen sequence if we don't have to scrap it */
-		if (!remove_unseen) do {
-			info = (MsgInfo *)(cur ? cur->data:NULL);
-			if (info && (MSG_IS_UNREAD(info->flags) || MSG_IS_NEW(info->flags))) {
-				if (start < 0)
-					start = end = info->msgnum;
-				else
-					end = info->msgnum;
-			} else {
-				if (start > 0 && end > 0) {
-					gchar tmp[32];
-					gint tmp_len = 0;
-					if (start != end)
-						snprintf(tmp, 31, " %d-%d", start, end);
-					else
-						snprintf(tmp, 31, " %d", start);
-
-					tmp_len = strlen(tmp);
-					sequence = g_realloc(sequence, seq_len+tmp_len+1);
-					strcpy(sequence+seq_len, tmp);
-					seq_len += tmp_len;
-
-					start = end = -1;
-				}
-			}
-			cur = cur ? cur->next:NULL;
-		} while (cur || (start > 0 && end > 0));
-		if (sequence && *sequence) {
-			if (fprintf(mh_sequences_new_fp, "%s%s\n",
-					get_unseen_seq_name(), sequence) < 0)
-				err = TRUE;
-			else
-				debug_print("wrote unseen sequence: '%s%s'\n",
-					get_unseen_seq_name(), sequence);
-		}
-		/* rewrite the rest of the file */
-		if ((mh_sequences_old_fp = claws_fopen(mh_sequences_old, "r+b")) != NULL) {
-			while (claws_fgets(buf, sizeof(buf), mh_sequences_old_fp) != NULL) {
-				if (strncmp(buf, get_unseen_seq_name(), strlen(get_unseen_seq_name())))
-					if (fprintf(mh_sequences_new_fp, "%s", buf) < 0) {
-						err = TRUE;
-						break;
-					}
-			}
-			claws_fclose(mh_sequences_old_fp);
-		}
-
-		if (claws_safe_fclose(mh_sequences_new_fp) == EOF)
-			err = TRUE;
-
-		if (!err) {
-			if (g_rename(mh_sequences_new, mh_sequences_old) < 0)
-				FILE_OP_ERROR(mh_sequences_new, "rename");
-		}
-		g_free(sequence);
-		procmsg_msg_list_free(msglist);
-	}
-	g_free(mh_sequences_old);
-	g_free(mh_sequences_new);
-	g_free(path);
-
-	END_TIMING();
-}
-
 static int mh_item_close(Folder *folder, FolderItem *item)
 {
 	time_t last_mtime = (time_t)0;
 	gboolean need_scan = mh_scan_required(item->folder, item);
 	last_mtime = item->mtime;
-
-	if (prefs_common.mh_compat_mode)
-		mh_write_sequences(item, FALSE);
 
 	if (item->mtime == last_mtime && !need_scan) {
 		mh_set_mtime(folder, item);

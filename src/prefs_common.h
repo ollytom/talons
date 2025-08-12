@@ -589,7 +589,6 @@ struct _PrefsCommon
 	guint primary_passphrase_pbkdf2_rounds;
 
 	gboolean passphrase_dialog_msg_title_switch;
-	gboolean mh_compat_mode;
 	gboolean mainwin_toolbar_always_enable_actions;
 
 	/* Proxy */

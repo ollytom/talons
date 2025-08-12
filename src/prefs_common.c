@@ -1213,8 +1213,6 @@ static PrefParam param[] = {
 	{"passphrase_dialog_msg_title_switch", "FALSE", &prefs_common.passphrase_dialog_msg_title_switch,
 	 P_BOOL, NULL, NULL, NULL},
 
-	{"mh_compat_mode", "FALSE", &prefs_common.mh_compat_mode, P_BOOL, NULL, NULL, NULL},
-
 	{"mainwin_toolbar_always_enable_actions", "FALSE", &prefs_common.mainwin_toolbar_always_enable_actions, P_BOOL,
 	 NULL, NULL, NULL},
 
