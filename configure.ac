@@ -121,13 +121,6 @@ fi
 
 AC_SYS_LARGEFILE
 
-dnl ******************************
-dnl Checks for host
-dnl Not needed anymore because we
-dnl do AC_CANONICAL_TARGET above
-dnl ******************************
-dnl AC_CANONICAL_HOST
-
 dnl Copied from the official gtk+-2 configure.in
 AC_MSG_CHECKING([for host platform])
 case "$host" in
@@ -377,15 +370,7 @@ if test "x$enable_gnutls" != "xno"; then
         [
                 AC_DEFINE(USE_GNUTLS, 1, gnutls)
                 echo "Building with GnuTLS"
-		PKG_CHECK_MODULES(GNUTLS, gnutls >= 2.11,
-		[
-			dnl No linking against libgcrypt needed
-		],
-		[
-			dnl linking against libgcrypt *is* needed
-			GNUTLS_LIBS="$GNUTLS_LIBS -lgcrypt"
-		])
-        ],
+       ],
         [
                 echo "Building without GnuTLS"
 		AC_MSG_RESULT([*** GnuTLS support is recommended ])
