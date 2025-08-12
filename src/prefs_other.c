@@ -745,6 +745,5 @@ void prefs_other_done(void)
 
 void prefs_change_primary_passphrase(GtkButton *button, gpointer data)
 {
-	/* Call the passphrase change dialog */
 	primary_passphrase_change_dialog();
 }

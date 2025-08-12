@@ -45,9 +45,6 @@
 #include "main.h"
 #include "file-utils.h"
 
-extern SessionStats session_stats;
-static GtkTextBuffer *stats_text_buffer;
-
 static GtkWidget *window;
 static gchar* uri_hover = NULL;
 static GtkTextIter uri_hover_start_iter;
@@ -69,7 +66,6 @@ static gboolean about_textview_leave_notify(GtkWidget *widget,
 static void about_size_allocate_cb(GtkWidget *widget,
 				   	GtkAllocation *allocation);
 static void about_textview_uri_update(GtkWidget *textview, gint x, gint y);
-static void about_update_stats(void);
 
 static GtkWidget *link_popupmenu;
 
@@ -79,7 +75,6 @@ void about_show(void)
 	if (!window)
 		about_create();
 	else {
-		about_update_stats();
 		gtk_window_present(GTK_WINDOW(window));
 	}
 
@@ -617,118 +612,6 @@ static GtkWidget *about_create_child_page_release_notes(void)
 	return scrolledwin;
 }
 
-static GtkWidget *about_create_child_page_session_stats(void)
-{
-	GtkWidget *scrolledwin;
-	GtkWidget *text;
-	GtkTextIter iter;
-
-	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin),
-			GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledwin),
-			GTK_SHADOW_IN);
-	text = gtk_text_view_new();
-	gtk_text_view_set_editable(GTK_TEXT_VIEW(text), FALSE);
-	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text), GTK_WRAP_WORD);
-	/* disable margins until GTK bug 793407 is fixed
-	gtk_text_view_set_left_margin(GTK_TEXT_VIEW(text), 6);
-	gtk_text_view_set_right_margin(GTK_TEXT_VIEW(text), 6); */
-	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(text), FALSE);
-	gtk_container_add(GTK_CONTAINER(scrolledwin), text);
-
-	stats_text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text));
-
-	gtk_text_buffer_get_iter_at_offset(stats_text_buffer, &iter, 0);
-	gtk_text_buffer_create_tag(stats_text_buffer, "indented-list-item",
-				"indent", 8,
-				NULL);
-	gtk_text_buffer_create_tag(stats_text_buffer, "underlined-list-title",
-				"underline", PANGO_UNDERLINE_SINGLE,
-				NULL);
-	gtk_text_buffer_create_tag(stats_text_buffer, "bold", "weight", PANGO_WEIGHT_BOLD,
-				   NULL);
-
-	about_update_stats();
-
-	return scrolledwin;
-}
-
-static void about_update_stats(void)
-{
-	if (stats_text_buffer != NULL)
-	{
-		GtkTextIter start, end, iter;
-		gchar buf[1024];
-
-		gtk_text_buffer_get_start_iter(stats_text_buffer, &start);
-		gtk_text_buffer_get_end_iter(stats_text_buffer, &end);
-		gtk_text_buffer_delete(stats_text_buffer, &start, &end);
-
-		gtk_text_buffer_get_iter_at_offset(stats_text_buffer, &iter, 0);
-
-		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter,
-				(_("Session statistics\n")), -1,
-				"underlined-list-title", NULL);
-
-		if (prefs_common.date_format) {
-			struct tm *lt;
-			gint len = 100;
-			gchar date[len];
-
-			lt = localtime(&session_stats.time_started);
-			fast_strftime(date, len, prefs_common.date_format, lt);
-			g_snprintf(buf, sizeof(buf), _("Started: %s\n"),
-						lt ? date : ctime(&session_stats.time_started));
-		} else
-			g_snprintf(buf, sizeof(buf), _("Started: %s\n"),
-						ctime(&session_stats.time_started));
-		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter, buf, -1,
-				"indented-list-item", NULL);
-
-		gtk_text_buffer_insert(stats_text_buffer, &iter, "\n", 1);
-		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter,
-				(_("Incoming traffic\n")), -1,
-				"underlined-list-title", NULL);
-
-		g_snprintf(buf, sizeof(buf), _("Received messages: %d\n"),
-					session_stats.received);
-		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter, buf, -1,
-				"indented-list-item", "bold", NULL);
-		if (session_stats.spam > 0) {
-			g_snprintf(buf, sizeof(buf), _("Spam messages: %d\n"), session_stats.spam);
-			gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter, buf, -1,
-								 "indented-list-item", NULL);
-		}
-
-		gtk_text_buffer_insert(stats_text_buffer, &iter, "\n", 1);
-		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter,
-				(_("Outgoing traffic\n")), -1,
-				"underlined-list-title", NULL);
-
-		g_snprintf(buf, sizeof(buf), _("New/redirected messages: %d\n"),
-					session_stats.sent);
-		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter, buf, -1,
-				"indented-list-item", NULL);
-
-		g_snprintf(buf, sizeof(buf), _("Replied messages: %d\n"),
-					session_stats.replied);
-		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter, buf, -1,
-				"indented-list-item", NULL);
-
-		g_snprintf(buf, sizeof(buf), _("Forwarded messages: %d\n"),
-					session_stats.forwarded);
-		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter, buf, -1,
-				"indented-list-item", NULL);
-
-		g_snprintf(buf, sizeof(buf), _("Total outgoing messages: %d\n"),
-					(session_stats.sent + session_stats.replied +
-					 session_stats.forwarded));
-		gtk_text_buffer_insert_with_tags_by_name(stats_text_buffer, &iter, buf, -1,
-				"indented-list-item", "bold", NULL);
-	}
-}
-
 static void notebook_append_page(GtkWidget *notebook, GtkWidget *scrolledwin, const gchar *label_text)
 {
 	if (!scrolledwin)
@@ -758,8 +641,6 @@ static void about_create(void)
 	GtkWidget *close_button;
 	static GdkGeometry geometry;
 	gint row = 0;
-
-	stats_text_buffer = NULL;
 
 	window = gtkut_window_new(GTK_WINDOW_TOPLEVEL, "about");
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
@@ -840,8 +721,6 @@ static void about_create(void)
 	if (release_notes_available()) {
 		notebook_append_page(notebook, about_create_child_page_release_notes(), _("_Release Notes"));
 	}
-
-	notebook_append_page(notebook, about_create_child_page_session_stats(), _("_Statistics"));
 
 	gtk_widget_set_hexpand(notebook, TRUE);
 	gtk_widget_set_vexpand(notebook, TRUE);

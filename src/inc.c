@@ -65,8 +65,6 @@
 #include "oauth2.h"
 #endif
 
-extern SessionStats session_stats;
-
 static GList *inc_dialog_list = NULL;
 
 static time_t inc_offline_overridden_yes = 0;
@@ -80,7 +78,6 @@ static GdkPixbuf *okpix;
 
 #define MESSAGEBUFSIZE	8192
 
-static void inc_update_stats(gint new_msgs);
 static void inc_finished		(MainWindow		*mainwin,
 					 gboolean		 new_messages,
 					 gboolean		 autocheck);
@@ -146,12 +143,6 @@ static gint inc_autocheck_func			(gpointer	 data);
 static void inc_notify_cmd		(gint new_msgs,
  					 gboolean notify);
 
-static void inc_update_stats(gint new_msgs)
-{
-	/* update session statistics */
-	session_stats.received += new_msgs;
-}
-
 /**
  * inc_finished:
  * @mainwin: Main window.
@@ -213,7 +204,6 @@ void inc_mail(MainWindow *mainwin, gboolean notify)
 			new_msgs += account_new_msgs;
 	}
 
-	inc_update_stats(new_msgs);
 	inc_finished(mainwin, new_msgs > 0, FALSE);
 	main_window_unlock(mainwin);
  	inc_notify_cmd(new_msgs, notify);
@@ -308,7 +298,6 @@ gint inc_account_mail(MainWindow *mainwin, PrefsAccount *account)
 
 	new_msgs = inc_account_mail_real(mainwin, account);
 
-	inc_update_stats(new_msgs);
 	inc_finished(mainwin, new_msgs > 0, FALSE);
 	main_window_unlock(mainwin);
 	inc_autocheck_timer_set();
@@ -334,7 +323,6 @@ void inc_account_list_mail(MainWindow *mainwin, GList *account_list, gboolean au
 	main_window_lock(mainwin);
 
 	if (!account_list) {
-		inc_update_stats(new_msgs);
 		inc_finished(mainwin, new_msgs > 0, autocheck);
 		main_window_unlock(mainwin);
  		inc_notify_cmd(new_msgs, notify);
@@ -409,7 +397,6 @@ void inc_account_list_mail(MainWindow *mainwin, GList *account_list, gboolean au
 		new_msgs += inc_start(inc_dialog);
 	}
 
-	inc_update_stats(new_msgs);
 	inc_finished(mainwin, new_msgs > 0, autocheck);
 	main_window_unlock(mainwin);
  	inc_notify_cmd(new_msgs, notify);
@@ -615,7 +602,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 	GList *qlist;
 	Pop3Session *pop3_session;
 	IncState inc_state;
-	gint error_num = 0;
 	gint new_msgs = 0;
 	gchar *msg;
 	gchar *fin_msg;
@@ -796,7 +782,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 		pop3_write_uidl_list(pop3_session);
 
 		if (inc_state != INC_SUCCESS && inc_state != INC_CANCEL) {
-			error_num++;
 			if (inc_dialog->show_dialog)
 				manage_window_focus_in
 					(inc_dialog->dialog->window,

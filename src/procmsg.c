@@ -53,8 +53,6 @@
 #include "privacy.h"
 #include "file-utils.h"
 
-extern SessionStats session_stats;
-
 static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_session, gchar **errstr,
 					    FolderItem *queue, gint msgnum, gboolean *queued_removed);
 static void procmsg_update_unread_children	(MsgInfo 	*info,
@@ -1760,17 +1758,6 @@ send_mail:
 	}
 
 	claws_fclose(fp);
-
-	/* update session statistics */
-	if (mailval == 0 && newsval == 0) {
-		/* update session stats */
-		if (replymessageid)
-			session_stats.replied++;
-		else if (fwdmessageid)
-			session_stats.forwarded++;
-		else
-			session_stats.sent++;
-	}
 
 	/* save message to outbox */
 	if (mailval == 0 && newsval == 0 && savecopyfolder) {

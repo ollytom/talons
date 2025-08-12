@@ -27,18 +27,6 @@
 extern gchar *prog_version;
 extern gboolean debug_mode;
 
-typedef struct _SessionStats SessionStats;
-
-struct _SessionStats
-{
-	gint received;
-	gint spam;
-	gint sent;
-	gint replied;
-	gint forwarded;
-	time_t time_started;
-};
-
 void app_will_exit	(GtkWidget *widget, gpointer data);
 gboolean clean_quit	(gpointer data);
 gboolean claws_is_exiting(void);
