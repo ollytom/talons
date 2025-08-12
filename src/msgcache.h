@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __MSGCACHE_H__
@@ -24,37 +24,26 @@
 #include "claws-features.h"
 #endif
 
-#include <glib.h>
+#include <sys/types.h>
 
 typedef struct _MsgCache MsgCache;
 
 #include "procmsg.h"
 #include "folder.h"
 
-MsgCache   	*msgcache_new				(void);
-void	   	 msgcache_destroy			(MsgCache *cache);
-MsgCache   	*msgcache_read_cache			(FolderItem *item,
-							 const gchar *cache_file);
-void	   	 msgcache_read_mark			(MsgCache *cache,
-							 const gchar *mark_file);
-void	   	 msgcache_read_tags			(MsgCache *cache,
-							 const gchar *tags_file);
-gint	   	 msgcache_write				(const gchar *cache_file,
-							 const gchar *mark_file,
-							 const gchar *tags_file,
-							 MsgCache *cache);
-void 	   	 msgcache_add_msg			(MsgCache *cache,
-							 MsgInfo *msginfo);
-void 	   	 msgcache_remove_msg			(MsgCache *cache,
-							 guint num);
-void 	    	 msgcache_update_msg			(MsgCache *cache,
-							 MsgInfo *msginfo);
-MsgInfo	   	*msgcache_get_msg			(MsgCache *cache,
-							 guint num);
-MsgInfo	   	*msgcache_get_msg_by_id			(MsgCache *cache,
-							 const gchar *msgid);
-MsgInfoList	*msgcache_get_msg_list			(MsgCache *cache);
-time_t	   	 msgcache_get_last_access_time		(MsgCache *cache);
-gint	   	 msgcache_get_memory_usage		(MsgCache *cache);
+MsgCache *msgcache_new(void);
+void msgcache_destroy(MsgCache *cache);
+MsgCache *msgcache_read_cache(FolderItem *item, const char *cache_file);
+void msgcache_read_mark(MsgCache *cache, const char *mark_file);
+void msgcache_read_tags(MsgCache *cache, const char *tags_file);
+int msgcache_write(const char *cache_file, const char *mark_file, const char *tags_file, MsgCache *cache);
+void msgcache_add_msg(MsgCache *cache, MsgInfo *msginfo);
+void msgcache_remove_msg(MsgCache *cache, unsigned int num);
+void msgcache_update_msg(MsgCache *cache, MsgInfo *msginfo);
+MsgInfo *msgcache_get_msg(MsgCache *cache, unsigned int num);
+MsgInfo *msgcache_get_msg_by_id(MsgCache *cache, const char *msgid);
+MsgInfoList	*msgcache_get_msg_list(MsgCache *cache);
+time_t msgcache_get_last_access_time(MsgCache *cache);
+int msgcache_get_memory_usage(MsgCache *cache);
 
 #endif
