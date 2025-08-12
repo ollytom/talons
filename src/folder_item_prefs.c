@@ -104,8 +104,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"render_html", "0", &tmp_prefs.render_html, P_ENUM,
 	 NULL, NULL, NULL},
-	{"invoke_plugin_on_html", "0", &tmp_prefs.invoke_plugin_on_html, P_ENUM,
-	 NULL, NULL, NULL},
 	{"promote_html_part", "0", &tmp_prefs.promote_html_part, P_ENUM,
 	 NULL, NULL, NULL},
 	{"skip_on_goto_unread_or_new", "FALSE", &tmp_prefs.skip_on_goto_unread_or_new, P_BOOL,
@@ -232,7 +230,6 @@ static FolderItemPrefs *folder_item_prefs_clear(FolderItemPrefs *prefs)
 	prefs->offlinesync_days = 0;
 	prefs->remove_old_bodies = FALSE;
 	prefs->render_html = HTML_RENDER_DEFAULT;
-	prefs->invoke_plugin_on_html = INVOKE_PLUGIN_ON_HTML_DEFAULT;
 	prefs->promote_html_part = HTML_PROMOTE_DEFAULT;
 	prefs->skip_on_goto_unread_or_new = FALSE;
 
@@ -292,7 +289,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 	tmp_prefs.offlinesync_days              = src->prefs->offlinesync_days;
 	tmp_prefs.remove_old_bodies             = src->prefs->remove_old_bodies;
 	tmp_prefs.render_html                   = src->prefs->render_html;
-	tmp_prefs.invoke_plugin_on_html         = src->prefs->invoke_plugin_on_html;
 	tmp_prefs.promote_html_part             = src->prefs->promote_html_part;
 	tmp_prefs.skip_on_goto_unread_or_new    = src->prefs->skip_on_goto_unread_or_new;
 

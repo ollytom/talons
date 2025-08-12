@@ -91,7 +91,6 @@ struct _FolderItemGeneralPage
 	GtkWidget *label_end_offlinesync;
 	GtkWidget *checkbtn_remove_old_offlinesync;
 	GtkWidget *render_html;
-	GtkWidget *invoke_plugin_on_html;
 	GtkWidget *promote_html_part;
 
 	/* apply to sub folders */
@@ -104,7 +103,6 @@ struct _FolderItemGeneralPage
 	GtkWidget *skip_on_goto_unread_or_new_rec_checkbtn;
 	GtkWidget *offlinesync_rec_checkbtn;
 	GtkWidget *render_html_rec_checkbtn;
-	GtkWidget *invoke_plugin_on_html_rec_checkbtn;
 	GtkWidget *promote_html_part_rec_checkbtn;
 
 	GdkRGBA folder_color;
@@ -266,10 +264,8 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	GtkWidget *label_end_offlinesync;
 	GtkWidget *checkbtn_remove_old_offlinesync;
 	GtkWidget *render_html;
-	GtkWidget *invoke_plugin_on_html;
 	GtkWidget *promote_html_part;
 	GtkListStore *render_html_menu;
-	GtkListStore *invoke_plugin_on_html_menu;
 	GtkListStore *promote_html_part_menu;
 
 	GtkWidget *simplify_subject_rec_checkbtn;
@@ -282,7 +278,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	GtkWidget *skip_on_goto_unread_or_new_rec_checkbtn;
 	GtkWidget *offlinesync_rec_checkbtn;
 	GtkWidget *render_html_rec_checkbtn;
-	GtkWidget *invoke_plugin_on_html_rec_checkbtn;
 	GtkWidget *promote_html_part_rec_checkbtn;
 
 	gint wreq1, wreq2;
@@ -551,34 +546,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 
 	rowcount++;
 
-	/* Render HTML-only messages with plugin if possible? */
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, VSPACING_NARROW_2);
-	gtk_box_set_spacing(GTK_BOX(hbox), 8);
-	gtk_grid_attach(GTK_GRID(table), hbox, 0, rowcount, 1, 1);
-
-	label = gtk_label_new(_("Render HTML-only messages with plugin if possible"));
-	gtk_box_pack_start (GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
-	invoke_plugin_on_html = gtkut_sc_combobox_create (NULL, FALSE);
-	gtk_box_pack_start (GTK_BOX(hbox), invoke_plugin_on_html, FALSE, FALSE, 0);
-
-	invoke_plugin_on_html_menu = GTK_LIST_STORE(gtk_combo_box_get_model(
-				GTK_COMBO_BOX(invoke_plugin_on_html)));
-	COMBOBOX_ADD (invoke_plugin_on_html_menu, _("Default"), INVOKE_PLUGIN_ON_HTML_DEFAULT);
-	COMBOBOX_ADD (invoke_plugin_on_html_menu, _("No"), INVOKE_PLUGIN_ON_HTML_NEVER);
-	COMBOBOX_ADD (invoke_plugin_on_html_menu, _("Yes"), INVOKE_PLUGIN_ON_HTML_ALWAYS);
-
-	combobox_select_by_data(GTK_COMBO_BOX(invoke_plugin_on_html),
-			item->prefs->invoke_plugin_on_html);
-
-	CLAWS_SET_TIP(hbox,
-			     _("\"Default\" will follow global preference (found in '/Configuration/Preferences/Message View/Text Options')"));
-
-	invoke_plugin_on_html_rec_checkbtn = gtk_check_button_new();
-	gtk_grid_attach(GTK_GRID(table), invoke_plugin_on_html_rec_checkbtn, 2, rowcount, 1, 1);
-
-	rowcount++;
-
 	/* Select HTML part by default? */
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, VSPACING_NARROW_2);
 	gtk_box_set_spacing(GTK_BOX(hbox), 8);
@@ -738,7 +705,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	page->label_end_offlinesync = label_end_offlinesync;
 	page->checkbtn_remove_old_offlinesync = checkbtn_remove_old_offlinesync;
 	page->render_html = render_html;
-	page->invoke_plugin_on_html = invoke_plugin_on_html;
 	page->promote_html_part = promote_html_part;
 
 	page->simplify_subject_rec_checkbtn  = simplify_subject_rec_checkbtn;
@@ -751,7 +717,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	page->skip_on_goto_unread_or_new_rec_checkbtn = skip_on_goto_unread_or_new_rec_checkbtn;
 	page->offlinesync_rec_checkbtn	     = offlinesync_rec_checkbtn;
 	page->render_html_rec_checkbtn = render_html_rec_checkbtn;
-	page->invoke_plugin_on_html_rec_checkbtn = invoke_plugin_on_html_rec_checkbtn;
 	page->promote_html_part_rec_checkbtn = promote_html_part_rec_checkbtn;
 
 	page->page.widget = table;
@@ -777,7 +742,6 @@ static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage 
 	SpecialFolderItemType type = F_NORMAL;
 	FolderView *folderview = mainwindow_get_mainwindow()->folderview;
 	HTMLRenderType render_html = HTML_RENDER_DEFAULT;
-	InvokePluginOnHTMLType invoke_plugin_on_html = INVOKE_PLUGIN_ON_HTML_DEFAULT;
 	HTMLPromoteType promote_html_part = HTML_PROMOTE_DEFAULT;
 
 	if (folder->path == NULL)
@@ -798,11 +762,6 @@ static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage 
 		combobox_get_active_data(GTK_COMBO_BOX(page->render_html));
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->render_html_rec_checkbtn)))
 		prefs->render_html = render_html;
-
-	invoke_plugin_on_html =
-		combobox_get_active_data(GTK_COMBO_BOX(page->invoke_plugin_on_html));
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->invoke_plugin_on_html_rec_checkbtn)))
-		prefs->invoke_plugin_on_html = invoke_plugin_on_html;
 
 	promote_html_part =
 		combobox_get_active_data(GTK_COMBO_BOX(page->promote_html_part));
@@ -900,7 +859,6 @@ static gboolean general_save_recurse_func(GNode *node, gpointer data)
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->offlinesync_rec_checkbtn)) ||
 		  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->skip_on_goto_unread_or_new_rec_checkbtn)) ||
 		  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->render_html_rec_checkbtn)) ||
-		  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->invoke_plugin_on_html_rec_checkbtn)) ||
 		  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->promote_html_part_rec_checkbtn))
 			))
 		return TRUE;

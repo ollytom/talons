@@ -359,7 +359,6 @@ struct _PrefsCommon
 	gboolean save_xface;
 	gint line_space;
 	gboolean render_html;
-	gboolean invoke_plugin_on_html;
 	gboolean promote_html_part;
 	gboolean textview_cursor_visible;
 	gboolean enable_smooth_scroll;
@@ -513,8 +512,6 @@ struct _PrefsCommon
 	gint addressbookeditpersonwin_height;
 	gint addressbookeditgroupwin_width;
 	gint addressbookeditgroupwin_height;
-	gint pluginswin_width;
-	gint pluginswin_height;
 	gint prefswin_width;
 	gint prefswin_height;
 	gint folderitemwin_width;

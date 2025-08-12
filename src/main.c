@@ -1085,11 +1085,7 @@ int main(int argc, char *argv[])
 				   "\"Rebuild folder tree\" on the mailbox parent "
 				   "folder's context menu to try to fix it."));
 		} else {
-			alertpanel_error(_("Claws Mail has detected a configured "
-				   "mailbox, but could not load it. It is "
-				   "probably provided by an out-of-date "
-				   "external plugin. Please reinstall the "
-				   "plugin and try again."));
+			alertpanel_error("Could not load configured mailbox.");
 			exit_claws(mainwin);
 			exit(1);
 		}

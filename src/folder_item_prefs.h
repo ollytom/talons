@@ -61,7 +61,6 @@ struct _FolderItemPrefs {
 	int offlinesync_days;
 	int remove_old_bodies;
 	HTMLRenderType render_html;
-	InvokePluginOnHTMLType invoke_plugin_on_html;
 	HTMLPromoteType promote_html_part;
 	gboolean skip_on_goto_unread_or_new;
 

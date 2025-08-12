@@ -692,8 +692,6 @@ static PrefParam param[] = {
 	 P_BOOL, NULL, NULL, NULL},
 	{"render_html", "TRUE", &prefs_common.render_html, P_BOOL,
 	 NULL, NULL, NULL},
-	{"invoke_plugin_on_html", "FALSE", &prefs_common.invoke_plugin_on_html, P_BOOL,
-	 NULL, NULL, NULL},
 	{"promote_html_part", "FALSE", &prefs_common.promote_html_part, P_BOOL,
 	 NULL, NULL, NULL},
 	{"line_space", "2", &prefs_common.line_space, P_INT,
@@ -995,11 +993,6 @@ static PrefParam param[] = {
 	{"addressbookeditgroupwin_width", "580", &prefs_common.addressbookeditgroupwin_width, P_INT,
 	 NULL, NULL, NULL},
 	{"addressbookeditgroupwin_height", "340", &prefs_common.addressbookeditgroupwin_height, P_INT,
-	 NULL, NULL, NULL},
-
-	{"pluginswin_width", "-1", &prefs_common.pluginswin_width, P_INT,
-	 NULL, NULL, NULL},
-	{"pluginswin_height", "-1", &prefs_common.pluginswin_height, P_INT,
 	 NULL, NULL, NULL},
 
 	{"prefswin_width", "600", &prefs_common.prefswin_width, P_INT,
