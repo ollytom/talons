@@ -538,7 +538,7 @@ if test x"$enable_libetpan" = xyes; then
         libetpan_config=yes
     ],
     [
-        # before 1.9.4, libetpan uses its own libetpan-config script
+        # before ws libetpan 1.9.4, libetpan uses its own libetpan-config script
         AC_PATH_PROG(libetpanconfig, [libetpan-config])
         if test "x$libetpanconfig" != "x"; then
             LIBETPAN_CFLAGS="`$libetpanconfig --cflags`"
@@ -652,11 +652,6 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-dnl libcurl ********************************************************************
-PKG_CHECK_MODULES(CURL, libcurl, HAVE_CURL=yes, HAVE_CURL=no)
-AC_SUBST(CURL_LIBS)
-AC_SUBST(CURL_CFLAGS)
-
 dnl expat **********************************************************************
 PKG_CHECK_MODULES(EXPAT, expat, HAVE_EXPAT=yes, HAVE_EXPAT=no)
 
@@ -694,96 +689,10 @@ PKG_CHECK_MODULES(FONTCONFIG, fontconfig, HAVE_FONTCONFIG=yes, HAVE_FONTCONFIG=n
 AC_SUBST(FONTCONFIG_CFLAGS)
 AC_SUBST(FONTCONFIG_LIBS)
 
-dnl gumbo **********************************************************************
-PKG_CHECK_MODULES(LIBGUMBO, gumbo >= 0.12, HAVE_LIBGUMBO=yes, HAVE_LIBGUMBO=no)
-if test x"$HAVE_LIBGUMBO" = xno; then
-	if test x"$enable_litehtml_viewer_plugin" = xyes; then
-		PKG_CHECK_MODULES(LIBGUMBO, gumbo >= 0.10, HAVE_LIBGUMBO=yes, HAVE_LIBGUMBO=no)
-	fi
-fi
-AC_SUBST(LIBGUMBO_CFLAGS)
-AC_SUBST(LIBGUMBO_LIBS)
-
 dnl libical ********************************************************************
 PKG_CHECK_MODULES(LIBICAL, libical >= 2.0, HAVE_LIBICAL=yes, HAVE_LIBICAL=no)
 AC_SUBST(LIBICAL_CFLAGS)
 AC_SUBST(LIBICAL_LIBS)
-
-dnl Poppler ********************************************************************
-PKG_CHECK_MODULES(POPPLER, poppler-glib >= 0.12.0, HAVE_POPPLER=yes, HAVE_POPPLER=no)
-AC_SUBST(POPPLER_LIBS)
-AC_SUBST(POPPLER_CFLAGS)
-
-dnl check for Poppler extra features that we conditionally support
-if test x"$HAVE_POPPLER" = xyes; then
-	OLD_CFLAGS=$CFLAGS
-	CFLAGS="$POPPLER_CFLAGS $GTK_CFLAGS $GLIB_CFLAGS"
-	AC_CHECK_DECL(POPPLER_DEST_NAMED,
-		[AC_DEFINE([HAVE_POPPLER_DEST_NAMED], [], [Description])],
-		,[#include <poppler-action.h>])
-	AC_CHECK_DECL(POPPLER_DEST_XYZ,
-		[AC_DEFINE([HAVE_POPPLER_DEST_XYZ], [], [Description])],
-		,[#include <poppler-action.h>])
-	CFLAGS=$OLD_CFLAGS
-fi
-
-dnl perl ***********************************************************************
-AC_CHECK_PROG(HAVE_PERL, perl, yes, no)
-if test x"$HAVE_PERL" = xyes; then
-	AC_MSG_CHECKING(for perl >= 5.8.0)
-	PERL_VER=`perl -e 'print $] > 5.0079999?"yes":"no"'`
-	if test "$PERL_VER" = "yes"; then
-		AC_MSG_RESULT(yes)
-	else
-		AC_MSG_RESULT(no)
-		HAVE_PERL=no
-	fi
-fi
-if test x"$HAVE_PERL" = xyes; then
-	AC_MSG_CHECKING(for perl module ExtUtils::Embed)
-	PERL_MOD_EXT_UTILS_EMBED=no
-	if perl -MExtUtils::Embed; then
-		AC_MSG_RESULT(ok)
-		PERL_MOD_EXT_UTILS_EMBED=yes
-	else
-		AC_MSG_RESULT(no)
-	fi
-
-	if test x"$PERL_MOD_EXT_UTILS_EMBED" = xyes; then
-		AC_MSG_CHECKING(for Perl compile flags)
-		PERL_CFLAGS=`perl -MExtUtils::Embed -e ccopts`
-		PERL_CFLAGS=`echo $PERL_CFLAGS | sed 's/-D_FILE_OFFSET_BITS=[[0-9]]*//'`
-		PERL_LDFLAGS=`perl -MExtUtils::Embed -e ldopts |sed 's/-lgdbm\>//'`
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS |sed 's/-ldb\>//'`
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS |sed 's/-lndbm\>//'`
-		PERL_LDFLAGS=`echo $PERL_LDFLAGS |sed 's/-lc\>//'`
-		AC_MSG_RESULT(ok)
-		AC_MSG_NOTICE([Adding perl LIBS ${PERL_CFLAGS}])
-	fi
-
-	if test x"$HAVE_PERL" = xyes; then
-		AC_CHECK_LIB(perl,perl_alloc,[AC_DEFINE(HAVE_LIBPERL, 1, Check for libperl.)],
-			 		     [ HAVE_LIBPERL=no ])
-	fi
-
-	if test x"$HAVE_LIBPERL" = xno; then
-		if test x"$PERL_MOD_EXT_UTILS_EMBED" = xyes; then
-			LIBPERL_PREFIX=`perl -MExtUtils::Embed -e perl_inc`
-			LIBPERL_PREFIX=`echo $LIBPERL_PREFIX |sed 's/-I//'`
-			AC_MSG_CHECKING([for libperl.so])
-			if test -f "$LIBPERL_PREFIX/libperl.so"; then
-				AC_MSG_RESULT(yes)
-				HAVE_LIBPERL=yes
-			else
-				AC_MSG_RESULT(no)
-			fi
-		fi
-	fi
-	PERL="perl"
-	AC_SUBST(PERL)
-	AC_SUBST(PERL_CFLAGS)
-	AC_SUBST(PERL_LDFLAGS)
-fi
 
 dnl Gpgme **********************************************************************
 PKG_CHECK_MODULES(GPGME, [gpgme >= 1.1.1], HAVE_GPGME_PKGCONFIG=yes, HAVE_GPGME_PKGCONFIG=no)
@@ -815,31 +724,6 @@ if test x"$HAVE_LIBCANBERRA_GTK" = xyes; then
 fi
 AC_SUBST(libcanberra_gtk3_CFLAGS)
 AC_SUBST(libcanberra_gtk3_LIBS)
-
-dnl unity/messaging-menu *******************************************************
-PKG_CHECK_MODULES(unity, unity messaging-menu, HAVE_UNITY=yes, HAVE_UNITY=no)
-if test x"$HAVE_UNITY" = xyes; then
-	AC_DEFINE(NOTIFICATION_INDICATOR, 1, [Activate support for unity and messaging-menu])
-fi
-AC_SUBST(unity_CFLAGS)
-AC_SUBST(unity_LIBS)
-
-dnl ayatana app indicator *******************************************************
-PKG_CHECK_MODULES(ayatanaappindicator, ayatana-appindicator3-0.1, HAVE_AYATANAAPPINDICATOR=yes, HAVE_AYATANAAPPINDICATOR=no)
-if test x"$HAVE_AYATANAAPPINDICATOR" = xyes; then
-	AC_DEFINE(NOTIFICATION_AYATANA_INDICATOR, 1, [Activate support for Atayana app indicator])
-fi
-AC_SUBST(ayatanaappindicator_CFLAGS)
-AC_SUBST(ayatanaappindicator_LIBS)
-
-dnl hotkeys ********************************************************************
-PKG_CHECK_MODULES(CM_NP_HOTKEY, [gio-2.0 >= 2.15.6 gio-unix-2.0 >= 2.15.6], HAVE_HOTKEYS=yes, HAVE_HOTKEYS=no)
-if test x"$HAVE_HOTKEYS" = xyes; then
-	AC_DEFINE(NOTIFICATION_HOTKEYS, 1, Activate support for global hotkeys)
-fi
-AC_SUBST(CM_NP_HOTKEY_CFLAGS)
-AC_SUBST(CM_NP_HOTKEY_LIBS)
-
 
 AC_CONFIG_FILES([
 Makefile
