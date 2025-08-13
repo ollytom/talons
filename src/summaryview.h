@@ -101,7 +101,6 @@ struct _SummaryView
 	GtkWidget *quick_search_pixmap;
 	GtkWidget *popupmenu;
 	GtkWidget *headerpopupmenu;
-	GtkWidget *colorlabel_menu;
 	GtkWidget *tags_menu;
 	GtkWidget *window;
 
@@ -299,9 +298,6 @@ void summary_select_thread	  (SummaryView		*summaryview,
 				   gboolean		 delete_thread,
 				   gboolean		 trash_thread);
 
-void summary_set_colorlabel	  (SummaryView		*summaryview,
-				   guint		 labelcolor,
-				   GtkWidget		*widget);
 void summary_set_tag		  (SummaryView		*summaryview,
 				   gint			 tag_id,
 				   GtkWidget		*widget);

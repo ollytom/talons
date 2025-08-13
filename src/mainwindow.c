@@ -80,7 +80,6 @@
 #include "folderutils.h"
 #include "foldersort.h"
 #include "icon_legend.h"
-#include "colorlabel.h"
 #include "tags.h"
 #include "textview.h"
 #include "imap.h"
@@ -867,88 +866,6 @@ static GtkRadioActionEntry mainwin_radio_dec_entries[] =
 static gboolean offline_ask_sync = TRUE;
 static gboolean is_obscured = FALSE;
 
-#define N_COLOR_LABELS colorlabel_get_color_count()
-
-static void mainwindow_colorlabel_menu_item_activate_item_cb(GtkMenuItem *menu_item,
-							  gpointer data)
-{
-	MainWindow *mainwin;
-	GtkMenuShell *menu;
-	GtkCheckMenuItem **items;
-	gint n;
-	GList *children, *cur;
-	GSList *sel;
-
-	mainwin = (MainWindow *)data;
-	cm_return_if_fail(mainwin != NULL);
-
-	sel = summary_get_selection(mainwin->summaryview);
-	if (!sel) return;
-
-	menu = GTK_MENU_SHELL(mainwin->colorlabel_menu);
-	cm_return_if_fail(menu != NULL);
-
-	Xalloca(items, (N_COLOR_LABELS + 1) * sizeof(GtkWidget *), return);
-
-	/* NOTE: don't return prematurely because we set the "dont_toggle"
-	 * state for check menu items. This would be bad! */
-	g_object_set_data(G_OBJECT(menu), "dont_toggle",
-			  GINT_TO_POINTER(1));
-
-	/* clear items. get item pointers. */
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (n = 0, cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		if (GTK_IS_CHECK_MENU_ITEM(cur->data)) {
-			gtk_check_menu_item_set_active
-				(GTK_CHECK_MENU_ITEM(cur->data), FALSE);
-			items[n] = GTK_CHECK_MENU_ITEM(cur->data);
-			n++;
-		}
-	}
-
-	g_list_free(children);
-
-	if (n == (N_COLOR_LABELS + 1)) {
-		/* iterate all messages and set the state of the appropriate
-		 * items */
-		for (; sel != NULL; sel = sel->next) {
-			MsgInfo *msginfo;
-			gint clabel;
-
-			msginfo = (MsgInfo *)sel->data;
-			if (msginfo) {
-				clabel = MSG_GET_COLORLABEL_VALUE(msginfo->flags);
-				if (!gtk_check_menu_item_get_active(items[clabel]))
-					gtk_check_menu_item_set_active
-						(items[clabel], TRUE);
-			}
-		}
-	} else
-		g_warning("invalid number of color elements (%d)", n);
-
-	g_slist_free(sel);
-	/* reset "dont_toggle" state */
-	g_object_set_data(G_OBJECT(menu), "dont_toggle",
-			  GINT_TO_POINTER(0));
-}
-
-static void mainwindow_colorlabel_menu_item_activate_cb(GtkWidget *widget,
-						     gpointer data)
-{
-	guint color = GPOINTER_TO_UINT(data);
-	MainWindow *mainwin;
-
-	mainwin = g_object_get_data(G_OBJECT(widget), "mainwin");
-	cm_return_if_fail(mainwin != NULL);
-
-	/* "dont_toggle" state set? */
-	if (g_object_get_data(G_OBJECT(mainwin->colorlabel_menu),
-				"dont_toggle"))
-		return;
-
-	summary_set_colorlabel(mainwin->summaryview, color, NULL);
-}
-
 static void mainwindow_tags_menu_item_activate_item_cb(GtkMenuItem *menu_item,
 							  gpointer data)
 {
@@ -1085,68 +1002,6 @@ void mainwin_accel_changed_cb (GtkAccelGroup *accelgroup, guint keyval, GdkModif
 		}
 	}
 	g_list_free(closures);
-}
-
-static void mainwindow_colorlabel_menu_create(MainWindow *mainwin, gboolean refresh)
-{
-	GtkWidget *label_menuitem;
-	GtkWidget *menu;
-	GtkWidget *item;
-	gint i;
-	gchar *accel_path = NULL;
-
-	label_menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/Message/ColorLabel");
-	g_signal_connect(G_OBJECT(label_menuitem), "activate",
-			 G_CALLBACK(mainwindow_colorlabel_menu_item_activate_item_cb),
-			   mainwin);
-	gtk_widget_show(label_menuitem);
-
-	menu = gtk_menu_new();
-	gtk_menu_set_accel_group (GTK_MENU (menu),
-		gtk_ui_manager_get_accel_group(mainwin->ui_manager));
-
-	/* create sub items. for the menu item activation callback we pass the
-	 * index of label_colors[] as data parameter. for the None color we
-	 * pass an invalid (high) value. also we attach a data pointer so we
-	 * can always get back the Mainwindow pointer. */
-
-	item = gtk_check_menu_item_new_with_label(_("None"));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-	g_signal_connect(G_OBJECT(item), "activate",
-			 G_CALLBACK(mainwindow_colorlabel_menu_item_activate_cb),
-			   GUINT_TO_POINTER(0));
-	g_object_set_data(G_OBJECT(item), "mainwin", mainwin);
-	gtk_widget_show(item);
-
-	accel_path = g_strdup_printf("<ClawsColorLabels>/None");
-	gtk_menu_item_set_accel_path(GTK_MENU_ITEM(item), accel_path);
-	g_free(accel_path);
-	gtk_accel_map_add_entry("<ClawsColorLabels>/None", GDK_KEY_0, GDK_CONTROL_MASK);
-
-	/* create pixmap/label menu items */
-	for (i = 0; i < N_COLOR_LABELS; i++) {
-		item = colorlabel_create_check_color_menu_item(
-			i, refresh, MAINWIN_COLORMENU);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-		g_signal_connect(G_OBJECT(item), "activate",
-				 G_CALLBACK(mainwindow_colorlabel_menu_item_activate_cb),
-				 GUINT_TO_POINTER(i + 1));
-		g_object_set_data(G_OBJECT(item), "mainwin",
-				  mainwin);
-		gtk_widget_show(item);
-		accel_path = g_strdup_printf("<ClawsColorLabels>/%d", i+1);
-		gtk_menu_item_set_accel_path(GTK_MENU_ITEM(item), accel_path);
-		if (i < 9)
-			gtk_accel_map_add_entry(accel_path, GDK_KEY_1+i, GDK_CONTROL_MASK);
-		g_free(accel_path);
-		g_signal_connect (gtk_ui_manager_get_accel_group(mainwin->ui_manager),
-			"accel-changed", G_CALLBACK (mainwin_accel_changed_cb), item);
-
-
-	}
-	gtk_widget_show(menu);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(label_menuitem), menu);
-	mainwin->colorlabel_menu = menu;
 }
 
 static void mainwindow_tags_menu_item_apply_tags_activate_cb(GtkWidget *widget,
@@ -2073,7 +1928,6 @@ MainWindow *main_window_create()
 	if (prefs_common.work_offline)
 		online_switch_clicked (GTK_BUTTON(online_switch), mainwin);
 
-	mainwindow_colorlabel_menu_create(mainwin, FALSE);
 	mainwindow_tags_menu_create(mainwin, FALSE);
 
 	if (prefs_common.mainwin_fullscreen) {
@@ -2227,30 +2081,6 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 void main_window_reflect_prefs_all_now(void)
 {
 	reflect_prefs_timeout_cb(GINT_TO_POINTER(FALSE));
-}
-
-void main_window_reflect_prefs_custom_colors(MainWindow *mainwin)
-{
-	GtkMenuShell *menu;
-	GList *children, *cur;
-
-	/* re-create colorlabel submenu */
-	menu = GTK_MENU_SHELL(mainwin->colorlabel_menu);
-	cm_return_if_fail(menu != NULL);
-
-	/* clear items. get item pointers. */
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		g_signal_handlers_disconnect_matched
-			 (gtk_ui_manager_get_accel_group(mainwin->ui_manager),
-			 G_SIGNAL_MATCH_DATA|G_SIGNAL_MATCH_FUNC,
-			 0, 0, NULL, mainwin_accel_changed_cb, cur->data);
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(cur->data), NULL);
-	}
-	g_list_free(children);
-	mainwindow_colorlabel_menu_create(mainwin, TRUE);
-	summary_reflect_prefs_custom_colors(mainwin->summaryview);
-	folderview_reinit_fonts(mainwin->folderview);
 }
 
 static gint tags_tag = 0;

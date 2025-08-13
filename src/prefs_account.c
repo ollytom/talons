@@ -53,7 +53,6 @@
 #include "gtkutils.h"
 #include "utils.h"
 #include "alertpanel.h"
-#include "colorlabel.h"
 #include "smtp.h"
 #include "imap.h"
 #include "pop.h"
@@ -362,8 +361,6 @@ typedef struct AdvancedPage
 	GtkWidget *nntpport_spinbtn;
 	GtkWidget *domain_checkbtn;
 	GtkWidget *domain_entry;
-	GtkWidget *crosspost_checkbtn;
- 	GtkWidget *crosspost_colormenu;
 
 	GtkWidget *tunnelcmd_checkbtn;
 	GtkWidget *tunnelcmd_entry;
@@ -447,10 +444,6 @@ static void prefs_account_set_autochk_interval_to_widgets(PrefParam *pparam);
 
 static void prefs_account_enum_set_data_from_radiobtn	(PrefParam *pparam);
 static void prefs_account_enum_set_radiobtn		(PrefParam *pparam);
-
-static void crosspost_color_toggled(void);
-static void prefs_account_crosspost_set_data_from_colormenu(PrefParam *pparam);
-static void prefs_account_crosspost_set_colormenu(PrefParam *pparam);
 
 static void prefs_account_nntpauth_toggled(GtkToggleButton *button, gpointer user_data);
 static void prefs_account_mailcmd_toggled(GtkToggleButton *button,  gpointer user_data);
@@ -1024,14 +1017,6 @@ static PrefParam advanced_param[] = {
 	{"tunnelcmd", NULL, &tmp_ac_prefs.tunnelcmd, P_STRING,
 	 &advanced_page.tunnelcmd_entry,
 	 prefs_set_data_from_entry, prefs_set_entry},
-	{"mark_crosspost_read", "FALSE", &tmp_ac_prefs.mark_crosspost_read, P_BOOL,
-	 &advanced_page.crosspost_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"crosspost_color", NULL, &tmp_ac_prefs.crosspost_col, P_ENUM,
-	 &advanced_page.crosspost_colormenu,
-	 prefs_account_crosspost_set_data_from_colormenu,
-	 prefs_account_crosspost_set_colormenu},
 
 	{"set_sent_folder", "FALSE", &tmp_ac_prefs.set_sent_folder, P_BOOL,
 	 &advanced_page.sent_folder_checkbtn,
@@ -3344,8 +3329,6 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	GtkWidget *checkbtn_domain;
 	GtkWidget *entry_domain;
 	gchar *tip_domain;
-	GtkWidget *checkbtn_crosspost;
- 	GtkWidget *colormenu_crosspost;
 	GtkWidget *checkbtn_tunnelcmd;
 	GtkWidget *entry_tunnelcmd;
 	GtkWidget *folder_frame;
@@ -3433,18 +3416,6 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	gtk_box_pack_start (GTK_BOX (hbox1), entry_tunnelcmd, TRUE, TRUE, 0);
 	SET_TOGGLE_SENSITIVITY (checkbtn_tunnelcmd, entry_tunnelcmd);
 
-	PACK_HBOX (hbox1);
-	PACK_CHECK_BUTTON (hbox1, checkbtn_crosspost,
-			   _("Mark cross-posted messages as read and color:"));
-	g_signal_connect (G_OBJECT (checkbtn_crosspost), "toggled",
-			  G_CALLBACK (crosspost_color_toggled),
-			  NULL);
-
-	colormenu_crosspost = colorlabel_create_combobox_colormenu();
-	gtk_widget_show (colormenu_crosspost);
-	gtk_box_pack_start (GTK_BOX (hbox1), colormenu_crosspost, FALSE, FALSE, 0);
-
-	SET_TOGGLE_SENSITIVITY(checkbtn_crosspost, colormenu_crosspost);
 #undef PACK_HBOX
 #undef PACK_PORT_SPINBTN
 
@@ -3506,8 +3477,6 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	page->nntpport_spinbtn		= spinbtn_nntpport;
 	page->domain_checkbtn		= checkbtn_domain;
 	page->domain_entry		= entry_domain;
- 	page->crosspost_checkbtn	= checkbtn_crosspost;
- 	page->crosspost_colormenu	= colormenu_crosspost;
 	page->tunnelcmd_checkbtn	= checkbtn_tunnelcmd;
 	page->tunnelcmd_entry	= entry_tunnelcmd;
 	page->sent_folder_checkbtn  = sent_folder_checkbtn;
@@ -4709,32 +4678,6 @@ PrefsAccount *prefs_account_open(PrefsAccount *ac_prefs, gboolean *dirty)
 	}
 }
 
-static void crosspost_color_toggled(void)
-{
-	gboolean is_active;
-
-	is_active = gtk_toggle_button_get_active
-		(GTK_TOGGLE_BUTTON(advanced_page.crosspost_checkbtn));
-	gtk_widget_set_sensitive(advanced_page.crosspost_colormenu, is_active);
-}
-
-static void prefs_account_crosspost_set_data_from_colormenu(PrefParam *pparam)
-{
-	gint color;
-	GtkWidget *combobox = *pparam->widget;
-
-	color = colorlabel_get_combobox_colormenu_active(GTK_COMBO_BOX(combobox));
-	*((gint *)pparam->data) = color;
-}
-
-static void prefs_account_crosspost_set_colormenu(PrefParam *pparam)
-{
-	gint color = *((gint *)pparam->data);
-	GtkWidget *combobox = *pparam->widget;
-
-	colorlabel_set_combobox_colormenu_active(GTK_COMBO_BOX(combobox), color);
-}
-
 static void pop_bfr_smtp_tm_set_sens(GtkWidget *widget, gpointer data)
 {
 	gtk_widget_set_sensitive(send_page.pop_bfr_smtp_tm_spinbtn,
@@ -5458,8 +5401,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
 		gtk_widget_show(advanced_page.nntpport_hbox);
-		gtk_widget_show(advanced_page.crosspost_checkbtn);
-		gtk_widget_show(advanced_page.crosspost_colormenu);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
 		gtk_widget_hide(receive_page.imapdir_label);
@@ -5538,8 +5479,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
 		gtk_widget_hide(advanced_page.nntpport_hbox);
-		gtk_widget_hide(advanced_page.crosspost_checkbtn);
-		gtk_widget_hide(advanced_page.crosspost_colormenu);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
 		gtk_widget_hide(receive_page.imapdir_label);
@@ -5627,8 +5566,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_show(advanced_page.imapport_hbox);
 		gtk_widget_hide(advanced_page.nntpport_hbox);
-		gtk_widget_hide(advanced_page.crosspost_checkbtn);
-		gtk_widget_hide(advanced_page.crosspost_colormenu);
 		gtk_widget_show(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_show(advanced_page.tunnelcmd_entry);
 		gtk_widget_show(receive_page.imapdir_label);
@@ -5705,8 +5642,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
 		gtk_widget_hide(advanced_page.nntpport_hbox);
-		gtk_widget_hide(advanced_page.crosspost_checkbtn);
-		gtk_widget_hide(advanced_page.crosspost_colormenu);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
 		gtk_widget_hide(receive_page.imapdir_label);
@@ -5790,8 +5725,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_show(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
 		gtk_widget_hide(advanced_page.nntpport_hbox);
-		gtk_widget_hide(advanced_page.crosspost_checkbtn);
-		gtk_widget_hide(advanced_page.crosspost_colormenu);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
 		gtk_widget_hide(receive_page.imapdir_label);

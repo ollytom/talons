@@ -12,7 +12,6 @@ EXTRA_DIST = \
 
 libclawsgtk_la_SOURCES = \
 	about.c \
-	colorlabel.c \
 	combobox.c \
 	description_window.c \
 	filesel.c \
@@ -41,7 +40,6 @@ clawsgtkincludedir = $(pkgincludedir)/gtk
 clawsgtkinclude_HEADERS = \
 	about.h \
 	authors.h \
-	colorlabel.h \
 	combobox.h \
 	description_window.h \
 	filesel.h \

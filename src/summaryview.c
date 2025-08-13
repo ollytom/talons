@@ -56,7 +56,6 @@
 #include "inputdialog.h"
 #include "statusbar.h"
 #include "folder.h"
-#include "colorlabel.h"
 #include "inc.h"
 #include "imap.h"
 #include "addressbook.h"
@@ -225,14 +224,6 @@ void summary_simplify_subject(SummaryView *summaryview, gchar * rexp,
 static void summary_filter_func		(MsgInfo		*msginfo,
 					 PrefsAccount		*ac_prefs);
 
-static void summary_colorlabel_menu_item_activate_cb
-					  (GtkWidget	*widget,
-					   gpointer	 data);
-static void summary_colorlabel_menu_item_activate_item_cb
-					  (GtkMenuItem	*label_menu_item,
-					   gpointer	 data);
-static void summary_colorlabel_menu_create(SummaryView	*summaryview,
-					   gboolean  refresh);
 static void summary_tags_menu_item_activate_cb
 					  (GtkWidget	*widget,
 					   gpointer	 data);
@@ -395,9 +386,6 @@ static void summary_find_answers	(SummaryView 	*summaryview,
 static gboolean summary_update_msg	(gpointer source, gpointer data);
 static gboolean summary_update_folder_item_hook(gpointer source, gpointer data);
 static gboolean summary_update_folder_hook(gpointer source, gpointer data);
-static void summary_set_colorlabel_color (GtkCMCTree		*ctree,
-				   GtkCMCTreeNode		*node,
-				   guint		 labelcolor);
 static void summary_thread_build(SummaryView *summaryview);
 
 GtkTargetEntry summary_drag_types[3] =
@@ -726,7 +714,7 @@ SummaryView *summary_create(MainWindow *mainwin)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "Lock", "Message/Marks/Lock", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "Unlock", "Message/Marks/Unlock", GTK_UI_MANAGER_MENUITEM)
 
-	/* submenus - colorlabel and tags are dynamic */
+	/* submenus - tags are dynamic */
 	/* submenus - createfilterrule */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateFilterRule", "Automatically", "Tools/CreateFilterRule/Automatically", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateFilterRule", "ByFrom", "Tools/CreateFilterRule/ByFrom", GTK_UI_MANAGER_MENUITEM)
@@ -974,7 +962,6 @@ void summary_init(SummaryView *summaryview)
 	summaryview->simplify_subject_preg = NULL;
 	summary_clear_list(summaryview);
 	summary_set_column_titles(summaryview);
-	summary_colorlabel_menu_create(summaryview, FALSE);
 	summary_tags_menu_create(summaryview, FALSE);
 	main_create_mailing_list_menu (summaryview->mainwin, NULL);
 	summary_set_menu_sensitive(summaryview);
@@ -2851,7 +2838,6 @@ void summary_reflect_tags_changes(SummaryView *summaryview)
 	gboolean froze = FALSE;
 	gboolean redisplay = FALSE;
 
-	/* re-create colorlabel submenu */
 	menu = GTK_MENU_SHELL(summaryview->tags_menu);
 	cm_return_if_fail(menu != NULL);
 
@@ -3965,9 +3951,6 @@ static void summary_set_row_marks(SummaryView *summaryview, GtkCMCTreeNode *row)
 	}
 
 	gtk_cmctree_node_set_row_style(ctree, row, style);
-
-	if (MSG_GET_COLORLABEL(flags))
-		summary_set_colorlabel_color(ctree, row, MSG_GET_COLORLABEL_VALUE(flags));
 }
 
 static void summary_mark_row(SummaryView *summaryview, GtkCMCTreeNode *row)
@@ -5863,146 +5846,6 @@ void summary_filter_open(SummaryView *summaryview, PrefsFilterType type,
 	summary_msginfo_filter_open(item, msginfo, type, processing_rule);
 }
 
-/* color label */
-
-#define N_COLOR_LABELS colorlabel_get_color_count()
-
-static void summary_colorlabel_menu_item_activate_cb(GtkWidget *widget,
-						     gpointer data)
-{
-	guint color = GPOINTER_TO_UINT(data);
-	SummaryView *summaryview;
-
-	summaryview = g_object_get_data(G_OBJECT(widget), "summaryview");
-	cm_return_if_fail(summaryview != NULL);
-
-	/* "dont_toggle" state set? */
-	if (g_object_get_data(G_OBJECT(summaryview->colorlabel_menu),
-				"dont_toggle"))
-		return;
-
-	summary_set_colorlabel(summaryview, color, NULL);
-}
-
-/* summary_set_colorlabel_color() - labelcolor parameter is the color *flag*
- * for the message; not the color index */
-void summary_set_colorlabel_color(GtkCMCTree *ctree, GtkCMCTreeNode *node,
-				  guint labelcolor)
-{
-	GdkColor color;
-	GdkRGBA rgba;
-	GtkStyle *style, *prev_style, *ctree_style;
-	MsgInfo *msginfo;
-	gint color_index;
-
-	msginfo = gtk_cmctree_node_get_row_data(ctree, node);
-	cm_return_if_fail(msginfo);
-
-	color_index = labelcolor == 0 ? -1 : (gint)labelcolor - 1;
-	ctree_style = gtk_widget_get_style(GTK_WIDGET(ctree));
-	prev_style = gtk_cmctree_node_get_row_style(ctree, node);
-
-	if (color_index < 0 || color_index >= N_COLOR_LABELS) {
-		if (!prev_style) return;
-		style = gtk_style_copy(prev_style);
-		color = ctree_style->text[GTK_STATE_NORMAL];
-		style->text[GTK_STATE_NORMAL] = color;
-		color = ctree_style->text[GTK_STATE_SELECTED];
-		style->text[GTK_STATE_SELECTED] = color;
-	} else {
-		if (prev_style)
-			style = gtk_style_copy(prev_style);
-		else
-			style = gtk_style_copy(ctree_style);
-		rgba = colorlabel_get_color(color_index);
-		GTKUT_GDKRGBA_TO_GDKCOLOR(rgba, color);
-		style->text[GTK_STATE_NORMAL] = color;
-		/* get the average of label color and selected fg color
-		   for visibility */
-		style->text[GTK_STATE_SELECTED].red   = (color.red   + 3*ctree_style->text[GTK_STATE_SELECTED].red  ) / 4;
-		style->text[GTK_STATE_SELECTED].green = (color.green + 3*ctree_style->text[GTK_STATE_SELECTED].green) / 4;
-		style->text[GTK_STATE_SELECTED].blue  = (color.blue  + 3*ctree_style->text[GTK_STATE_SELECTED].blue ) / 4;
-	}
-
-	gtk_cmctree_node_set_row_style(ctree, node, style);
-	g_object_unref(style);
-}
-
-static void summary_set_row_colorlabel(SummaryView *summaryview, GtkCMCTreeNode *row, guint labelcolor)
-{
-	GtkCMCTree *ctree = GTK_CMCTREE(summaryview->ctree);
-	MsgInfo *msginfo;
-
-	msginfo = gtk_cmctree_node_get_row_data(ctree, row);
-	cm_return_if_fail(msginfo);
-
-	summary_msginfo_change_flags(msginfo, MSG_COLORLABEL_TO_FLAGS(labelcolor), 0,
-					MSG_CLABEL_FLAG_MASK, 0);
-	summary_set_row_marks(summaryview, row);
-}
-
-void summary_set_colorlabel(SummaryView *summaryview, guint labelcolor,
-			    GtkWidget *widget)
-{
-	GtkCMCTree *ctree = GTK_CMCTREE(summaryview->ctree);
-	GList *cur;
-	gboolean froze = FALSE;
-
-	if (prefs_common.ask_override_colorlabel) {
-		GtkCMCTree *ctree = GTK_CMCTREE(summaryview->ctree);
-		gboolean ask = FALSE;
-		AlertValue val;
-		guint color;
-		gboolean already_this_color_everywhere = TRUE;
-
-		/* if clearing color labels (applying 'none', 0):
-		    - ask if at least one message has a non-0 color label set
-		   if applying a non-0 color label:
-		    - ask if at least one of the selected messages has a non-0 color label different
-			  from the one we want to apply.
-		    - don't ask if all messages have the same color label as the one we're applying
-		*/
-		for (cur = GTK_CMCLIST(ctree)->selection;
-			 !ask && cur != NULL && cur->data != NULL;
-			 cur = cur->next) {
-			MsgInfo *msginfo = gtk_cmctree_node_get_row_data(ctree, GTK_CMCTREE_NODE(cur->data));
-			if (msginfo) {
-				color = MSG_GET_COLORLABEL_VALUE(msginfo->flags);
-				if (labelcolor == 0) {
-					/* clearing color labels */
-					ask = (color != 0);
-				} else {
-					already_this_color_everywhere &= (color == labelcolor);
-					ask = ((color != 0) && (color != labelcolor)) && !already_this_color_everywhere;
-				}
-			}
-		}
-
-		if (ask) {
-			gchar *msg;
-
-			if (labelcolor == 0)
-				msg = _("Do you really want to reset the color label of all selected messages?");
-			else
-				msg = _("Do you really want to apply this color label to all selected messages?");
-			val = alertpanel_full(labelcolor == 0? _("Reset color label"): _("Set color label"), msg,
-				  NULL, _("_No"), NULL, _("_Yes"), NULL, NULL, ALERTFOCUS_FIRST,
-				  TRUE, NULL, ALERT_QUESTION);
-
-			if ((val & ~G_ALERTDISABLE) != G_ALERTALTERNATE)
-				return;
-			else if (val & G_ALERTDISABLE)
-				prefs_common.ask_override_colorlabel = FALSE;
-		}
-	}
-
-	START_LONG_OPERATION(summaryview, FALSE);
-	for (cur = GTK_CMCLIST(ctree)->selection; cur != NULL && cur->data != NULL; cur = cur->next)
-		summary_set_row_colorlabel(summaryview,
-					   GTK_CMCTREE_NODE(cur->data), labelcolor);
-	END_LONG_OPERATION(summaryview);
-}
-
 static gboolean summary_set_row_tag(SummaryView *summaryview, GtkCMCTreeNode *row, gboolean refresh, gboolean set, gint id)
 {
 	GtkCMCTree *ctree = GTK_CMCTREE(summaryview->ctree);
@@ -6070,134 +5913,6 @@ static void summary_tags_menu_item_activate_cb(GtkWidget *widget,
 	if (!set)
 		id = -id;
 	summary_set_tag(summaryview, id, NULL);
-}
-
-static void summary_colorlabel_menu_item_activate_item_cb(GtkMenuItem *menu_item,
-							  gpointer data)
-{
-	SummaryView *summaryview;
-	GtkMenuShell *menu;
-	GtkCheckMenuItem **items;
-	gint n;
-	GList *children, *cur, *sel;
-
-	summaryview = (SummaryView *)data;
-	cm_return_if_fail(summaryview != NULL);
-
-	sel = GTK_CMCLIST(summaryview->ctree)->selection;
-	if (!sel) return;
-
-	menu = GTK_MENU_SHELL(summaryview->colorlabel_menu);
-
-	cm_return_if_fail(menu != NULL);
-
-	Xalloca(items, (N_COLOR_LABELS + 1) * sizeof(GtkWidget *), return);
-
-	/* NOTE: don't return prematurely because we set the "dont_toggle"
-	 * state for check menu items */
-	g_object_set_data(G_OBJECT(menu), "dont_toggle",
-			  GINT_TO_POINTER(1));
-
-	/* clear items. get item pointers. */
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (n = 0, cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		if (GTK_IS_CHECK_MENU_ITEM(cur->data)) {
-			gtk_check_menu_item_set_active
-				(GTK_CHECK_MENU_ITEM(cur->data), FALSE);
-			gtk_check_menu_item_set_draw_as_radio(GTK_CHECK_MENU_ITEM(cur->data),
-							      TRUE);
-			items[n] = GTK_CHECK_MENU_ITEM(cur->data);
-			n++;
-		}
-	}
-
-	g_list_free(children);
-
-	if (n == (N_COLOR_LABELS + 1)) {
-		/* iterate all messages and set the state of the appropriate
-		 * items */
-		for (; sel != NULL; sel = sel->next) {
-			MsgInfo *msginfo;
-			gint clabel;
-
-			msginfo = gtk_cmctree_node_get_row_data
-				(GTK_CMCTREE(summaryview->ctree),
-				 GTK_CMCTREE_NODE(sel->data));
-			if (msginfo) {
-				clabel = MSG_GET_COLORLABEL_VALUE(msginfo->flags);
-				if (!gtk_check_menu_item_get_active(items[clabel]))
-					gtk_check_menu_item_set_active
-						(items[clabel], TRUE);
-			}
-		}
-	} else
-		g_warning("invalid number of color elements (%d)", n);
-
-	/* reset "dont_toggle" state */
-	g_object_set_data(G_OBJECT(menu), "dont_toggle",
-			  GINT_TO_POINTER(0));
-}
-
-static void summary_colorlabel_menu_create(SummaryView *summaryview, gboolean refresh)
-{
-	GtkWidget *label_menuitem;
-	GtkWidget *menu;
-	GtkWidget *item;
-	gint i;
-	gchar *accel_path = NULL;
-
-	label_menuitem = gtk_ui_manager_get_widget(summaryview->mainwin->ui_manager, "/Menus/SummaryViewPopup/ColorLabel");
-	g_signal_connect(G_OBJECT(label_menuitem), "activate",
-			 G_CALLBACK(summary_colorlabel_menu_item_activate_item_cb),
-			   summaryview);
-	gtk_widget_show(label_menuitem);
-
-	menu = gtk_menu_new();
-
-	gtk_menu_set_accel_group (GTK_MENU (menu),
-		gtk_ui_manager_get_accel_group(mainwindow_get_mainwindow()->ui_manager));
-
-	/* create sub items. for the menu item activation callback we pass the
-	 * index of label_colors[] as data parameter. for the None color we
-	 * pass an invalid (high) value. also we attach a data pointer so we
-	 * can always get back the SummaryView pointer. */
-
-	item = gtk_check_menu_item_new_with_label(_("None"));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-	g_signal_connect(G_OBJECT(item), "activate",
-			 G_CALLBACK(summary_colorlabel_menu_item_activate_cb),
-			   GUINT_TO_POINTER(0));
-	g_object_set_data(G_OBJECT(item), "summaryview", summaryview);
-	gtk_widget_show(item);
-
-	accel_path = g_strdup_printf("<ClawsColorLabels>/None");
-	gtk_menu_item_set_accel_path(GTK_MENU_ITEM(item), accel_path);
-	g_free(accel_path);
-	gtk_accel_map_add_entry("<ClawsColorLabels>/None", GDK_KEY_0, GDK_CONTROL_MASK);
-
-	/* create pixmap/label menu items */
-	for (i = 0; i < N_COLOR_LABELS; i++) {
-		item = colorlabel_create_check_color_menu_item(
-			i, refresh, SUMMARY_COLORMENU);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-		g_signal_connect(G_OBJECT(item), "activate",
-				 G_CALLBACK(summary_colorlabel_menu_item_activate_cb),
-				 GUINT_TO_POINTER(i + 1));
-		g_object_set_data(G_OBJECT(item), "summaryview",
-				  summaryview);
-		gtk_widget_show(item);
-		accel_path = g_strdup_printf("<ClawsColorLabels>/%d", i+1);
-		gtk_menu_item_set_accel_path(GTK_MENU_ITEM(item), accel_path);
-		if (i < 9)
-			gtk_accel_map_add_entry(accel_path, GDK_KEY_1+i, GDK_CONTROL_MASK);
-		g_free(accel_path);
-		g_signal_connect (gtk_ui_manager_get_accel_group(mainwindow_get_mainwindow()->ui_manager),
-			"accel-changed", G_CALLBACK (mainwin_accel_changed_cb), item);
-	}
-
-	gtk_widget_show(menu);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(label_menuitem), menu);
-	summaryview->colorlabel_menu = menu;
 }
 
 static void summary_tags_menu_item_activate_item_cb(GtkMenuItem *menu_item,
@@ -8113,28 +7828,6 @@ void summary_reflect_prefs_pixmap_theme(SummaryView *summaryview)
 	folderview_unselect(summaryview->folderview);
 	folderview_select(summaryview->folderview, summaryview->folder_item);
 	summary_set_column_titles(summaryview);
-}
-
-void summary_reflect_prefs_custom_colors(SummaryView *summaryview)
-{
-	GtkMenuShell *menu;
-	GList *children, *cur;
-
-	/* re-create colorlabel submenu */
-	menu = GTK_MENU_SHELL(summaryview->colorlabel_menu);
-	cm_return_if_fail(menu != NULL);
-
-	/* clear items. get item pointers. */
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		g_signal_handlers_disconnect_matched
-			 (gtk_ui_manager_get_accel_group(summaryview->mainwin->ui_manager),
-			 G_SIGNAL_MATCH_DATA|G_SIGNAL_MATCH_FUNC,
-			 0, 0, NULL, mainwin_accel_changed_cb, cur->data);
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(cur->data), NULL);
-	}
-	g_list_free(children);
-	summary_colorlabel_menu_create(summaryview, TRUE);
 }
 
 /*

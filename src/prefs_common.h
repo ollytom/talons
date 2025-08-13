@@ -31,7 +31,6 @@
 #include "codeconv.h"
 #include "textview.h"
 #include "procmime.h"
-#include "prefs_msg_colors.h"
 #include "prefs_summary_open.h"
 
 #define CLAWS_CONFIG_VERSION 5
@@ -235,9 +234,6 @@ struct _PrefsCommon
 	gboolean use_different_print_font;
 	gboolean derive_from_normal_font;
 
-	/* custom colors */
-	ColorlabelPrefs custom_colorlabel[COLORLABELS];
-
 	/* program colors */
 	GdkRGBA color[COL_LAST_COLOR_INDEX];
 
@@ -423,7 +419,6 @@ struct _PrefsCommon
 	int hover_timeout; /* msecs mouse hover timeout */
 	gboolean ask_mark_all_read;
 	gboolean run_processingrules_before_mark_all;
-	gboolean ask_override_colorlabel;
 	gboolean ask_apply_per_account_filtering_rules;
 	gint apply_per_account_filtering_rules;
 

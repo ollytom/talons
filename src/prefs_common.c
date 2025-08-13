@@ -58,7 +58,6 @@
 #include "filesel.h"
 #include "stock_pixmap.h"
 #include "prefswindow.h"
-#include "colorlabel.h"
 #include "passwordstore.h"
 #include "file-utils.h"
 
@@ -261,68 +260,6 @@ static PrefParam param[] = {
 	{"use_different_print_font", "FALSE", &prefs_common.use_different_print_font, P_BOOL,
 	 NULL, NULL, NULL},
 	{"derive_from_normal_font", "TRUE", &prefs_common.derive_from_normal_font, P_BOOL,
-	 NULL, NULL, NULL},
-
-	/* custom colors */
-	{"custom_color1", "#ff9900", &prefs_common.custom_colorlabel[0].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel1", N_("Orange"), &prefs_common.custom_colorlabel[0].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color2", "#ff0000", &prefs_common.custom_colorlabel[1].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel2", N_("Red"), &prefs_common.custom_colorlabel[1].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color3", "#ff66ff", &prefs_common.custom_colorlabel[2].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel3", N_("Pink"), &prefs_common.custom_colorlabel[2].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color4", "#00ccff", &prefs_common.custom_colorlabel[3].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel4", N_("Sky blue"), &prefs_common.custom_colorlabel[3].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color5", "#0000ff", &prefs_common.custom_colorlabel[4].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel5", N_("Blue"), &prefs_common.custom_colorlabel[4].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color6", "#009900", &prefs_common.custom_colorlabel[5].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel6", N_("Green"), &prefs_common.custom_colorlabel[5].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color7", "#663333", &prefs_common.custom_colorlabel[6].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel7", N_("Brown"), &prefs_common.custom_colorlabel[6].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color8", "#aaaaaa", &prefs_common.custom_colorlabel[7].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel8", N_("Grey"), &prefs_common.custom_colorlabel[7].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color9", "#c07254", &prefs_common.custom_colorlabel[8].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel9", N_("Light brown"), &prefs_common.custom_colorlabel[8].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color10", "#c00000", &prefs_common.custom_colorlabel[9].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel10", N_("Dark red"), &prefs_common.custom_colorlabel[9].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color11", "#cc1074", &prefs_common.custom_colorlabel[10].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel11", N_("Dark pink"), &prefs_common.custom_colorlabel[10].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color12", "#5094cd", &prefs_common.custom_colorlabel[11].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel12", N_("Steel blue"), &prefs_common.custom_colorlabel[11].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color13", "#ffd500", &prefs_common.custom_colorlabel[12].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel13", N_("Gold"), &prefs_common.custom_colorlabel[12].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color14", "#00d800", &prefs_common.custom_colorlabel[13].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel14", N_("Bright green"), &prefs_common.custom_colorlabel[13].label, P_STRING,
-	 NULL, NULL, NULL},
-	{"custom_color15", "#c060c0", &prefs_common.custom_colorlabel[14].color, P_COLOR,
-	 NULL, NULL, NULL},
-	{"custom_colorlabel15", N_("Magenta"), &prefs_common.custom_colorlabel[14].label, P_STRING,
 	 NULL, NULL, NULL},
 
 	/* image viewer */
@@ -749,8 +686,6 @@ static PrefParam param[] = {
 	{"run_processingrules_before_mark_all", "FALSE", &prefs_common.run_processingrules_before_mark_all, P_BOOL,
 	 NULL, NULL, NULL},
 	{"ask_mark_all_read", "TRUE", &prefs_common.ask_mark_all_read, P_BOOL,
-	 NULL, NULL, NULL},
-	{"ask_override_colorlabel", "TRUE", &prefs_common.ask_override_colorlabel, P_BOOL,
 	 NULL, NULL, NULL},
 
 	{"ask_apply_per_account_filtering_rules", "TRUE", &prefs_common.ask_apply_per_account_filtering_rules, P_BOOL,
@@ -1219,7 +1154,6 @@ void prefs_common_read_config(void)
 	prefs_common.compose_save_to_history =
 		prefs_common_read_history(COMPOSE_SAVE_TO_HISTORY);
 	prefs_common.addressbook_custom_attributes = addressbook_update_custom_attr_from_prefs();
-	colorlabel_update_colortable_from_prefs();
 }
 
 #define TRY(func) \

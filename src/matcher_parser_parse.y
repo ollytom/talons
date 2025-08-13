@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #include "defs.h"
@@ -29,7 +29,6 @@
 #include "matcher.h"
 #include "matcher_parser.h"
 #include "matcher_parser_lex.h"
-#include "colorlabel.h"
 #include "folder_item_prefs.h"
 
 static gint error = 0;
@@ -91,18 +90,18 @@ void matcher_parser_start_parsing(FILE *f)
 	matcher_parserparse();
 }
 
- 
+
 void * matcher_parser_scan_string(const char * str);
- 
+
 FilteringProp *matcher_parser_get_filtering(gchar *str)
 {
 	void *bufstate;
 	void *tmp_str = NULL;
-	
+
 	/* little hack to allow passing rules with no names */
 	if (!strncmp(str, "rulename ", 9))
 		tmp_str = g_strdup(str);
-	else 
+	else
 		tmp_str = g_strconcat("rulename \"\" ", str, NULL);
 
 	/* bad coding to enable the sub-grammar matching
@@ -131,7 +130,7 @@ static gboolean check_quote_symetry(gchar *str)
 {
 	const gchar *walk;
 	int ret = 0;
-	
+
 	if (str == NULL)
 		return TRUE; /* heh, that's symetric */
 	if (*str == '\0')
@@ -154,7 +153,7 @@ MatcherList *matcher_parser_get_name(gchar *str)
 		cond = NULL;
 		return cond;
 	}
-	
+
 	/* bad coding to enable the sub-grammar matching
 	   in yacc */
 	matcher_parserlineno = 1;
@@ -177,7 +176,7 @@ MatcherList *matcher_parser_get_enabled(gchar *str)
 		cond = NULL;
 		return cond;
 	}
-	
+
 	/* bad coding to enable the sub-grammar matching
 	   in yacc */
 	matcher_parserlineno = 1;
@@ -200,7 +199,7 @@ MatcherList *matcher_parser_get_account(gchar *str)
 		cond = NULL;
 		return cond;
 	}
-	
+
 	/* bad coding to enable the sub-grammar matching
 	   in yacc */
 	matcher_parserlineno = 1;
@@ -223,7 +222,7 @@ MatcherList *matcher_parser_get_cond(gchar *str, gboolean *is_fast)
 		cond = NULL;
 		return cond;
 	}
-	
+
 	matcher_is_fast = TRUE;
 	/* bad coding to enable the sub-grammar matching
 	   in yacc */
@@ -249,7 +248,7 @@ GSList *matcher_parser_get_action_list(gchar *str)
 		action_list = NULL;
 		return action_list;
 	}
-	
+
 	/* bad coding to enable the sub-grammar matching
 	   in yacc */
 	matcher_parserlineno = 1;
@@ -318,7 +317,7 @@ int matcher_parserwrap(void)
 	char *str;
 	int value;
 }
-%token MATCHER_ALL MATCHER_UNREAD  MATCHER_NOT_UNREAD 
+%token MATCHER_ALL MATCHER_UNREAD  MATCHER_NOT_UNREAD
 %token MATCHER_NEW  MATCHER_NOT_NEW  MATCHER_MARKED
 %token MATCHER_NOT_MARKED  MATCHER_DELETED  MATCHER_NOT_DELETED
 %token MATCHER_REPLIED  MATCHER_NOT_REPLIED  MATCHER_FORWARDED
@@ -344,8 +343,8 @@ int matcher_parserwrap(void)
 %token MATCHER_MARK_AS_READ  MATCHER_MARK_AS_UNREAD  MATCHER_FORWARD
 %token MATCHER_MARK_AS_SPAM MATCHER_MARK_AS_HAM
 %token MATCHER_FORWARD_AS_ATTACHMENT  MATCHER_EOL
-%token MATCHER_OR MATCHER_AND  
-%token MATCHER_COLOR MATCHER_SCORE_EQUAL MATCHER_REDIRECT 
+%token MATCHER_OR MATCHER_AND
+%token MATCHER_COLOR MATCHER_SCORE_EQUAL MATCHER_REDIRECT
 %token MATCHER_SIZE_GREATER MATCHER_SIZE_SMALLER MATCHER_SIZE_EQUAL
 %token MATCHER_LOCKED MATCHER_NOT_LOCKED
 %token MATCHER_PARTIAL MATCHER_NOT_PARTIAL
@@ -388,7 +387,7 @@ file_line_list
 
 file_line:
 section_notification
-| 
+|
 { action_list = NULL; }
 instruction
 | error MATCHER_EOL
@@ -529,17 +528,17 @@ filtering_action_list
                 prefs_filtering = &filtering_rules;
                 if (action_list != NULL) {
                         FilteringAction * first_action;
-                        
+
                         first_action = action_list->data;
-                        
+
                         if (first_action->type == MATCHACTION_CHANGE_SCORE)
                                 prefs_filtering = &pre_global_processing;
                 }
         }
-        
+
 	cond = NULL;
 	action_list = NULL;
-        
+
 	if ((matcher_parse_op == MATCHER_PARSE_FILE) &&
             (prefs_filtering != NULL)) {
 		*prefs_filtering = g_slist_append(*prefs_filtering,
@@ -636,7 +635,7 @@ MATCHER_ALL
 	criteria = MATCHCRITERIA_UNREAD;
 	prop = matcherprop_new(criteria, NULL, 0, NULL, 0);
 }
-| MATCHER_NOT_UNREAD 
+| MATCHER_NOT_UNREAD
 {
 	gint criteria = 0;
 
@@ -734,7 +733,7 @@ MATCHER_ALL
 	criteria = MATCHCRITERIA_SPAM;
 	prop = matcherprop_new(criteria, NULL, 0, NULL, 0);
 }
-| MATCHER_NOT_SPAM 
+| MATCHER_NOT_SPAM
 {
 	gint criteria = 0;
 
@@ -782,28 +781,6 @@ MATCHER_ALL
 
 	criteria = MATCHCRITERIA_NOT_PARTIAL;
 	prop = matcherprop_new(criteria, NULL, 0, NULL, 0);
-}
-| MATCHER_COLORLABEL MATCHER_INTEGER
-{
-	gint criteria = 0;
-	gint value = 0;
-
-	criteria = MATCHCRITERIA_COLORLABEL;
-	value = strtol($2, NULL, 10);
-	if (value < 0) value = 0;
-	else if (value > COLORLABELS) value = COLORLABELS;
-	prop = matcherprop_new(criteria, NULL, 0, NULL, value);
-}
-| MATCHER_NOT_COLORLABEL MATCHER_INTEGER
-{
-	gint criteria = 0;
-	gint value = 0;
-
-	criteria = MATCHCRITERIA_NOT_COLORLABEL;
-	value = strtol($2, NULL, 0);
-	if (value < 0) value = 0;
-	else if (value > COLORLABELS) value = COLORLABELS;
-	prop = matcherprop_new(criteria, NULL, 0, NULL, value);
 }
 | MATCHER_IGNORE_THREAD
 {
@@ -1112,7 +1089,7 @@ MATCHER_ALL
 	value = strtol($2, NULL, 0);
 	prop = matcherprop_new(criteria, NULL, 0, NULL, value);
 }
-| MATCHER_SIZE_GREATER MATCHER_INTEGER 
+| MATCHER_SIZE_GREATER MATCHER_INTEGER
 {
 	gint criteria = 0;
 	gint value    = 0;
@@ -1444,7 +1421,7 @@ MATCHER_EXECUTE MATCHER_STRING
 | MATCHER_CHANGE_SCORE MATCHER_INTEGER
 {
         gint score = 0;
-        
+
         score = strtol($2, NULL, 10);
 	action = filteringaction_new(MATCHACTION_CHANGE_SCORE, 0,
 				     NULL, 0, score, NULL);
@@ -1453,7 +1430,7 @@ MATCHER_EXECUTE MATCHER_STRING
 | MATCHER_SCORE MATCHER_INTEGER
 {
         gint score = 0;
-        
+
         score = strtol($2, NULL, 10);
 	action = filteringaction_new(MATCHACTION_CHANGE_SCORE, 0,
 				     NULL, 0, score, NULL);
@@ -1461,7 +1438,7 @@ MATCHER_EXECUTE MATCHER_STRING
 | MATCHER_SET_SCORE MATCHER_INTEGER
 {
         gint score = 0;
-        
+
         score = strtol($2, NULL, 10);
 	action = filteringaction_new(MATCHACTION_SET_SCORE, 0,
 				     NULL, 0, score, NULL);

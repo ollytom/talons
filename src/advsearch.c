@@ -224,7 +224,6 @@ gchar *advsearch_expand_search_string(const gchar *search_string)
 		{ "ha",	"has_attachments",		0,	FALSE,	FALSE },
 		{ "i",	"messageid",			1,	TRUE,	TRUE  },
 		{ "I",	"inreplyto",			1,	TRUE,	TRUE  },
-		{ "k",	"colorlabel",			1,	FALSE,	FALSE },
 		{ "L",	"locked",			0,	FALSE,	FALSE },
 		{ "n",	"newsgroups",			1,	TRUE,	TRUE  },
 		{ "N",	"new",				0,	FALSE,	FALSE },

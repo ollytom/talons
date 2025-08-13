@@ -76,8 +76,6 @@ static const MatchParser matchparser_tab[] = {
 	{MATCHCRITERIA_NOT_FORWARDED, "~forwarded"},
 	{MATCHCRITERIA_LOCKED, "locked"},
 	{MATCHCRITERIA_NOT_LOCKED, "~locked"},
-	{MATCHCRITERIA_COLORLABEL, "colorlabel"},
-	{MATCHCRITERIA_NOT_COLORLABEL, "~colorlabel"},
 	{MATCHCRITERIA_IGNORE_THREAD, "ignore_thread"},
 	{MATCHCRITERIA_NOT_IGNORE_THREAD, "~ignore_thread"},
 	{MATCHCRITERIA_WATCH_THREAD, "watch_thread"},

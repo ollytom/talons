@@ -142,7 +142,6 @@ struct _MainWindow
 
 	gint	progressindicator_hook;
 
-	GtkWidget 	*colorlabel_menu;
 	GtkWidget	*warning_btn;
 	GtkWidget 	*tags_menu;
 

@@ -74,7 +74,6 @@ typedef struct _SummariesPage
 	GtkWidget *checkbtn_immedexec;
 	GtkWidget *checkbtn_ask_mark_all_read;
 	GtkWidget *checkbtn_run_processingrules_mark_all_read;
-	GtkWidget *checkbtn_ask_override_colorlabel;
   	GtkWidget *optmenu_sort_key;
   	GtkWidget *optmenu_sort_type;
 	GtkWidget *optmenu_summaryfromshow;
@@ -390,7 +389,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *checkbtn_immedexec;
 	GtkWidget *checkbtn_ask_mark_all_read;
 	GtkWidget *checkbtn_run_processingrules_mark_all_read;
-	GtkWidget *checkbtn_ask_override_colorlabel;
 	GtkWidget *label, *label_fill;
 	GtkListStore *menu;
 	GtkTreeIter iter;
@@ -664,9 +662,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	PACK_CHECK_BUTTON
 		(vbox1, checkbtn_ask_mark_all_read,
 		 _("Confirm when marking all messages as read or unread"));
-	PACK_CHECK_BUTTON
-		(vbox1, checkbtn_ask_override_colorlabel,
-		 _("Confirm when changing color labels"));
 
 	PACK_CHECK_BUTTON
 		(vbox1, checkbtn_show_tooltips,
@@ -703,7 +698,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	COMBOBOX_ADD(menu, _("From"), SORT_BY_FROM);
 	COMBOBOX_ADD(menu, _("To"), SORT_BY_TO);
 	COMBOBOX_ADD(menu, _("Subject"), SORT_BY_SUBJECT);
-	COMBOBOX_ADD(menu, _("Color label"), SORT_BY_LABEL);
 	COMBOBOX_ADD(menu, _("Tag"), SORT_BY_TAGS);
 	COMBOBOX_ADD(menu, _("Mark"), SORT_BY_MARK);
 	COMBOBOX_ADD(menu, _("Status"), SORT_BY_STATUS);
@@ -761,7 +755,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_summaries->checkbtn_immedexec = checkbtn_immedexec;
 	prefs_summaries->checkbtn_ask_mark_all_read = checkbtn_ask_mark_all_read;
 	prefs_summaries->checkbtn_run_processingrules_mark_all_read = checkbtn_run_processingrules_mark_all_read;
-	prefs_summaries->checkbtn_ask_override_colorlabel = checkbtn_ask_override_colorlabel;
 	prefs_summaries->optmenu_sort_key = optmenu_sort_key;
 	prefs_summaries->optmenu_sort_type = optmenu_sort_type;
 	prefs_summaries->optmenu_nextunreadmsgdialog = optmenu_nextunreadmsgdialog;
@@ -826,8 +819,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			prefs_common.ask_mark_all_read);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_run_processingrules_mark_all_read),
 			prefs_common.run_processingrules_before_mark_all);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_ask_override_colorlabel),
-			prefs_common.ask_override_colorlabel);
 
 	combobox_select_by_data(GTK_COMBO_BOX(optmenu_sort_key),
 			prefs_common.default_sort_key);
@@ -906,8 +897,6 @@ static void prefs_summaries_save(PrefsPage *_page)
 		GTK_TOGGLE_BUTTON(page->checkbtn_ask_mark_all_read));
 	prefs_common.run_processingrules_before_mark_all = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_run_processingrules_mark_all_read));
-	prefs_common.ask_override_colorlabel = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_ask_override_colorlabel));
 	prefs_common.mark_as_read_delay = gtk_spin_button_get_value_as_int(
 			GTK_SPIN_BUTTON(page->spinbtn_mark_as_read_delay));
 	prefs_common.summary_col_lock = gtk_toggle_button_get_active(

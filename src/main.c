@@ -77,7 +77,6 @@
 #include "prefs_message.h"
 #include "prefs_migration.h"
 #include "prefs_receive.h"
-#include "prefs_msg_colors.h"
 #include "prefs_quote.h"
 #include "prefs_spelling.h"
 #include "prefs_summaries.h"
@@ -710,7 +709,6 @@ int main(int argc, char *argv[])
 	prefs_ext_prog_init();
 	prefs_wrapping_init();
 	prefs_compose_writing_init();
-	prefs_msg_colors_init();
 	image_viewer_init();
 	prefs_image_viewer_init();
 	prefs_quote_init();
@@ -1062,8 +1060,6 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_ext_prog_done();
 	prefs_wrapping_done();
 	prefs_compose_writing_done();
-	prefs_msg_colors_done();
-	prefs_image_viewer_done();
 	image_viewer_done();
 	prefs_quote_done();
 	prefs_summaries_done();
