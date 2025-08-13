@@ -32,9 +32,7 @@ abook_source = \
 	addrmerge.c \
 	editaddress.c \
 	editbook.c \
-	editgroup.c \
-	exphtmldlg.c \
-	exporthtml.c
+	editgroup.c
 
 abook_headers = \
 	adbookbase.h \
@@ -50,9 +48,7 @@ abook_headers = \
 	addrmerge.h \
 	editaddress.h \
 	editbook.h \
-	editgroup.h \
-	exphtmldlg.h \
-	exporthtml.h
+	editgroup.h
 
 claws_mail_SOURCES = \
 	account.c \

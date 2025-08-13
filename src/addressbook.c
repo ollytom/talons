@@ -70,7 +70,6 @@
 #include "addrclip.h"
 #include "addrgather.h"
 #include "adbookbase.h"
-#include "exphtmldlg.h"
 #include "addrcustomattr.h"
 
 typedef enum
@@ -296,7 +295,6 @@ static void addressbook_list_select_remove	( AddrItemObject    *aio );
 
 static void addressbook_find_duplicates_cb	( GtkAction *action, gpointer data );
 static void addressbook_edit_custom_attr_cb	( GtkAction *action, gpointer data );
-static void addressbook_export_html_cb		( GtkAction *action, gpointer data );
 static void addressbook_select_all_cb		( GtkAction *action, gpointer data );
 static void addressbook_clip_cut_cb		( GtkAction *action, gpointer data );
 static void addressbook_clip_copy_cb		( GtkAction *action, gpointer data );
@@ -382,7 +380,6 @@ static GtkActionEntry addressbook_entries[] =
 	{"Address/Merge",		NULL, N_("_Merge"), "<control>E", NULL, G_CALLBACK(addressbook_merge_cb) },
 
 	{"Tools/---",			NULL, "---", NULL, NULL, NULL },
-	{"Tools/ExportHTML",		NULL, N_("Export _HTML..."), NULL, NULL, G_CALLBACK(addressbook_export_html_cb) },
 	{"Tools/FindDuplicates",	NULL, N_("Find duplicates..."), NULL, NULL, G_CALLBACK(addressbook_find_duplicates_cb) },
 	{"Tools/EditAttrs",		NULL, N_("Edit custom attributes..."), NULL, NULL, G_CALLBACK(addressbook_edit_custom_attr_cb) },
 };
@@ -5035,30 +5032,6 @@ void addressbook_harvest(
 		/* Notify address completion */
 		invalidate_address_completion();
 	}
-}
-
-/**
- * Export HTML file.
- */
-static void addressbook_export_html_cb( GtkAction *action, gpointer data ) {
-	GtkCMCTree *ctree = GTK_CMCTREE(addrbook.ctree);
-	AddressObject *obj;
-	AddressDataSource *ds = NULL;
-	AddrBookBase *adbase;
-	AddressCache *cache;
-	GtkCMCTreeNode *node = NULL;
-
-	if( ! addrbook.treeSelected ) return;
-	node = addrbook.treeSelected;
-	if( GTK_CMCTREE_ROW(node)->level == 1 ) return;
-	obj = gtk_cmctree_node_get_row_data( ctree, node );
-	if( obj == NULL ) return;
-
-	ds = addressbook_find_datasource( node );
-	if( ds == NULL ) return;
-	adbase = ( AddrBookBase * ) ds->rawDataSource;
-	cache = adbase->addressCache;
-	addressbook_exp_html( cache );
 }
 
 static void addressbook_find_duplicates_cb(GtkAction *action, gpointer data)
