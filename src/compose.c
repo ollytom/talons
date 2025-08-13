@@ -143,15 +143,6 @@ typedef enum
 
 typedef enum
 {
-	PRIORITY_HIGHEST = 1,
-	PRIORITY_HIGH,
-	PRIORITY_NORMAL,
-	PRIORITY_LOW,
-	PRIORITY_LOWEST
-} PriorityLevel;
-
-typedef enum
-{
 	COMPOSE_INSERT_SUCCESS,
 	COMPOSE_INSERT_READ_ERROR,
 	COMPOSE_INSERT_INVALID_CHARACTER,
@@ -377,7 +368,6 @@ static void compose_add_header_entry	(Compose *compose, const gchar *header,
 					 gchar *text, ComposePrefType pref_type);
 static void compose_remove_header_entries(Compose *compose);
 
-static void compose_update_priority_menu_item(Compose * compose);
 #if USE_ENCHANT
 static void compose_spell_menu_changed	(void *data);
 static void compose_dict_changed	(void *data);
@@ -428,8 +418,6 @@ static void compose_print_cb		(GtkAction	*action,
 static void compose_set_encoding_cb	(GtkAction	*action, GtkRadioAction *current, gpointer data);
 
 static void compose_address_cb		(GtkAction	*action,
-					 gpointer	 data);
-static void about_show_cb		(GtkAction	*action,
 					 gpointer	 data);
 static void compose_template_activate_cb(GtkWidget	*widget,
 					 gpointer	 data);
@@ -496,7 +484,6 @@ static void compose_toggle_return_receipt_cb(GtkToggleAction *action,
 					 gpointer	 data);
 static void compose_toggle_remove_refs_cb(GtkToggleAction *action,
 					 gpointer	 data);
-static void compose_set_priority_cb	(GtkAction *action, GtkRadioAction *current, gpointer data);
 static void compose_reply_change_mode	(Compose *compose, ComposeMode action);
 static void compose_reply_change_mode_cb(GtkAction *action, GtkRadioAction *current, gpointer data);
 
@@ -607,7 +594,6 @@ static GtkActionEntry compose_entries[] =
 #endif
 	{"Options",                       NULL, N_("_Options"), NULL, NULL, NULL },
 	{"Tools",                         NULL, N_("_Tools"), NULL, NULL, NULL },
-	{"Help",                          NULL, N_("_Help"), NULL, NULL, NULL },
 /* Message menu */
 	{"Message/Send",                  NULL, N_("S_end"), "<control>Return", NULL, G_CALLBACK(compose_send_cb) },
 	{"Message/SendLater",             NULL, N_("Send _later"), "<shift><control>S", NULL, G_CALLBACK(compose_send_later_cb) },
@@ -675,14 +661,10 @@ static GtkActionEntry compose_entries[] =
 	{"Spelling/Options",              NULL, N_("_Options"), NULL, NULL, NULL },
 #endif
 
-/* Options menu */
 	{"Options/ReplyMode",                 NULL, N_("Reply _mode"), NULL, NULL, NULL },
 	{"Options/---",                       NULL, "---", NULL, NULL, NULL },
 	{"Options/PrivacySystem",             NULL, N_("Privacy _System"), NULL, NULL, NULL },
 	{"Options/PrivacySystem/PlaceHolder", NULL, "Placeholder", NULL, NULL, G_CALLBACK(compose_nothing_cb) },
-
-	/* {"Options/---",                NULL, "---", NULL, NULL, NULL }, */
-	{"Options/Priority",              NULL, N_("_Priority"), NULL, NULL, NULL },
 
 	{"Options/Encoding",              NULL, N_("Character _encoding"), NULL, NULL, NULL },
 	{"Options/Encoding/---",          NULL, "---", NULL, NULL, NULL },
@@ -706,9 +688,6 @@ static GtkActionEntry compose_entries[] =
 	{"Tools/Template/PlaceHolder",    NULL, "Placeholder", NULL, NULL, G_CALLBACK(compose_nothing_cb) },
 	{"Tools/Actions",                 NULL, N_("Actio_ns"), NULL, NULL, NULL },
 	{"Tools/Actions/PlaceHolder",     NULL, "Placeholder", NULL, NULL, G_CALLBACK(compose_nothing_cb) },
-
-/* Help menu */
-	{"Help/About",                    NULL, N_("_About"), NULL, NULL, G_CALLBACK(about_show_cb) },
 };
 
 static GtkToggleActionEntry compose_toggle_entries[] =
@@ -728,15 +707,6 @@ static GtkRadioActionEntry compose_radio_rm_entries[] =
 	{"Options/ReplyMode/All",    NULL, N_("_All"), NULL, NULL, COMPOSE_REPLY_TO_ALL }, /* RADIO compose_reply_change_mode_cb */
 	{"Options/ReplyMode/Sender", NULL, N_("_Sender"), NULL, NULL, COMPOSE_REPLY_TO_SENDER }, /* RADIO compose_reply_change_mode_cb */
 	{"Options/ReplyMode/List",   NULL, N_("_Mailing-list"), NULL, NULL, COMPOSE_REPLY_TO_LIST }, /* RADIO compose_reply_change_mode_cb */
-};
-
-static GtkRadioActionEntry compose_radio_prio_entries[] =
-{
-	{"Options/Priority/Highest", NULL, N_("_Highest"), NULL, NULL, PRIORITY_HIGHEST }, /* RADIO compose_set_priority_cb */
-	{"Options/Priority/High",    NULL, N_("Hi_gh"), NULL, NULL, PRIORITY_HIGH }, /* RADIO compose_set_priority_cb */
-	{"Options/Priority/Normal",  NULL, N_("_Normal"), NULL, NULL, PRIORITY_NORMAL }, /* RADIO compose_set_priority_cb */
-	{"Options/Priority/Low",     NULL, N_("Lo_w"), NULL, NULL, PRIORITY_LOW }, /* RADIO compose_set_priority_cb */
-	{"Options/Priority/Lowest",  NULL, N_("_Lowest"), NULL, NULL, PRIORITY_LOWEST }, /* RADIO compose_set_priority_cb */
 };
 
 static GtkRadioActionEntry compose_radio_enc_entries[] =
@@ -2197,7 +2167,6 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 	gboolean use_signing = FALSE;
 	gboolean use_encryption = FALSE;
 	gchar *privacy_system = NULL;
-	int priority = PRIORITY_NORMAL;
 	MsgInfo *replyinfo = NULL, *fwdinfo = NULL;
 	gboolean autowrap = prefs_common.autowrap;
 	gboolean autoindent = prefs_common.auto_indent;
@@ -2293,12 +2262,6 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 			g_free(queueheader_buf);
 		}
 		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
-					    					"X-Priority: ")) {
-			param = atoi(&queueheader_buf[strlen("X-Priority: ")]); /* mind the space */
-			priority = param;
-			g_free(queueheader_buf);
-		}
-		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
 											"RMID:")) {
 			gchar **tokens = g_strsplit(&queueheader_buf[strlen("RMID:")], "\t", 0);
 			if (tokens && tokens[0] && tokens[1] && tokens[2]) {
@@ -2370,7 +2333,6 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 	compose->fwdinfo = fwdinfo;
 
 	compose->updating = TRUE;
-	compose->priority = priority;
 
 	if (privacy_system != NULL) {
 		compose->privacy_system = privacy_system;
@@ -2878,7 +2840,6 @@ static gint compose_parse_header(Compose *compose, MsgInfo *msginfo)
 				       {"Newsgroups:",  NULL, TRUE },
 				       {"Followup-To:", NULL, TRUE },
 				       {"List-Post:",   NULL, FALSE },
-				       {"X-Priority:",  NULL, FALSE },
 				       {NULL,           NULL, FALSE }
 	};
 
@@ -2891,7 +2852,6 @@ static gint compose_parse_header(Compose *compose, MsgInfo *msginfo)
 		H_NEWSGROUPS  = 4,
 		H_FOLLOWUP_TO = 5,
 		H_LIST_POST   = 6,
- 		H_X_PRIORITY  = 7
 	};
 
 	FILE *fp;
@@ -2964,23 +2924,6 @@ static gint compose_parse_header(Compose *compose, MsgInfo *msginfo)
 		g_free(hentry[H_LIST_POST].body);
 		hentry[H_LIST_POST].body = NULL;
 	}
-
-	/* CLAWS - X-Priority */
-	if (compose->mode == COMPOSE_REEDIT)
-		if (hentry[H_X_PRIORITY].body != NULL) {
-			gint priority;
-
-			priority = atoi(hentry[H_X_PRIORITY].body);
-			g_free(hentry[H_X_PRIORITY].body);
-
-			hentry[H_X_PRIORITY].body = NULL;
-
-			if (priority < PRIORITY_HIGHEST ||
-			    priority > PRIORITY_LOWEST)
-				priority = PRIORITY_NORMAL;
-
-			compose->priority =  priority;
-		}
 
 	if (compose->mode == COMPOSE_REEDIT) {
 		if (msginfo->inreplyto && *msginfo->inreplyto)
@@ -3509,7 +3452,6 @@ static void compose_reedit_set_entry(Compose *compose, MsgInfo *msginfo)
 	SET_ADDRESS(COMPOSE_NEWSGROUPS, compose->newsgroups);
 	SET_ADDRESS(COMPOSE_FOLLOWUPTO, compose->followup_to);
 
-	compose_update_priority_menu_item(compose);
 	compose_update_privacy_system_menu_item(compose, FALSE);
 	compose_show_first_last_header(compose, TRUE);
 }
@@ -6886,25 +6828,6 @@ static gchar *compose_get_header(Compose *compose)
 		g_string_append_printf(header, "Face: %s\n", buf);
 	}
 
-	/* PRIORITY */
-	switch (compose->priority) {
-		case PRIORITY_HIGHEST: g_string_append_printf(header, "Importance: high\n"
-						   "X-Priority: 1 (Highest)\n");
-			break;
-		case PRIORITY_HIGH: g_string_append_printf(header, "Importance: high\n"
-						"X-Priority: 2 (High)\n");
-			break;
-		case PRIORITY_NORMAL: break;
-		case PRIORITY_LOW: g_string_append_printf(header, "Importance: low\n"
-					       "X-Priority: 4 (Low)\n");
-			break;
-		case PRIORITY_LOWEST: g_string_append_printf(header, "Importance: low\n"
-						  "X-Priority: 5 (Lowest)\n");
-			break;
-		default: debug_print("compose: priority unknown : %d\n",
-				     compose->priority);
-	}
-
 	/* get special headers */
 	for (list = compose->header_list; list; list = list->next) {
     		ComposeHeaderEntry *headerentry;
@@ -7785,8 +7708,6 @@ static Compose *compose_create(PrefsAccount *account,
 			G_N_ELEMENTS(compose_toggle_entries), (gpointer)compose);
 	gtk_action_group_add_radio_actions(action_group, compose_radio_rm_entries,
 			G_N_ELEMENTS(compose_radio_rm_entries), COMPOSE_REPLY, G_CALLBACK(compose_reply_change_mode_cb), (gpointer)compose);
-	gtk_action_group_add_radio_actions(action_group, compose_radio_prio_entries,
-			G_N_ELEMENTS(compose_radio_prio_entries), PRIORITY_NORMAL, G_CALLBACK(compose_set_priority_cb), (gpointer)compose);
 	gtk_action_group_add_radio_actions(action_group, compose_radio_enc_entries,
 			G_N_ELEMENTS(compose_radio_enc_entries), C_AUTO, G_CALLBACK(compose_set_encoding_cb), (gpointer)compose);
 
@@ -7881,15 +7802,6 @@ static Compose *compose_create(PrefsAccount *account,
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/PrivacySystem", "PlaceHolder", "Options/PrivacySystem/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Sign", "Options/Sign", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Encrypt", "Options/Encrypt", GTK_UI_MANAGER_MENUITEM)
-
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Separator2", "Options/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Priority", "Options/Priority", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Priority", "Highest", "Options/Priority/Highest", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Priority", "High", "Options/Priority/High", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Priority", "Normal", "Options/Priority/Normal", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Priority", "Low", "Options/Priority/Low", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Priority", "Lowest", "Options/Priority/Lowest", GTK_UI_MANAGER_MENUITEM)
 
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Separator3", "Options/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "RequestRetRcpt", "Options/RequestRetRcpt", GTK_UI_MANAGER_MENUITEM)
@@ -8300,10 +8212,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Tools/ShowRuler", prefs_common.show_ruler);
 
-	/* Priority */
-	compose->priority = PRIORITY_NORMAL;
-	compose_update_priority_menu_item(compose);
-
 	compose_set_out_encoding(compose);
 
 	/* Actions menu */
@@ -8417,16 +8325,6 @@ static GtkWidget *compose_account_option_menu_create(Compose *compose)
 	return hbox;
 }
 
-static void compose_set_priority_cb(GtkAction *action, GtkRadioAction *current, gpointer data)
-{
-	gboolean active = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (current));
-	gint value = gtk_radio_action_get_current_value (GTK_RADIO_ACTION (current));
-	Compose *compose = (Compose *) data;
-	if (active) {
-		compose->priority = value;
-	}
-}
-
 static void compose_reply_change_mode(Compose *compose,
 				    ComposeMode action)
 {
@@ -8470,34 +8368,6 @@ static void compose_reply_change_mode_cb(GtkAction *action, GtkRadioAction *curr
 
 	if (active)
 		compose_reply_change_mode(compose, value);
-}
-
-static void compose_update_priority_menu_item(Compose * compose)
-{
-	GtkWidget *menuitem = NULL;
-	switch (compose->priority) {
-		case PRIORITY_HIGHEST:
-			menuitem = gtk_ui_manager_get_widget
-				(compose->ui_manager, "/Menu/Options/Priority/Highest");
-			break;
-		case PRIORITY_HIGH:
-			menuitem = gtk_ui_manager_get_widget
-				(compose->ui_manager, "/Menu/Options/Priority/High");
-			break;
-		case PRIORITY_NORMAL:
-			menuitem = gtk_ui_manager_get_widget
-				(compose->ui_manager, "/Menu/Options/Priority/Normal");
-			break;
-		case PRIORITY_LOW:
-			menuitem = gtk_ui_manager_get_widget
-				(compose->ui_manager, "/Menu/Options/Priority/Low");
-			break;
-		case PRIORITY_LOWEST:
-			menuitem = gtk_ui_manager_get_widget
-				(compose->ui_manager, "/Menu/Options/Priority/Lowest");
-			break;
-	}
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem), TRUE);
 }
 
 static void compose_set_privacy_system_cb(GtkWidget *widget, gpointer data)
@@ -10687,11 +10557,6 @@ static void compose_address_cb(GtkAction *action, gpointer data)
 {
 	Compose *compose = (Compose *)data;
 	addressbook_open(compose);
-}
-
-static void about_show_cb(GtkAction *action, gpointer data)
-{
-	about_show();
 }
 
 static void compose_template_activate_cb(GtkWidget *widget, gpointer data)

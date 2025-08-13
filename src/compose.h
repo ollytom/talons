@@ -226,9 +226,6 @@ struct _Compose
 	gint        exteditor_tag;
 	GtkWidget  *exteditor_socket;
 
- 	/* Priority */
- 	gint priority;
-
 	gchar *redirect_filename;
 
 	gboolean remove_references;
