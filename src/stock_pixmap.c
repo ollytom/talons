@@ -98,7 +98,6 @@
 #include "pixmaps/address_book.xpm"
 #include "pixmaps/unread.xpm"
 #include "pixmaps/read.xpm"
-#include "pixmaps/vcard.xpm"
 #include "pixmaps/ignorethread.xpm"
 #include "pixmaps/online.xpm"
 #include "pixmaps/offline.xpm"
@@ -380,7 +379,6 @@ static StockPixmapData pixmaps[] =
     {trash_close_mark_xpm             , NULL, NULL, "trash_close_mark", NULL, NULL},
     {trash_close_hrm_mark_xpm         , NULL, NULL, "trash_close_hrm_mark", NULL, NULL},
     {unread_xpm                       , NULL, NULL, "unread", NULL, NULL},
-    {vcard_xpm                        , NULL, NULL, "vcard", NULL, NULL},
     {online_xpm                       , NULL, NULL, "online", NULL, NULL},
     {offline_xpm                      , NULL, NULL, "offline", NULL, NULL},
     {notice_warn_xpm                  , NULL, NULL, "notice_warn",  NULL, NULL},

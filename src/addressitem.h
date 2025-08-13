@@ -48,7 +48,6 @@ typedef enum {
 	ADDR_INTERFACE,
 	ADDR_DATASOURCE,
 	ADDR_BOOK,		/* Sub-type */
-	ADDR_VCARD,		/* Sub-type */
 	ADDR_CATEGORY,		/* Sub-type */
 } AddressObjectType;
 

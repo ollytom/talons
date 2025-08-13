@@ -31,7 +31,6 @@
 typedef enum {
 	ADBOOKTYPE_NONE,
 	ADBOOKTYPE_BOOK,
-	ADBOOKTYPE_VCARD,
 } AddressBookType;
 
 /*

@@ -49,22 +49,15 @@
 #include "codeconv.h"
 #endif
 
-#include "vcard.h"
-
 #define TAG_ADDRESS_INDEX    "addressbook"
 
 #define TAG_IF_ADDRESS_BOOK  "book_list"
-#define TAG_IF_VCARD         "vcard_list"
 
 #define TAG_DS_ADDRESS_BOOK  "book"
-#define TAG_DS_VCARD         "vcard"
 
 /* XML Attribute names */
 #define ATTAG_BOOK_NAME       "name"
 #define ATTAG_BOOK_FILE       "file"
-
-#define ATTAG_VCARD_NAME      "name"
-#define ATTAG_VCARD_FILE      "file"
 
 /* Attribute values */
 #define ATVAL_BOOLEAN_YES         "yes"
@@ -199,43 +192,6 @@ static void addrindex_build_if_list( AddressIndex *addrIndex ) {
 	addrIndex->interfaceList =
 		g_list_append( addrIndex->interfaceList, iface );
 	ADDRITEM_PARENT(iface) = ADDRITEM_OBJECT(addrIndex);
-
-	/* Create vCard interface */
-	iface = addrindex_create_interface(
-			ADDR_IF_VCARD, "vCard", TAG_IF_VCARD, TAG_DS_VCARD );
-	iface->getModifyFlag = ( void * ) vcard_get_modified;
-	iface->getAccessFlag = ( void * ) vcard_get_accessed;
-	iface->getReadFlag   = ( void * ) vcard_get_read_flag;
-	iface->getStatusCode = ( void * ) vcard_get_status;
-	iface->getReadData   = ( void * ) vcard_read_data;
-	iface->getRootFolder = ( void * ) vcard_get_root_folder;
-	iface->getListFolder = ( void * ) vcard_get_list_folder;
-	iface->getListPerson = ( void * ) vcard_get_list_person;
-	iface->getAllPersons = ( void * ) vcard_get_all_persons;
-	iface->getName       = ( void * ) vcard_get_name;
-	iface->setAccessFlag = ( void * ) vcard_set_accessed;
-	iface->searchOrder   = 0;
-	addrIndex->interfaceList =
-		g_list_append( addrIndex->interfaceList, iface );
-	ADDRITEM_PARENT(iface) = ADDRITEM_OBJECT(addrIndex);
-
-	/* Two old legacy data sources (pre 0.7.0) */
-	iface = addrindex_create_interface(
-			ADDR_IF_COMMON, "Old Address - common",
-			TAG_IF_OLD_COMMON, NULL );
-	iface->legacyFlag = TRUE;
-	addrIndex->interfaceList =
-		g_list_append( addrIndex->interfaceList, iface );
-	ADDRITEM_PARENT(iface) = ADDRITEM_OBJECT(addrIndex);
-
-	iface = addrindex_create_interface(
-			ADDR_IF_COMMON, "Old Address - personal",
-			TAG_IF_OLD_PERSONAL, NULL );
-	iface->legacyFlag = TRUE;
-	addrIndex->interfaceList =
-		g_list_append( addrIndex->interfaceList, iface );
-	ADDRITEM_PARENT(iface) = ADDRITEM_OBJECT(addrIndex);
-
 }
 
 /**
@@ -310,10 +266,6 @@ void addrindex_free_datasource( AddressDataSource *ds ) {
 				if( iface->type == ADDR_IF_BOOK ) {
 					AddressBookFile *abf = ds->rawDataSource;
 					addrbook_free_book( abf );
-				}
-				else if( iface->type == ADDR_IF_VCARD ) {
-					VCardFile *vcf = ds->rawDataSource;
-					vcard_free( vcf );
 				}
 			} else {
 				AddressIfFragment *fragment = ds->rawDataSource;
@@ -681,9 +633,8 @@ static AddressInterface *addrindex_get_interface(
 }
 
 /**
- * Add raw data source to index. The raw data object (an AddressBookFile or
- * VCardFile object, for example) should be supplied as the raw dataSource
- * argument.
+ * Add raw data source to index. The raw data object (an AddressBookFile for example)
+ * should be supplied as the raw dataSource argument.
  *
  * \param  addrIndex Address index.
  * \param ifType     Interface type to add.
@@ -911,44 +862,6 @@ static int addrindex_write_book( FILE *fp, AddressDataSource *ds, gint lvl ) {
 	return 0;
 }
 
-static AddressDataSource *addrindex_parse_vcard( XMLFile *file ) {
-	AddressDataSource *ds;
-	VCardFile *vcf;
-	GList *attr;
-
-	ds = addrindex_create_datasource( ADDR_IF_VCARD );
-	vcf = vcard_create();
-	attr = xml_get_current_tag_attr( file );
-	while( attr ) {
-		gchar *name = ((XMLAttr *)attr->data)->name;
-		gchar *value = ((XMLAttr *)attr->data)->value;
-		if( strcmp( name, ATTAG_VCARD_NAME ) == 0 ) {
-			vcard_set_name( vcf, value );
-		}
-		else if( strcmp( name, ATTAG_VCARD_FILE ) == 0) {
-			vcard_set_file( vcf, value );
-		}
-		attr = g_list_next( attr );
-	}
-	ds->rawDataSource = vcf;
-	return ds;
-}
-
-static int addrindex_write_vcard( FILE *fp, AddressDataSource *ds, gint lvl ) {
-     	VCardFile *vcf = ds->rawDataSource;
-	if( vcf ) {
-		if (addrindex_write_elem_s( fp, lvl, TAG_DS_VCARD ) < 0)
-			return -1;
-		if (addrindex_write_attr( fp, ATTAG_VCARD_NAME, vcard_get_name( vcf ) ) < 0)
-			return -1;
-		if (addrindex_write_attr( fp, ATTAG_VCARD_FILE, vcf->path ) < 0)
-			return -1;
-		if (fputs( " />\n", fp ) == EOF)
-			return -1;
-	}
-	return 0;
-}
-
 /* **********************************************************************
 * Address index I/O functions.
 * ***********************************************************************
@@ -990,9 +903,6 @@ static void addrindex_read_index( AddressIndex *addrIndex, XMLFile *file ) {
 						addrbook_set_path( ds->rawDataSource,
 							addrIndex->filePath );
 					}
-				}
-				else if( addrIndex->lastType == ADDR_IF_VCARD ) {
-					ds = addrindex_parse_vcard( file );
 				}
 				if( ds ) {
 					ds->interface = dsIFace;
@@ -1095,10 +1005,6 @@ static int addrindex_write_index( AddressIndex *addrIndex, FILE *fp ) {
 				if( ds ) {
 					if( iface->type == ADDR_IF_BOOK ) {
 						if (addrindex_write_book( fp, ds, lvlItem ) < 0)
-							return -1;
-					}
-					if( iface->type == ADDR_IF_VCARD ) {
-						if (addrindex_write_vcard( fp, ds, lvlItem ) < 0)
 							return -1;
 					}
 				}

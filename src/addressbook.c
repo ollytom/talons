@@ -60,8 +60,6 @@
 #include "addressadd.h"
 #include "addrduplicates.h"
 #include "addressbook_foldersel.h"
-#include "vcard.h"
-#include "editvcard.h"
 #include "editgroup.h"
 #include "editaddress.h"
 #include "editbook.h"
@@ -121,7 +119,6 @@ static GdkPixbuf *groupxpm = NULL;
 static GdkPixbuf *interfacexpm = NULL;
 static GdkPixbuf *bookxpm = NULL;
 static GdkPixbuf *addressxpm = NULL;
-static GdkPixbuf *vcardxpm = NULL;
 static GdkPixbuf *categoryxpm = NULL;
 static GdkPixbuf *addrsearchxpm = NULL;
 
@@ -230,8 +227,6 @@ static void addressbook_file_save_cb		(GtkAction	*action,
 
 /* Data source edit stuff */
 static void addressbook_new_book_cb		(GtkAction	*action,
-						 gpointer	 data);
-static void addressbook_new_vcard_cb		(GtkAction	*action,
 						 gpointer	 data);
 
 static void addressbook_set_clist		(AddressObject	*obj,
@@ -362,8 +357,6 @@ static GtkActionEntry addressbook_entries[] =
 /* Book menu */
 	{"Book/NewBook",		NULL, N_("New _Book"), "<control>B", NULL, G_CALLBACK(addressbook_new_book_cb) },
 	{"Book/NewFolder",		NULL, N_("New _Folder"), "<control>R", NULL, G_CALLBACK(addressbook_new_folder_cb) },
-	{"Book/NewVCard",		NULL, N_("New _vCard"), "<control><shift>D", NULL, G_CALLBACK(addressbook_new_vcard_cb) },
-
 	{"Book/---",			NULL, "---", NULL, NULL, NULL },
 
 	{"Book/EditBook",		NULL, N_("_Edit book"), NULL, NULL, G_CALLBACK(addressbook_treenode_edit_cb) },
@@ -859,7 +852,6 @@ static void addressbook_create(void)
 /* Book menu */
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Book", "NewBook", "Book/NewBook", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Book", "NewFolder", "Book/NewFolder", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Book", "NewVCard", "Book/NewVCard", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Book", "Separator1", "Book/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Book", "EditBook", "Book/EditBook", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Book", "DeleteBook", "Book/DeleteBook", GTK_UI_MANAGER_MENUITEM)
@@ -2694,9 +2686,6 @@ static gchar *addressbook_edit_datasource( AddressObject *obj, GtkCMCTreeNode *n
 	ads = ADAPTER_DSOURCE(obj);
 	if( ads->subType == ADDR_BOOK ) {
                 if( addressbook_edit_book( _addressIndex_, ads ) == NULL ) return NULL;
-	}
-	else if( ads->subType == ADDR_VCARD ) {
-       	        if( addressbook_edit_vcard( _addressIndex_, ads ) == NULL ) return NULL;
 	} else {
 		return NULL;
 	}
@@ -4271,23 +4260,6 @@ static void addressbook_new_book_cb( GtkAction *action, gpointer data ) {
 	}
 }
 
-static void addressbook_new_vcard_cb( GtkAction *action, gpointer data ) {
-	AdapterDSource *ads;
-	AdapterInterface *adapter;
-	GtkCMCTreeNode *newNode;
-
-	adapter = addrbookctl_find_interface( ADDR_IF_VCARD );
-	if( adapter == NULL ) return;
-	ads = addressbook_edit_vcard( _addressIndex_, NULL );
-	if( ads ) {
-		newNode = addressbook_add_object( adapter->treeNode, ADDRESS_OBJECT(ads) );
-		if( newNode ) {
-			gtk_sctree_select( GTK_SCTREE(addrbook.ctree), newNode );
-			addrbook.treeSelected = newNode;
-		}
-	}
-}
-
 /**
  * Display address search status message.
  * \param queryType Query type.
@@ -4529,8 +4501,6 @@ static void addrbookctl_build_icons( GtkWidget *window ) {
 		g_object_unref(folderopenxpm);
 	if (groupxpm)
 		g_object_unref(groupxpm);
-	if (vcardxpm)
-		g_object_unref(vcardxpm);
 	if (bookxpm)
 		g_object_unref(bookxpm);
 	if (addressxpm)
@@ -4543,7 +4513,6 @@ static void addrbookctl_build_icons( GtkWidget *window ) {
 	stock_pixbuf_gdk(STOCK_PIXMAP_DIR_CLOSE, &folderxpm);
 	stock_pixbuf_gdk(STOCK_PIXMAP_DIR_OPEN, &folderopenxpm);
 	stock_pixbuf_gdk(STOCK_PIXMAP_GROUP, &groupxpm);
-	stock_pixbuf_gdk(STOCK_PIXMAP_VCARD, &vcardxpm);
 	stock_pixbuf_gdk(STOCK_PIXMAP_BOOK, &bookxpm);
 	stock_pixbuf_gdk(STOCK_PIXMAP_ADDRESS, &addressxpm);
 	stock_pixbuf_gdk(STOCK_PIXMAP_CATEGORY, &categoryxpm);
@@ -4555,7 +4524,6 @@ static void addrbookctl_build_icons( GtkWidget *window ) {
 	UPDATE_ICON_ATCI(ADDR_ITEM_EMAIL,addressxpm,addressxpm);
 	UPDATE_ICON_ATCI(ADDR_ITEM_GROUP,groupxpm,groupxpm);
 	UPDATE_ICON_ATCI(ADDR_ITEM_FOLDER,folderxpm,folderopenxpm);
-	UPDATE_ICON_ATCI(ADDR_VCARD,vcardxpm,vcardxpm);
 	UPDATE_ICON_ATCI(ADDR_CATEGORY,categoryxpm,categoryxpm);
 
 }
@@ -4638,18 +4606,6 @@ static void addrbookctl_build_map( GtkWidget *window ) {
 	atci->treeLeaf = FALSE;
 	atci->displayName = _( "Folder" );
 	atci->menuCommand = NULL;
-	g_hash_table_insert( _addressBookTypeHash_, &atci->objectType, atci );
-	_addressBookTypeList_ = g_list_append( _addressBookTypeList_, atci );
-
-	/* vCard */
-	atci = g_new0( AddressTypeControlItem, 1 );
-	atci->objectType = ADDR_VCARD;
-	atci->interfaceType = ADDR_IF_VCARD;
-	atci->showInTree = TRUE;
-	atci->treeExpand = TRUE;
-	atci->treeLeaf = TRUE;
-	atci->displayName = _( "vCard" );
-	atci->menuCommand = "Menu/Book/NewVCard";
 	g_hash_table_insert( _addressBookTypeHash_, &atci->objectType, atci );
 	_addressBookTypeList_ = g_list_append( _addressBookTypeList_, atci );
 

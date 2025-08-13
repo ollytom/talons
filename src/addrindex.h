@@ -37,7 +37,6 @@
 typedef enum {
 	ADDR_IF_NONE,
 	ADDR_IF_BOOK,
-	ADDR_IF_VCARD,
 	ADDR_IF_COMMON,
 	ADDR_IF_PERSONAL
 } AddressIfType;

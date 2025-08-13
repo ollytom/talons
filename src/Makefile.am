@@ -33,10 +33,8 @@ abook_source = \
 	editaddress.c \
 	editbook.c \
 	editgroup.c \
-	editvcard.c \
 	exphtmldlg.c \
-	exporthtml.c \
-	vcard.c
+	exporthtml.c
 
 abook_headers = \
 	adbookbase.h \
@@ -53,10 +51,8 @@ abook_headers = \
 	editaddress.h \
 	editbook.h \
 	editgroup.h \
-	editvcard.h \
 	exphtmldlg.h \
-	exporthtml.h \
-	vcard.h
+	exporthtml.h
 
 claws_mail_SOURCES = \
 	account.c \
@@ -486,7 +482,6 @@ EXTRA_DIST = \
 	pixmaps/unread.xpm \
 	pixmaps/read.xpm \
 	pixmaps/up_arrow.xpm \
-	pixmaps/vcard.xpm \
 	pixmaps/watchthread.xpm \
 	pixmaps/zoom_fit.xpm \
 	pixmaps/zoom_in.xpm \
