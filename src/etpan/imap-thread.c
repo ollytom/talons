@@ -2664,8 +2664,8 @@ static void fetch_content_run(struct etpan_thread_op * op)
 	close:
 		close(fd);
 	unlink:
-		if (claws_unlink(param->filename) < 0)
-                        FILE_OP_ERROR(param->filename, "claws_unlink");
+		if (unlink(param->filename) < 0)
+                        FILE_OP_ERROR(param->filename, "unlink");
 	
 	free:
 		/* mmap_string_unref is a simple free in libetpan

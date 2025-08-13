@@ -120,7 +120,7 @@ static gboolean free_func(GNode *node, gpointer data)
 	switch (mimeinfo->content) {
 	case MIMECONTENT_FILE:
 		if (mimeinfo->tmp)
-			claws_unlink(mimeinfo->data.filename);
+			unlink(mimeinfo->data.filename);
 		g_free(mimeinfo->data.filename);
 		break;
 
@@ -497,7 +497,7 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 	}
 
 	if (mimeinfo->tmp)
-		claws_unlink(mimeinfo->data.filename);
+		unlink(mimeinfo->data.filename);
 	g_free(mimeinfo->data.filename);
 	mimeinfo->data.filename = tmpfilename;
 	mimeinfo->tmp = TRUE;
@@ -572,7 +572,7 @@ gboolean procmime_encode_content(MimeInfo *mimeinfo, EncodingType encoding)
 				}
 				if ((tmp_fp = g_fopen(tmp_file, "rb")) == NULL) {
 					FILE_OP_ERROR(tmp_file, "g_fopen");
-					claws_unlink(tmp_file);
+					unlink(tmp_file);
 					g_free(tmp_file);
 					g_free(tmpfilename);
 					fclose(infp);
@@ -614,7 +614,7 @@ gboolean procmime_encode_content(MimeInfo *mimeinfo, EncodingType encoding)
 
 		if (tmp_file) {
 			fclose(tmp_fp);
-			claws_unlink(tmp_file);
+			unlink(tmp_file);
 			g_free(tmp_file);
 		}
 	} else if (encoding == ENC_QUOTED_PRINTABLE) {
@@ -657,7 +657,7 @@ gboolean procmime_encode_content(MimeInfo *mimeinfo, EncodingType encoding)
 
 	if (mimeinfo->content == MIMECONTENT_FILE) {
 		if (mimeinfo->tmp && (mimeinfo->data.filename != NULL))
-			claws_unlink(mimeinfo->data.filename);
+			unlink(mimeinfo->data.filename);
 		g_free(mimeinfo->data.filename);
 	} else if (mimeinfo->content == MIMECONTENT_MEM) {
 		if (mimeinfo->tmp && (mimeinfo->data.mem != NULL))
@@ -745,8 +745,8 @@ gint procmime_get_part(const gchar *outfile, MimeInfo *mimeinfo)
 	if (fclose(outfp) == EOF) {
 		saved_errno = errno;
 		FILE_OP_ERROR(outfile, "fclose");
-		if (claws_unlink(outfile) < 0)
-                        FILE_OP_ERROR(outfile, "claws_unlink");
+		if (unlink(outfile) < 0)
+                        FILE_OP_ERROR(outfile, "unlink");
 		return -(saved_errno);
 	}
 

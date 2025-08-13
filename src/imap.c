@@ -1516,7 +1516,7 @@ static void imap_remove_cached_msg(Folder *folder, FolderItem *item, MsgInfo *ms
 	cm_return_if_fail(filename != NULL);
 
 	if (is_file_exist(filename)) {
-		claws_unlink(filename);
+		unlink(filename);
 	}
 	g_free(filename);
 }
@@ -1652,7 +1652,7 @@ static gchar *imap_fetch_msg_full(Folder *folder, FolderItem *item, gint uid,
 	path = folder_item_get_path(item);
 	if (!is_dir_exist(path)) {
 		if(is_file_exist(path))
-			claws_unlink(path);
+			unlink(path);
 		make_dir_hier(path);
 	}
 	g_free(path);
@@ -3289,7 +3289,7 @@ static FolderItem *imap_create_folder(Folder *folder, FolderItem *parent,
 	if (to_number(name) > 0) {
 		gchar *cached_msg = imap_get_cached_filename(parent, to_number(name));
 		if (is_file_exist(cached_msg)) {
-			if (claws_unlink(cached_msg) != 0) {
+			if (unlink(cached_msg) != 0) {
 				g_free(cached_msg);
 				return NULL;
 			}
@@ -4742,7 +4742,7 @@ gint imap_get_num_list(Folder *folder, FolderItem *_item, GSList **msgnum_list, 
 	path = folder_item_get_path(_item);
 	if (!is_dir_exist(path)) {
 		if(is_file_exist(path))
-			claws_unlink(path);
+			unlink(path);
 		make_dir_hier(path);
 	}
 	g_free(path);

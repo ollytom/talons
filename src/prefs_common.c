@@ -1155,8 +1155,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"print_previewwin_height", "-1", &prefs_common.print_previewwin_height, P_INT,
 	 NULL, NULL, NULL},
-	{"use_shred", "FALSE", &prefs_common.use_shred, P_BOOL,
-	 NULL, NULL, NULL},
 
 	{"two_line_vertical", "TRUE", &prefs_common.two_line_vert,
 	P_BOOL, NULL, NULL, NULL },
@@ -1349,7 +1347,7 @@ static void prefs_common_save_history_to_dir(const gchar *dirname, const gchar *
 	}
 	fp = NULL;
 #ifdef G_OS_WIN32
-	claws_unlink(path);
+	unlink(path);
 #endif
 	if (g_rename(tmp_path, path) < 0) {
 		FILE_OP_ERROR(path, "rename");
@@ -1634,11 +1632,6 @@ const gchar *prefs_common_get_ext_editor_cmd(void)
 	g_free(tmp);
 	return "xdg-open %s";
 #endif /* 0 */
-}
-
-gboolean prefs_common_get_use_shred(void)
-{
-	return prefs_common.use_shred;
 }
 
 gboolean prefs_common_get_flush_metadata (void)

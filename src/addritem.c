@@ -298,7 +298,7 @@ void addritem_person_remove_picture( ItemPerson *person) {
 		if (is_file_exist(filename)) {
 			debug_print("removing addressbook picture %s\n",
 				filename);
-			if (claws_unlink(filename) < 0) {
+			if (unlink(filename) < 0) {
 				FILE_OP_ERROR(filename, "remove");
 				g_free(filename);
 				return;

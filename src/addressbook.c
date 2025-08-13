@@ -3989,7 +3989,7 @@ static gboolean migrate_addrbook(const gchar *origdir, const gchar *destdir)
 			else {
 				gchar *orig_file = g_strconcat(origdir, G_DIR_SEPARATOR_S,
 						d, NULL);
-				claws_unlink(orig_file);
+				unlink(orig_file);
 				g_free(orig_file);
 			}
 		}

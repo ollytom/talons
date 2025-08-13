@@ -1796,13 +1796,13 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 		}
 #endif
 
-		claws_unlink(path);
+		unlink(path);
 		debug_print("Opening socket %s\n", path);
 		ret = fd_open_unix(path);
 #if HAVE_FLOCK
 		flock(lock_fd, LOCK_UN);
 		close(lock_fd);
-		claws_unlink(socket_lock);
+		unlink(socket_lock);
 		g_free(socket_lock);
 #endif
 		return ret;
@@ -1991,8 +1991,8 @@ static gint lock_socket_remove(void)
 #ifdef G_OS_UNIX
 	filename = claws_get_socket_name();
 	dirname = g_path_get_dirname(filename);
-	if (claws_unlink(filename) < 0)
-                FILE_OP_ERROR(filename, "claws_unlink");
+	if (unlink(filename) < 0)
+                FILE_OP_ERROR(filename, "unlink");
 	g_rmdir(dirname);
 	g_free(dirname);
 #endif

@@ -1182,7 +1182,7 @@ gint procmsg_save_to_outbox(FolderItem *outbox, const gchar *file)
 				_("Select the folder where you want to save the sent message"));
 		if (outbox == NULL) {
 			g_warning("not saving sent message");
-			claws_unlink(tmp);
+			unlink(tmp);
 			return -1;
 		}
 	}
@@ -1190,7 +1190,7 @@ gint procmsg_save_to_outbox(FolderItem *outbox, const gchar *file)
 		g_warning("not saving sent message");
 		outbox_path = folder_item_get_path(outbox);
 		alertpanel_warning(_("Could not save sent message to %s."), outbox_path);
-		claws_unlink(tmp);
+		unlink(tmp);
 		g_free(outbox_path);
 		return -1;
 	}
@@ -1752,7 +1752,7 @@ send_mail:
                             		 newsac->nntp_server);
 				}
 			}
-			claws_unlink(tmp);
+			unlink(tmp);
 		}
 		g_free(tmp);
 	}

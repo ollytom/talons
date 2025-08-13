@@ -27,7 +27,6 @@
 #include <glib.h>
 
 int safe_fclose(FILE *fp);
-int claws_unlink		(const char	*filename);
 
 gint file_strip_crs		(const gchar	*file);
 gint append_file		(const gchar	*src,

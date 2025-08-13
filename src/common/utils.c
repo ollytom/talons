@@ -2135,7 +2135,7 @@ gint remove_all_files(const gchar *dir)
 
 	while ((file_name = g_dir_read_name(dp)) != NULL) {
 		tmp = g_strconcat(dir, G_DIR_SEPARATOR_S, file_name, NULL);
-		if (claws_unlink(tmp) < 0)
+		if (unlink(tmp) < 0)
 			FILE_OP_ERROR(tmp, "unlink");
 		g_free(tmp);
 	}
@@ -2161,7 +2161,7 @@ gint remove_numbered_files(const gchar *dir, guint first, guint last)
 			g_free(filename);
 			filename = g_strdup_printf("%s%s.%u", dir, G_DIR_SEPARATOR_S, first);
 		}
-		if (claws_unlink(filename) < 0) {
+		if (unlink(filename) < 0) {
 			FILE_OP_ERROR(filename, "unlink");
 			g_free(filename);
 			return -1;
@@ -2189,13 +2189,13 @@ gint remove_numbered_files(const gchar *dir, guint first, guint last)
 		if (file_no > 0 && first <= file_no && file_no <= last) {
 			if (is_dir_exist(dir_name)) {
 				gchar *dot_file = g_strdup_printf(".%s", dir_name);
-				if (is_file_exist(dot_file) && claws_unlink(dot_file) < 0) {
+				if (is_file_exist(dot_file) && unlink(dot_file) < 0) {
 					FILE_OP_ERROR(dot_file, "unlink");
 				}
 				g_free(dot_file);
 				continue;
 			}
-			if (claws_unlink(dir_name) < 0)
+			if (unlink(dir_name) < 0)
 				FILE_OP_ERROR(dir_name, "unlink");
 		}
 	}
@@ -2256,13 +2256,13 @@ gint remove_numbered_files_not_in_list(const gchar *dir, GSList *numberlist)
 			debug_print("removing unwanted file %d from %s\n", file_no, dir);
 			if (is_dir_exist(dir_name)) {
 				gchar *dot_file = g_strdup_printf(".%s", dir_name);
-				if (is_file_exist(dot_file) && claws_unlink(dot_file) < 0) {
+				if (is_file_exist(dot_file) && unlink(dot_file) < 0) {
 					FILE_OP_ERROR(dot_file, "unlink");
 				}
 				g_free(dot_file);
 				continue;
 			}
-			if (claws_unlink(dir_name) < 0)
+			if (unlink(dir_name) < 0)
 				FILE_OP_ERROR(dir_name, "unlink");
 		}
 	}
@@ -2300,7 +2300,7 @@ gint remove_dir_recursive(const gchar *dir)
 	}
 
 	if (!S_ISDIR(s.st_mode)) {
-		if (claws_unlink(dir) < 0) {
+		if (unlink(dir) < 0) {
 			FILE_OP_ERROR(dir, "unlink");
 			return -(errno);
 		}
@@ -2346,7 +2346,7 @@ gint remove_dir_recursive(const gchar *dir)
 				return ret;
 			}
 		} else {
-			if (claws_unlink(dir_name) < 0)
+			if (unlink(dir_name) < 0)
 				FILE_OP_ERROR(dir_name, "unlink");
 		}
 	}

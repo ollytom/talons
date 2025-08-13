@@ -213,7 +213,7 @@ static int news_remove_msg		 (Folder 	*folder,
 
 	filename = g_strconcat(path, G_DIR_SEPARATOR_S, itos(msgnum), NULL);
 	g_free(path);
-	claws_unlink(filename);
+	unlink(filename);
 	g_free(filename);
 	return 0;
 }
@@ -551,7 +551,7 @@ static void news_remove_cached_msg(Folder *folder, FolderItem *item, MsgInfo *ms
 	g_free(path);
 
 	if (is_file_exist(filename)) {
-		claws_unlink(filename);
+		unlink(filename);
 	}
 	g_free(filename);
 }
@@ -774,7 +774,7 @@ void news_remove_group_list_cache(Folder *folder)
 	g_free(path);
 
 	if (is_file_exist(filename)) {
-		if (claws_unlink(filename) < 0)
+		if (unlink(filename) < 0)
 			FILE_OP_ERROR(filename, "remove");
 	}
 	g_free(filename);
@@ -977,20 +977,20 @@ gint news_cancel_article(Folder * folder, MsgInfo * msginfo)
 		       date) < 0) {
 		FILE_OP_ERROR(tmp, "fprintf");
 		fclose(tmpfp);
-		claws_unlink(tmp);
+		unlink(tmp);
 		g_free(tmp);
 		return -1;
 	}
 
 	if (safe_fclose(tmpfp) == EOF) {
 		FILE_OP_ERROR(tmp, "fclose");
-		claws_unlink(tmp);
+		unlink(tmp);
 		g_free(tmp);
 		return -1;
 	}
 
 	news_post(folder, tmp);
-	claws_unlink(tmp);
+	unlink(tmp);
 
 	g_free(tmp);
 

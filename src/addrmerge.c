@@ -131,7 +131,7 @@ static void addrmerge_do_merge(struct AddrMergePage *page)
 			gchar *filename = addritem_person_get_picture(person);
 			if ((g_strcmp0(person->picture, target->picture) &&
 					filename && is_file_exist(filename)))
-				claws_unlink(filename);
+				unlink(filename);
 			if (filename)
 				g_free(filename);
 			addritem_free_item_person( person );

@@ -446,7 +446,7 @@ void folder_item_remove(FolderItem *item)
 	if (tags_file) {
 		gchar *tags_dir;
 
-		claws_unlink(tags_file);
+		unlink(tags_file);
 
 		tags_dir = g_path_get_dirname(tags_file);
 		if (tags_dir)
@@ -3247,7 +3247,7 @@ gint folder_item_add_msgs(FolderItem *dest, GSList *file_list,
 				lastnum = num;
 
 			if (num >= 0 && remove_source) {
-				if (claws_unlink(fileinfo->file) < 0)
+				if (unlink(fileinfo->file) < 0)
 					FILE_OP_ERROR(fileinfo->file, "unlink");
 			}
 
@@ -3989,7 +3989,7 @@ void folder_item_discard_cache(FolderItem *item)
 
 	cache = folder_item_get_cache_file(item);
 	if (is_file_exist(cache))
-		claws_unlink(cache);
+		unlink(cache);
 	g_free(cache);
 
 }

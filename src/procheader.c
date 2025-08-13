@@ -1283,7 +1283,7 @@ gint procheader_get_header_from_msginfo(MsgInfo *msginfo, gchar **buf, gchar *he
 
 	if (fclose(fp) == EOF) {
 		FILE_OP_ERROR(file, "fclose");
-		claws_unlink(file);
+		unlink(file);
 		g_free(file);
 		g_free(*buf);
 		*buf = NULL;

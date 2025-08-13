@@ -5355,7 +5355,7 @@ gint compose_send(Compose *compose)
 		g_free(msgpath);
 	} else {
 		val = procmsg_send_message_queue_with_lock(msgpath, &errstr, folder, msgnum, &queued_removed);
-		claws_unlink(msgpath);
+		unlink(msgpath);
 		g_free(msgpath);
 	}
 	if (!discard_window) {
@@ -5956,7 +5956,7 @@ static gint compose_write_to_file(Compose *compose, FILE *fp, gint action, gbool
 							outbox = folder_get_default_outbox();
 
 						procmsg_save_to_outbox(outbox, tmp_enc_file);
-						claws_unlink(tmp_enc_file);
+						unlink(tmp_enc_file);
 					} else {
 						g_warning("can't open file '%s'", tmp_enc_file);
 					}
@@ -6013,7 +6013,7 @@ static gint compose_write_body_to_file(Compose *compose, const gchar *file)
 	g_free(tmp);
 	if (!chars) {
 		fclose(fp);
-		claws_unlink(file);
+		unlink(file);
 		return -1;
 	}
 	/* write body */
@@ -6022,7 +6022,7 @@ static gint compose_write_body_to_file(Compose *compose, const gchar *file)
 		FILE_OP_ERROR(file, "fwrite");
 		g_free(chars);
 		fclose(fp);
-		claws_unlink(file);
+		unlink(file);
 		return -1;
 	}
 
@@ -6030,7 +6030,7 @@ static gint compose_write_body_to_file(Compose *compose, const gchar *file)
 
 	if (safe_fclose(fp) == EOF) {
 		FILE_OP_ERROR(file, "fclose");
-		claws_unlink(file);
+		unlink(file);
 		return -1;
 	}
 	return 0;
@@ -6222,7 +6222,7 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 		if (compose->use_encryption) {
 			if (!compose_warn_encryption(compose)) {
 				fclose(fp);
-				claws_unlink(tmp);
+				unlink(tmp);
 				g_free(tmp);
 				return COMPOSE_QUEUE_ERROR_NO_MSG;
 			}
@@ -6247,7 +6247,7 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 				if (err == TRUE)
 					g_warning("failed to write queue message");
 				fclose(fp);
-				claws_unlink(tmp);
+				unlink(tmp);
 				g_free(tmp);
 				return COMPOSE_QUEUE_ERROR_NO_ENCRYPTION_KEY;
 			}
@@ -6300,7 +6300,7 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 	if (compose->redirect_filename != NULL) {
 		if (compose_redirect_write_to_file(compose, fp) < 0) {
 			fclose(fp);
-			claws_unlink(tmp);
+			unlink(tmp);
 			g_free(tmp);
 			return COMPOSE_QUEUE_ERROR_WITH_ERRNO;
 		}
@@ -6308,7 +6308,7 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 		gint result = 0;
 		if ((result = compose_write_to_file(compose, fp, COMPOSE_WRITE_FOR_SEND, TRUE)) < 0) {
 			fclose(fp);
-			claws_unlink(tmp);
+			unlink(tmp);
 			g_free(tmp);
 			return result;
 		}
@@ -6316,13 +6316,13 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 	if (err == TRUE) {
 		g_warning("failed to write queue message");
 		fclose(fp);
-		claws_unlink(tmp);
+		unlink(tmp);
 		g_free(tmp);
 		return COMPOSE_QUEUE_ERROR_WITH_ERRNO;
 	}
 	if (safe_fclose(fp) == EOF) {
 		FILE_OP_ERROR(tmp, "fclose");
-		claws_unlink(tmp);
+		unlink(tmp);
 		g_free(tmp);
 		return COMPOSE_QUEUE_ERROR_WITH_ERRNO;
 	}
@@ -6334,20 +6334,20 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 	}
 	if (!queue) {
 		g_warning("can't find queue folder");
-		claws_unlink(tmp);
+		unlink(tmp);
 		g_free(tmp);
 		return COMPOSE_QUEUE_ERROR_NO_MSG;
 	}
 	folder_item_scan(queue);
 	if ((num = folder_item_add_msg(queue, tmp, NULL, FALSE)) < 0) {
 		g_warning("can't queue the message");
-		claws_unlink(tmp);
+		unlink(tmp);
 		g_free(tmp);
 		return COMPOSE_QUEUE_ERROR_NO_MSG;
 	}
 
 	if (msgpath == NULL) {
-		claws_unlink(tmp);
+		unlink(tmp);
 		g_free(tmp);
 	} else
 		*msgpath = tmp;
@@ -9655,7 +9655,7 @@ static void compose_ext_editor_closed_cb(GPid pid, gint exit_status, gpointer da
 	if (compose_can_autosave(compose))
 	  compose_draft((gpointer)compose, COMPOSE_AUTO_SAVE);
 
-	if (claws_unlink(compose->exteditor_file) < 0)
+	if (unlink(compose->exteditor_file) < 0)
 		FILE_OP_ERROR(compose->exteditor_file, "unlink");
 
 	gtk_text_buffer_get_start_iter(buffer, &iter);
@@ -10328,7 +10328,7 @@ gboolean compose_draft (gpointer data, guint action)
 	}
 	if (msgnum < 0) {
 warn_err:
-		claws_unlink(tmp);
+		unlink(tmp);
 		g_free(tmp);
 		if (action != COMPOSE_AUTO_SAVE) {
 			if (action != COMPOSE_DRAFT_FOR_EXIT)
@@ -10458,7 +10458,7 @@ void compose_clear_exit_drafts(void)
 	gchar *filepath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 				      DRAFTED_AT_EXIT, NULL);
 	if (is_file_exist(filepath))
-		claws_unlink(filepath);
+		unlink(filepath);
 
 	g_free(filepath);
 }
@@ -10890,7 +10890,7 @@ int attach_image(Compose *compose, GtkSelectionData *data, const gchar *subtype)
 	if (fwrite(contents, 1, len, fp) != len) {
 		FILE_OP_ERROR(file, "fwrite");
 		fclose(fp);
-		if (claws_unlink(file) < 0)
+		if (unlink(file) < 0)
 			FILE_OP_ERROR(file, "unlink");
 		g_free(file);
 		return -1;
@@ -10900,7 +10900,7 @@ int attach_image(Compose *compose, GtkSelectionData *data, const gchar *subtype)
 
 	if (r == EOF) {
 		FILE_OP_ERROR(file, "fclose");
-		if (claws_unlink(file) < 0)
+		if (unlink(file) < 0)
 			FILE_OP_ERROR(file, "unlink");
 		g_free(file);
 		return -1;
@@ -11649,7 +11649,7 @@ static void compose_insert_drag_received_cb (GtkWidget		*widget,
 			str_write_to_file(tmpdata, tmpfile, TRUE);
 			g_free(tmpdata);
 			compose_insert_file(compose, tmpfile);
-			claws_unlink(tmpfile);
+			unlink(tmpfile);
 			g_free(tmpfile);
 			gtk_drag_finish(drag_context, TRUE, FALSE, time);
 			compose_beautify_paragraph(compose, NULL, compose->autowrap);
