@@ -186,10 +186,6 @@ struct _IMAPFolderItem
 static XMLTag *imap_item_get_xml(Folder *folder, FolderItem *item);
 static void imap_item_set_xml(Folder *folder, FolderItem *item, XMLTag *tag);
 
-static void imap_folder_init		(Folder		*folder,
-					 const gchar	*name,
-					 const gchar	*path);
-
 static Folder	*imap_folder_new	(const gchar	*name,
 					 const gchar	*path);
 static void	 imap_folder_destroy	(Folder		*folder);
@@ -774,8 +770,10 @@ static Folder *imap_folder_new(const gchar *name, const gchar *path)
 
 	folder = (Folder *)g_new0(IMAPFolder, 1);
 	folder->klass = &imap_class;
-	imap_folder_init(folder, name, path);
-
+	folder_init(folder, name);
+	REMOTE_FOLDER(folder)->session = NULL;
+	IMAP_FOLDER(folder)->search_charset_supported = TRUE;
+	IMAP_FOLDER(folder)->search_charset = g_strdup(conv_get_locale_charset_str_no_utf8());
 	return folder;
 }
 
@@ -786,16 +784,10 @@ static void imap_folder_destroy(Folder *folder)
 
 	g_free(IMAP_FOLDER(folder)->search_charset);
 
-	folder_remote_folder_destroy(REMOTE_FOLDER(folder));
+	RemoteFolder *rfolder = REMOTE_FOLDER(folder);
+	if (rfolder->session)
+		session_destroy(rfolder->session);
 	imap_done(folder);
-}
-
-static void imap_folder_init(Folder *folder, const gchar *name,
-			     const gchar *path)
-{
-	folder_remote_folder_init((Folder *)folder, name, path);
-	IMAP_FOLDER(folder)->search_charset_supported = TRUE;
-	IMAP_FOLDER(folder)->search_charset = g_strdup(conv_get_locale_charset_str_no_utf8());
 }
 
 static FolderItem *imap_folder_item_new(Folder *folder)

@@ -89,9 +89,6 @@ struct _NewsSession
 	gchar *group;
 };
 
-static void news_folder_init(Folder *folder, const gchar *name,
-			     const gchar *path);
-
 static Folder	*news_folder_new	(const gchar	*name,
 					 const gchar	*folder);
 static void	 news_folder_destroy	(Folder		*folder);
@@ -240,11 +237,9 @@ int news_folder_locked(Folder *folder)
 static Folder *news_folder_new(const gchar *name, const gchar *path)
 {
 	Folder *folder;
-
 	folder = (Folder *)g_new0(NewsFolder, 1);
 	folder->klass = &news_class;
-	news_folder_init(folder, name, path);
-
+	folder_init(folder, name);
 	return folder;
 }
 
@@ -261,13 +256,9 @@ static void news_folder_destroy(Folder *folder)
 	g_free(dir);
 
 	nntp_done(folder);
-	folder_remote_folder_destroy(REMOTE_FOLDER(folder));
-}
-
-static void news_folder_init(Folder *folder, const gchar *name,
-			     const gchar *path)
-{
-	folder_remote_folder_init(folder, name, path);
+	RemoteFolder *rfolder = REMOTE_FOLDER(folder);
+	if (rfolder->session)
+		session_destroy(rfolder->session);
 }
 
 static void news_session_destroy(Session *session)

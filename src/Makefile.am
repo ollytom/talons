@@ -172,7 +172,6 @@ claws_mail_SOURCES = \
 	quote_fmt_lex.l \
 	quote_fmt_parse.y \
 	recv.c \
-	remotefolder.c \
 	send_message.c \
 	setup.c \
 	sourcewindow.c \

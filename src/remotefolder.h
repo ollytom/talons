@@ -38,9 +38,4 @@ struct _RemoteFolder
 	gboolean connecting;
 };
 
-void        folder_remote_folder_init	(Folder		*folder,
-					 const gchar	*name,
-					 const gchar	*path);
-void        folder_remote_folder_destroy(RemoteFolder	*rfolder);
-
 #endif /* REMOTEFOLDER_H */
