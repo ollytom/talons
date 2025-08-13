@@ -68,7 +68,6 @@
 #include "utils.h"
 #include "socket.h"
 #include "codeconv.h"
-#include "timing.h"
 #include "file-utils.h"
 #include "fence.h"
 

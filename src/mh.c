@@ -40,7 +40,6 @@
 #include "codeconv.h"
 #include "statusbar.h"
 #include "gtkutils.h"
-#include "timing.h"
 #include "msgcache.h"
 #include "file-utils.h"
 #include "prefs_common.h"

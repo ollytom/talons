@@ -56,7 +56,6 @@
 #include "filtering.h"
 #include "quicksearch.h"
 #include "manual.h"
-#include "timing.h"
 #include "log.h"
 #include "gtkcmctree.h"
 
@@ -2249,7 +2248,6 @@ static void folderview_selected(GtkCMCTree *ctree, GtkCMCTreeNode *row,
 	FolderItem *item;
 	int res = 0;
 	GtkCMCTreeNode *old_opened = folderview->opened;
-	START_TIMING("");
 	folderview->selected = row;
 
 	display = gdk_display_get_default();
@@ -2260,13 +2258,11 @@ static void folderview_selected(GtkCMCTree *ctree, GtkCMCTreeNode *row,
 			folderview->opened);
 	if (folderview->opened == row) {
 		folderview->open_folder = FALSE;
-		END_TIMING();
 		return;
 	}
 
 	item = gtk_cmctree_node_get_row_data(ctree, row);
 	if (!item) {
-		END_TIMING();
 		folderview->open_folder = FALSE;
 		return;
 	}
@@ -2277,12 +2273,10 @@ static void folderview_selected(GtkCMCTree *ctree, GtkCMCTreeNode *row,
 			gtk_cmctree_select(ctree, folderview->opened);
 		}
 		folderview->open_folder = FALSE;
-		END_TIMING();
 		return;
 	}
 
 	if (!folderview->open_folder) {
-		END_TIMING();
 		return;
 	}
 
@@ -2338,7 +2332,6 @@ static void folderview_selected(GtkCMCTree *ctree, GtkCMCTreeNode *row,
 
 		folderview->open_folder = FALSE;
 		can_select = TRUE;
-		END_TIMING();
 		return;
         } else if (res == -2 && item->no_select == FALSE) {
 		PostponedSelectData *data = g_new0(PostponedSelectData, 1);
@@ -2353,7 +2346,6 @@ static void folderview_selected(GtkCMCTree *ctree, GtkCMCTreeNode *row,
 		if (folderview->postpone_select_id != 0)
 			g_source_remove(folderview->postpone_select_id);
 		folderview->postpone_select_id = g_timeout_add(500, postpone_select, data);
-		END_TIMING();
 		return;
 	}
 
@@ -2380,7 +2372,6 @@ static void folderview_selected(GtkCMCTree *ctree, GtkCMCTreeNode *row,
 
 	folderview->open_folder = FALSE;
 	can_select = TRUE;
-	END_TIMING();
 }
 
 static void folderview_tree_expanded(GtkCMCTree *ctree, GtkCMCTreeNode *node,

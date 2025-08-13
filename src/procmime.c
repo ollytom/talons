@@ -49,7 +49,6 @@
 #include "prefs_common.h"
 #include "prefs_gtk.h"
 #include "alertpanel.h"
-#include "timing.h"
 #include "privacy.h"
 #include "account.h"
 #include "file-utils.h"

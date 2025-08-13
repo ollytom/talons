@@ -53,7 +53,6 @@
 #include "partial_download.h"
 #include "statusbar.h"
 #include "gtkutils.h"
-#include "timing.h"
 #include "compose.h"
 #include "main.h"
 #include "msgcache.h"
@@ -2044,7 +2043,6 @@ static void folder_item_process_open (FolderItem *item,
 
 gint folder_item_open(FolderItem *item)
 {
-	START_TIMING("");
 	if (item->no_select)
 		return -1;
 
@@ -2057,7 +2055,6 @@ gint folder_item_open(FolderItem *item)
 	folder_item_process_open (item, NULL, NULL, NULL);
 
 	item->opened = TRUE;
-	END_TIMING();
 	return 0;
 }
 
@@ -2649,7 +2646,6 @@ static void folder_item_clean_local_files(FolderItem *item, gint days)
 static void folder_item_read_cache(FolderItem *item)
 {
 	gchar *cache_file, *mark_file, *tags_file;
-	START_TIMING("");
 	cm_return_if_fail(item != NULL);
 
 	if (item->path != NULL) {
@@ -2726,7 +2722,6 @@ static void folder_item_read_cache(FolderItem *item)
 		item->tags_dirty = TRUE;
 	}
 
-	END_TIMING();
 	folder_clean_cache_memory(item);
 }
 

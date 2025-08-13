@@ -58,7 +58,6 @@
 #include "image_viewer.h"
 #include "filesel.h"
 #include "inputdialog.h"
-#include "timing.h"
 #include "tags.h"
 #include "manage_window.h"
 #include "folder_item_prefs.h"
@@ -605,7 +604,6 @@ void textview_reflect_prefs(TextView *textview)
 
 void textview_show_part(TextView *textview, MimeInfo *mimeinfo, FILE *fp)
 {
-	START_TIMING("");
 	cm_return_if_fail(mimeinfo != NULL);
 	cm_return_if_fail(fp != NULL);
 
@@ -628,7 +626,6 @@ void textview_show_part(TextView *textview, MimeInfo *mimeinfo, FILE *fp)
 	textview->stop_loading = FALSE;
 	textview_set_position(textview, 0);
 
-	END_TIMING();
 }
 
 static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
@@ -643,7 +640,6 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 	gchar *content_type;
 	gint charcount;
 
-	START_TIMING("");
 
 	cm_return_if_fail(mimeinfo != NULL);
 	text = GTK_TEXT_VIEW(textview->text);
@@ -655,7 +651,6 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 		return;
 	}
 	if (mimeinfo->type == MIMETYPE_MULTIPART) {
-		END_TIMING();
 		return;
 	}
 
@@ -669,13 +664,11 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 			fp = g_fopen(mimeinfo->data.filename, "rb");
 		if (!fp) {
 			FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
-			END_TIMING();
 			return;
 		}
 		if (fseek(fp, mimeinfo->offset, SEEK_SET) < 0) {
 			FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
 			fclose(fp);
-			END_TIMING();
 			return;
 		}
 		headers = textview_scan_header(textview, fp);
@@ -690,7 +683,6 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 			procheader_header_array_destroy(headers);
 		}
 		fclose(fp);
-		END_TIMING();
 		return;
 	}
 
@@ -721,18 +713,15 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 			GError *error = NULL;
 			ClickableText *uri;
 
-			START_TIMING("inserting image");
 
 			pixbuf = procmime_get_part_as_pixbuf(mimeinfo, &error);
 			if (error != NULL) {
 				g_warning("can't load the image: %s", error->message);
 				g_error_free(error);
-				END_TIMING();
 				return;
 			}
 
 			if (textview->stop_loading) {
-				END_TIMING();
 				return;
 			}
 
@@ -742,7 +731,6 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 					allocation.height);
 
 			if (textview->stop_loading) {
-				END_TIMING();
 				return;
 			}
 
@@ -768,7 +756,6 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 			gtk_text_buffer_apply_tag_by_name(buffer, "link",
 						&start_iter, &iter);
 
-			END_TIMING();
 			GTK_EVENTS_FLUSH();
 		}
 	} else if (mimeinfo->type == MIMETYPE_TEXT) {
@@ -787,21 +774,18 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 			gtk_text_buffer_create_mark(buffer, "body_end", &iter, TRUE);
 		}
 	}
-	END_TIMING();
 }
 
 static void recursive_add_parts(TextView *textview, GNode *node)
 {
         GNode * iter;
 	MimeInfo *mimeinfo;
-        START_TIMING("");
 
         mimeinfo = (MimeInfo *) node->data;
 
         textview_add_part(textview, mimeinfo);
         if ((mimeinfo->type != MIMETYPE_MULTIPART) &&
             (mimeinfo->type != MIMETYPE_MESSAGE)) {
-	    	END_TIMING();
                 return;
         }
         if (g_ascii_strcasecmp(mimeinfo->subtype, "alternative") == 0) {
@@ -847,7 +831,6 @@ static void recursive_add_parts(TextView *textview, GNode *node)
                         recursive_add_parts(textview, iter);
                 }
         }
-	END_TIMING();
 }
 
 static void textview_add_parts(TextView *textview, MimeInfo *mimeinfo)

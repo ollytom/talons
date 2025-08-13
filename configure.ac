@@ -1,4 +1,3 @@
-
 AC_PREREQ([2.69])
 
 m4_define([claws_VERSION],
@@ -220,10 +219,6 @@ AC_ARG_ENABLE(tests,
 AC_ARG_ENABLE(more-addressbook-debug,
         [  --enable-more-addressbook-debug Build with additional addressbook debug calls],
         [enable_more_addressbook_debug=$enableval], [enable_more_addressbook_debug=no])
-
-AC_ARG_ENABLE(timing-debug,
-        [  --enable-timing-debug     Build with timing debug calls],
-        [enable_timing_debug=$enableval], [enable_timing_debug=no])
 
 manualdir='${docdir}/manual'
 AC_ARG_WITH(manualdir,
@@ -567,15 +562,6 @@ if test x$enable_more_addressbook_debug = xyes; then
 	more_debug_output_modules="$more_debug_output_modules AddressBook"
 	AC_MSG_RESULT(yes)
 	AC_DEFINE(DEBUG_ADDRBOOK, 1, [Define if you want additional addressbook debug calls])
-else
-	AC_MSG_RESULT(no)
-fi
-
-AC_MSG_CHECKING([whether to build with timing debug calls])
-if test x$enable_timing_debug = xyes; then
-	more_debug_output_modules="$more_debug_output_modules timing"
-	AC_MSG_RESULT(yes)
-	AC_DEFINE(DEBUG_TIMING, 1, [Define if you want timing debug calls])
 else
 	AC_MSG_RESULT(no)
 fi

@@ -137,7 +137,6 @@
 
 #include "version.h"
 
-#include "timing.h"
 
 gchar *prog_version;
 
@@ -566,7 +565,6 @@ int main(int argc, char *argv[])
 	gboolean mainwin_shown = FALSE;
 	gint ret;
 
-	START_TIMING("startup");
 
 	sc_starting = TRUE;
 
@@ -981,7 +979,6 @@ int main(int argc, char *argv[])
 					lock_socket_input_cb,
 					mainwin, TRUE);
 
-	END_TIMING();
 
 	gtk_main();
 	utils_free_regex();

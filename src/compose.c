@@ -98,7 +98,6 @@
 #include "combobox.h"
 #include "hooks.h"
 #include "privacy.h"
-#include "timing.h"
 #include "autofaces.h"
 #include "spell_entry.h"
 #include "headers.h"
@@ -1497,7 +1496,6 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 	gboolean quote = FALSE;
 	const gchar *body_fmt = NULL;
 	gchar *s_system = NULL;
-	START_TIMING("");
 	cm_return_val_if_fail(msginfo != NULL, NULL);
 	cm_return_val_if_fail(msginfo->folder != NULL, NULL);
 
@@ -1659,7 +1657,6 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 		compose_destroy(compose);
 		return NULL;
 	}
-	END_TIMING();
 
 	return compose;
 }

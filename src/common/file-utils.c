@@ -32,7 +32,6 @@
 
 #include "defs.h"
 #include "codeconv.h"
-#include "timing.h"
 #include "file-utils.h"
 
 gboolean prefs_common_get_flush_metadata(void);

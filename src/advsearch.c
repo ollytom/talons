@@ -30,7 +30,6 @@
 #include "matcher_parser.h"
 #include "utils.h"
 #include "prefs_common.h"
-#include "timing.h"
 
 struct _AdvancedSearch {
 	struct {
@@ -523,9 +522,7 @@ static gboolean search_impl(MsgInfoList **messages, AdvancedSearch* search,
 			    FolderItem* folderItem, gboolean recursive)
 {
 	if (recursive) {
-		START_TIMING("recursive");
 		if (!search_impl(messages, search, folderItem, FALSE)) {
-			END_TIMING();
 			return FALSE;
 		}
 		if (folderItem->node->children != NULL && !search->search_aborted) {
@@ -534,22 +531,18 @@ static gboolean search_impl(MsgInfoList **messages, AdvancedSearch* search,
 				FolderItem *cur = FOLDER_ITEM(node->data);
 				debug_print("in: %s\n", cur->path);
 				if (!search_impl(messages, search, cur, TRUE)) {
-					END_TIMING();
 					return FALSE;
 				}
 			}
 		}
-		END_TIMING();
 	} else if (!folderItem->no_select) {
 		MsgNumberList *msgnums = NULL;
 		MsgNumberList *cur;
 		MsgInfoList *msgs = NULL;
 		gboolean can_search_on_server = folderItem->folder->klass->supports_server_search;
-		START_TIMING("folder");
 		if (!search_filter_folder(&msgnums, search, folderItem,
 					  can_search_on_server)) {
 			g_slist_free(msgnums);
-			END_TIMING();
 			return FALSE;
 		}
 
@@ -569,7 +562,6 @@ static gboolean search_impl(MsgInfoList **messages, AdvancedSearch* search,
 		}
 
 		g_slist_free(msgnums);
-		END_TIMING();
 	}
 
 	return TRUE;

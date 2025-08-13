@@ -38,7 +38,6 @@
 #include "utils.h"
 #include "procmsg.h"
 #include "codeconv.h"
-#include "timing.h"
 #include "tags.h"
 #include "prefs_common.h"
 #include "file-utils.h"
@@ -256,14 +255,12 @@ static void msgcache_get_msg_list_func(gpointer key, gpointer value, gpointer us
 MsgInfoList *msgcache_get_msg_list(MsgCache *cache)
 {
 	MsgInfoList *msg_list = NULL;
-	START_TIMING("");
 	cm_return_val_if_fail(cache != NULL, NULL);
 
 	g_hash_table_foreach((GHashTable *)cache->msgnum_table, msgcache_get_msg_list_func, (gpointer)&msg_list);
 	cache->last_access = time(NULL);
 
 	msg_list = g_slist_reverse(msg_list);
-	END_TIMING();
 	return msg_list;
 }
 
@@ -1059,7 +1056,6 @@ gint msgcache_write(const gchar *cache_file, const gchar *mark_file, const gchar
 	gchar *new_cache = NULL, *new_mark = NULL, *new_tags = NULL;
 	int w_err = 0, wrote = 0;
 
-	START_TIMING("");
 	cm_return_val_if_fail(cache != NULL, -1);
 
 	if (cache_file)
@@ -1186,7 +1182,6 @@ gint msgcache_write(const gchar *cache_file, const gchar *mark_file, const gchar
 	g_free(new_mark);
 	g_free(new_tags);
 	debug_print("msgcache_write() done.\n");
-	END_TIMING();
 	return 0;
 }
 

@@ -47,7 +47,6 @@
 #include "stock_pixmap.h"
 #include "gtk/gtkvscrollbutton.h"
 #include "gtk/logwindow.h"
-#include "timing.h"
 #include "manage_window.h"
 #include "privacy.h"
 #include "file-utils.h"

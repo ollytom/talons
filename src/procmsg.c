@@ -48,7 +48,6 @@
 #include "summaryview.h"
 #include "log.h"
 #include "tags.h"
-#include "timing.h"
 #include "inc.h"
 #include "privacy.h"
 #include "file-utils.h"
@@ -214,7 +213,6 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 	MsgInfo *msginfo;
 	const gchar *msgid;
         GSList *reflist;
-	START_TIMING("");
 	root = g_node_new(NULL);
 	msgid_table = g_hash_table_new(g_str_hash, g_str_equal);
 
@@ -275,7 +273,6 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 	}
 
 	if (prefs_common.thread_by_subject) {
-		START_TIMING("thread by subject");
 		for (node = root->children; node && node != NULL;) {
 			next = node->next;
 			msginfo = (MsgInfo *) node->data;
@@ -299,7 +296,6 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 
 			node = next;
 		}
-		END_TIMING();
 	}
 
 	if (prefs_common.thread_by_subject)
@@ -309,7 +305,6 @@ GNode *procmsg_get_thread_tree(GSList *mlist)
 	}
 
 	g_hash_table_destroy(msgid_table);
-	END_TIMING();
 	return root;
 }
 
