@@ -40,11 +40,59 @@
 #include "filesel.h"
 #include "codeconv.h"
 #include "editaddress.h"
-#include "editaddress_other_attributes_ldap.h"
 #include "prefs_common.h"
 #include "menu.h"
 #include "combobox.h"
 #include "file-utils.h"
+
+enum {
+	ATTRIB_COL_NAME,
+	ATTRIB_COL_VALUE,
+	ATTRIB_COL_PTR,
+	ATTRIB_N_COLS
+};
+
+typedef struct _PersonEdit_dlg PersonEditDlg;
+struct _PersonEdit_dlg {
+	GtkWidget *container;
+	GtkWidget *notebook;
+	GtkWidget *ok_btn;
+	GtkWidget *cancel_btn;
+	GtkWidget *statusbar;	/* used when prefs_common.addressbook_use_editaddress_dialog is TRUE */
+	GtkWidget *title;	/* used when prefs_common.addressbook_use_editaddress_dialog is FALSE */
+	gint status_cid;
+
+	/* User data tab */
+	GtkWidget *image;
+	gboolean picture_set;
+	GtkWidget *entry_name;
+	GtkWidget *entry_first;
+	GtkWidget *entry_last;
+	GtkWidget *entry_nick;
+
+	/* EMail data tab */
+	GtkWidget *entry_email;
+	GtkWidget *entry_alias;
+	GtkWidget *entry_remarks;
+	GtkWidget *view_email;
+	GtkWidget *email_up;
+	GtkWidget *email_down;
+	GtkWidget *email_del;
+	GtkWidget *email_mod;
+	GtkWidget *email_add;
+
+	/* Attribute data tab */
+	GtkWidget *entry_atname;
+	GtkWidget *entry_atvalue;
+	GtkWidget *view_attrib;
+	GtkWidget *attrib_add;
+	GtkWidget *attrib_del;
+	GtkWidget *attrib_mod;
+
+	gboolean editNew;
+	gboolean read_only;
+	gboolean ldap;
+};
 
 /* transient data */
 static struct _PersonEdit_dlg personeditdlg;

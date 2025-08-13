@@ -485,6 +485,8 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	PACK_CHECK_BUTTON (vbox2, checkbtn_askonfilter,
 			   _("Ask about account specific filtering rules when "
 			     "filtering manually"));
+	PACK_CHECK_BUTTON (vbox2, checkbtn_real_time_sync,
+				   _("Synchronise offline folders as soon as possible"));
 
 	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show(hbox1);

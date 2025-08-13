@@ -43,7 +43,6 @@ abook_source = \
 	addrduplicates.c \
 	addrmerge.c \
 	editaddress.c \
-	editaddress_other_attributes_ldap.c \
 	editbook.c \
 	editgroup.c \
 	editvcard.c \
@@ -64,7 +63,6 @@ abook_headers = \
 	addrduplicates.h \
 	addrmerge.h \
 	editaddress.h \
-	editaddress_other_attributes_ldap.h \
 	editbook.h \
 	editgroup.h \
 	editvcard.h \
