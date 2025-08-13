@@ -142,7 +142,7 @@ void vcard_free( VCardFile *cardFile ) {
 	cm_return_if_fail( cardFile != NULL );
 
 	/* Close file */
-	if( cardFile->file ) claws_fclose( cardFile->file );
+	if( cardFile->file ) fclose( cardFile->file );
 
 	/* Clear cache */
 	addrcache_clear( cardFile->addressCache );
@@ -174,7 +174,7 @@ static gint vcard_open_file( VCardFile* cardFile ) {
 	/* g_print( "Opening file\n" ); */
 	cardFile->addressCache->dataRead = FALSE;
 	if( cardFile->path ) {
-		cardFile->file = claws_fopen( cardFile->path, "rb" );
+		cardFile->file = g_fopen( cardFile->path, "rb" );
 		if( ! cardFile->file ) {
 			/* g_printerr( "can't open %s\n", cardFile->path ); */
 			cardFile->retVal = MGU_OPEN_FILE;
@@ -199,7 +199,7 @@ static gint vcard_open_file( VCardFile* cardFile ) {
 */
 static void vcard_close_file( VCardFile *cardFile ) {
 	cm_return_if_fail( cardFile != NULL );
-	if( cardFile->file ) claws_fclose( cardFile->file );
+	if( cardFile->file ) fclose( cardFile->file );
 	cardFile->file = NULL;
 }
 
@@ -209,7 +209,7 @@ static void vcard_close_file( VCardFile *cardFile ) {
 */
 static gchar *vcard_read_line( VCardFile *cardFile ) {
 	while( *cardFile->bufptr == '\n' || *cardFile->bufptr == '\0' ) {
-		if( claws_fgets( cardFile->buffer, VCARDBUFSIZE, cardFile->file ) == NULL )
+		if( fgets( cardFile->buffer, VCARDBUFSIZE, cardFile->file ) == NULL )
 			return NULL;
 		g_strstrip( cardFile->buffer );
 		cardFile->bufptr = cardFile->buffer;
@@ -590,16 +590,16 @@ gchar *vcard_find_gnomecard( void ) {
 	strncat( str, GNOMECARD_FILE, WORK_BUFLEN - strlen(str) );
 
 	fileSpec = NULL;
-	if( ( fp = claws_fopen( str, "rb" ) ) != NULL ) {
+	if( ( fp = g_fopen( str, "rb" ) ) != NULL ) {
 		/* Read configuration file */
 		lenlbl = strlen( GNOMECARD_SECTION );
-		while( claws_fgets( buf, sizeof( buf ), fp ) != NULL ) {
+		while( fgets( buf, sizeof( buf ), fp ) != NULL ) {
 			if( 0 == g_ascii_strncasecmp( buf, GNOMECARD_SECTION, lenlbl ) ) {
 				break;
 			}
 		}
 
-		while( claws_fgets( buf, sizeof( buf ), fp ) != NULL ) {
+		while( fgets( buf, sizeof( buf ), fp ) != NULL ) {
 			g_strchomp( buf );
 			if( buf[0] == '[' ) break;
 			for( i = 0; i < lenlbl; i++ ) {
@@ -611,7 +611,7 @@ gchar *vcard_find_gnomecard( void ) {
 				}
 			}
 		}
-		claws_fclose( fp );
+		fclose( fp );
 	}
 
 	if( fileSpec == NULL ) {

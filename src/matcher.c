@@ -1588,7 +1588,7 @@ static gboolean matcherlist_match_binary_content(MatcherList *matchers, MimeInfo
 	if (!outfp)
 		return FALSE;
 
-	while (claws_fgets(buf, sizeof(buf), outfp) != NULL) {
+	while (fgets(buf, sizeof(buf), outfp) != NULL) {
 		strretchomp(buf);
 
 		for (l = matchers->matchers ; l != NULL ; l = g_slist_next(l)) {
@@ -1629,14 +1629,14 @@ static gboolean matcherlist_match_binary_content(MatcherList *matchers, MimeInfo
 			 * no need to check the others. */
 			if (matcher->result && matcher->done) {
 				if (!matchers->bool_and) {
-					claws_fclose(outfp);
+					fclose(outfp);
 					return TRUE;
 				}
 			}
 		}
 	}
 
-	claws_fclose(outfp);
+	fclose(outfp);
 	return FALSE;
 }
 
@@ -1788,8 +1788,8 @@ static gboolean matcherlist_match_file(MatcherList *matchers, MsgInfo *info,
 	if (file == NULL)
 		return FALSE;
 
-	if ((fp = claws_fopen(file, "rb")) == NULL) {
-		FILE_OP_ERROR(file, "claws_fopen");
+	if ((fp = g_fopen(file, "rb")) == NULL) {
+		FILE_OP_ERROR(file, "g_fopen");
 		g_free(file);
 		return result;
 	}
@@ -1831,7 +1831,7 @@ static gboolean matcherlist_match_file(MatcherList *matchers, MsgInfo *info,
 
 	g_free(file);
 
-	claws_fclose(fp);
+	fclose(fp);
 
 	return result;
 }
@@ -2394,44 +2394,44 @@ static int prefs_filtering_write(FILE *fp, GSList *prefs_filtering)
 			continue;
 
 		if (prop->enabled) {
-			if (claws_fputs("enabled ", fp) == EOF) {
-				FILE_OP_ERROR("filtering config", "claws_fputs");
+			if (fputs("enabled ", fp) == EOF) {
+				FILE_OP_ERROR("filtering config", "fputs");
 				g_free(filtering_str);
 				return -1;
 			}
 		} else {
-			if (claws_fputs("disabled ", fp) == EOF) {
-				FILE_OP_ERROR("filtering config", "claws_fputs");
+			if (fputs("disabled ", fp) == EOF) {
+				FILE_OP_ERROR("filtering config", "fputs");
 				g_free(filtering_str);
 				return -1;
 			}
 		}
 
-		if (claws_fputs("rulename \"", fp) == EOF) {
-			FILE_OP_ERROR("filtering config", "claws_fputs");
+		if (fputs("rulename \"", fp) == EOF) {
+			FILE_OP_ERROR("filtering config", "fputs");
 			g_free(filtering_str);
 			return -1;
 		}
 		tmp_name = prop->name;
 		while (tmp_name && *tmp_name != '\0') {
 			if (*tmp_name != '"') {
-				if (claws_fputc(*tmp_name, fp) == EOF) {
-					FILE_OP_ERROR("filtering config", "claws_fputs || claws_fputc");
+				if (fputc(*tmp_name, fp) == EOF) {
+					FILE_OP_ERROR("filtering config", "fputs || fputc");
 					g_free(filtering_str);
 					return -1;
 				}
 			} else if (*tmp_name == '"') {
-				if (claws_fputc('\\', fp) == EOF ||
-				    claws_fputc('"', fp) == EOF) {
-					FILE_OP_ERROR("filtering config", "claws_fputs || claws_fputc");
+				if (fputc('\\', fp) == EOF ||
+				    fputc('"', fp) == EOF) {
+					FILE_OP_ERROR("filtering config", "fputs || fputc");
 					g_free(filtering_str);
 					return -1;
 				}
 			}
 			tmp_name ++;
 		}
-		if (claws_fputs("\" ", fp) == EOF) {
-			FILE_OP_ERROR("filtering config", "claws_fputs");
+		if (fputs("\" ", fp) == EOF) {
+			FILE_OP_ERROR("filtering config", "fputs");
 			g_free(filtering_str);
 			return -1;
 		}
@@ -2440,8 +2440,8 @@ static int prefs_filtering_write(FILE *fp, GSList *prefs_filtering)
 			gchar *tmp = NULL;
 
 			tmp = g_strdup_printf("account %d ", prop->account_id);
-			if (claws_fputs(tmp, fp) == EOF) {
-				FILE_OP_ERROR("filtering config", "claws_fputs");
+			if (fputs(tmp, fp) == EOF) {
+				FILE_OP_ERROR("filtering config", "fputs");
 				g_free(filtering_str);
 				g_free(tmp);
 				return -1;
@@ -2449,9 +2449,9 @@ static int prefs_filtering_write(FILE *fp, GSList *prefs_filtering)
 			g_free(tmp);
 		}
 
-		if(claws_fputs(filtering_str, fp) == EOF ||
-		    claws_fputc('\n', fp) == EOF) {
-			FILE_OP_ERROR("filtering config", "claws_fputs || claws_fputc");
+		if(fputs(filtering_str, fp) == EOF ||
+		    fputc('\n', fp) == EOF) {
+			FILE_OP_ERROR("filtering config", "fputs || fputc");
 			g_free(filtering_str);
 			return -1;
 		}
@@ -2499,7 +2499,7 @@ static gboolean prefs_matcher_write_func(GNode *node, gpointer d)
 			data->error = TRUE;
 			goto fail;
 		}
-		if (claws_fputc('\n', data->fp) == EOF) {
+		if (fputc('\n', data->fp) == EOF) {
 			data->error = TRUE;
 			goto fail;
 		}
@@ -2537,19 +2537,19 @@ static int prefs_matcher_save(FILE *fp)
         /* pre global rules */
         if (fprintf(fp, "[preglobal]\n") < 0 ||
             prefs_filtering_write(fp, pre_global_processing) < 0 ||
-            claws_fputc('\n', fp) == EOF)
+            fputc('\n', fp) == EOF)
 		return -1;
 
         /* post global rules */
         if (fprintf(fp, "[postglobal]\n") < 0 ||
             prefs_filtering_write(fp, post_global_processing) < 0 ||
-            claws_fputc('\n', fp) == EOF)
+            fputc('\n', fp) == EOF)
 		return -1;
 
         /* filtering rules */
 	if (fprintf(fp, "[filtering]\n") < 0 ||
             prefs_filtering_write(fp, filtering_rules) < 0 ||
-            claws_fputc('\n', fp) == EOF)
+            fputc('\n', fp) == EOF)
 		return -1;
 
 	return 0;
@@ -2597,11 +2597,11 @@ void prefs_matcher_read_config(void)
 
 	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, MATCHER_RC, NULL);
 
-	f = claws_fopen(rcpath, "rb");
+	f = g_fopen(rcpath, "rb");
 	g_free(rcpath);
 
 	if (f != NULL) {
 		matcher_parser_start_parsing(f);
-		claws_fclose(matcher_parserin);
+		fclose(matcher_parserin);
 	}
 }

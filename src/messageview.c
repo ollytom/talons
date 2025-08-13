@@ -864,8 +864,8 @@ static gint disposition_notification_send(MsgInfo *msginfo)
 	g_snprintf(tmp, sizeof(tmp), "%s%ctmpmsg%p",
 		   get_rc_dir(), G_DIR_SEPARATOR, msginfo);
 
-	if ((fp = claws_fopen(tmp, "wb")) == NULL) {
-		FILE_OP_ERROR(tmp, "claws_fopen");
+	if ((fp = g_fopen(tmp, "wb")) == NULL) {
+		FILE_OP_ERROR(tmp, "g_fopen");
 		return -1;
 	}
 
@@ -1035,8 +1035,8 @@ static gint disposition_notification_send(MsgInfo *msginfo)
 	if (ok < 0)
 		goto FILE_ERROR;
 
-	if (claws_safe_fclose(fp) == EOF) {
-		FILE_OP_ERROR(tmp, "claws_fclose");
+	if (safe_fclose(fp) == EOF) {
+		FILE_OP_ERROR(tmp, "fclose");
 		claws_unlink(tmp);
 		return -1;
 	}
@@ -1073,7 +1073,7 @@ static gint disposition_notification_send(MsgInfo *msginfo)
 	return ok;
 
 FILE_ERROR:
-	claws_fclose(fp);
+	fclose(fp);
 	claws_unlink(tmp);
 	return -1;
 }

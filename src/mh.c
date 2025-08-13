@@ -1325,10 +1325,10 @@ static gchar *get_unseen_seq_name(void)
 		gchar *profile_path = g_strconcat(
 			get_home_dir(), G_DIR_SEPARATOR_S,
 			".mh_profile", NULL);
-		FILE *fp = claws_fopen(profile_path, "r");
+		FILE *fp = g_fopen(profile_path, "r");
 		g_free(profile_path);
 		if (fp) {
-			while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+			while (fgets(buf, sizeof(buf), fp) != NULL) {
 				if (!strncmp(buf, "Unseen-Sequence:", strlen("Unseen-Sequence:"))) {
 					gchar *seq_tmp = buf+strlen("Unseen-Sequence:");
 					while (*seq_tmp == ' ')
@@ -1338,7 +1338,7 @@ static gchar *get_unseen_seq_name(void)
 					break;
 				}
 			}
-			claws_fclose(fp);
+			fclose(fp);
 		}
 		if (!seq_name)
 			seq_name = g_strdup("unseen");

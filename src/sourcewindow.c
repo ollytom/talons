@@ -151,8 +151,8 @@ void source_window_show_msg(SourceWindow *sourcewin, MsgInfo *msginfo)
 
 	cm_return_if_fail(file != NULL);
 
-	if ((fp = claws_fopen(file, "rb")) == NULL) {
-		FILE_OP_ERROR(file, "claws_fopen");
+	if ((fp = g_fopen(file, "rb")) == NULL) {
+		FILE_OP_ERROR(file, "g_fopen");
 		g_free(file);
 		return;
 	}
@@ -164,10 +164,10 @@ void source_window_show_msg(SourceWindow *sourcewin, MsgInfo *msginfo)
 	g_free(title);
 	g_free(file);
 
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL)
+	while (fgets(buf, sizeof(buf), fp) != NULL)
 		source_window_append(sourcewin, buf);
 
-	claws_fclose(fp);
+	fclose(fp);
 }
 
 static void source_window_append(SourceWindow *sourcewin, const gchar *str)

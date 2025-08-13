@@ -42,68 +42,16 @@
 gboolean prefs_common_get_flush_metadata(void);
 gboolean prefs_common_get_use_shred(void);
 
-static int safe_fclose(FILE *fp)
+int safe_fclose(FILE *fp)
 {
-	int r;
-	START_TIMING("");
-
 	if (fflush(fp) != 0) {
 		return EOF;
 	}
 	if (prefs_common_get_flush_metadata() && fsync(fileno(fp)) != 0) {
 		return EOF;
 	}
-
-	r = fclose(fp);
-	END_TIMING();
-
-	return r;
-}
-
-/* Unlock, then safe-close a file pointer
- * Safe close is done using fflush + fsync
- * if the according preference says so.
- */
-int claws_safe_fclose(FILE *fp)
-{
-#if HAVE_FGETS_UNLOCKED
-	funlockfile(fp);
-#endif
-	return safe_fclose(fp);
-}
-
-#if HAVE_FGETS_UNLOCKED
-
-/* Open a file and locks it once
- * so subsequent I/O is faster
- */
-FILE *claws_fopen(const char *file, const char *mode)
-{
-	FILE *fp = fopen(file, mode);
-	if (!fp)
-		return NULL;
-	flockfile(fp);
-	return fp;
-}
-
-FILE *claws_fdopen(int fd, const char *mode)
-{
-	FILE *fp = fdopen(fd, mode);
-	if (!fp)
-		return NULL;
-	flockfile(fp);
-	return fp;
-}
-
-/* Unlocks and close a file pointer
- */
-
-int claws_fclose(FILE *fp)
-{
-	funlockfile(fp);
 	return fclose(fp);
 }
-#endif
 
 int claws_unlink(const char *filename) 
 {
@@ -149,27 +97,27 @@ gint file_strip_crs(const gchar *file)
 	if (file == NULL)
 		goto freeout;
 
-	fp = claws_fopen(file, "rb");
+	fp = g_fopen(file, "rb");
 	if (!fp)
 		goto freeout;
 
-	outfp = claws_fopen(out, "wb");
+	outfp = g_fopen(out, "wb");
 	if (!outfp) {
-		claws_fclose(fp);
+		fclose(fp);
 		goto freeout;
 	}
 
-	while (claws_fgets(buf, sizeof (buf), fp) != NULL) {
+	while (fgets(buf, sizeof (buf), fp) != NULL) {
 		strcrchomp(buf);
-		if (claws_fputs(buf, outfp) == EOF) {
-			claws_fclose(fp);
-			claws_fclose(outfp);
+		if (fputs(buf, outfp) == EOF) {
+			fclose(fp);
+			fclose(outfp);
 			goto unlinkout;
 		}
 	}
 
-	claws_fclose(fp);
-	if (claws_safe_fclose(outfp) == EOF) {
+	fclose(fp);
+	if (safe_fclose(outfp) == EOF) {
 		goto unlinkout;
 	}
 	
@@ -197,14 +145,14 @@ gint append_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 
 	gboolean err = FALSE;
 
-	if ((src_fp = claws_fopen(src, "rb")) == NULL) {
-		FILE_OP_ERROR(src, "claws_fopen");
+	if ((src_fp = g_fopen(src, "rb")) == NULL) {
+		FILE_OP_ERROR(src, "g_fopen");
 		return -1;
 	}
 
-	if ((dest_fp = claws_fopen(dest, "ab")) == NULL) {
-		FILE_OP_ERROR(dest, "claws_fopen");
-		claws_fclose(src_fp);
+	if ((dest_fp = g_fopen(dest, "ab")) == NULL) {
+		FILE_OP_ERROR(dest, "g_fopen");
+		fclose(src_fp);
 		return -1;
 	}
 
@@ -213,25 +161,25 @@ gint append_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 		g_warning("can't change file mode: %s", dest);
 	}
 
-	while ((n_read = claws_fread(buf, sizeof(gchar), sizeof(buf), src_fp)) > 0) {
-		if (n_read < sizeof(buf) && claws_ferror(src_fp))
+	while ((n_read = fread(buf, sizeof(gchar), sizeof(buf), src_fp)) > 0) {
+		if (n_read < sizeof(buf) && ferror(src_fp))
 			break;
-		if (claws_fwrite(buf, 1, n_read, dest_fp) < n_read) {
+		if (fwrite(buf, 1, n_read, dest_fp) < n_read) {
 			g_warning("writing to %s failed", dest);
-			claws_fclose(dest_fp);
-			claws_fclose(src_fp);
+			fclose(dest_fp);
+			fclose(src_fp);
 			claws_unlink(dest);
 			return -1;
 		}
 	}
 
-	if (claws_ferror(src_fp)) {
-		FILE_OP_ERROR(src, "claws_fread");
+	if (ferror(src_fp)) {
+		FILE_OP_ERROR(src, "fread");
 		err = TRUE;
 	}
-	claws_fclose(src_fp);
-	if (claws_fclose(dest_fp) == EOF) {
-		FILE_OP_ERROR(dest, "claws_fclose");
+	fclose(src_fp);
+	if (fclose(dest_fp) == EOF) {
+		FILE_OP_ERROR(dest, "fclose");
 		err = TRUE;
 	}
 
@@ -251,23 +199,23 @@ gint copy_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 	gchar *dest_bak = NULL;
 	gboolean err = FALSE;
 
-	if ((src_fp = claws_fopen(src, "rb")) == NULL) {
-		FILE_OP_ERROR(src, "claws_fopen");
+	if ((src_fp = g_fopen(src, "rb")) == NULL) {
+		FILE_OP_ERROR(src, "g_fopen");
 		return -1;
 	}
 	if (is_file_exist(dest)) {
 		dest_bak = g_strconcat(dest, ".bak", NULL);
 		if (rename_force(dest, dest_bak) < 0) {
 			FILE_OP_ERROR(dest, "rename");
-			claws_fclose(src_fp);
+			fclose(src_fp);
 			g_free(dest_bak);
 			return -1;
 		}
 	}
 
-	if ((dest_fp = claws_fopen(dest, "wb")) == NULL) {
-		FILE_OP_ERROR(dest, "claws_fopen");
-		claws_fclose(src_fp);
+	if ((dest_fp = g_fopen(dest, "wb")) == NULL) {
+		FILE_OP_ERROR(dest, "g_fopen");
+		fclose(src_fp);
 		if (dest_bak) {
 			if (rename_force(dest_bak, dest) < 0)
 				FILE_OP_ERROR(dest_bak, "rename");
@@ -281,13 +229,13 @@ gint copy_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 		g_warning("can't change file mode: %s", dest);
 	}
 
-	while ((n_read = claws_fread(buf, sizeof(gchar), sizeof(buf), src_fp)) > 0) {
-		if (n_read < sizeof(buf) && claws_ferror(src_fp))
+	while ((n_read = fread(buf, sizeof(gchar), sizeof(buf), src_fp)) > 0) {
+		if (n_read < sizeof(buf) && ferror(src_fp))
 			break;
-		if (claws_fwrite(buf, 1, n_read, dest_fp) < n_read) {
+		if (fwrite(buf, 1, n_read, dest_fp) < n_read) {
 			g_warning("writing to %s failed", dest);
-			claws_fclose(dest_fp);
-			claws_fclose(src_fp);
+			fclose(dest_fp);
+			fclose(src_fp);
 			if (claws_unlink(dest) < 0)
                                 FILE_OP_ERROR(dest, "claws_unlink");
 			if (dest_bak) {
@@ -299,13 +247,13 @@ gint copy_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 		}
 	}
 
-	if (claws_ferror(src_fp)) {
-		FILE_OP_ERROR(src, "claws_fread");
+	if (ferror(src_fp)) {
+		FILE_OP_ERROR(src, "fread");
 		err = TRUE;
 	}
-	claws_fclose(src_fp);
-	if (claws_safe_fclose(dest_fp) == EOF) {
-		FILE_OP_ERROR(dest, "claws_fclose");
+	fclose(src_fp);
+	if (safe_fclose(dest_fp) == EOF) {
+		FILE_OP_ERROR(dest, "fclose");
 		err = TRUE;
 	}
 
@@ -364,10 +312,10 @@ gint copy_file_part_to_fp(FILE *fp, off_t offset, size_t length, FILE *dest_fp)
 	bytes_left = length;
 	to_read = MIN(bytes_left, sizeof(buf));
 
-	while ((n_read = claws_fread(buf, sizeof(gchar), to_read, fp)) > 0) {
-		if (n_read < to_read && claws_ferror(fp))
+	while ((n_read = fread(buf, sizeof(gchar), to_read, fp)) > 0) {
+		if (n_read < to_read && ferror(fp))
 			break;
-		if (claws_fwrite(buf, 1, n_read, dest_fp) < n_read) {
+		if (fwrite(buf, 1, n_read, dest_fp) < n_read) {
 			return -1;
 		}
 		bytes_left -= n_read;
@@ -376,8 +324,8 @@ gint copy_file_part_to_fp(FILE *fp, off_t offset, size_t length, FILE *dest_fp)
 		to_read = MIN(bytes_left, sizeof(buf));
 	}
 
-	if (claws_ferror(fp)) {
-		perror("claws_fread");
+	if (ferror(fp)) {
+		perror("fread");
 		return -1;
 	}
 
@@ -389,8 +337,8 @@ gint copy_file_part(FILE *fp, off_t offset, size_t length, const gchar *dest)
 	FILE *dest_fp;
 	gboolean err = FALSE;
 
-	if ((dest_fp = claws_fopen(dest, "wb")) == NULL) {
-		FILE_OP_ERROR(dest, "claws_fopen");
+	if ((dest_fp = g_fopen(dest, "wb")) == NULL) {
+		FILE_OP_ERROR(dest, "g_fopen");
 		return -1;
 	}
 
@@ -402,8 +350,8 @@ gint copy_file_part(FILE *fp, off_t offset, size_t length, const gchar *dest)
 	if (copy_file_part_to_fp(fp, offset, length, dest_fp) < 0)
 		err = TRUE;
 
-	if (claws_safe_fclose(dest_fp) == EOF) {
-		FILE_OP_ERROR(dest, "claws_fclose");
+	if (safe_fclose(dest_fp) == EOF) {
+		FILE_OP_ERROR(dest, "fclose");
 		err = TRUE;
 	}
 
@@ -427,14 +375,14 @@ gint canonicalize_file(const gchar *src, const gchar *dest)
 	if (src == NULL || dest == NULL)
 		return -1;
 
-	if ((src_fp = claws_fopen(src, "rb")) == NULL) {
-		FILE_OP_ERROR(src, "claws_fopen");
+	if ((src_fp = g_fopen(src, "rb")) == NULL) {
+		FILE_OP_ERROR(src, "g_fopen");
 		return -1;
 	}
 
-	if ((dest_fp = claws_fopen(dest, "wb")) == NULL) {
-		FILE_OP_ERROR(dest, "claws_fopen");
-		claws_fclose(src_fp);
+	if ((dest_fp = g_fopen(dest, "wb")) == NULL) {
+		FILE_OP_ERROR(dest, "g_fopen");
+		fclose(src_fp);
 		return -1;
 	}
 
@@ -443,7 +391,7 @@ gint canonicalize_file(const gchar *src, const gchar *dest)
 		g_warning("can't change file mode: %s", dest);
 	}
 
-	while (claws_fgets(buf, sizeof(buf), src_fp) != NULL) {
+	while (fgets(buf, sizeof(buf), src_fp) != NULL) {
 		gint r = 0;
 
 		len = strlen(buf);
@@ -452,40 +400,40 @@ gint canonicalize_file(const gchar *src, const gchar *dest)
 
 		if (buf[len - 1] != '\n') {
 			last_linebreak = TRUE;
-			r = claws_fputs(buf, dest_fp);
+			r = fputs(buf, dest_fp);
 		} else if (len > 1 && buf[len - 1] == '\n' && buf[len - 2] == '\r') {
-			r = claws_fputs(buf, dest_fp);
+			r = fputs(buf, dest_fp);
 		} else {
 			if (len > 1) {
-				r = claws_fwrite(buf, 1, len - 1, dest_fp);
+				r = fwrite(buf, 1, len - 1, dest_fp);
 				if (r != (len -1))
 					r = EOF;
 			}
 			if (r != EOF)
-				r = claws_fputs("\r\n", dest_fp);
+				r = fputs("\r\n", dest_fp);
 		}
 
 		if (r == EOF) {
 			g_warning("writing to %s failed", dest);
-			claws_fclose(dest_fp);
-			claws_fclose(src_fp);
+			fclose(dest_fp);
+			fclose(src_fp);
 			claws_unlink(dest);
 			return -1;
 		}
 	}
 
 	if (last_linebreak == TRUE) {
-		if (claws_fputs("\r\n", dest_fp) == EOF)
+		if (fputs("\r\n", dest_fp) == EOF)
 			err = TRUE;
 	}
 
-	if (claws_ferror(src_fp)) {
-		FILE_OP_ERROR(src, "claws_fgets");
+	if (ferror(src_fp)) {
+		FILE_OP_ERROR(src, "fgets");
 		err = TRUE;
 	}
-	claws_fclose(src_fp);
-	if (claws_safe_fclose(dest_fp) == EOF) {
-		FILE_OP_ERROR(dest, "claws_fclose");
+	fclose(src_fp);
+	if (safe_fclose(dest_fp) == EOF) {
+		FILE_OP_ERROR(dest, "fclose");
 		err = TRUE;
 	}
 
@@ -529,32 +477,32 @@ gint str_write_to_file(const gchar *str, const gchar *file, gboolean safe)
 	cm_return_val_if_fail(str != NULL, -1);
 	cm_return_val_if_fail(file != NULL, -1);
 
-	if ((fp = claws_fopen(file, "wb")) == NULL) {
-		FILE_OP_ERROR(file, "claws_fopen");
+	if ((fp = g_fopen(file, "wb")) == NULL) {
+		FILE_OP_ERROR(file, "g_fopen");
 		return -1;
 	}
 
 	len = strlen(str);
 	if (len == 0) {
-		claws_fclose(fp);
+		fclose(fp);
 		return 0;
 	}
 
-	if (claws_fwrite(str, 1, len, fp) != len) {
-		FILE_OP_ERROR(file, "claws_fwrite");
-		claws_fclose(fp);
+	if (fwrite(str, 1, len, fp) != len) {
+		FILE_OP_ERROR(file, "fwrite");
+		fclose(fp);
 		claws_unlink(file);
 		return -1;
 	}
 
 	if (safe) {
-		r = claws_safe_fclose(fp);
+		r = safe_fclose(fp);
 	} else {
-		r = claws_fclose(fp);
+		r = fclose(fp);
 	}
 
 	if (r == EOF) {
-		FILE_OP_ERROR(file, "claws_fclose");
+		FILE_OP_ERROR(file, "fclose");
 		claws_unlink(file);
 		return -1;
 	}
@@ -573,14 +521,14 @@ static gchar *file_read_stream_to_str_full(FILE *fp, gboolean recode)
 
 	array = g_byte_array_new();
 
-	while ((n_read = claws_fread(buf, sizeof(gchar), sizeof(buf), fp)) > 0) {
-		if (n_read < sizeof(buf) && claws_ferror(fp))
+	while ((n_read = fread(buf, sizeof(gchar), sizeof(buf), fp)) > 0) {
+		if (n_read < sizeof(buf) && ferror(fp))
 			break;
 		g_byte_array_append(array, buf, n_read);
 	}
 
-	if (claws_ferror(fp)) {
-		FILE_OP_ERROR("file stream", "claws_fread");
+	if (ferror(fp)) {
+		FILE_OP_ERROR("file stream", "fread");
 		g_byte_array_free(array, TRUE);
 		return NULL;
 	}
@@ -627,7 +575,7 @@ static gchar *file_read_to_str_full(const gchar *file, gboolean recode)
 	}
 
 #ifdef G_OS_WIN32
-	fp = claws_fopen (file, "rb");
+	fp = g_fopen (file, "rb");
 	if (fp == NULL) {
 		FILE_OP_ERROR(file, "open");
 		return NULL;
@@ -668,18 +616,18 @@ static gchar *file_read_to_str_full(const gchar *file, gboolean recode)
 	}
 	
 	/* get the FILE pointer */
-	fp = claws_fdopen(fd, "rb");
+	fp = fdopen(fd, "rb");
 
 	if (fp == NULL) {
-		FILE_OP_ERROR(file, "claws_fdopen");
-		close(fd); /* if fp isn't NULL, we'll use claws_fclose instead! */
+		FILE_OP_ERROR(file, "fdopen");
+		close(fd); /* if fp isn't NULL, we'll use fclose instead! */
 		return NULL;
 	}
 #endif
 
 	str = file_read_stream_to_str_full(fp, recode);
 
-	claws_fclose(fp);
+	fclose(fp);
 
 	return str;
 }
@@ -824,7 +772,7 @@ FILE *my_tmpfile(void)
 	
 #endif
 
-	fp = claws_fdopen(fd, "w+b");
+	fp = fdopen(fd, "w+b");
 	if (!fp)
 		close(fd);
 	else {
@@ -842,7 +790,7 @@ FILE *get_tmpfile_in_dir(const gchar *dir, gchar **filename)
 	fd = g_mkstemp(*filename);
 	if (fd < 0)
 		return NULL;
-	return claws_fdopen(fd, "w+");
+	return fdopen(fd, "w+");
 }
 
 FILE *str_open_as_stream(const gchar *str)
@@ -861,9 +809,9 @@ FILE *str_open_as_stream(const gchar *str)
 	len = strlen(str);
 	if (len == 0) return fp;
 
-	if (claws_fwrite(str, 1, len, fp) != len) {
-		FILE_OP_ERROR("str_open_as_stream", "claws_fwrite");
-		claws_fclose(fp);
+	if (fwrite(str, 1, len, fp) != len) {
+		FILE_OP_ERROR("str_open_as_stream", "fwrite");
+		fclose(fp);
 		return NULL;
 	}
 

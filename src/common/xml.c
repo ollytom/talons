@@ -86,7 +86,7 @@ XMLFile *xml_open_file(const gchar *path)
 
 	newfile = g_new(XMLFile, 1);
 
-	newfile->fp = claws_fopen(path, "rb");
+	newfile->fp = g_fopen(path, "rb");
 	if (!newfile->fp) {
 		FILE_OP_ERROR(path, "fopen");
 		g_free(newfile);
@@ -113,7 +113,7 @@ void xml_close_file(XMLFile *file)
 {
 	cm_return_if_fail(file != NULL);
 
-	if (file->fp) claws_fclose(file->fp);
+	if (file->fp) fclose(file->fp);
 
 	g_string_free(file->buf, TRUE);
 
@@ -425,7 +425,7 @@ static gint xml_read_line(XMLFile *file)
 	gchar buf[XMLBUFSIZE];
 	gint index;
 
-	if (claws_fgets(buf, sizeof(buf), file->fp) == NULL)
+	if (fgets(buf, sizeof(buf), file->fp) == NULL)
 		return -1;
 
 	index = file->bufp - file->buf->str;
@@ -606,22 +606,22 @@ gint xml_file_put_escape_str(FILE *fp, const gchar *str)
 	for (p = str; *p != '\0'; p++) {
 		switch (*p) {
 		case '<':
-			result = claws_fputs("&lt;", fp);
+			result = fputs("&lt;", fp);
 			break;
 		case '>':
-			result = claws_fputs("&gt;", fp);
+			result = fputs("&gt;", fp);
 			break;
 		case '&':
-			result = claws_fputs("&amp;", fp);
+			result = fputs("&amp;", fp);
 			break;
 		case '\'':
-			result = claws_fputs("&apos;", fp);
+			result = fputs("&apos;", fp);
 			break;
 		case '\"':
-			result = claws_fputs("&quot;", fp);
+			result = fputs("&quot;", fp);
 			break;
 		default:
-			result = claws_fputc(*p, fp);
+			result = fputc(*p, fp);
 		}
 	}
 
@@ -720,7 +720,7 @@ static int xml_write_tree_recursive(GNode *node, FILE *fp)
 
 	depth = g_node_depth(node) - 1;
 	for (i = 0; i < depth; i++)
-		TRY(claws_fputs("    ", fp) != EOF);
+		TRY(fputs("    ", fp) != EOF);
 
 	tag = ((XMLNode *) node->data)->tag;
 
@@ -731,13 +731,13 @@ static int xml_write_tree_recursive(GNode *node, FILE *fp)
 
 		TRY(fprintf(fp, " %s=\"", attr->name) > 0);
 		TRY(xml_file_put_escape_str(fp, attr->value) == 0);
-		TRY(claws_fputs("\"", fp) != EOF);
+		TRY(fputs("\"", fp) != EOF);
 		
 	}
 
 	if (node->children) {
 		GNode *child;
-		TRY(claws_fputs(">\n", fp) != EOF);
+		TRY(fputs(">\n", fp) != EOF);
 
 		child = node->children;
 		while (child) {
@@ -749,10 +749,10 @@ static int xml_write_tree_recursive(GNode *node, FILE *fp)
 		}
 
 		for (i = 0; i < depth; i++)
-			TRY(claws_fputs("    ", fp) != EOF);
+			TRY(fputs("    ", fp) != EOF);
 		TRY(fprintf(fp, "</%s>\n", tag->tag) > 0);
 	} else
-		TRY(claws_fputs(" />\n", fp) != EOF);
+		TRY(fputs(" />\n", fp) != EOF);
 	
 	return 0;
 }

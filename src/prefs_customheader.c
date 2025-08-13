@@ -320,8 +320,8 @@ void prefs_custom_header_read_config(PrefsAccount *ac)
 
 	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 			     CUSTOM_HEADER_RC, NULL);
-	if ((fp = claws_fopen(rcpath, "rb")) == NULL) {
-		if (ENOENT != errno) FILE_OP_ERROR(rcpath, "claws_fopen");
+	if ((fp = g_fopen(rcpath, "rb")) == NULL) {
+		if (ENOENT != errno) FILE_OP_ERROR(rcpath, "g_fopen");
 		g_free(rcpath);
 		ac->customhdr_list = NULL;
 		return;
@@ -335,7 +335,7 @@ void prefs_custom_header_read_config(PrefsAccount *ac)
 		custom_header_free(ch);
 	}
 
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		ch = custom_header_read_str(buf);
 		if (ch) {
 			if (ch->account_id == ac->account_id) {
@@ -346,7 +346,7 @@ void prefs_custom_header_read_config(PrefsAccount *ac)
 		}
 	}
 
-	claws_fclose(fp);
+	fclose(fp);
 }
 
 static void prefs_custom_header_write_config(PrefsAccount *ac)
@@ -365,12 +365,12 @@ static void prefs_custom_header_write_config(PrefsAccount *ac)
 	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 			     CUSTOM_HEADER_RC, NULL);
 
-	if ((fp = claws_fopen(rcpath, "rb")) == NULL) {
-		if (ENOENT != errno) FILE_OP_ERROR(rcpath, "claws_fopen");
+	if ((fp = g_fopen(rcpath, "rb")) == NULL) {
+		if (ENOENT != errno) FILE_OP_ERROR(rcpath, "g_fopen");
 	} else {
 		all_hdrs = NULL;
 
-		while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+		while (fgets(buf, sizeof(buf), fp) != NULL) {
 			ch = custom_header_read_str(buf);
 			if (ch) {
 				if (ch->account_id != ac->account_id)
@@ -381,7 +381,7 @@ static void prefs_custom_header_write_config(PrefsAccount *ac)
 			}
 		}
 
-		claws_fclose(fp);
+		fclose(fp);
 	}
 
 	if ((pfile = prefs_write_open(rcpath)) == NULL) {
@@ -395,9 +395,9 @@ static void prefs_custom_header_write_config(PrefsAccount *ac)
 		gchar *chstr;
 
 		chstr = custom_header_get_str(hdr);
-		if (claws_fputs(chstr, pfile->fp) == EOF ||
-		    claws_fputc('\n', pfile->fp) == EOF) {
-			FILE_OP_ERROR(rcpath, "claws_fputs || claws_fputc");
+		if (fputs(chstr, pfile->fp) == EOF ||
+		    fputc('\n', pfile->fp) == EOF) {
+			FILE_OP_ERROR(rcpath, "fputs || fputc");
 			prefs_file_close_revert(pfile);
 			g_free(rcpath);
 			g_free(chstr);
@@ -411,9 +411,9 @@ static void prefs_custom_header_write_config(PrefsAccount *ac)
 		gchar *chstr;
 
 		chstr = custom_header_get_str(hdr);
-		if (claws_fputs(chstr, pfile->fp) == EOF ||
-		    claws_fputc('\n', pfile->fp) == EOF) {
-			FILE_OP_ERROR(rcpath, "claws_fputs || claws_fputc");
+		if (fputs(chstr, pfile->fp) == EOF ||
+		    fputc('\n', pfile->fp) == EOF) {
+			FILE_OP_ERROR(rcpath, "fputs || fputc");
 			prefs_file_close_revert(pfile);
 			g_free(rcpath);
 			g_free(chstr);
@@ -629,13 +629,13 @@ static void prefs_custom_header_val_from_file_cb(void)
 				goto settext;
 			}
 
-			fp = claws_fopen(filename, "rb");
+			fp = g_fopen(filename, "rb");
 			if (!fp) {
 				g_free(filename);
 				return;
 			}
 
-			while ((len = claws_fread(inbuf, sizeof(gchar),
+			while ((len = fread(inbuf, sizeof(gchar),
 					    B64_LINE_SIZE, fp))
 			       == B64_LINE_SIZE) {
 				outbuf = g_base64_encode(inbuf, B64_LINE_SIZE);
@@ -645,14 +645,14 @@ static void prefs_custom_header_val_from_file_cb(void)
 				g_free(outbuf);
 				g_free(tmp);
 			}
-			if (len > 0 && claws_feof(fp)) {
+			if (len > 0 && feof(fp)) {
 				tmp = contents;
 				outbuf = g_base64_encode(inbuf, len);
 				contents = g_strconcat(tmp?tmp:"",outbuf, NULL);
 				g_free(outbuf);
 				g_free(tmp);
 			}
-			claws_fclose(fp);
+			fclose(fp);
 		}
 	} else {
 		if (!filename)

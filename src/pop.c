@@ -701,14 +701,14 @@ static void pop3_get_uidl_table(PrefsAccount *ac_prefs, Pop3Session *session)
 			   "-", sanitized_uid, NULL);
 
 	g_free(sanitized_uid);
-	if ((fp = claws_fopen(path, "rb")) == NULL) {
-		if (ENOENT != errno) FILE_OP_ERROR(path, "claws_fopen");
+	if ((fp = g_fopen(path, "rb")) == NULL) {
+		if (ENOENT != errno) FILE_OP_ERROR(path, "g_fopen");
 		g_free(path);
 		path = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 				   "uidl-", ac_prefs->recv_server,
 				   "-", ac_prefs->userid, NULL);
-		if ((fp = claws_fopen(path, "rb")) == NULL) {
-			if (ENOENT != errno) FILE_OP_ERROR(path, "claws_fopen");
+		if ((fp = g_fopen(path, "rb")) == NULL) {
+			if (ENOENT != errno) FILE_OP_ERROR(path, "g_fopen");
 			g_free(path);
 			session->uidl_table = table;
 			session->partial_recv_table = partial_recv_table;
@@ -719,7 +719,7 @@ static void pop3_get_uidl_table(PrefsAccount *ac_prefs, Pop3Session *session)
 
 	now = time(NULL);
 
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		gchar tmp[POPBUFSIZE];
 		strretchomp(buf);
 		recv_time = RECV_TIME_NONE;
@@ -751,7 +751,7 @@ static void pop3_get_uidl_table(PrefsAccount *ac_prefs, Pop3Session *session)
 				    GINT_TO_POINTER(partial_recv));
 	}
 
-	claws_fclose(fp);
+	fclose(fp);
 	session->uidl_table = table;
 	session->partial_recv_table = partial_recv_table;
 
@@ -788,8 +788,8 @@ gint pop3_write_uidl_list(Pop3Session *session)
 
 	g_free(sanitized_uid);
 
-	if ((fp = claws_fopen(tmp_path, "wb")) == NULL) {
-		FILE_OP_ERROR(tmp_path, "claws_fopen");
+	if ((fp = g_fopen(tmp_path, "wb")) == NULL) {
+		FILE_OP_ERROR(tmp_path, "g_fopen");
 		goto err_write;
 	}
 
@@ -804,8 +804,8 @@ gint pop3_write_uidl_list(Pop3Session *session)
 			    > 0);
 	}
 
-	if (claws_safe_fclose(fp) == EOF) {
-		FILE_OP_ERROR(tmp_path, "claws_fclose");
+	if (safe_fclose(fp) == EOF) {
+		FILE_OP_ERROR(tmp_path, "fclose");
 		fp = NULL;
 		goto err_write;
 	}
@@ -822,7 +822,7 @@ gint pop3_write_uidl_list(Pop3Session *session)
 	return 0;
 err_write:
 	if (fp)
-		claws_fclose(fp);
+		fclose(fp);
 	g_free(path);
 	g_free(tmp_path);
 	return -1;
@@ -838,8 +838,8 @@ static gint pop3_write_msg_to_file(const gchar *file, const gchar *data,
 
 	cm_return_val_if_fail(file != NULL, -1);
 
-	if ((fp = claws_fopen(file, "wb")) == NULL) {
-		FILE_OP_ERROR(file, "claws_fopen");
+	if ((fp = g_fopen(file, "wb")) == NULL) {
+		FILE_OP_ERROR(file, "g_fopen");
 		return -1;
 	}
 
@@ -849,7 +849,7 @@ static gint pop3_write_msg_to_file(const gchar *file, const gchar *data,
 	if (prefix != NULL) {
 		if (fprintf(fp, "%s\n", prefix) < 0) {
 			FILE_OP_ERROR(file, "fprintf");
-			claws_fclose(fp);
+			fclose(fp);
 			claws_unlink(file);
 			return -1;
 		}
@@ -861,11 +861,11 @@ static gint pop3_write_msg_to_file(const gchar *file, const gchar *data,
 	prev = data;
 	while ((cur = (gchar *)my_memmem(prev, len - (prev - data), "\r\n", 2))
 	       != NULL) {
-		if ((cur > prev && claws_fwrite(prev, 1, cur - prev, fp) < 1) ||
-		    claws_fputc('\n', fp) == EOF) {
-			FILE_OP_ERROR(file, "claws_fwrite");
+		if ((cur > prev && fwrite(prev, 1, cur - prev, fp) < 1) ||
+		    fputc('\n', fp) == EOF) {
+			FILE_OP_ERROR(file, "fwrite");
 			g_warning("can't write to file: %s", file);
-			claws_fclose(fp);
+			fclose(fp);
 			claws_unlink(file);
 			return -1;
 		}
@@ -888,25 +888,25 @@ static gint pop3_write_msg_to_file(const gchar *file, const gchar *data,
 	}
 
 	if (prev - data < len &&
-	    claws_fwrite(prev, 1, len - (prev - data), fp) < 1) {
-		FILE_OP_ERROR(file, "claws_fwrite");
+	    fwrite(prev, 1, len - (prev - data), fp) < 1) {
+		FILE_OP_ERROR(file, "fwrite");
 		g_warning("can't write to file: %s", file);
-		claws_fclose(fp);
+		fclose(fp);
 		claws_unlink(file);
 		return -1;
 	}
 	if (data[len - 1] != '\r' && data[len - 1] != '\n') {
-		if (claws_fputc('\n', fp) == EOF) {
-			FILE_OP_ERROR(file, "claws_fputc");
+		if (fputc('\n', fp) == EOF) {
+			FILE_OP_ERROR(file, "fputc");
 			g_warning("can't write to file: %s", file);
-			claws_fclose(fp);
+			fclose(fp);
 			claws_unlink(file);
 			return -1;
 		}
 	}
 
-	if (claws_safe_fclose(fp) == EOF) {
-		FILE_OP_ERROR(file, "claws_fclose");
+	if (safe_fclose(fp) == EOF) {
+		FILE_OP_ERROR(file, "fclose");
 		claws_unlink(file);
 		return -1;
 	}

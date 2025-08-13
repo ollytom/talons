@@ -1875,7 +1875,6 @@ static void addressbook_list_menu_setup( void ) {
 	gboolean canCut = FALSE;
 	gboolean canCopy = FALSE;
 	gboolean canPaste = FALSE;
-	gboolean canBrowse = FALSE;
 	gboolean canMerge = FALSE;
 
 	pobj = gtk_cmctree_node_get_row_data( GTK_CMCTREE(addrbook.ctree), addrbook.treeSelected );
@@ -1944,7 +1943,6 @@ static void addressbook_list_menu_setup( void ) {
 	/* Disable edit or browse if more than one row selected */
 	if( GTK_CMCLIST(clist)->selection && GTK_CMCLIST(clist)->selection->next ) {
 		canEdit = FALSE;
-		canBrowse = FALSE;
 	}
 
 	/* Allow merging persons or emails are selected */

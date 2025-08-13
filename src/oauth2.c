@@ -233,22 +233,22 @@ void account_read_oauth2_all(void)
 	debug_print("Reading oauth2rc file\n");
 
 	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, OAUTH2_RC, NULL);
-	if ((fp = claws_fopen(rcpath, "rb")) == NULL) {
+	if ((fp = g_fopen(rcpath, "rb")) == NULL) {
 	        //No oauth2rc file exists
 	        oauth2_text = g_strconcat("[Version: ", VERSION, "]\n", oauth2_tmpl, NULL);
 	        str_write_to_file(oauth2_text, rcpath, TRUE);
 		g_free(oauth2_text);
 		debug_print("No oauth2rc file found, new one created\n");
 
-		if ((fp = claws_fopen(rcpath, "rb")) == NULL) {
-		        if (ENOENT != errno) FILE_OP_ERROR(rcpath, "claws_fopen");
+		if ((fp = g_fopen(rcpath, "rb")) == NULL) {
+		        if (ENOENT != errno) FILE_OP_ERROR(rcpath, "g_fopen");
 			g_free(rcpath);
 			return;
 		}
 	}else{
 	        //oauth2rc file exists. Check version and whether protected from update
 	        version_text = g_strconcat("[Version: ", VERSION, "]\n", NULL);
-	        while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	        while (fgets(buf, sizeof(buf), fp) != NULL) {
 		        if (!strncmp(buf, "protected=0", 11)) {
 			  protected = 0;
 			  debug_print("oauth2rc file is unprotected from updates\n");
@@ -265,14 +265,14 @@ void account_read_oauth2_all(void)
 		if(!protected && !matchedversion){
 		        //oauth2rc not protected from updates and does not match this version of Claws
 		        //Update it to the latest template version.
-		        claws_fclose(fp);
+		        fclose(fp);
 			oauth2_text = g_strconcat("[Version: ", VERSION, "]\n", oauth2_tmpl, NULL);
 			str_write_to_file(oauth2_text, rcpath, TRUE);
 			g_free(oauth2_text);
 			debug_print("Replacement oauth2rc file created to match this Claws version\n");
 
-			if ((fp = claws_fopen(rcpath, "rb")) == NULL) {
-			        if (ENOENT != errno) FILE_OP_ERROR(rcpath, "claws_fopen");
+			if ((fp = g_fopen(rcpath, "rb")) == NULL) {
+			        if (ENOENT != errno) FILE_OP_ERROR(rcpath, "g_fopen");
 				g_free(rcpath);
 				return;
 			}
@@ -280,7 +280,7 @@ void account_read_oauth2_all(void)
 	}
 	g_free(rcpath);
 
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		if (!strncmp(buf, "[Oauth2: ", 9)) {
 			strretchomp(buf);
 			memmove(buf, buf + 1, sizeof(buf) - 1);
@@ -290,7 +290,7 @@ void account_read_oauth2_all(void)
 						       g_strdup(buf));
 		}
 	}
-	claws_fclose(fp);
+	fclose(fp);
 
 	/* read config data from file */
 	for (cur = oauth2_label_list; cur != NULL; cur = cur->next) {

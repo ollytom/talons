@@ -1469,17 +1469,17 @@ static guint get_file_size_with_crs(const gchar *filename)
 	if (filename == NULL)
 		return -1;
 
-	fp = claws_fopen(filename, "rb");
+	fp = g_fopen(filename, "rb");
 	if (!fp)
 		return -1;
 
-	while (claws_fgets(buf, sizeof (buf), fp) != NULL) {
+	while (fgets(buf, sizeof (buf), fp) != NULL) {
 		cnt += strlen(buf);
 		if (!strstr(buf, "\r\n") && strstr(buf, "\n"))
 			cnt++;
 	}
 
-	claws_fclose(fp);
+	fclose(fp);
 	return cnt;
 }
 

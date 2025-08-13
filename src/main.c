@@ -1231,12 +1231,12 @@ static void parse_cmd_compose_from_file(const gchar *fn, GString *body)
 	if (isstdin)
 		fp = stdin;
 	else {
-		fp = claws_fopen(fn, "r");
+		fp = g_fopen(fn, "r");
 		if (!fp)
 			G_PRINT_EXIT(_("Cannot open filename for reading\n"));
 	}
 
-	while (claws_fgets(fb, sizeof(fb), fp)) {
+	while (fgets(fb, sizeof(fb), fp)) {
 		gchar *tmp;
 		strretchomp(fb);
 		if (*fb == '\0')
@@ -1266,11 +1266,11 @@ static void parse_cmd_compose_from_file(const gchar *fn, GString *body)
 	g_string_append(body, to);
 	g_free(to);
 	g_string_append(body, "?body=");
-	while (claws_fgets(fb, sizeof(fb), fp)) {
+	while (fgets(fb, sizeof(fb), fp)) {
 		g_string_append_uri_escaped(body, fb, NULL, TRUE);
 	}
 	if (!isstdin)
-		claws_fclose(fp);
+		fclose(fp);
 	/* append the remaining headers */
 	g_string_append(body, headers->str);
 	g_string_free(headers, TRUE);
@@ -1908,7 +1908,7 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
  			fd_gets(sock, buf, sizeof(buf) - 1);
 			buf[sizeof(buf) - 1] = '\0';
  			if (!STRNCMP(buf, ".\n")) break;
-			if (claws_fputs(buf, stdout) == EOF) {
+			if (fputs(buf, stdout) == EOF) {
 				g_warning("writing to stdout failed");
 				break;
 			}
@@ -1935,7 +1935,7 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 			fd_gets(sock, buf, sizeof(buf) - 1);
 			buf[sizeof(buf) - 1] = '\0';
 			if (!STRNCMP(buf, ".\n")) break;
-			if (claws_fputs(buf, stdout) == EOF) {
+			if (fputs(buf, stdout) == EOF) {
 				g_warning("writing to stdout failed");
 				break;
 			}

@@ -26,38 +26,7 @@
 #include <stdio.h>
 #include <glib.h>
 
-#if HAVE_FGETS_UNLOCKED
-#define claws_fgets fgets_unlocked
-#define claws_fgetc fgetc_unlocked
-#define claws_fputs fputs_unlocked
-#define claws_fputc fputc_unlocked
-#define claws_fread fread_unlocked
-#define claws_fwrite fwrite_unlocked
-#define claws_feof feof_unlocked
-#define claws_ferror ferror_unlocked
-
-FILE *claws_fopen		(const char *file,
-				 const char *mode);
-FILE *claws_fdopen		(int fd,
-				 const char *mode);
-int claws_fclose		(FILE *fp);
-
-#else
-
-#define claws_fgets fgets
-#define claws_fgetc fgetc
-#define claws_fputs fputs
-#define claws_fputc fputc
-#define claws_fread fread
-#define claws_fwrite fwrite
-#define claws_feof feof
-#define claws_ferror ferror
-#define claws_fopen g_fopen
-#define claws_fdopen fdopen
-#define claws_fclose fclose
-#endif
-
-int claws_safe_fclose		(FILE *fp);
+int safe_fclose(FILE *fp);
 int claws_unlink		(const char	*filename);
 
 gint file_strip_crs		(const gchar	*file);

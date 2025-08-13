@@ -965,11 +965,11 @@ static int addrbook_write_elem_s(FILE *fp, gint lvl, gchar *name)
 {
 	gint i;
 	for (i = 0; i < lvl; i++)
-		if (claws_fputs("  ", fp) == EOF)
+		if (fputs("  ", fp) == EOF)
 			return -1;
-	if (claws_fputs("<", fp) == EOF)
+	if (fputs("<", fp) == EOF)
 		return -1;
-	if (claws_fputs(name, fp) == EOF)
+	if (fputs(name, fp) == EOF)
 		return -1;
 
 	return 0;
@@ -985,13 +985,13 @@ static int addrbook_write_elem_e(FILE *fp, gint lvl, gchar *name)
 {
 	gint i;
 	for(i = 0; i < lvl; i++)
-		if (claws_fputs("  ", fp) == EOF)
+		if (fputs("  ", fp) == EOF)
 			return -1;
-	if (claws_fputs("</", fp) == EOF)
+	if (fputs("</", fp) == EOF)
 		return -1;
-	if (claws_fputs(name, fp) == EOF)
+	if (fputs(name, fp) == EOF)
 		return -1;
-	if (claws_fputs(">\n", fp) == EOF)
+	if (fputs(">\n", fp) == EOF)
 		return -1;
 
 	return 0;
@@ -1005,15 +1005,15 @@ static int addrbook_write_elem_e(FILE *fp, gint lvl, gchar *name)
  */
 static int addrbook_write_attr(FILE *fp, gchar *name, gchar *value)
 {
-	if (claws_fputs(" ", fp) == EOF)
+	if (fputs(" ", fp) == EOF)
 		return -1;
-	if (claws_fputs(name, fp) == EOF)
+	if (fputs(name, fp) == EOF)
 		return -1;
-	if (claws_fputs("=\"", fp) == EOF)
+	if (fputs("=\"", fp) == EOF)
 		return -1;
 	if (xml_file_put_escape_str(fp, value) < 0)
 		return -1;
-	if (claws_fputs("\"", fp) == EOF)
+	if (fputs("\"", fp) == EOF)
 		return -1;
 
 	return 0;
@@ -1056,13 +1056,13 @@ static void addrbook_write_item_person_vis(gpointer key, gpointer value,
 				data->error = TRUE;
 			if (addrbook_write_attr(fp, AB_ATTAG_COMMON_NAME, ADDRITEM_NAME(person)) < 0)
 				data->error = TRUE;
-			if (claws_fputs(" >\n", fp) == EOF)
+			if (fputs(" >\n", fp) == EOF)
 				data->error = TRUE;
 
 			/* Output email addresses */
 			if (addrbook_write_elem_s(fp, 2, AB_ELTAG_ADDRESS_LIST) < 0)
 				data->error = TRUE;
-			if (claws_fputs(">\n", fp) == EOF)
+			if (fputs(">\n", fp) == EOF)
 				data->error = TRUE;
 			node = person->listEMail;
 			while (node) {
@@ -1077,7 +1077,7 @@ static void addrbook_write_item_person_vis(gpointer key, gpointer value,
 					data->error = TRUE;
 				if (addrbook_write_attr(fp, AB_ATTAG_REMARKS, email->remarks) < 0)
 					data->error = TRUE;
-				if (claws_fputs(" />\n", fp) == EOF)
+				if (fputs(" />\n", fp) == EOF)
 					data->error = TRUE;
 				node = g_list_next(node);
 			}
@@ -1087,7 +1087,7 @@ static void addrbook_write_item_person_vis(gpointer key, gpointer value,
 			/* Output user attributes */
 			if (addrbook_write_elem_s(fp, 2, AB_ELTAG_ATTRIBUTE_LIST) < 0)
 				data->error = TRUE;
-			if (claws_fputs(">\n", fp) == EOF)
+			if (fputs(">\n", fp) == EOF)
 				data->error = TRUE;
 			node = person->listAttrib;
 			while (node) {
@@ -1098,7 +1098,7 @@ static void addrbook_write_item_person_vis(gpointer key, gpointer value,
 					data->error = TRUE;
 				if (addrbook_write_attr(fp, AB_ATTAG_NAME, attrib->name) < 0)
 					data->error = TRUE;
-				if (claws_fputs(" >", fp) == EOF)
+				if (fputs(" >", fp) == EOF)
 					data->error = TRUE;
 				if (xml_file_put_escape_str(fp, attrib->value) < 0)
 					data->error = TRUE;
@@ -1143,13 +1143,13 @@ static void addrbook_write_item_group_vis(gpointer key, gpointer value,
 				data->error = TRUE;
 			if (addrbook_write_attr(fp, AB_ATTAG_REMARKS, group->remarks) < 0)
 				data->error = TRUE;
-			if (claws_fputs(" >\n", fp) == EOF)
+			if (fputs(" >\n", fp) == EOF)
 				data->error = TRUE;
 
 			/* Output email address links */
 			if (addrbook_write_elem_s(fp, 2, AB_ELTAG_MEMBER_LIST) < 0)
 				data->error = TRUE;
-			if (claws_fputs(">\n", fp) == EOF)
+			if (fputs(">\n", fp) == EOF)
 				data->error = TRUE;
 			node = group->listEMail;
 			while (node) {
@@ -1161,7 +1161,7 @@ static void addrbook_write_item_group_vis(gpointer key, gpointer value,
 					data->error = TRUE;
 				if (addrbook_write_attr(fp, AB_ATTAG_EID, ADDRITEM_ID(email)) < 0)
 					data->error = TRUE;
-				if (claws_fputs(" />\n", fp) == EOF)
+				if (fputs(" />\n", fp) == EOF)
 					data->error = TRUE;
 				node = g_list_next(node);
 			}
@@ -1201,11 +1201,11 @@ static void addrbook_write_item_folder_vis(gpointer key, gpointer value,
 				data->error = TRUE;
 			if (addrbook_write_attr(fp, AB_ATTAG_REMARKS, folder->remarks) < 0)
 				data->error = TRUE;
-			if (claws_fputs(" >\n", fp) == EOF)
+			if (fputs(" >\n", fp) == EOF)
 				data->error = TRUE;
 			if (addrbook_write_elem_s(fp, 2, AB_ELTAG_ITEM_LIST) < 0)
 				data->error = TRUE;
-			if (claws_fputs(">\n", fp) == EOF)
+			if (fputs(">\n", fp) == EOF)
 				data->error = TRUE;
 
 			/* Output persons */
@@ -1218,7 +1218,7 @@ static void addrbook_write_item_folder_vis(gpointer key, gpointer value,
 					data->error = TRUE;
 				if (addrbook_write_attr(fp, AB_ATTAG_UID, ADDRITEM_ID(item)) < 0)
 					data->error = TRUE;
-				if (claws_fputs(" />\n", fp) == EOF)
+				if (fputs(" />\n", fp) == EOF)
 					data->error = TRUE;
 				node = g_list_next(node);
 			}
@@ -1233,7 +1233,7 @@ static void addrbook_write_item_folder_vis(gpointer key, gpointer value,
 					data->error = TRUE;
 				if (addrbook_write_attr(fp, AB_ATTAG_UID, ADDRITEM_ID(item)) < 0)
 					data->error = TRUE;
-				if (claws_fputs(" />\n", fp) == EOF)
+				if (fputs(" />\n", fp) == EOF)
 					data->error = TRUE;
 				node = g_list_next(node);
 			}
@@ -1248,7 +1248,7 @@ static void addrbook_write_item_folder_vis(gpointer key, gpointer value,
 					data->error = TRUE;
 				if (addrbook_write_attr(fp, AB_ATTAG_UID, ADDRITEM_ID(item)) < 0)
 					data->error = TRUE;
-				if (claws_fputs(" />\n", fp) == EOF)
+				if (fputs(" />\n", fp) == EOF)
 					data->error = TRUE;
 				node = g_list_next(node);
 			}
@@ -1282,10 +1282,10 @@ static gint addrbook_write_to(AddressBookFile *book, gchar *newFile)
 
 	book->retVal = MGU_OPEN_FILE;
 #ifdef DEV_STANDALONE
-	fp = claws_fopen(fileSpec, "wb");
+	fp = g_fopen(fileSpec, "wb");
 	g_free(fileSpec);
 	if (fp) {
-		if (claws_fputs("<?xml version=\"1.0\" ?>\n", fp) == EOF) {
+		if (fputs("<?xml version=\"1.0\" ?>\n", fp) == EOF) {
 			book->retVal = MGU_ERROR_WRITE;
 			return book->retVal;
 		}
@@ -1302,7 +1302,7 @@ static gint addrbook_write_to(AddressBookFile *book, gchar *newFile)
 		if (addrbook_write_attr(fp, AB_ATTAG_NAME,
 				    addrcache_get_name(book->addressCache)) < 0)
 			goto fail;
-		if (claws_fputs(" >\n", fp) == EOF)
+		if (fputs(" >\n", fp) == EOF)
 			goto fail;
 
 		/* Output all persons */
@@ -1333,7 +1333,7 @@ static gint addrbook_write_to(AddressBookFile *book, gchar *newFile)
 
 		book->retVal = MGU_SUCCESS;
 #ifdef DEV_STANDALONE
-		claws_safe_fclose(fp);
+		safe_fclose(fp);
 #else
 		if (prefs_file_close( pfile ) < 0)
 			book->retVal = MGU_ERROR_WRITE;

@@ -52,10 +52,10 @@
 #define FPUTS_TO_TMP_ABORT_IF_FAIL(s) \
 { \
 	lines++; \
-	if (claws_fputs(s, tmp_fp) == EOF) { \
+	if (fputs(s, tmp_fp) == EOF) { \
 		g_warning("can't write to temporary file"); \
-		claws_fclose(tmp_fp); \
-		claws_fclose(mbox_fp); \
+		fclose(tmp_fp); \
+		fclose(mbox_fp); \
 		claws_unlink(tmp_file); \
 		g_free(tmp_file); \
 		return -1; \
@@ -89,24 +89,24 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 		return -1;
 	}
 
-	if ((mbox_fp = claws_fopen(mbox, "rb")) == NULL) {
-		FILE_OP_ERROR(mbox, "claws_fopen");
+	if ((mbox_fp = g_fopen(mbox, "rb")) == NULL) {
+		FILE_OP_ERROR(mbox, "g_fopen");
 		alertpanel_error(_("Could not open mbox file:\n%s\n"), mbox);
 		return -1;
 	}
 
 	/* ignore empty lines on the head */
 	do {
-		if (claws_fgets(buf, sizeof(buf), mbox_fp) == NULL) {
+		if (fgets(buf, sizeof(buf), mbox_fp) == NULL) {
 			g_warning("can't read mbox file");
-			claws_fclose(mbox_fp);
+			fclose(mbox_fp);
 			return -1;
 		}
 	} while (buf[0] == '\n' || buf[0] == '\r');
 
 	if (strncmp(buf, "From ", 5) != 0) {
 		g_warning("invalid mbox format: %s", mbox);
-		claws_fclose(mbox_fp);
+		fclose(mbox_fp);
 		return -1;
 	}
 
@@ -136,10 +136,10 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 			GTK_EVENTS_FLUSH();
 		}
 
-		if ((tmp_fp = claws_fopen(tmp_file, "wb")) == NULL) {
-			FILE_OP_ERROR(tmp_file, "claws_fopen");
+		if ((tmp_fp = g_fopen(tmp_file, "wb")) == NULL) {
+			FILE_OP_ERROR(tmp_file, "g_fopen");
 			g_warning("can't open temporary file");
-			claws_fclose(mbox_fp);
+			fclose(mbox_fp);
 			g_free(tmp_file);
 			return -1;
 		}
@@ -151,7 +151,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 		lines = 0;
 
 		/* process all lines from mboxrc file */
-		while (claws_fgets(buf, sizeof(buf), mbox_fp) != NULL) {
+		while (fgets(buf, sizeof(buf), mbox_fp) != NULL) {
 			int offset;
 
 			/* eat empty lines */
@@ -207,22 +207,22 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 		}
 
 		/* more emails to expect? */
-		more = !claws_feof(mbox_fp);
+		more = !feof(mbox_fp);
 
 		/* warn if email part is empty (it's the minimum check
 		   we can do */
 		if (lines == 0) {
 			g_warning("malformed mbox: %s: message %d is empty", mbox, msgs);
-			claws_fclose(tmp_fp);
-			claws_fclose(mbox_fp);
+			fclose(tmp_fp);
+			fclose(mbox_fp);
 			claws_unlink(tmp_file);
 			return -1;
 		}
 
-		if (claws_safe_fclose(tmp_fp) == EOF) {
-			FILE_OP_ERROR(tmp_file, "claws_fclose");
+		if (safe_fclose(tmp_fp) == EOF) {
+			FILE_OP_ERROR(tmp_file, "fclose");
 			g_warning("can't write to temporary file");
-			claws_fclose(mbox_fp);
+			fclose(mbox_fp);
 			claws_unlink(tmp_file);
 			g_free(tmp_file);
 			return -1;
@@ -230,7 +230,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 
 		if (apply_filter) {
 			if ((msgnum = folder_item_add_msg(dropfolder, tmp_file, NULL, TRUE)) < 0) {
-				claws_fclose(mbox_fp);
+				fclose(mbox_fp);
 				claws_unlink(tmp_file);
 				g_free(tmp_file);
 				return -1;
@@ -293,7 +293,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 	folder_item_update_thaw();
 
 	g_free(tmp_file);
-	claws_fclose(mbox_fp);
+	fclose(mbox_fp);
 	debug_print("%d messages found.\n", msgs);
 
 	return msgs;
@@ -310,8 +310,8 @@ gint lock_mbox(const gchar *base, LockType type)
 		FILE *lockfp;
 
 		lockfile = g_strdup_printf("%s.%d", base, getpid());
-		if ((lockfp = claws_fopen(lockfile, "wb")) == NULL) {
-			FILE_OP_ERROR(lockfile, "claws_fopen");
+		if ((lockfp = g_fopen(lockfile, "wb")) == NULL) {
+			FILE_OP_ERROR(lockfile, "g_fopen");
 			g_warning("can't create lock file '%s', use 'flock' instead of 'file' if possible", lockfile);
 			g_free(lockfile);
 			return -1;
@@ -320,12 +320,12 @@ gint lock_mbox(const gchar *base, LockType type)
 		if (fprintf(lockfp, "%d\n", getpid()) < 0) {
 			FILE_OP_ERROR(lockfile, "fprintf");
 			g_free(lockfile);
-			claws_fclose(lockfp);
+			fclose(lockfp);
 			return -1;
 		}
 
-		if (claws_safe_fclose(lockfp) == EOF) {
-			FILE_OP_ERROR(lockfile, "claws_fclose");
+		if (safe_fclose(lockfp) == EOF) {
+			FILE_OP_ERROR(lockfile, "fclose");
 			g_free(lockfile);
 			return -1;
 		}
@@ -476,8 +476,8 @@ gint copy_mbox(gint srcfd, const gchar *dest)
 		return -1;
 	}
 
-	if ((dest_fp = claws_fopen(dest, "wb")) == NULL) {
-		FILE_OP_ERROR(dest, "claws_fopen");
+	if ((dest_fp = g_fopen(dest, "wb")) == NULL) {
+		FILE_OP_ERROR(dest, "g_fopen");
 		return -1;
 	}
 
@@ -487,9 +487,9 @@ gint copy_mbox(gint srcfd, const gchar *dest)
 	}
 
 	while ((n_read = read(srcfd, buf, sizeof(buf))) > 0) {
-		if (claws_fwrite(buf, 1, n_read, dest_fp) < n_read) {
+		if (fwrite(buf, 1, n_read, dest_fp) < n_read) {
 			g_warning("writing to %s failed", dest);
-			claws_fclose(dest_fp);
+			fclose(dest_fp);
 			claws_unlink(dest);
 			return -1;
 		}
@@ -501,8 +501,8 @@ gint copy_mbox(gint srcfd, const gchar *dest)
 		err = TRUE;
 	}
 
-	if (claws_safe_fclose(dest_fp) == EOF) {
-		FILE_OP_ERROR(dest, "claws_fclose");
+	if (safe_fclose(dest_fp) == EOF) {
+		FILE_OP_ERROR(dest, "fclose");
 		err = TRUE;
 	}
 
@@ -518,12 +518,12 @@ void empty_mbox(const gchar *mbox)
 {
 	FILE *fp;
 
-	if ((fp = claws_fopen(mbox, "wb")) == NULL) {
-		FILE_OP_ERROR(mbox, "claws_fopen");
+	if ((fp = g_fopen(mbox, "wb")) == NULL) {
+		FILE_OP_ERROR(mbox, "g_fopen");
 		g_warning("can't truncate mailbox to zero");
 		return;
 	}
-	claws_safe_fclose(fp);
+	safe_fclose(fp);
 }
 
 gint export_list_to_mbox(GSList *mlist, const gchar *mbox)
@@ -547,8 +547,8 @@ gint export_list_to_mbox(GSList *mlist, const gchar *mbox)
 		}
 	}
 
-	if ((mbox_fp = claws_fopen(mbox, "wb")) == NULL) {
-		FILE_OP_ERROR(mbox, "claws_fopen");
+	if ((mbox_fp = g_fopen(mbox, "wb")) == NULL) {
+		FILE_OP_ERROR(mbox, "g_fopen");
 		alertpanel_error(_("Could not create mbox file:\n%s\n"), mbox);
 		return -1;
 	}
@@ -574,14 +574,14 @@ gint export_list_to_mbox(GSList *mlist, const gchar *mbox)
 		if (fprintf(mbox_fp, "From %s %s",
 			buf, ctime_r(&msginfo->date_t, buft)) < 0) {
 			err = -1;
-			claws_fclose(msg_fp);
+			fclose(msg_fp);
 			goto out;
 		}
 
 		buf[0] = '\0';
 
 		/* write email to mboxrc */
-		while (claws_fgets(buf, sizeof(buf), msg_fp) != NULL) {
+		while (fgets(buf, sizeof(buf), msg_fp) != NULL) {
 			/* quote any From, >From, >>From, etc., according to mbox format specs */
 			int offset;
 
@@ -591,15 +591,15 @@ gint export_list_to_mbox(GSList *mlist, const gchar *mbox)
 				offset++;
 			}
 			if (!strncmp(buf+offset, "From ", 5)) {
-				if (claws_fputc('>', mbox_fp) == EOF) {
+				if (fputc('>', mbox_fp) == EOF) {
 					err = -1;
-					claws_fclose(msg_fp);
+					fclose(msg_fp);
 					goto out;
 				}
 			}
-			if (claws_fputs(buf, mbox_fp) == EOF) {
+			if (fputs(buf, mbox_fp) == EOF) {
 				err = -1;
-				claws_fclose(msg_fp);
+				fclose(msg_fp);
 				goto out;
 			}
 		}
@@ -609,22 +609,22 @@ gint export_list_to_mbox(GSList *mlist, const gchar *mbox)
 		if (len > 0) {
 			len--;
 			if ((buf[len] != '\n') && (buf[len] != '\r')) {
-				if (claws_fputc('\n', mbox_fp) == EOF) {
+				if (fputc('\n', mbox_fp) == EOF) {
 					err = -1;
-					claws_fclose(msg_fp);
+					fclose(msg_fp);
 					goto out;
 				}
 			}
 		}
 
 		/* add a trailing empty line */
-		if (claws_fputc('\n', mbox_fp) == EOF) {
+		if (fputc('\n', mbox_fp) == EOF) {
 			err = -1;
-			claws_fclose(msg_fp);
+			fclose(msg_fp);
 			goto out;
 		}
 
-		claws_safe_fclose(msg_fp);
+		safe_fclose(msg_fp);
 		statusbar_progress_all(msgs++,total, 500);
 		if (msgs%500 == 0)
 			GTK_EVENTS_FLUSH();
@@ -634,7 +634,7 @@ out:
 	statusbar_progress_all(0,0,0);
 	statusbar_pop_all();
 
-	claws_safe_fclose(mbox_fp);
+	safe_fclose(mbox_fp);
 
 	return err;
 }

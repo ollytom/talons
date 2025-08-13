@@ -124,7 +124,7 @@ static ERTFState ertf_read_line(ERTFParser *parser)
 	gchar buf2[ERTFBUFSIZE];
 	gint index;
 
-	if (claws_fgets(buf, sizeof(buf), parser->fp) == NULL) {
+	if (fgets(buf, sizeof(buf), parser->fp) == NULL) {
 		parser->state = ERTF_EOF;
 		return ERTF_EOF;
 	}

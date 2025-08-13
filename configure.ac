@@ -341,7 +341,7 @@ AC_CHECK_SIZEOF(unsigned long, 4)
 
 dnl Checks for library functions.
 AC_FUNC_ALLOCA
-AC_CHECK_FUNCS(fchmod fgets_unlocked flock lockf strcasestr)
+AC_CHECK_FUNCS(fchmod flock lockf strcasestr)
 
 dnl *****************
 dnl ** common code **

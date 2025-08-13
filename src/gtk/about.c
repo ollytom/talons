@@ -552,14 +552,14 @@ static GtkWidget *about_create_child_page_release_notes(void)
 	gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
 
 	path = g_strconcat(DOCDIR, G_DIR_SEPARATOR_S, RELEASE_NOTES_FILE, NULL);
-	if ((fp = claws_fopen(path, "rb")) == NULL) {
-		if (ENOENT != errno) FILE_OP_ERROR(path, "claws_fopen");
+	if ((fp = g_fopen(path, "rb")) == NULL) {
+		if (ENOENT != errno) FILE_OP_ERROR(path, "g_fopen");
 		g_free(path);
 		return scrolledwin;
 	}
 	g_free(path);
 
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		const gchar *src_codeset = conv_get_locale_charset_str();
 		const gchar *dest_codeset = CS_UTF_8;
 		gchar *tmp;
@@ -573,7 +573,7 @@ static GtkWidget *about_create_child_page_release_notes(void)
 		gtk_text_buffer_insert(buffer, &iter, tmp, -1);
 		g_free(tmp);
 	}
-	claws_fclose(fp);
+	fclose(fp);
 
 	return scrolledwin;
 }

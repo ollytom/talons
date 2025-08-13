@@ -496,8 +496,8 @@ FILE *procmsg_open_message(MsgInfo *msginfo, gboolean skip_special_headers)
 			return NULL;
 	}
 
-	if ((fp = claws_fopen(file, "rb")) == NULL) {
-		FILE_OP_ERROR(file, "claws_fopen");
+	if ((fp = g_fopen(file, "rb")) == NULL) {
+		FILE_OP_ERROR(file, "g_fopen");
 		g_free(file);
 		return NULL;
 	}
@@ -508,7 +508,7 @@ FILE *procmsg_open_message(MsgInfo *msginfo, gboolean skip_special_headers)
 	    skip_special_headers == TRUE) {
 		gchar buf[BUFFSIZE];
 
-		while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+		while (fgets(buf, sizeof(buf), fp) != NULL) {
 			/* new way */
 			if ((!strncmp(buf, "X-Claws-End-Special-Headers: 1",
 				strlen("X-Claws-End-Special-Headers:"))) ||
@@ -582,7 +582,7 @@ void procmsg_get_filter_keyword(MsgInfo *msginfo, gchar **header, gchar **key,
 		if ((fp = procmsg_open_message(msginfo, FALSE)) == NULL)
 			return;
 		procheader_get_header_fields(fp, hentry);
-		claws_fclose(fp);
+		fclose(fp);
 
 #define SET_FILTER_KEY(hstr, idx)	\
 {					\
@@ -766,8 +766,8 @@ static PrefsAccount *procmsg_get_account_from_file(const gchar *file)
 
 	cm_return_val_if_fail(file != NULL, NULL);
 
-	if ((fp = claws_fopen(file, "rb")) == NULL) {
-		FILE_OP_ERROR(file, "claws_fopen");
+	if ((fp = g_fopen(file, "rb")) == NULL) {
+		FILE_OP_ERROR(file, "g_fopen");
 		return NULL;
 	}
 
@@ -783,7 +783,7 @@ static PrefsAccount *procmsg_get_account_from_file(const gchar *file)
 	}
 	if (buf)
 		g_free(buf);
-	claws_fclose(fp);
+	fclose(fp);
 	return mailac;
 }
 
@@ -1111,16 +1111,16 @@ gint procmsg_remove_special_headers(const gchar *in, const gchar *out)
 	FILE *fp, *outfp;
 	gchar buf[BUFFSIZE];
 
-	if ((fp = claws_fopen(in, "rb")) == NULL) {
-		FILE_OP_ERROR(in, "claws_fopen");
+	if ((fp = g_fopen(in, "rb")) == NULL) {
+		FILE_OP_ERROR(in, "g_fopen");
 		return -1;
 	}
-	if ((outfp = claws_fopen(out, "wb")) == NULL) {
-		FILE_OP_ERROR(out, "claws_fopen");
-		claws_fclose(fp);
+	if ((outfp = g_fopen(out, "wb")) == NULL) {
+		FILE_OP_ERROR(out, "g_fopen");
+		fclose(fp);
 		return -1;
 	}
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		/* new way */
 		if ((!strncmp(buf, "X-Claws-End-Special-Headers: 1",
 			strlen("X-Claws-End-Special-Headers:"))) ||
@@ -1138,16 +1138,16 @@ gint procmsg_remove_special_headers(const gchar *in, const gchar *out)
 			break;
 		}
 	}
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
-		if (claws_fputs(buf, outfp) == EOF) {
-			FILE_OP_ERROR(out, "claws_fputs");
-			claws_fclose(outfp);
-			claws_fclose(fp);
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		if (fputs(buf, outfp) == EOF) {
+			FILE_OP_ERROR(out, "fputs");
+			fclose(outfp);
+			fclose(fp);
 			return -1;
 		}
 	}
-	claws_safe_fclose(outfp);
-	claws_fclose(fp);
+	safe_fclose(outfp);
+	fclose(fp);
 	return 0;
 }
 
@@ -1581,8 +1581,8 @@ static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_ses
 
 	cm_return_val_if_fail(file != NULL, -1);
 
-	if ((fp = claws_fopen(file, "rb")) == NULL) {
-		FILE_OP_ERROR(file, "claws_fopen");
+	if ((fp = g_fopen(file, "rb")) == NULL) {
+		FILE_OP_ERROR(file, "g_fopen");
 		if (errstr) {
 			if (*errstr) g_free(*errstr);
 			*errstr = g_strdup_printf(_("Couldn't open file %s."), file);
@@ -1718,8 +1718,8 @@ send_mail:
     		/* write to temporary file */
     		tmp = g_strdup_printf("%s%cnntp%p", get_tmp_dir(),
                     	    G_DIR_SEPARATOR, file);
-    		if ((tmpfp = claws_fopen(tmp, "wb")) == NULL) {
-            		FILE_OP_ERROR(tmp, "claws_fopen");
+    		if ((tmpfp = g_fopen(tmp, "wb")) == NULL) {
+            		FILE_OP_ERROR(tmp, "g_fopen");
             		newsval = -1;
 			alertpanel_error(_("Couldn't create temporary file for news sending."));
     		} else {
@@ -1728,9 +1728,9 @@ send_mail:
 				g_warning("can't change file mode");
     			}
 
-			while ((newsval == 0) && claws_fgets(buf, sizeof(buf), fp) != NULL) {
-				if (claws_fputs(buf, tmpfp) == EOF) {
-					FILE_OP_ERROR(tmp, "claws_fputs");
+			while ((newsval == 0) && fgets(buf, sizeof(buf), fp) != NULL) {
+				if (fputs(buf, tmpfp) == EOF) {
+					FILE_OP_ERROR(tmp, "fputs");
 					newsval = -1;
 					if (errstr) {
 						if (*errstr) g_free(*errstr);
@@ -1738,7 +1738,7 @@ send_mail:
 					}
 				}
 			}
-			claws_safe_fclose(tmpfp);
+			safe_fclose(tmpfp);
 
 			if (newsval == 0) {
 				debug_print("Sending message by news\n");
@@ -1757,7 +1757,7 @@ send_mail:
 		g_free(tmp);
 	}
 
-	claws_fclose(fp);
+	fclose(fp);
 
 	/* save message to outbox */
 	if (mailval == 0 && newsval == 0 && savecopyfolder) {
@@ -2357,26 +2357,26 @@ MsgInfo *procmsg_msginfo_new_from_mimeinfo(MsgInfo *src_msginfo, MimeInfo *mimei
 	MsgInfo *tmp_msginfo = NULL;
 	MsgFlags flags = {0, 0};
 	gchar *tmpfile = get_tmp_file();
-	FILE *fp = claws_fopen(tmpfile, "wb");
+	FILE *fp = g_fopen(tmpfile, "wb");
 
 	if (!mimeinfo || mimeinfo->type != MIMETYPE_MESSAGE ||
 	    g_ascii_strcasecmp(mimeinfo->subtype, "rfc822")) {
 		g_warning("procmsg_msginfo_new_from_mimeinfo(): unsuitable mimeinfo");
 		if (fp)
-			claws_fclose(fp);
+			fclose(fp);
 		g_free(tmpfile);
 		return NULL;
 	}
 
 	if (fp && procmime_write_mimeinfo(mimeinfo, fp) >= 0) {
-		claws_safe_fclose(fp);
+		safe_fclose(fp);
 		fp = NULL;
 		tmp_msginfo = procheader_parse_file(
 			tmpfile, flags,
 			TRUE, FALSE);
 	}
 	if (fp)
-		claws_safe_fclose(fp);
+		safe_fclose(fp);
 
 	if (tmp_msginfo != NULL) {
 		if (src_msginfo)

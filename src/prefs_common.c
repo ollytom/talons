@@ -1227,19 +1227,19 @@ GList *prefs_common_read_history_from_dir_with_defaults(const gchar *dirname, co
 	path = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, history,
 			   NULL);
 	}
-	if ((fp = claws_fopen(path, "rb")) == NULL) {
-		if (ENOENT != errno) FILE_OP_ERROR(path, "claws_fopen");
+	if ((fp = g_fopen(path, "rb")) == NULL) {
+		if (ENOENT != errno) FILE_OP_ERROR(path, "g_fopen");
 		g_free(path);
 		/* returns default list if set, otherwise NULL */
 		return default_list;
 	}
 	g_free(path);
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		g_strstrip(buf);
 		if (buf[0] == '\0') continue;
 		tmp = add_history(tmp, buf);
 	}
-	claws_fclose(fp);
+	fclose(fp);
 
 	tmp = g_list_reverse(tmp);
 
@@ -1327,8 +1327,8 @@ static void prefs_common_save_history_to_dir(const gchar *dirname, const gchar *
 	}
 	tmp_path = g_strconcat(path, ".tmp", NULL);
 
-	if ((fp = claws_fopen(tmp_path, "wb")) == NULL) {
-		FILE_OP_ERROR(tmp_path, "claws_fopen");
+	if ((fp = g_fopen(tmp_path, "wb")) == NULL) {
+		FILE_OP_ERROR(tmp_path, "g_fopen");
 		goto out;
 	}
 
@@ -1338,12 +1338,12 @@ static void prefs_common_save_history_to_dir(const gchar *dirname, const gchar *
 	}
 
 	for (cur = list; cur != NULL; cur = cur->next) {
-		TRY(claws_fputs((gchar *)cur->data, fp) != EOF &&
-		    claws_fputc('\n', fp) != EOF);
+		TRY(fputs((gchar *)cur->data, fp) != EOF &&
+		    fputc('\n', fp) != EOF);
 	}
 
-	if (claws_safe_fclose(fp) == EOF) {
-		FILE_OP_ERROR(tmp_path, "claws_fclose");
+	if (safe_fclose(fp) == EOF) {
+		FILE_OP_ERROR(tmp_path, "fclose");
 		fp = NULL;
 		goto out;
 	}
@@ -1358,7 +1358,7 @@ static void prefs_common_save_history_to_dir(const gchar *dirname, const gchar *
 
 out:
 	if (fp)
-		claws_safe_fclose(fp);
+		safe_fclose(fp);
 	g_free(tmp_path);
 	g_free(path);
 }

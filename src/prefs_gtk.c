@@ -93,15 +93,15 @@ void prefs_read_config(PrefParam *param, const gchar *label,
 			return;
 	}
 
-	if ((fp = claws_fopen(rcfile, "rb")) == NULL) {
-		if (ENOENT != errno) FILE_OP_ERROR(rcfile, "claws_fopen");
+	if ((fp = g_fopen(rcfile, "rb")) == NULL) {
+		if (ENOENT != errno) FILE_OP_ERROR(rcfile, "g_fopen");
 		return;
 	}
 
 	block_label = g_strdup_printf("[%s]", label);
 
 	/* search aiming block */
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		gint val;
 
 		if (encoding) {
@@ -123,7 +123,7 @@ void prefs_read_config(PrefParam *param, const gchar *label,
 	}
 	g_free(block_label);
 
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		strretchomp(buf);
 		/* reached next block */
 		if (buf[0] == '[') break;
@@ -143,7 +143,7 @@ void prefs_read_config(PrefParam *param, const gchar *label,
 	}
 
 	debug_print("Finished reading configuration.\n");
-	claws_fclose(fp);
+	fclose(fp);
 }
 
 static void prefs_config_parse_one_line(PrefParam *param, const gchar *buf)
@@ -221,7 +221,7 @@ static void prefs_config_parse_one_line(PrefParam *param, const gchar *buf)
 if (!(func)) \
 { \
 	g_warning("failed to write configuration to file"); \
-	if (orig_fp) claws_fclose(orig_fp); \
+	if (orig_fp) fclose(orig_fp); \
 	prefs_file_close_revert(pfile); \
 	g_free(rcpath); \
 	g_free(block_label); \
@@ -243,13 +243,13 @@ void prefs_write_config(PrefParam *param, const gchar *label,
 	cm_return_if_fail(rcfile != NULL);
 
 	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, rcfile, NULL);
-	if ((orig_fp = claws_fopen(rcpath, "rb")) == NULL) {
-		if (ENOENT != errno) FILE_OP_ERROR(rcpath, "claws_fopen");
+	if ((orig_fp = g_fopen(rcpath, "rb")) == NULL) {
+		if (ENOENT != errno) FILE_OP_ERROR(rcpath, "g_fopen");
 	}
 
 	if ((pfile = prefs_write_open(rcpath)) == NULL) {
 		g_warning("failed to write configuration to file");
-		if (orig_fp) claws_fclose(orig_fp);
+		if (orig_fp) fclose(orig_fp);
 		g_free(rcpath);
 		return;
 	}
@@ -258,7 +258,7 @@ void prefs_write_config(PrefParam *param, const gchar *label,
 
 	/* search aiming block */
 	if (orig_fp) {
-		while (claws_fgets(buf, sizeof(buf), orig_fp) != NULL) {
+		while (fgets(buf, sizeof(buf), orig_fp) != NULL) {
 			gint val;
 
 			val = strncmp(buf, block_label, strlen(block_label));
@@ -267,7 +267,7 @@ void prefs_write_config(PrefParam *param, const gchar *label,
 				block_matched = TRUE;
 				break;
 			} else
-				TRY(claws_fputs(buf, pfile->fp) != EOF);
+				TRY(fputs(buf, pfile->fp) != EOF);
 		}
 	}
 
@@ -278,15 +278,15 @@ void prefs_write_config(PrefParam *param, const gchar *label,
 
 	if (block_matched) {
 		gboolean in_dup_block = FALSE;
-		while (claws_fgets(buf, sizeof(buf), orig_fp) != NULL) {
+		while (fgets(buf, sizeof(buf), orig_fp) != NULL) {
 			/* next block */
 			if (buf[0] == '[') {
-				TRY(claws_fputc('\n', pfile->fp) != EOF &&
-				    claws_fputs(buf, pfile->fp)  != EOF);
+				TRY(fputc('\n', pfile->fp) != EOF &&
+				    fputs(buf, pfile->fp)  != EOF);
 				break;
 			}
 		}
-		while (claws_fgets(buf, sizeof(buf), orig_fp) != NULL) {
+		while (fgets(buf, sizeof(buf), orig_fp) != NULL) {
 			if (buf[0] == '[') {
 				if (!strncmp(buf, block_label,
 						strlen(block_label)))
@@ -295,14 +295,14 @@ void prefs_write_config(PrefParam *param, const gchar *label,
 					in_dup_block = FALSE;
 			}
 			if (!in_dup_block)
-				TRY(claws_fputs(buf, pfile->fp) != EOF);
+				TRY(fputs(buf, pfile->fp) != EOF);
 		}
 	}
 
 	g_free(block_label);
 	block_label = NULL;
 
-	if (orig_fp) claws_fclose(orig_fp);
+	if (orig_fp) fclose(orig_fp);
 	if (prefs_file_close(pfile) < 0)
 		g_warning("failed to write configuration to file");
 	g_free(rcpath);
@@ -371,8 +371,8 @@ gint prefs_write_param(PrefParam *param, FILE *fp)
 		}
 
 		if (buf[0] != '\0') {
-			if (claws_fputs(buf, fp) == EOF) {
-				perror("claws_fputs");
+			if (fputs(buf, fp) == EOF) {
+				perror("fputs");
 				return -1;
 			}
 		}
@@ -941,13 +941,13 @@ static int prefs_cache_sections(GHashTable *file_cache, const gchar *rcfile)
 	GHashTable *section_cache = NULL;
 
 	if (rcfile)
-		fp = claws_fopen(rcfile, "rb");
+		fp = g_fopen(rcfile, "rb");
 	if (!fp) {
 		debug_print("cache: %s: %s\n", rcfile?rcfile:"(null)", g_strerror(errno));
 		return -1;
 	}
 
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		strretchomp(buf);
 		if (buf[0] == '\0')
 			continue;
@@ -989,7 +989,7 @@ static int prefs_cache_sections(GHashTable *file_cache, const gchar *rcfile)
 			}
 		}
 	}
-	claws_fclose(fp);
+	fclose(fp);
 	return 0;
 }
 

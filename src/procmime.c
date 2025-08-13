@@ -277,12 +277,12 @@ const gchar *procmime_mimeinfo_get_parameter(MimeInfo *mimeinfo, const gchar *na
 			/* this is flowed */					\
 			if (delsp)						\
 				lastline[llen-1] = '\0';			\
-			if (claws_fputs(lastline, outfp) == EOF)			\
+			if (fputs(lastline, outfp) == EOF)			\
 				err = TRUE;					\
 		} else {							\
-			if (claws_fputs(lastline, outfp) == EOF)			\
+			if (fputs(lastline, outfp) == EOF)			\
 				err = TRUE;					\
-			if (claws_fputs("\n", outfp) == EOF)				\
+			if (fputs("\n", outfp) == EOF)				\
 				err = TRUE;					\
 		}								\
 	} 									\
@@ -337,21 +337,21 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 	if (mimeinfo->data.filename == NULL)
 		return FALSE;
 
-	infp = claws_fopen(mimeinfo->data.filename, "rb");
+	infp = g_fopen(mimeinfo->data.filename, "rb");
 	if (!infp) {
-		FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+		FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 		return FALSE;
 	}
 	if (fseek(infp, mimeinfo->offset, SEEK_SET) < 0) {
 		FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-		claws_fclose(infp);
+		fclose(infp);
 		return FALSE;
 	}
 
 	outfp = get_tmpfile_in_dir(get_mime_tmp_dir(), &tmpfilename);
 	if (!outfp) {
 		perror("tmpfile");
-		claws_fclose(infp);
+		fclose(infp);
 		g_free(tmpfilename);
 		return FALSE;
 	}
@@ -363,12 +363,12 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 
 	*buf = '\0';
 	if (encoding == ENC_QUOTED_PRINTABLE) {
-		while ((ftell(infp) < readend) && (claws_fgets(buf, sizeof(buf), infp) != NULL)) {
+		while ((ftell(infp) < readend) && (fgets(buf, sizeof(buf), infp) != NULL)) {
 			size_t len;
 			len = qp_decode_line(buf);
 			buf[len] = '\0';
 			if (!flowed) {
-				if (claws_fwrite(buf, 1, len, outfp) < len)
+				if (fwrite(buf, 1, len, outfp) < len)
 					err = TRUE;
 			} else {
 				FLUSH_LASTLINE();
@@ -393,8 +393,8 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 			if (!tmpfp) {
 				perror("my_tmpfile");
 				if (tmp_file)
-					claws_fclose(outfp);
-				claws_fclose(infp);
+					fclose(outfp);
+				fclose(infp);
 				g_free(tmpfilename);
 				return FALSE;
 			}
@@ -402,7 +402,7 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 			tmpfp = outfp;
 
 		while ((inlen = MIN(readend - ftell(infp), sizeof(buf))) > 0 && !err) {
-			inread = claws_fread(buf, 1, inlen, infp);
+			inread = fread(buf, 1, inlen, infp);
 			memset(outbuf, 0, sizeof(buf));
 			len = (glong)g_base64_decode_step(buf, inlen, outbuf, &state, &save);
 			if (uncanonicalize == TRUE && strlen(outbuf) < (size_t)len && starting) {
@@ -412,7 +412,7 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 			starting = FALSE;
 			if (((inread != inlen) || len < 0) && !got_error) {
 				g_warning("bad BASE64 content");
-				if (claws_fwrite(_("[Error decoding BASE64]\n"),
+				if (fwrite(_("[Error decoding BASE64]\n"),
 					sizeof(gchar),
 					strlen(_("[Error decoding BASE64]\n")),
 					tmpfp) < strlen(_("[Error decoding BASE64]\n")))
@@ -424,10 +424,10 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 				 * per block */
 				if (null_bytes) {
 					/* we won't uncanonicalize, output to outfp directly */
-					if (claws_fwrite(outbuf, sizeof(gchar), (size_t)len, outfp) < (size_t)len)
+					if (fwrite(outbuf, sizeof(gchar), (size_t)len, outfp) < (size_t)len)
 						err = TRUE;
 				} else {
-					if (claws_fwrite(outbuf, sizeof(gchar), (size_t)len, tmpfp) < (size_t)len)
+					if (fwrite(outbuf, sizeof(gchar), (size_t)len, tmpfp) < (size_t)len)
 						err = TRUE;
 				}
 				got_error = FALSE;
@@ -436,21 +436,21 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 
 		if (uncanonicalize) {
 			rewind(tmpfp);
-			while (claws_fgets(buf, sizeof(buf), tmpfp) != NULL) {
+			while (fgets(buf, sizeof(buf), tmpfp) != NULL) {
 				strcrchomp(buf);
-				if (claws_fputs(buf, outfp) == EOF)
+				if (fputs(buf, outfp) == EOF)
 					err = TRUE;
 			}
 		}
 		if (tmpfp != outfp) {
-			claws_fclose(tmpfp);
+			fclose(tmpfp);
 		}
 	} else if (encoding == ENC_X_UUENCODE) {
 		gchar outbuf[BUFFSIZE];
 		glong len;
 		gboolean flag = FALSE;
 
-		while ((ftell(infp) < readend) && (claws_fgets(buf, sizeof(buf), infp) != NULL)) {
+		while ((ftell(infp) < readend) && (fgets(buf, sizeof(buf), infp) != NULL)) {
 			if (!flag && strncmp(buf,"begin ", 6)) continue;
 
 			if (flag) {
@@ -460,15 +460,15 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 						g_warning("bad UUENCODE content (%ld)", len);
 					break;
 				}
-				if (claws_fwrite(outbuf, sizeof(gchar), (size_t)len, outfp) < (size_t)len)
+				if (fwrite(outbuf, sizeof(gchar), (size_t)len, outfp) < (size_t)len)
 					err = TRUE;
 			} else
 				flag = TRUE;
 		}
 	} else {
-		while ((ftell(infp) < readend) && (claws_fgets(buf, sizeof(buf), infp) != NULL)) {
+		while ((ftell(infp) < readend) && (fgets(buf, sizeof(buf), infp) != NULL)) {
 			if (!flowed) {
-				if (claws_fputs(buf, outfp) == EOF)
+				if (fputs(buf, outfp) == EOF)
 					err = TRUE;
 			} else {
 				FLUSH_LASTLINE();
@@ -480,8 +480,8 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 			g_warning("write error");
 	}
 
-	claws_fclose(outfp);
-	claws_fclose(infp);
+	fclose(outfp);
+	fclose(infp);
 
 	account_sigsep_matchlist_delete();
 
@@ -534,22 +534,22 @@ gboolean procmime_encode_content(MimeInfo *mimeinfo, EncodingType encoding)
 	}
 
 	if (mimeinfo->content == MIMECONTENT_FILE && mimeinfo->data.filename) {
-		if ((infp = claws_fopen(mimeinfo->data.filename, "rb")) == NULL) {
+		if ((infp = g_fopen(mimeinfo->data.filename, "rb")) == NULL) {
 			g_warning("can't open file %s", mimeinfo->data.filename);
 			g_free(tmpfilename);
-			claws_fclose(outfp);
+			fclose(outfp);
 			return FALSE;
 		}
 	} else if (mimeinfo->content == MIMECONTENT_MEM) {
 		infp = str_open_as_stream(mimeinfo->data.mem);
 		if (infp == NULL) {
 			g_free(tmpfilename);
-			claws_fclose(outfp);
+			fclose(outfp);
 			return FALSE;
 		}
 	} else {
 		g_free(tmpfilename);
-		claws_fclose(outfp);
+		fclose(outfp);
 		g_warning("unknown mimeinfo");
 		return FALSE;
 	}
@@ -566,61 +566,61 @@ gboolean procmime_encode_content(MimeInfo *mimeinfo, EncodingType encoding)
 				if (canonicalize_file(mimeinfo->data.filename, tmp_file) < 0) {
 					g_free(tmp_file);
 					g_free(tmpfilename);
-					claws_fclose(infp);
-					claws_fclose(outfp);
+					fclose(infp);
+					fclose(outfp);
 					return FALSE;
 				}
-				if ((tmp_fp = claws_fopen(tmp_file, "rb")) == NULL) {
-					FILE_OP_ERROR(tmp_file, "claws_fopen");
+				if ((tmp_fp = g_fopen(tmp_file, "rb")) == NULL) {
+					FILE_OP_ERROR(tmp_file, "g_fopen");
 					claws_unlink(tmp_file);
 					g_free(tmp_file);
 					g_free(tmpfilename);
-					claws_fclose(infp);
-					claws_fclose(outfp);
+					fclose(infp);
+					fclose(outfp);
 					return FALSE;
 				}
 			} else {
 				gchar *out = canonicalize_str(mimeinfo->data.mem);
-				claws_fclose(infp);
+				fclose(infp);
 				infp = str_open_as_stream(out);
 				tmp_fp = infp;
 				g_free(out);
 				if (infp == NULL) {
 					g_free(tmpfilename);
-					claws_fclose(outfp);
+					fclose(outfp);
 					return FALSE;
 				}
 			}
 		}
 
-		while ((len = (glong)claws_fread(inbuf, sizeof(gchar),
+		while ((len = (glong)fread(inbuf, sizeof(gchar),
 				    B64_LINE_SIZE, tmp_fp))
 		       == B64_LINE_SIZE) {
 			out = g_base64_encode(inbuf, B64_LINE_SIZE);
-			if (claws_fputs(out, outfp) == EOF)
+			if (fputs(out, outfp) == EOF)
 				err = TRUE;
 			g_free(out);
-			if (claws_fputc('\n', outfp) == EOF)
+			if (fputc('\n', outfp) == EOF)
 				err = TRUE;
 		}
-		if (len > 0 && claws_feof(tmp_fp)) {
+		if (len > 0 && feof(tmp_fp)) {
 			out = g_base64_encode(inbuf, (gsize)len);
-			if (claws_fputs(out, outfp) == EOF)
+			if (fputs(out, outfp) == EOF)
 				err = TRUE;
 			g_free(out);
-			if (claws_fputc('\n', outfp) == EOF)
+			if (fputc('\n', outfp) == EOF)
 				err = TRUE;
 		}
 
 		if (tmp_file) {
-			claws_fclose(tmp_fp);
+			fclose(tmp_fp);
 			claws_unlink(tmp_file);
 			g_free(tmp_file);
 		}
 	} else if (encoding == ENC_QUOTED_PRINTABLE) {
 		gchar inbuf[BUFFSIZE], outbuf[BUFFSIZE * 4];
 
-		while (claws_fgets(inbuf, sizeof(inbuf), infp) != NULL) {
+		while (fgets(inbuf, sizeof(inbuf), infp) != NULL) {
 			qp_encode_line(outbuf, inbuf);
 
 			if (!strncmp("From ", outbuf, sizeof("From ")-1)) {
@@ -628,27 +628,27 @@ gboolean procmime_encode_content(MimeInfo *mimeinfo, EncodingType encoding)
 
 				tmpbuf += sizeof("From ")-1;
 
-				if (claws_fputs("=46rom ", outfp) == EOF)
+				if (fputs("=46rom ", outfp) == EOF)
 					err = TRUE;
-				if (claws_fputs(tmpbuf, outfp) == EOF)
+				if (fputs(tmpbuf, outfp) == EOF)
 					err = TRUE;
 			} else {
-				if (claws_fputs(outbuf, outfp) == EOF)
+				if (fputs(outbuf, outfp) == EOF)
 					err = TRUE;
 			}
 		}
 	} else {
 		gchar buf[BUFFSIZE];
 
-		while (claws_fgets(buf, sizeof(buf), infp) != NULL) {
+		while (fgets(buf, sizeof(buf), infp) != NULL) {
 			strcrchomp(buf);
-			if (claws_fputs(buf, outfp) == EOF)
+			if (fputs(buf, outfp) == EOF)
 				err = TRUE;
 		}
 	}
 
-	claws_fclose(outfp);
-	claws_fclose(infp);
+	fclose(outfp);
+	fclose(infp);
 
 	if (err == TRUE) {
 		g_free(tmpfilename);
@@ -692,30 +692,30 @@ static gint procmime_get_part_to_stream(FILE *outfp, MimeInfo *mimeinfo)
 	if (mimeinfo->encoding_type != ENC_BINARY && !procmime_decode_content(mimeinfo))
 		return -EINVAL;
 
-	if ((infp = claws_fopen(mimeinfo->data.filename, "rb")) == NULL) {
+	if ((infp = g_fopen(mimeinfo->data.filename, "rb")) == NULL) {
 		saved_errno = errno;
-		FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+		FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 		return -(saved_errno);
 	}
 	if (fseek(infp, mimeinfo->offset, SEEK_SET) < 0) {
 		saved_errno = errno;
 		FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-		claws_fclose(infp);
+		fclose(infp);
 		return -(saved_errno);
 	}
 
 	restlength = mimeinfo->length;
 
-	while ((restlength > 0) && ((readlength = claws_fread(buf, 1, restlength > BUFFSIZE ? BUFFSIZE : restlength, infp)) > 0)) {
-		if (claws_fwrite(buf, 1, (size_t)readlength, outfp) != (size_t)readlength) {
+	while ((restlength > 0) && ((readlength = fread(buf, 1, restlength > BUFFSIZE ? BUFFSIZE : restlength, infp)) > 0)) {
+		if (fwrite(buf, 1, (size_t)readlength, outfp) != (size_t)readlength) {
 			saved_errno = errno;
-			claws_fclose(infp);
+			fclose(infp);
 			return -(saved_errno);
 		}
 		restlength -= readlength;
 	}
 
-	claws_fclose(infp);
+	fclose(infp);
 	rewind(outfp);
 
 	return 0;
@@ -729,9 +729,9 @@ gint procmime_get_part(const gchar *outfile, MimeInfo *mimeinfo)
 
 	cm_return_val_if_fail(outfile != NULL, -1);
 
-	if ((outfp = claws_fopen(outfile, "wb")) == NULL) {
+	if ((outfp = g_fopen(outfile, "wb")) == NULL) {
 		saved_errno = errno;
-		FILE_OP_ERROR(outfile, "claws_fopen");
+		FILE_OP_ERROR(outfile, "g_fopen");
 		return -(saved_errno);
 	}
 
@@ -742,9 +742,9 @@ gint procmime_get_part(const gchar *outfile, MimeInfo *mimeinfo)
 
 	result = procmime_get_part_to_stream(outfp, mimeinfo);
 
-	if (claws_fclose(outfp) == EOF) {
+	if (fclose(outfp) == EOF) {
 		saved_errno = errno;
-		FILE_OP_ERROR(outfile, "claws_fclose");
+		FILE_OP_ERROR(outfile, "fclose");
 		if (claws_unlink(outfile) < 0)
                         FILE_OP_ERROR(outfile, "claws_unlink");
 		return -(saved_errno);
@@ -824,7 +824,7 @@ gboolean procmime_scan_text_content(MimeInfo *mimeinfo,
 		ertf_parser_destroy(parser);
 		conv_code_converter_destroy(conv);
 	} else if (mimeinfo->type == MIMETYPE_TEXT && mimeinfo->disposition != DISPOSITIONTYPE_ATTACHMENT) {
-		while (claws_fgets(buf, sizeof(buf), tmpfp) != NULL) {
+		while (fgets(buf, sizeof(buf), tmpfp) != NULL) {
 			str = conv_codeset_strdup(buf, src_codeset, CS_UTF_8);
 			if (str) {
 				if ((scan_ret = scan_callback(str, cb_data)) == TRUE) {
@@ -843,14 +843,14 @@ gboolean procmime_scan_text_content(MimeInfo *mimeinfo,
 	if (conv_fail)
 		g_warning("procmime_get_text_content(): code conversion failed");
 
-	claws_fclose(tmpfp);
+	fclose(tmpfp);
 
 	return scan_ret;
 }
 
 static gboolean scan_fputs_cb(const gchar *str, gpointer fp)
 {
-	if (claws_fputs(str, (FILE *)fp) == EOF)
+	if (fputs(str, (FILE *)fp) == EOF)
 		return TRUE;
 
 	return FALSE;
@@ -870,7 +870,7 @@ FILE *procmime_get_text_content(MimeInfo *mimeinfo)
 
 	rewind(outfp);
 	if (err == TRUE) {
-		claws_fclose(outfp);
+		fclose(outfp);
 		return NULL;
 	}
 	return outfp;
@@ -1186,23 +1186,23 @@ GList *procmime_get_mime_type_list(void)
 		return mime_type_list;
 
 #if defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__)
-	if ((fp = claws_fopen(DATAROOTDIR "/mime/globs", "rb")) == NULL)
+	if ((fp = g_fopen(DATAROOTDIR "/mime/globs", "rb")) == NULL)
 #else
-	if ((fp = claws_fopen("/usr/share/mime/globs", "rb")) == NULL)
+	if ((fp = g_fopen("/usr/share/mime/globs", "rb")) == NULL)
 #endif
 	{
 		fp_is_glob_file = FALSE;
-		if ((fp = claws_fopen("/etc/mime.types", "rb")) == NULL) {
-			if ((fp = claws_fopen(SYSCONFDIR "/mime.types", "rb"))
+		if ((fp = g_fopen("/etc/mime.types", "rb")) == NULL) {
+			if ((fp = g_fopen(SYSCONFDIR "/mime.types", "rb"))
 				== NULL) {
 				FILE_OP_ERROR(SYSCONFDIR "/mime.types",
-					"claws_fopen");
+					"g_fopen");
 				return NULL;
 			}
 		}
 	}
 
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		p = strchr(buf, '#');
 		if (p) *p = '\0';
 		g_strstrip(buf);
@@ -1241,7 +1241,7 @@ GList *procmime_get_mime_type_list(void)
 		list = g_list_append(list, mime_type);
 	}
 
-	claws_fclose(fp);
+	fclose(fp);
 
 	if (!list)
 		g_warning("can't read mime.types");
@@ -1280,12 +1280,12 @@ EncodingType procmime_get_encoding_for_text_file(const gchar *file, gboolean *ha
 	gfloat octet_percentage;
 	gboolean force_b64 = FALSE;
 
-	if ((fp = claws_fopen(file, "rb")) == NULL) {
-		FILE_OP_ERROR(file, "claws_fopen");
+	if ((fp = g_fopen(file, "rb")) == NULL) {
+		FILE_OP_ERROR(file, "g_fopen");
 		return ENC_UNKNOWN;
 	}
 
-	while ((len = claws_fread(buf, sizeof(guchar), sizeof(buf), fp)) > 0) {
+	while ((len = fread(buf, sizeof(guchar), sizeof(buf), fp)) > 0) {
 		guchar *p;
 		gulong i;
 
@@ -1300,7 +1300,7 @@ EncodingType procmime_get_encoding_for_text_file(const gchar *file, gboolean *ha
 		total_len += len;
 	}
 
-	claws_fclose(fp);
+	fclose(fp);
 
 	if (total_len > 0)
 		octet_percentage = (gfloat)octet_chars / (gfloat)total_len;
@@ -1450,14 +1450,14 @@ static void procmime_parse_message_rfc822(MimeInfo *mimeinfo, gboolean short_sca
 
 	procmime_decode_content(mimeinfo);
 
-	fp = claws_fopen(mimeinfo->data.filename, "rb");
+	fp = g_fopen(mimeinfo->data.filename, "rb");
 	if (fp == NULL) {
-		FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+		FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 		return;
 	}
 	if (fseek(fp, mimeinfo->offset, SEEK_SET) < 0) {
 		FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-		claws_fclose(fp);
+		fclose(fp);
 		return;
 	}
 	procheader_get_header_fields(fp, hentry);
@@ -1493,7 +1493,7 @@ static void procmime_parse_message_rfc822(MimeInfo *mimeinfo, gboolean short_sca
         }
 
 	content_start = ftell(fp);
-	claws_fclose(fp);
+	fclose(fp);
 
 	len = mimeinfo->length - (content_start - mimeinfo->offset);
 	if (len < 0)
@@ -1527,14 +1527,14 @@ static void procmime_parse_disposition_notification(MimeInfo *mimeinfo,
 	procmime_decode_content(mimeinfo);
 
 	debug_print("parse disposition notification\n");
-	fp = claws_fopen(mimeinfo->data.filename, "rb");
+	fp = g_fopen(mimeinfo->data.filename, "rb");
 	if (fp == NULL) {
-		FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+		FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 		return;
 	}
 	if (fseek(fp, mimeinfo->offset, SEEK_SET) < 0) {
 		FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-		claws_fclose(fp);
+		fclose(fp);
 		return;
 	}
 
@@ -1545,7 +1545,7 @@ static void procmime_parse_disposition_notification(MimeInfo *mimeinfo,
 		procheader_get_header_fields(fp, hentry);
 	}
 
-        claws_fclose(fp);
+        fclose(fp);
 
     	if (!hentry[0].body || !hentry[1].body) {
 		debug_print("MsgId %s, Disp %s\n",
@@ -1658,19 +1658,19 @@ static void procmime_parse_multipart(MimeInfo *mimeinfo, gboolean short_scan)
 
 	procmime_decode_content(mimeinfo);
 
-	fp = claws_fopen(mimeinfo->data.filename, "rb");
+	fp = g_fopen(mimeinfo->data.filename, "rb");
 	if (fp == NULL) {
-		FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+		FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 		return;
 	}
 
 	if (fseek(fp, mimeinfo->offset, SEEK_SET) < 0) {
 		FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-		claws_fclose(fp);
+		fclose(fp);
 		return;
 	}
 
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL && result == 0) {
+	while (fgets(buf, sizeof(buf), fp) != NULL && result == 0) {
 		if (ftell(fp) - 1 > (mimeinfo->offset + mimeinfo->length))
 			break;
 
@@ -1726,7 +1726,7 @@ static void procmime_parse_multipart(MimeInfo *mimeinfo, gboolean short_scan)
 		g_free(hentry[i].body);
 		hentry[i].body = NULL;
 	}
-	claws_fclose(fp);
+	fclose(fp);
 }
 
 static void parse_parameters(const gchar *parameters, GHashTable *table)
@@ -2221,10 +2221,10 @@ static MimeInfo *procmime_scan_queue_file_full(const gchar *filename, gboolean s
 	cm_return_val_if_fail(filename != NULL, NULL);
 
 	/* Open file */
-	if ((fp = claws_fopen(filename, "rb")) == NULL)
+	if ((fp = g_fopen(filename, "rb")) == NULL)
 		return NULL;
 	/* Skip queue header */
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		/* new way */
 		if ((!strncmp(buf, "X-Claws-End-Special-Headers: 1",
 			strlen("X-Claws-End-Special-Headers:"))) ||
@@ -2243,7 +2243,7 @@ static MimeInfo *procmime_scan_queue_file_full(const gchar *filename, gboolean s
 		}
 	}
 	offset = ftell(fp);
-	claws_fclose(fp);
+	fclose(fp);
 
 	mimeinfo = procmime_scan_file_with_offset(filename, offset, short_scan);
 
@@ -2494,16 +2494,16 @@ static gint procmime_write_message_rfc822(MimeInfo *mimeinfo, FILE *fp)
 	/* write header */
 	switch (mimeinfo->content) {
 	case MIMECONTENT_FILE:
-		if ((infp = claws_fopen(mimeinfo->data.filename, "rb")) == NULL) {
-			FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+		if ((infp = g_fopen(mimeinfo->data.filename, "rb")) == NULL) {
+			FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 			return -1;
 		}
 		if (fseek(infp, mimeinfo->offset, SEEK_SET) < 0) {
 			FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-			claws_fclose(infp);
+			fclose(infp);
 			return -1;
 		}
-		while (claws_fgets(buf, sizeof(buf), infp) == buf) {
+		while (fgets(buf, sizeof(buf), infp) == buf) {
 			strcrchomp(buf);
 			if (buf[0] == '\n' && buf[1] == '\0')
 				break;
@@ -2520,19 +2520,19 @@ static gint procmime_write_message_rfc822(MimeInfo *mimeinfo, FILE *fp)
 				continue;
 			}
 			len = strlen(buf);
-			if (claws_fwrite(buf, sizeof(gchar), len, fp) < len) {
+			if (fwrite(buf, sizeof(gchar), len, fp) < len) {
 				g_warning("failed to dump %"G_GSIZE_FORMAT" bytes from file", len);
-				claws_fclose(infp);
+				fclose(infp);
 				return -1;
 			}
 			skip = FALSE;
 		}
-		claws_fclose(infp);
+		fclose(infp);
 		break;
 
 	case MIMECONTENT_MEM:
 		len = strlen(mimeinfo->data.mem);
-		if (claws_fwrite(mimeinfo->data.mem, sizeof(gchar), len, fp) < len) {
+		if (fwrite(mimeinfo->data.mem, sizeof(gchar), len, fp) < len) {
 			g_warning("failed to dump %"G_GSIZE_FORMAT" bytes from mem", len);
 			return -1;
 		}
@@ -2571,26 +2571,26 @@ static gint procmime_write_multipart(MimeInfo *mimeinfo, FILE *fp)
 
 	switch (mimeinfo->content) {
 	case MIMECONTENT_FILE:
-		if ((infp = claws_fopen(mimeinfo->data.filename, "rb")) == NULL) {
-			FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+		if ((infp = g_fopen(mimeinfo->data.filename, "rb")) == NULL) {
+			FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 			return -1;
 		}
 		if (fseek(infp, mimeinfo->offset, SEEK_SET) < 0) {
 			FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-			claws_fclose(infp);
+			fclose(infp);
 			return -1;
 		}
-		while (claws_fgets(buf, sizeof(buf), infp) == buf) {
+		while (fgets(buf, sizeof(buf), infp) == buf) {
 			if (IS_BOUNDARY(buf, boundary, strlen(boundary)))
 				break;
 			len = strlen(buf);
-			if (claws_fwrite(buf, sizeof(gchar), len, fp) < len) {
+			if (fwrite(buf, sizeof(gchar), len, fp) < len) {
 				g_warning("failed to write %"G_GSIZE_FORMAT, len);
-				claws_fclose(infp);
+				fclose(infp);
 				return -1;
 			}
 		}
-		claws_fclose(infp);
+		fclose(infp);
 		break;
 
 	case MIMECONTENT_MEM:
@@ -2599,7 +2599,7 @@ static gint procmime_write_multipart(MimeInfo *mimeinfo, FILE *fp)
 		    (*(str2 - 1) == '-') && (*(str2 - 2) == '-'))
 			*(str2 - 2) = '\0';
 		len = strlen(str);
-		if (claws_fwrite(str, sizeof(gchar), len, fp) < len) {
+		if (fwrite(str, sizeof(gchar), len, fp) < len) {
 			g_warning("failed to write %"G_GSIZE_FORMAT" from mem", len);
 			g_free(str);
 			return -1;
@@ -2644,17 +2644,17 @@ gint procmime_write_mimeinfo(MimeInfo *mimeinfo, FILE *fp)
 	if (G_NODE_IS_LEAF(mimeinfo->node)) {
 		switch (mimeinfo->content) {
 		case MIMECONTENT_FILE:
-			if ((infp = claws_fopen(mimeinfo->data.filename, "rb")) == NULL) {
-				FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+			if ((infp = g_fopen(mimeinfo->data.filename, "rb")) == NULL) {
+				FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 				return -1;
 			}
 			copy_file_part_to_fp(infp, mimeinfo->offset, mimeinfo->length, fp);
-			claws_fclose(infp);
+			fclose(infp);
 			return 0;
 
 		case MIMECONTENT_MEM:
 			len = strlen(mimeinfo->data.mem);
-			if (claws_fwrite(mimeinfo->data.mem, sizeof(gchar), len, fp) < len)
+			if (fwrite(mimeinfo->data.mem, sizeof(gchar), len, fp) < len)
 				return -1;
 			return 0;
 
@@ -2727,14 +2727,14 @@ void *procmime_get_part_as_string(MimeInfo *mimeinfo,
 	if (mimeinfo->content == MIMECONTENT_MEM)
 		return g_strdup(mimeinfo->data.mem);
 
-	if ((infp = claws_fopen(mimeinfo->data.filename, "rb")) == NULL) {
-		FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+	if ((infp = g_fopen(mimeinfo->data.filename, "rb")) == NULL) {
+		FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 		return NULL;
 	}
 
 	if (fseek(infp, mimeinfo->offset, SEEK_SET) < 0) {
 		FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-		claws_fclose(infp);
+		fclose(infp);
 		return NULL;
 	}
 
@@ -2744,19 +2744,19 @@ void *procmime_get_part_as_string(MimeInfo *mimeinfo,
 	if (data == NULL) {
 		g_warning("could not allocate %ld bytes for procmime_get_part_as_string",
 				(null_terminate ? length + 1 : length));
-		claws_fclose(infp);
+		fclose(infp);
 		return NULL;
 	}
 
-	readlength = claws_fread(data, length, 1, infp);
+	readlength = fread(data, length, 1, infp);
 	if (readlength <= 0) {
 		FILE_OP_ERROR(mimeinfo->data.filename, "fread");
 		g_free(data);
-		claws_fclose(infp);
+		fclose(infp);
 		return NULL;
 	}
 
-	claws_fclose(infp);
+	fclose(infp);
 
 	if (null_terminate)
 		data[length] = '\0';

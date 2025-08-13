@@ -4573,8 +4573,8 @@ void prefs_account_write_config_all(GList *account_list)
 		privacy_prefs = NULL;
 
 		if (cur->next) {
-			if (claws_fputc('\n', pfile->fp) == EOF) {
-				FILE_OP_ERROR(rcpath, "claws_fputc");
+			if (fputc('\n', pfile->fp) == EOF) {
+				FILE_OP_ERROR(rcpath, "fputc");
 				prefs_file_close_revert(pfile);
 				g_free(rcpath);
 				return;

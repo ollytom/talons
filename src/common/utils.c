@@ -2432,7 +2432,7 @@ gchar *get_outgoing_rfc2822_str(FILE *fp)
 	str = g_string_new(NULL);
 
 	/* output header part */
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		strretchomp(buf);
 		if (!g_ascii_strncasecmp(buf, "Bcc:", 4)) {
 			gint next;
@@ -2445,7 +2445,7 @@ gchar *get_outgoing_rfc2822_str(FILE *fp)
 					ungetc(next, fp);
 					break;
 				}
-				if (claws_fgets(buf, sizeof(buf), fp) == NULL)
+				if (fgets(buf, sizeof(buf), fp) == NULL)
 					break;
 			}
 		} else {
@@ -2457,7 +2457,7 @@ gchar *get_outgoing_rfc2822_str(FILE *fp)
 	}
 
 	/* output body part */
-	while (claws_fgets(buf, sizeof(buf), fp) != NULL) {
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		strretchomp(buf);
 		if (buf[0] == '.')
 			g_string_append_c(str, '.');
@@ -3787,12 +3787,12 @@ gchar *make_http_string(const gchar *bp, const gchar *ep)
 
 static gchar *mailcap_get_command_in_file(const gchar *path, const gchar *type, const gchar *file_to_open)
 {
-	FILE *fp = claws_fopen(path, "rb");
+	FILE *fp = g_fopen(path, "rb");
 	gchar buf[BUFFSIZE];
 	gchar *result = NULL;
 	if (!fp)
 		return NULL;
-	while (claws_fgets(buf, sizeof (buf), fp) != NULL) {
+	while (fgets(buf, sizeof (buf), fp) != NULL) {
 		gchar **parts = g_strsplit(buf, ";", 3);
 		gchar *trimmed = parts[0];
 		while (trimmed[0] == ' ' || trimmed[0] == '\t')
@@ -3851,7 +3851,7 @@ static gchar *mailcap_get_command_in_file(const gchar *path, const gchar *type, 
 				trimmed[strlen(trimmed)-1] = '\0';
 			result = g_strdup(trimmed);
 			g_strfreev(parts);
-			claws_fclose(fp);
+			fclose(fp);
 			if (needsterminal) {
 				gchar *tmp = g_strdup_printf("xterm -e %s", result);
 				g_free(result);
@@ -3861,7 +3861,7 @@ static gchar *mailcap_get_command_in_file(const gchar *path, const gchar *type, 
 		}
 		g_strfreev(parts);
 	}
-	claws_fclose(fp);
+	fclose(fp);
 	return NULL;
 }
 gchar *mailcap_get_command_for_type(const gchar *type, const gchar *file_to_open)
@@ -3884,13 +3884,13 @@ void mailcap_update_default(const gchar *type, const gchar *command)
 	gchar *path = NULL, *outpath = NULL;
 	path = g_strconcat(get_home_dir(), G_DIR_SEPARATOR_S, ".mailcap", NULL);
 	outpath = g_strconcat(get_home_dir(), G_DIR_SEPARATOR_S, ".mailcap.new", NULL);
-	FILE *fp = claws_fopen(path, "rb");
+	FILE *fp = g_fopen(path, "rb");
 	FILE *outfp = NULL;
 	gchar buf[BUFFSIZE];
 	gboolean err = FALSE;
 
 	if (!fp) {
-		fp = claws_fopen(path, "a");
+		fp = g_fopen(path, "a");
 		if (!fp) {
 			g_warning("failed to create file %s", path);
 			g_free(path);
@@ -3906,15 +3906,15 @@ void mailcap_update_default(const gchar *type, const gchar *command)
 		}
 	}
 
-	outfp = claws_fopen(outpath, "wb");
+	outfp = g_fopen(outpath, "wb");
 	if (!outfp) {
 		g_warning("failed to create file %s", outpath);
 		g_free(path);
 		g_free(outpath);
-		claws_fclose(fp);
+		fclose(fp);
 		return;
 	}
-	while (fp && claws_fgets(buf, sizeof (buf), fp) != NULL) {
+	while (fp && fgets(buf, sizeof (buf), fp) != NULL) {
 		gchar **parts = g_strsplit(buf, ";", 3);
 		gchar *trimmed = parts[0];
 		while (trimmed[0] == ' ')
@@ -3927,7 +3927,7 @@ void mailcap_update_default(const gchar *type, const gchar *command)
 			continue;
 		}
 		else {
-			if(claws_fputs(buf, outfp) == EOF) {
+			if(fputs(buf, outfp) == EOF) {
 				err = TRUE;
 				g_strfreev(parts);
 				break;
@@ -3939,9 +3939,9 @@ void mailcap_update_default(const gchar *type, const gchar *command)
 		err = TRUE;
 
 	if (fp)
-		claws_fclose(fp);
+		fclose(fp);
 
-	if (claws_safe_fclose(outfp) == EOF)
+	if (safe_fclose(outfp) == EOF)
 		err = TRUE;
 
 	if (!err)
@@ -3959,10 +3959,10 @@ gboolean file_is_email (const gchar *filename)
 	gint score = 0;
 	if (filename == NULL)
 		return FALSE;
-	if ((fp = claws_fopen(filename, "rb")) == NULL)
+	if ((fp = g_fopen(filename, "rb")) == NULL)
 		return FALSE;
 	while (score < 3
-	       && claws_fgets(buffer, sizeof (buffer), fp) != NULL) {
+	       && fgets(buffer, sizeof (buffer), fp) != NULL) {
 		if (!strncasecmp(buffer, "From:", strlen("From:")))
 			score++;
 		else if (!strncasecmp(buffer, "Date:", strlen("Date:")))
@@ -3976,7 +3976,7 @@ gboolean file_is_email (const gchar *filename)
 			break;
 		}
 	}
-	claws_fclose(fp);
+	fclose(fp);
 	return (score >= 3);
 }
 

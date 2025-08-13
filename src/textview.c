@@ -666,15 +666,15 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 		if (mimeinfo->content == MIMECONTENT_MEM)
 			fp = str_open_as_stream(mimeinfo->data.mem);
 		else
-			fp = claws_fopen(mimeinfo->data.filename, "rb");
+			fp = g_fopen(mimeinfo->data.filename, "rb");
 		if (!fp) {
-			FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+			FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 			END_TIMING();
 			return;
 		}
 		if (fseek(fp, mimeinfo->offset, SEEK_SET) < 0) {
 			FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-			claws_fclose(fp);
+			fclose(fp);
 			END_TIMING();
 			return;
 		}
@@ -689,7 +689,7 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 			textview_show_header(textview, headers);
 			procheader_header_array_destroy(headers);
 		}
-		claws_fclose(fp);
+		fclose(fp);
 		END_TIMING();
 		return;
 	}
@@ -1044,10 +1044,10 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 
 		filename = procmime_get_tmp_file_name(mimeinfo);
 		if (procmime_get_part(filename, mimeinfo) == 0) {
-			tmpfp = claws_fopen(filename, "rb");
+			tmpfp = g_fopen(filename, "rb");
 			if (tmpfp) {
 				textview_show_html(textview, tmpfp, conv);
-				claws_fclose(tmpfp);
+				fclose(tmpfp);
 			}
 			claws_unlink(filename);
 		}
@@ -1057,10 +1057,10 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 
 		filename = procmime_get_tmp_file_name(mimeinfo);
 		if (procmime_get_part(filename, mimeinfo) == 0) {
-			tmpfp = claws_fopen(filename, "rb");
+			tmpfp = g_fopen(filename, "rb");
 			if (tmpfp) {
 				textview_show_ertf(textview, tmpfp, conv);
-				claws_fclose(tmpfp);
+				fclose(tmpfp);
 			}
 			claws_unlink(filename);
 		}
@@ -1111,12 +1111,12 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 			exit(255);
 		}
 		close(pfd[1]);
-		tmpfp = claws_fdopen(pfd[0], "rb");
-		while (claws_fgets(buf, sizeof(buf), tmpfp)) {
+		tmpfp = fdopen(pfd[0], "rb");
+		while (fgets(buf, sizeof(buf), tmpfp)) {
 			textview_write_line(textview, buf, conv, TRUE);
 
 			if (textview->stop_loading) {
-				claws_fclose(tmpfp);
+				fclose(tmpfp);
 				waitpid(pid, pfd, 0);
 				g_unlink(fname);
 				account_sigsep_matchlist_delete();
@@ -1125,7 +1125,7 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 			}
 		}
 
-		claws_fclose(tmpfp);
+		fclose(tmpfp);
 		waitpid(pid, pfd, 0);
 		g_unlink(fname);
 #endif
@@ -1147,27 +1147,27 @@ textview_default:
 		if (mimeinfo->content == MIMECONTENT_MEM)
 			tmpfp = str_open_as_stream(mimeinfo->data.mem);
 		else
-			tmpfp = claws_fopen(mimeinfo->data.filename, "rb");
+			tmpfp = g_fopen(mimeinfo->data.filename, "rb");
 		if (!tmpfp) {
-			FILE_OP_ERROR(mimeinfo->data.filename, "claws_fopen");
+			FILE_OP_ERROR(mimeinfo->data.filename, "g_fopen");
 			account_sigsep_matchlist_delete();
 			conv_code_converter_destroy(conv);
 			return;
 		}
 		if (fseek(tmpfp, mimeinfo->offset, SEEK_SET) < 0) {
 			FILE_OP_ERROR(mimeinfo->data.filename, "fseek");
-			claws_fclose(tmpfp);
+			fclose(tmpfp);
 			account_sigsep_matchlist_delete();
 			conv_code_converter_destroy(conv);
 			return;
 		}
 		debug_print("Viewing text content of type: %s (length: %ld)\n", mimeinfo->subtype, mimeinfo->length);
 		while (((i = ftell(tmpfp)) < mimeinfo->offset + mimeinfo->length) &&
-		       (claws_fgets(buf, sizeof(buf), tmpfp) != NULL)
+		       (fgets(buf, sizeof(buf), tmpfp) != NULL)
 		       && continue_write) {
 			textview_write_line(textview, buf, conv, TRUE);
 			if (textview->stop_loading) {
-				claws_fclose(tmpfp);
+				fclose(tmpfp);
 				account_sigsep_matchlist_delete();
 				conv_code_converter_destroy(conv);
 				return;
@@ -1179,7 +1179,7 @@ textview_default:
 				continue_write = FALSE;
 			}
 		}
-		claws_fclose(tmpfp);
+		fclose(tmpfp);
 	}
 
 	account_sigsep_matchlist_delete();
@@ -1929,7 +1929,7 @@ static GPtrArray *textview_scan_header(TextView *textview, FILE *fp)
 	}
 
 	if (!prefs_common.display_header) {
-		while (claws_fgets(buf, sizeof(buf), fp) != NULL)
+		while (fgets(buf, sizeof(buf), fp) != NULL)
 			if (buf[0] == '\r' || buf[0] == '\n') break;
 		return NULL;
 	}

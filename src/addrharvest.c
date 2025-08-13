@@ -590,7 +590,7 @@ static GSList *addrharvest_get_header( FILE *fp, GList *listHdr, gboolean *done 
 	list = NULL;
 
 	/* Read line */
-	if( claws_fgets( buf, MSG_BUFFSIZE, fp ) == NULL ) {
+	if( fgets( buf, MSG_BUFFSIZE, fp ) == NULL ) {
 		*done = TRUE;
 		return list;
 	}
@@ -617,7 +617,7 @@ static GSList *addrharvest_get_header( FILE *fp, GList *listHdr, gboolean *done 
 		ch = fgetc( fp );
 		if( ch == ' ' || ch == '\t' ) {
 			/* Continuation character - read into buffer */
-			if( claws_fgets( buf, MSG_BUFFSIZE, fp ) == NULL ) {
+			if( fgets( buf, MSG_BUFFSIZE, fp ) == NULL ) {
 				break;
 			}
 		}
@@ -654,7 +654,7 @@ static gint addrharvest_readfile(
 	GSList *list;
 	gboolean done;
 
-	msgFile = claws_fopen( fileName, "rb" );
+	msgFile = g_fopen( fileName, "rb" );
 	if( ! msgFile ) {
 		/* Cannot open file */
 		retVal = MGU_OPEN_FILE;
@@ -693,7 +693,7 @@ static gint addrharvest_readfile(
 		g_free( buf );
 	}
 
-	claws_fclose( msgFile );
+	fclose( msgFile );
 	return MGU_SUCCESS;
 }
 
