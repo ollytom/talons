@@ -70,7 +70,6 @@ abook_headers = \
 	editvcard.h \
 	exphtmldlg.h \
 	exporthtml.h \
-	file_checker.h \
 	vcard.h
 
 claws_mail_SOURCES = \
@@ -93,7 +92,6 @@ claws_mail_SOURCES = \
 	enriched.c \
 	entity.c \
 	export.c \
-	file_checker.c \
 	filtering.c \
 	folder.c \
 	folder_item_prefs.c \

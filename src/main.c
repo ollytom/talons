@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -45,7 +46,6 @@
 #include <sys/file.h>
 #endif
 
-#include "file_checker.h"
 #include "wizard.h"
 #ifdef HAVE_STARTUP_NOTIFICATION
 #ifdef GDK_WINDOWING_X11
@@ -566,6 +566,81 @@ static void win32_close_log(void)
 }
 #endif
 
+bool verify_folderlist_xml()
+{
+	GNode *node;
+	static gchar *filename = NULL;
+	static gchar *bak = NULL;
+	time_t date;
+	struct tm *ts;
+	gchar buf[BUFFSIZE];
+	gboolean fileexists, bakexists;
+
+	filename = folder_get_list_path();
+
+	fileexists = is_file_exist(filename);
+
+	bak = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
+ 			  FOLDER_LIST, ".bak", NULL);
+	bakexists = is_file_exist(bak);
+
+	if (bakexists) {
+		date = get_file_mtime(bak);
+		ts = localtime(&date);
+		strftime(buf, sizeof(buf), "%a %d-%b-%Y %H:%M %Z", ts);
+	}
+
+	if (!fileexists && bakexists) {
+		AlertValue aval;
+		gchar *msg;
+
+		msg = g_strdup_printf
+			(_("The file %s is missing! "
+			   "Do you want to use the backup file from %s?"), FOLDER_LIST,buf);
+		aval = alertpanel(_("Warning"), msg, NULL, _("_No"), NULL, _("_Yes"),
+				  NULL, NULL, ALERTFOCUS_FIRST);
+		g_free(msg);
+		if (aval != G_ALERTALTERNATE)
+			return false;
+		else {
+			if (copy_file(bak,filename,FALSE) < 0) {
+				alertpanel_warning(_("Could not copy %s to %s"),bak,filename);
+				return false;
+			}
+			g_free(bak);
+			return true;
+		}
+	}
+
+	if (fileexists) {
+		node = xml_parse_file(filename);
+		if (!node && is_file_exist(bak)) {
+			AlertValue aval;
+			gchar *msg;
+
+			msg = g_strdup_printf
+				(_("The file %s is empty or corrupted! "
+				   "Do you want to use the backup file from %s?"), FOLDER_LIST,buf);
+			aval = alertpanel(_("Warning"), msg, NULL, _("_No"), NULL, _("_Yes"),
+					  NULL, NULL, ALERTFOCUS_FIRST);
+			g_free(msg);
+			if (aval != G_ALERTALTERNATE)
+				return false;
+			else {
+				if (copy_file(bak,filename,FALSE) < 0) {
+					alertpanel_warning(_("Could not copy %s to %s"),bak,filename);
+					return false;
+				}
+				g_free(bak);
+				return true;
+			}
+		}
+		xml_free_tree(node);
+  	}
+
+	return true;
+}
+
 static void main_dump_features_list(gboolean show_debug_only)
 /* display compiled-in features list */
 {
@@ -857,7 +932,7 @@ int main(int argc, char *argv[])
 
 	mainwin = main_window_create();
 
-	if (!check_file_integrity())
+	if (!verify_folderlist_xml())
 		exit(1);
 
 	manage_window_focus_in(mainwin->window, NULL, NULL);
@@ -2294,4 +2369,3 @@ static void install_basic_sighandlers()
 	sigprocmask(SIG_UNBLOCK, &mask, 0);
 #endif /* !G_OS_WIN32 */
 }
-
