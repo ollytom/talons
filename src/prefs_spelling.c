@@ -95,9 +95,6 @@ static void prefs_spelling_create_widget(PrefsPage *_page, GtkWindow *window, gp
 	GtkWidget *default_alt_dict_label;
 	GtkWidget *default_alt_dict_combo;
 	GtkWidget *both_dict_check;
-#ifdef WIN32
-	GtkWidget *get_dictionaries_btn;
-#endif
 
 	GtkWidget *misspelled_label;
 	GtkWidget *misspelled_hbox;
@@ -169,12 +166,6 @@ static void prefs_spelling_create_widget(PrefsPage *_page, GtkWindow *window, gp
 	gtk_widget_show(both_dict_check);
 	gtk_grid_attach(GTK_GRID(table), both_dict_check, 1, 2, 1, 1);
 
-#ifdef WIN32
-	get_dictionaries_btn = gtk_link_button_new_with_label(
-				DICTS_URI, _("Get more dictionaries..."));
-	gtk_widget_show(get_dictionaries_btn);
-	gtk_grid_attach(GTK_GRID(table), get_dictionaries_btn, 1, 3, 1, 1);
-#endif
 	misspelled_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 	gtk_widget_show(misspelled_hbox);
 	gtk_box_pack_start(GTK_BOX(vbox1), misspelled_hbox, FALSE, FALSE, 0);

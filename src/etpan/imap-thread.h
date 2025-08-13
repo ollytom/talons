@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef IMAP_THREAD_H
@@ -47,10 +47,8 @@ int imap_threaded_connect(Folder * folder, const char * server, int port, ProxyI
 int imap_threaded_connect_ssl(Folder * folder, const char * server, int port, ProxyInfo *proxy_info);
 int imap_threaded_capability(Folder *folder, struct mailimap_capability_data ** caps);
 
-#ifndef G_OS_WIN32
 int imap_threaded_connect_cmd(Folder * folder, const char * command,
 			      const char * server, int port);
-#endif
 void imap_threaded_disconnect(Folder * folder);
 
 int imap_threaded_list(Folder * folder, const char * base,
@@ -67,8 +65,8 @@ int imap_threaded_status(Folder * folder, const char * mb,
 		guint mask);
 int imap_threaded_close(Folder * folder);
 
-int imap_threaded_noop(Folder * folder, unsigned int * p_exists, 
-		       unsigned int *p_recent, 
+int imap_threaded_noop(Folder * folder, unsigned int * p_exists,
+		       unsigned int *p_recent,
 		       unsigned int *p_expunge,
 		       unsigned int *p_unseen,
 		       unsigned int *p_uidnext,
@@ -125,7 +123,7 @@ enum {
 	IMAP_SEARCH_CRITERIA_SIZE_SMALLER,
 };
 
-IMAPSearchKey*	imap_search_new(gint		 criteria, 
+IMAPSearchKey*	imap_search_new(gint		 criteria,
 				const gchar	*header,
 				const gchar	*expr,
 				int		 value);

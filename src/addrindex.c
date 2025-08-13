@@ -51,10 +51,6 @@
 
 #include "vcard.h"
 
-#ifdef G_OS_WIN32
-#undef interface
-#endif
-
 #define TAG_ADDRESS_INDEX    "addressbook"
 
 #define TAG_IF_ADDRESS_BOOK  "book_list"

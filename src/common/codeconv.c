@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -550,7 +550,7 @@ static gint conv_anytoutf8(gchar *outbuf, gint outlen, const gchar *inbuf)
 		strncpy2(outbuf, inbuf, outlen);
 		break;
 	}
-	
+
 	return r;
 }
 
@@ -605,7 +605,7 @@ static gint conv_utf8tojis(gchar *outbuf, gint outlen, const gchar *inbuf)
 		return -1;
 	if (conv_euctojis(outbuf, outlen, eucstr) < 0)
 		return -1;
-		
+
 	return 0;
 }
 
@@ -720,7 +720,7 @@ static gint conv_ustodisp(gchar *outbuf, gint outlen, const gchar *inbuf)
 
 	strncpy2(outbuf, inbuf, outlen);
 	conv_unreadable_8bit(outbuf);
-	
+
 	return 0;
 }
 
@@ -742,7 +742,7 @@ void conv_localetodisp(gchar *outbuf, gint outlen, const gchar *inbuf)
 	} else if (tmpstr && !g_utf8_validate(tmpstr, -1, NULL)) {
 		g_free(tmpstr);
 		codeconv_set_strict(TRUE);
-		tmpstr = conv_iconv_strdup(inbuf, 
+		tmpstr = conv_iconv_strdup(inbuf,
 				conv_get_locale_charset_str_no_utf8(),
 				CS_INTERNAL);
 		codeconv_set_strict(FALSE);
@@ -971,7 +971,7 @@ static gchar *conv_iconv_strdup(const gchar *inbuf,
 
 	cm_return_val_if_fail(inbuf != NULL, NULL);
 
-	if (!src_code && !dest_code && 
+	if (!src_code && !dest_code &&
 	    g_utf8_validate(inbuf, -1, NULL))
 	    	return g_strdup(inbuf);
 
@@ -1161,11 +1161,7 @@ static const struct {
 	{"ja_JP.ujis"		, C_EUC_JP	, C_ISO_2022_JP},
 	{"ja_JP.SJIS"		, C_SHIFT_JIS	, C_ISO_2022_JP},
 	{"ja_JP.JIS"		, C_ISO_2022_JP	, C_ISO_2022_JP},
-#ifdef G_OS_WIN32
-	{"ja_JP"		, C_SHIFT_JIS	, C_ISO_2022_JP},
-#else
 	{"ja_JP"		, C_EUC_JP	, C_ISO_2022_JP},
-#endif
 	{"ko_KR.EUC-KR"		, C_EUC_KR	, C_EUC_KR},
 	{"ko_KR"		, C_EUC_KR	, C_EUC_KR},
 	{"zh_CN.GB18030"	, C_GB18030	, C_GB18030},
@@ -1181,11 +1177,8 @@ static const struct {
 	{"ru_RU.KOI8-R"		, C_KOI8_R	, C_KOI8_R},
 	{"ru_RU.KOI8R"		, C_KOI8_R	, C_KOI8_R},
 	{"ru_RU.CP1251"		, C_WINDOWS_1251, C_KOI8_R},
-#ifdef G_OS_WIN32
-	{"ru_RU"		, C_WINDOWS_1251, C_KOI8_R},
-#else
 	{"ru_RU"		, C_ISO_8859_5	, C_KOI8_R},
-#endif
+
 	{"tg_TJ"		, C_KOI8_T	, C_KOI8_T},
 	{"ru_UA"		, C_KOI8_U	, C_KOI8_U},
 	{"uk_UA.CP1251"		, C_WINDOWS_1251, C_KOI8_U},
@@ -1582,14 +1575,10 @@ const gchar *conv_get_current_locale(void)
 {
 	const gchar *cur_locale;
 
-#ifdef G_OS_WIN32
-	cur_locale = g_win32_getlocale();
-#else
 	cur_locale = g_getenv("LC_ALL");
 	if (!cur_locale) cur_locale = g_getenv("LC_CTYPE");
 	if (!cur_locale) cur_locale = g_getenv("LANG");
 	if (!cur_locale) cur_locale = setlocale(LC_CTYPE, NULL);
-#endif /* G_OS_WIN32 */
 
 	debug_print("current locale: %s\n",
 		    cur_locale ? cur_locale : "(none)");

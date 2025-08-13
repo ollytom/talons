@@ -428,11 +428,7 @@ struct _PrefsCommon
 	gint apply_per_account_filtering_rules;
 
 	/* Other */
-#ifndef G_OS_WIN32
 	gchar *uri_cmd;
-#else
-	gchar *gtk_theme;
-#endif
 	gchar *ext_editor_cmd;
 	gboolean cmds_use_system_default;
 

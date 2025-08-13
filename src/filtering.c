@@ -1185,9 +1185,7 @@ gboolean filtering_action_list_rename_path(GSList *action_list, const gchar *old
 	GSList * action_cur;
 	const gchar *separator=G_DIR_SEPARATOR_S;
 	gboolean matched = FALSE;
-#ifdef G_OS_WIN32
-again:
-#endif
+
 	oldpathlen = strlen(old_path);
 	old_path_with_sep = g_strconcat(old_path,separator,NULL);
 
@@ -1248,12 +1246,6 @@ again:
 	}
 
 	g_free(old_path_with_sep);
-#ifdef G_OS_WIN32
-	if (!strcmp(separator, G_DIR_SEPARATOR_S) && !matched) {
-		separator = "/";
-		goto again;
-	}
-#endif
 
 	return matched;
 }

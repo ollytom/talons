@@ -26,26 +26,17 @@
 
 #include <sys/time.h>
 #include <sys/types.h>
-#ifdef G_OS_WIN32
-#  include <ws2tcpip.h>
-#  ifndef EINPROGRESS
-#    define EINPROGRESS WSAEINPROGRESS
-#  endif
-#else
-#  if HAVE_SYS_WAIT_H
-#    include <sys/wait.h>
-#  endif
-#  include <sys/socket.h>
-#  include <sys/stat.h>
-#  include <sys/un.h>
-#  include <netinet/in.h>
-#  include <arpa/inet.h>
-#  include <resolv.h>
-#  ifndef _PATH_RESCONF
-#    define _PATH_RESCONF "/etc/resolv.conf"
-#  endif
-#  include <netdb.h>
-#endif /* G_OS_WIN32 */
+#include <sys/wait.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <resolv.h>
+#ifndef _PATH_RESCONF
+#  define _PATH_RESCONF "/etc/resolv.conf"
+#endif
+#include <netdb.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -69,12 +60,7 @@
 #error USE_GIO is currently not supported
 #endif
 
-#if G_IO_WIN32
-#define BUFFSIZE	8191
-#else
 #define BUFFSIZE	8192
-#endif
-
 
 typedef gint (*SockAddrFunc)	(GList		*addr_list,
 				 gpointer	 data);
@@ -179,24 +165,11 @@ static gint sock_get_address_info_async_cancel	(SockLookupData	*lookup_data);
 
 gint sock_init(void)
 {
-#ifdef G_OS_WIN32
-	WSADATA wsadata;
-	gint result;
-
-	result = WSAStartup(MAKEWORD(2, 2), &wsadata);
-	if (result != NO_ERROR) {
-		g_warning("WSAStartup() failed");
-		return -1;
-	}
-#endif
-	return 0;
+return 0;
 }
 
 gint sock_cleanup(void)
 {
-#ifdef G_OS_WIN32
-	WSACleanup();
-#endif
 	return 0;
 }
 
@@ -227,25 +200,7 @@ void refresh_resolvers(void)
 #endif /*G_OS_UNIX*/
 }
 
-#ifdef G_OS_WIN32
-#define SOCKET_IS_VALID(s)      ((s) != INVALID_SOCKET)
-#else
 #define SOCKET_IS_VALID(s) 	(s != -1)
-#endif
-
-#ifdef G_OS_WIN32
-/* Due to the fact that socket under Windows are not represented by
-   standard file descriptors, we sometimes need to check whether a
-   given file descriptor is actually a socket.  This is done by
-   testing for an error.  Returns true under W32 if FD is a socket. */
-static int fd_is_w32_socket(gint fd)
-{
-        gint optval;
-        gint retval = sizeof(optval);
-
-        return !getsockopt(fd, SOL_SOCKET, SO_TYPE, (char*)&optval, &retval);
-}
-#endif
 
 gint fd_connect_inet(gushort port)
 {
@@ -254,12 +209,7 @@ gint fd_connect_inet(gushort port)
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (!SOCKET_IS_VALID(sock)) {
-#ifdef G_OS_WIN32
-		debug_print("fd_connect_inet(): socket() failed: %d\n",
-			  WSAGetLastError());
-#else
 		perror("fd_connect_inet(): socket");
-#endif
 		return -1;
 	}
 
@@ -269,12 +219,13 @@ gint fd_connect_inet(gushort port)
 	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
 	if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		fd_close(sock);
+		close(sock);
 		return -1;
 	}
 
 	return sock;
 }
+
 gint fd_open_inet(gushort port)
 {
 	gint sock;
@@ -283,12 +234,7 @@ gint fd_open_inet(gushort port)
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (!SOCKET_IS_VALID(sock)) {
-#ifdef G_OS_WIN32
-		g_warning("fd_open_inet(): socket() failed: %d",
-			  WSAGetLastError());
-#else
 		perror("fd_open_inet(): socket");
-#endif
 		return -1;
 	}
 
@@ -296,7 +242,7 @@ gint fd_open_inet(gushort port)
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&val,
 		       sizeof(val)) < 0) {
 		perror("setsockopt");
-		fd_close(sock);
+		close(sock);
 		return -1;
 	}
 
@@ -307,13 +253,13 @@ gint fd_open_inet(gushort port)
 
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 		perror("bind");
-		fd_close(sock);
+		close(sock);
 		return -1;
 	}
 
 	if (listen(sock, 1) < 0) {
 		perror("listen");
-		fd_close(sock);
+		close(sock);
 		return -1;
 	}
 
@@ -638,11 +584,6 @@ static gint sock_connect_by_getaddrinfo(const gchar *hostname, gushort	port)
 		sock = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 		if (sock < 0 )
 			continue;
-#ifdef G_OS_WIN32
-		if (sock == INVALID_SOCKET)
-			continue;
-#endif
-
 		if (sock_connect_with_timeout
 			(sock, ai->ai_addr, ai->ai_addrlen, io_timeout) == 0)
 			break;
@@ -661,11 +602,7 @@ static gint sock_connect_by_getaddrinfo(const gchar *hostname, gushort	port)
 
 SockInfo *sock_connect(const gchar *hostname, gushort port)
 {
-#ifdef G_OS_WIN32
-	SOCKET sock;
-#else
 	gint sock;
-#endif
 
 	if ((sock = sock_connect_by_getaddrinfo(hostname, port)) < 0) {
 		return NULL;
@@ -727,11 +664,7 @@ static gboolean sock_connect_async_cb(GIOChannel *source,
 
 	sockinfo = g_new0(SockInfo, 1);
 	sockinfo->sock = fd;
-#ifndef G_OS_WIN32
 	sockinfo->sock_ch = g_io_channel_unix_new(fd);
-#else
-	sockinfo->sock_ch = g_io_channel_win32_new_socket(fd);
-#endif
 	sockinfo->hostname = g_strdup(conn_data->hostname);
 	sockinfo->port = conn_data->port;
 	sockinfo->state = CONN_ESTABLISHED;
@@ -870,12 +803,7 @@ static gint sock_connect_address_list_async(SockConnectData *conn_data)
 	}
 
 	conn_data->cur_addr = conn_data->cur_addr->next;
-
-#ifndef G_OS_WIN32
 	conn_data->channel = g_io_channel_unix_new(sock);
-#else
-	conn_data->channel = g_io_channel_win32_new_socket(sock);
-#endif
 	conn_data->io_tag = g_io_add_watch(conn_data->channel, G_IO_IN|G_IO_OUT,
 					   sock_connect_async_cb, conn_data);
 
@@ -998,12 +926,9 @@ static gboolean sock_get_address_info_async_cb(GIOChannel *source,
 		g_error_free(err);
 	g_io_channel_unref(source);
 
-#ifdef G_OS_WIN32
-        /* FIXME: We would need to cancel the thread. */
-#else
 	kill(lookup_data->child_pid, SIGKILL);
 	waitpid(lookup_data->child_pid, NULL, 0);
-#endif
+
 	lookup_data->canonical_name = canonical_name;
 
 	lookup_data->func(addr_list, lookup_data->data);
@@ -1028,10 +953,8 @@ static void address_info_async_child(void *opaque)
         gchar port_str[6];
         gint ai_member[4] = {AF_UNSPEC, 0, 0, 0};
 
-#ifndef G_OS_WIN32
         close(parm->pipe_fds[0]);
         parm->pipe_fds[0] = -1;
-#endif
 
         memset(&hints, 0, sizeof(hints));
         hints.ai_flags = AI_CANONNAME | AI_ADDRCONFIG;
@@ -1054,11 +977,8 @@ static void address_info_async_child(void *opaque)
                              sizeof(ai_member));
                 close(parm->pipe_fds[1]);
                 parm->pipe_fds[1] = -1;
-#ifdef G_OS_WIN32
-                _endthread();
-#else
+
                 _exit(1);
-#endif
         }
 
 	if (res != NULL) {
@@ -1097,11 +1017,7 @@ static void address_info_async_child(void *opaque)
         close(parm->pipe_fds[1]);
         parm->pipe_fds[1] = -1;
 
-#ifdef G_OS_WIN32
-        _endthread();
-#else
         _exit(0);
-#endif
 }
 
 static SockLookupData *sock_get_address_info_async(const gchar *hostname,
@@ -1130,7 +1046,6 @@ static SockLookupData *sock_get_address_info_async(const gchar *hostname,
 		return NULL;
 	}
 
-#ifndef G_OS_WIN32
 	if ((lookup_data->child_pid = fork()) < 0) {
 		perror("fork");
 		func(NULL, data);
@@ -1147,21 +1062,11 @@ static SockLookupData *sock_get_address_info_async(const gchar *hostname,
         /* Parent process. */
         close(lookup_data->pipe_fds[1]);
         lookup_data->pipe_fds[1] = -1;
-#endif  /*!G_OS_WIN32 */
 
-#ifndef G_OS_WIN32
         lookup_data->channel = g_io_channel_unix_new(lookup_data->pipe_fds[0]);
-#else
-        lookup_data->channel = g_io_channel_win32_new_fd(lookup_data->pipe_fds[0]);
-#endif
         lookup_data->io_tag = g_io_add_watch(lookup_data->channel, G_IO_IN,
                                              sock_get_address_info_async_cb,
                                              lookup_data);
-#ifdef G_OS_WIN32
-	lookup_data->child_pid = _beginthread(
-		address_info_async_child, 0, lookup_data);
-#endif
-
 	return lookup_data;
 }
 
@@ -1179,12 +1084,8 @@ static gint sock_get_address_info_async_cancel(SockLookupData *lookup_data)
 	}
 
 	if (lookup_data->child_pid > 0) {
-#ifdef G_OS_WIN32
-                /* FIXME: Need a way to cancel the thread. */
-#else
 		kill(lookup_data->child_pid, SIGKILL);
 		waitpid(lookup_data->child_pid, NULL, 0);
-#endif
 	}
 
 	g_free(lookup_data->canonical_name);
@@ -1203,11 +1104,7 @@ static SockInfo *sockinfo_from_fd(const gchar *hostname,
 
 	sockinfo = g_new0(SockInfo, 1);
 	sockinfo->sock = sock;
-#ifndef G_OS_WIN32
 	sockinfo->sock_ch = g_io_channel_unix_new(sock);
-#else
-	sockinfo->sock_ch = g_io_channel_win32_new_socket(sock);
-#endif
 	sockinfo->hostname = g_strdup(hostname);
 	sockinfo->port = port;
 	sockinfo->state = CONN_ESTABLISHED;
@@ -1219,12 +1116,6 @@ static gint fd_read(gint fd, gchar *buf, gint len)
 {
 	if (fd_check_io(fd, G_IO_IN) < 0)
 		return -1;
-
-#ifdef G_OS_WIN32
-	if (fd_is_w32_socket(fd))
-		return recv(fd, buf, len, 0);
-#endif
-
 	return read(fd, buf, len);
 }
 
@@ -1293,12 +1184,6 @@ gint fd_write(gint fd, const gchar *buf, gint len)
 {
 	if (fd_check_io(fd, G_IO_OUT) < 0)
 		return -1;
-
-#ifdef G_OS_WIN32
-	if (fd_is_w32_socket (fd))
-		return send(fd, buf, len, 0);
-#endif
-
 	return write(fd, buf, len);
 }
 
@@ -1351,16 +1236,8 @@ gint fd_write_all(gint fd, const gchar *buf, gint len)
 	while (len) {
 		if (fd_check_io(fd, G_IO_OUT) < 0)
 			return -1;
-#ifndef G_OS_WIN32
 		signal(SIGPIPE, SIG_IGN);
-#endif
-
-#ifdef G_OS_WIN32
-		if (fd_is_w32_socket(fd))
-			n = send(fd, buf, len, 0);
-		else
-#endif
-			n = write(fd, buf, len);
+		n = write(fd, buf, len);
 
 		if (n <= 0) {
 			log_error(LOG_PROTOCOL, _("write on fd%d: %s\n"), fd, g_strerror(errno));
@@ -1410,7 +1287,6 @@ gint sock_write_all(SockInfo *sock, const gchar *buf, gint len)
 	return ret;
 }
 
-#ifndef G_OS_WIN32
 static gint fd_recv(gint fd, gchar *buf, gint len, gint flags)
 {
 	if (fd_check_io(fd, G_IO_IN) < 0)
@@ -1418,7 +1294,6 @@ static gint fd_recv(gint fd, gchar *buf, gint len, gint flags)
 
 	return recv(fd, buf, len, flags);
 }
-#endif
 
 gint fd_gets(gint fd, gchar *buf, gint len)
 {
@@ -1426,45 +1301,6 @@ gint fd_gets(gint fd, gchar *buf, gint len)
 
 	if (--len < 1)
 		return -1;
-
-#ifdef G_OS_WIN32
-	fd_check_io(fd, G_IO_IN);
-	do {
-/*
-XXX:tm try nonblock
-MSKB Article ID: Q147714
-Windows Sockets 2 Service Provider Interface Limitations
-Polling with recv(MSG_PEEK) to determine when a complete message
-has arrived.
-    Reason and Workaround not available.
-
-Single-byte send() and recv().
-    Reason: Couple one-byte sends with Nagle disabled.
-    Workaround: Send modest amounts and receive as much as possible.
-(still unused)
-*/
-		if (recv(fd, bp, 1, 0) <= 0)
-			return -1;
-		if (*bp == '\n')
-			break;
-		bp++;
-		len--;
-	} while (0 < len);
-#else /*!G_OS_WIN32*/
-	gchar *newline;
-	gint n;
-	do {
-		if ((n = fd_recv(fd, bp, len, MSG_PEEK)) <= 0)
-			return -1;
-		if ((newline = memchr(bp, '\n', n)) != NULL)
-			n = newline - bp + 1;
-		if ((n = fd_read(fd, bp, n)) < 0)
-			return -1;
-		bp += n;
-		len -= n;
-	} while (!newline && len);
-#endif /*!G_OS_WIN32*/
-
 	*bp = '\0';
 	return bp - buf;
 }
@@ -1486,23 +1322,12 @@ gint sock_close(SockInfo *sock, gboolean close_fd)
 		g_source_remove(sock->g_source);
 	sock->g_source = 0;
 #endif
-	if (close_fd) {
-#ifdef G_OS_WIN32
-		shutdown(sock->sock, 1); /* complete transfer before close */
-		ret = closesocket(sock->sock);
-#else
-		ret = fd_close(sock->sock);
-#endif
-	}
+	if (close_fd)
+		ret = close(sock->sock);
 
 	g_free(sock->canonical_name);
 	g_free(sock->hostname);
 	g_free(sock);
 
 	return ret;
-}
-
-gint fd_close(gint fd)
-{
-	return close(fd);
 }

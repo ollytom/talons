@@ -138,9 +138,6 @@
 #include "version.h"
 
 #include "timing.h"
-#ifdef G_OS_WIN32
-#include <windows.h>
-#endif
 
 gchar *prog_version;
 
@@ -201,9 +198,7 @@ static void open_compose_new		(const gchar	*address,
 
 static void send_queue			(void);
 static void initial_processing		(FolderItem *item, gpointer data);
-#ifndef G_OS_WIN32
 static void quit_signal_handler         (int sig);
-#endif
 static void install_basic_sighandlers   (void);
 static void exit_claws			(MainWindow *mainwin);
 
@@ -423,149 +418,6 @@ void main_set_show_at_startup(gboolean show)
 	show_at_startup = show;
 }
 
-#ifdef G_OS_WIN32
-static HANDLE win32_debug_log = NULL;
-static guint win32_log_handler_app_id;
-static guint win32_log_handler_glib_id;
-static guint win32_log_handler_gtk_id;
-
-static void win32_log_WriteFile(const gchar *string)
-{
-	BOOL ret;
-	DWORD bytes_written;
-
-	ret = WriteFile(win32_debug_log, string, strlen(string), &bytes_written, NULL);
-	if (!ret) {
-		DWORD err = GetLastError();
-		gchar *tmp;
-
-		tmp = g_strdup_printf("Error: WriteFile in failed with error 0x%lx.  Buffer contents:\n%s", err, string);
-		OutputDebugString(tmp);
-		g_free(tmp);
-	}
-}
-
-static void win32_print_stdout(const gchar *string)
-{
-	if (win32_debug_log) {
-		win32_log_WriteFile(string);
-	}
-}
-
-GLogWriterOutput win32_log_writer(GLogLevelFlags log_level, const GLogField *fields, gsize n_fields, gpointer user_data)
-{
-	gchar *formatted;
-	gchar *out;
-
-	g_return_val_if_fail(win32_debug_log != NULL, G_LOG_WRITER_UNHANDLED);
-	g_return_val_if_fail(fields != NULL, G_LOG_WRITER_UNHANDLED);
-	g_return_val_if_fail(n_fields > 0, G_LOG_WRITER_UNHANDLED);
-
-	formatted = g_log_writer_format_fields(log_level, fields, n_fields, FALSE);
-	out = g_strdup_printf("%s\n", formatted);
-
-	win32_log_WriteFile(out);
-
-	g_free(formatted);
-	g_free(out);
-
-	return G_LOG_WRITER_HANDLED;
-}
-
-static void win32_log(const gchar *log_domain, GLogLevelFlags log_level, const gchar* message, gpointer user_data)
-{
-	gchar *out;
-
-	if (win32_debug_log) {
-		const gchar* type;
-
-		switch(log_level & G_LOG_LEVEL_MASK)
-		{
-			case G_LOG_LEVEL_ERROR:
-				type="error";
-				break;
-			case G_LOG_LEVEL_CRITICAL:
-				type="critical";
-				break;
-			case G_LOG_LEVEL_WARNING:
-				type="warning";
-				break;
-			case G_LOG_LEVEL_MESSAGE:
-				type="message";
-				break;
-			case G_LOG_LEVEL_INFO:
-				type="info";
-				break;
-			case G_LOG_LEVEL_DEBUG:
-				type="debug";
-				break;
-			default:
-				type="N/A";
-		}
-
-		if (log_domain)
-			out = g_strdup_printf("%s: %s: %s", log_domain, type, message);
-		else
-			out = g_strdup_printf("%s: %s", type, message);
-
-		win32_log_WriteFile(out);
-
-		g_free(out);
-	}
-}
-
-static void win32_open_log(void)
-{
-	gchar *logfile = win32_debug_log_path();
-	gchar *oldlogfile = g_strconcat(logfile, ".bak", NULL);
-
-	if (is_file_exist(logfile)) {
-		if (rename_force(logfile, oldlogfile) < 0)
-			FILE_OP_ERROR(logfile, "rename");
-	}
-
-	win32_debug_log = CreateFile(logfile,
-		GENERIC_WRITE,
-		FILE_SHARE_READ,
-		NULL,
-		CREATE_NEW,
-		FILE_ATTRIBUTE_NORMAL,
-		NULL);
-
-	if (win32_debug_log == INVALID_HANDLE_VALUE) {
-		win32_debug_log = NULL;
-	}
-
-	g_free(logfile);
-	g_free(oldlogfile);
-
-	if (win32_debug_log) {
-		g_set_print_handler(win32_print_stdout);
-		g_set_printerr_handler(win32_print_stdout);
-
-		win32_log_handler_app_id = g_log_set_handler(NULL, G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-                     | G_LOG_FLAG_RECURSION, win32_log, NULL);
-		win32_log_handler_glib_id = g_log_set_handler("GLib", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-                     | G_LOG_FLAG_RECURSION, win32_log, NULL);
-		win32_log_handler_gtk_id = g_log_set_handler("Gtk", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-                     | G_LOG_FLAG_RECURSION, win32_log, NULL);
-
-		g_log_set_writer_func(&win32_log_writer, NULL, NULL);
-	}
-}
-
-static void win32_close_log(void)
-{
-	if (win32_debug_log) {
-		g_log_remove_handler("", win32_log_handler_app_id);
-		g_log_remove_handler("GLib", win32_log_handler_glib_id);
-		g_log_remove_handler("Gtk", win32_log_handler_gtk_id);
-		CloseHandle(win32_debug_log);
-		win32_debug_log = NULL;
-	}
-}
-#endif
-
 bool verify_folderlist_xml()
 {
 	GNode *node;
@@ -718,13 +570,7 @@ int main(int argc, char *argv[])
 
 	sc_starting = TRUE;
 
-#ifdef G_OS_WIN32
-	win32_open_log();
-#endif
 	if (!claws_init(&argc, &argv)) {
-#ifdef G_OS_WIN32
-		win32_close_log();
-#endif
 		return 0;
 	}
 
@@ -770,11 +616,7 @@ int main(int argc, char *argv[])
 	/* Create container for all the menus we will be adding */
 	MENUITEM_ADDUI("/", "Menus", NULL, GTK_UI_MANAGER_MENUBAR);
 
-#ifdef G_OS_WIN32
-	CHDIR_EXEC_CODE_RETURN_VAL_IF_FAIL(get_home_dir(), 1, win32_close_log(););
-#else
 	CHDIR_RETURN_VAL_IF_FAIL(get_home_dir(), 1);
-#endif
 
 	/* no config dir exists. See if we can migrate an old config. */
 	if (!is_dir_exist(get_rc_dir())) {
@@ -810,9 +652,6 @@ int main(int argc, char *argv[])
 			if (copy_dir(SYSCONFDIR "/skel/.claws-mail", get_rc_dir()) < 0) {
 #endif
 				if (!is_dir_exist(get_rc_dir()) && make_dir(get_rc_dir()) < 0) {
-#ifdef G_OS_WIN32
-					win32_close_log();
-#endif
 					exit(1);
 				}
 #ifdef G_OS_UNIX
@@ -834,12 +673,7 @@ int main(int argc, char *argv[])
 
 	gtk_accel_map_load (userrc);
 	g_free(userrc);
-
-#ifdef G_OS_WIN32
-	CHDIR_EXEC_CODE_RETURN_VAL_IF_FAIL(get_rc_dir(), 1, win32_close_log(););
-#else
 	CHDIR_RETURN_VAL_IF_FAIL(get_rc_dir(), 1);
-#endif
 
 	MAKE_DIR_IF_NOT_EXIST(get_mail_base_dir());
 	MAKE_DIR_IF_NOT_EXIST(get_imap_cache_dir());
@@ -863,20 +697,13 @@ int main(int argc, char *argv[])
 	}
 	set_log_file(LOG_DEBUG_FILTERING, "filtering.log");
 
-#ifdef G_OS_WIN32
-	CHDIR_EXEC_CODE_RETURN_VAL_IF_FAIL(get_home_dir(), 1, win32_close_log(););
-#else
 	CHDIR_RETURN_VAL_IF_FAIL(get_home_dir(), 1);
-#endif
 
 	folder_system_init();
 	prefs_common_read_config();
 
 	if (prefs_update_config_version_common() < 0) {
 		debug_print("Main configuration file version upgrade failed, exiting\n");
-#ifdef G_OS_WIN32
-		win32_close_log();
-#endif
 		exit(200);
 	}
 
@@ -906,15 +733,6 @@ int main(int argc, char *argv[])
 	codeconv_set_allow_jisx0201_kana(prefs_common.allow_jisx0201_kana);
 	codeconv_set_broken_are_utf8(prefs_common.broken_are_utf8);
 
-#ifdef G_OS_WIN32
-	if(prefs_common.gtk_theme && strcmp(prefs_common.gtk_theme, DEFAULT_W32_GTK_THEME))
-		gtk_settings_set_string_property(gtk_settings_get_default(),
-			"gtk-theme-name",
-			prefs_common.gtk_theme,
-			"XProperty");
-#endif
-
-
 	sock_set_io_timeout(prefs_common.io_timeout_secs);
 	prefs_actions_read_config();
 	prefs_display_header_read_config();
@@ -943,9 +761,6 @@ int main(int argc, char *argv[])
 
 	if ((ret = passwd_store_read_config()) < 0) {
 		debug_print("Password store configuration file version upgrade failed (%d), exiting\n", ret);
-#ifdef G_OS_WIN32
-		win32_close_log();
-#endif
 		exit(202);
 	}
 
@@ -957,9 +772,6 @@ int main(int argc, char *argv[])
 
 	if (prefs_update_config_version_accounts() < 0) {
 		debug_print("Accounts configuration file version upgrade failed, exiting\n");
-#ifdef G_OS_WIN32
-		win32_close_log();
-#endif
 		exit(201);
 	}
 
@@ -981,9 +793,6 @@ int main(int argc, char *argv[])
 			/* config_version update failed in folder_read_list(). We
 			 * do not want to run the wizard, just exit. */
 			debug_print("Folderlist version upgrade failed, exiting\n");
-#ifdef G_OS_WIN32
-			win32_close_log();
-#endif
 			exit(203);
 		}
 
@@ -995,9 +804,6 @@ int main(int argc, char *argv[])
 		if (!run_wizard(mainwin, TRUE)) {
 			if (asked_for_migration)
 				remove_dir_recursive(RC_DIR);
-#ifdef G_OS_WIN32
-			win32_close_log();
-#endif
 			exit(1);
 		}
 		main_window_reflect_prefs_all_now();
@@ -1010,9 +816,6 @@ int main(int argc, char *argv[])
 		if (!run_wizard(mainwin, FALSE)) {
 			if (asked_for_migration)
 				remove_dir_recursive(RC_DIR);
-#ifdef G_OS_WIN32
-			win32_close_log();
-#endif
 			exit(1);
 		}
 		if(!account_get_list()) {
@@ -1277,9 +1080,6 @@ static void exit_claws(MainWindow *mainwin)
 #ifdef USE_ENCHANT
 	prefs_spelling_done();
 	gtkaspell_checkers_quit();
-#endif
-#ifdef G_OS_WIN32
-	win32_close_log();
 #endif
 	claws_done();
 }
@@ -2036,7 +1836,7 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 		} else {
 			g_print("Claws Mail is already running on this display (%s).\n",
 				buf);
-			fd_close(sock);
+			close(sock);
 			sock = fd_connect_unix(path);
 			CM_FD_WRITE_ALL("popup\n");
 		}
@@ -2045,7 +1845,7 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 #endif
 	}
 
-	fd_close(sock);
+	close(sock);
 	return -1;
 }
 
@@ -2061,7 +1861,7 @@ static gint lock_socket_remove(void)
 	if (lock_socket_tag > 0) {
 		g_source_remove(lock_socket_tag);
 	}
-	fd_close(lock_socket);
+	close(lock_socket);
 
 #ifdef G_OS_UNIX
 	filename = claws_get_socket_name();
@@ -2278,7 +2078,7 @@ search_exit:
                 }
 		app_will_exit(NULL, mainwin);
 	}
-	fd_close(sock);
+	close(sock);
 
 }
 
@@ -2325,18 +2125,15 @@ static void send_queue(void)
 	}
 }
 
-#ifndef G_OS_WIN32
 static void quit_signal_handler(int sig)
 {
 	debug_print("Quitting on signal %d\n", sig);
 
 	g_timeout_add(0, clean_quit, NULL);
 }
-#endif
 
 static void install_basic_sighandlers()
 {
-#ifndef G_OS_WIN32
 	sigset_t    mask;
 	struct sigaction act;
 
@@ -2367,5 +2164,4 @@ static void install_basic_sighandlers()
 #endif
 
 	sigprocmask(SIG_UNBLOCK, &mask, 0);
-#endif /* !G_OS_WIN32 */
 }

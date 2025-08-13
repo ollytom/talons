@@ -22,15 +22,9 @@
 
 #include <glib.h>
 
-#ifdef G_OS_WIN32
-#  include <winsock2.h>
-#  include <ws2tcpip.h>
-#  include <stdint.h>
-#else
-#  include <sys/socket.h>
-#  include <netinet/in.h>
-#  include <netinet/ip.h>
-#endif
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
 
 #include "proxy.h"
 #include "socket.h"

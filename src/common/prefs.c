@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -143,18 +143,18 @@ gint prefs_file_close(PrefFile *pfile)
 				if (fputs(buf, fp)  == EOF) {
 					g_warning("failed to write configuration to file");
 					prefs_file_close_revert(pfile);
-				
+
 					return -1;
 				}
 				break;
 			}
 		}
-		
+
 		while (fgets(buf, sizeof(buf), orig_fp) != NULL)
 			if (fputs(buf, fp) == EOF) {
 				g_warning("failed to write configuration to file");
-				prefs_file_close_revert(pfile);			
-				
+				prefs_file_close_revert(pfile);
+
 				return -1;
 			}
 		fclose(orig_fp);
@@ -172,9 +172,6 @@ gint prefs_file_close(PrefFile *pfile)
 
 	if (is_file_exist(path)) {
 		bakpath = g_strconcat(path, ".bak", NULL);
-#ifdef G_OS_WIN32
-                unlink(bakpath);
-#endif
 		if (g_rename(path, bakpath) < 0) {
 			FILE_OP_ERROR(path, "rename");
 			unlink(tmppath);
@@ -185,9 +182,6 @@ gint prefs_file_close(PrefFile *pfile)
 		}
 	}
 
-#ifdef G_OS_WIN32
-        unlink(path);
-#endif
 	if (g_rename(tmppath, path) < 0) {
 		FILE_OP_ERROR(tmppath, "rename");
 		unlink(tmppath);
@@ -276,7 +270,7 @@ gint prefs_set_block_label(PrefFile *pfile, const gchar *label)
 	if (!pfile->writing) {
 		while (fgets(buf, sizeof(buf), pfile->fp) != NULL) {
 			gint val;
-			
+
 			val = strncmp(buf, block_label, strlen(block_label));
 			if (val == 0) {
 				debug_print("Found %s\n", block_label);
@@ -300,7 +294,7 @@ gint prefs_set_block_label(PrefFile *pfile, const gchar *label)
 						g_warning("failed to write configuration to file");
 						prefs_file_close_revert(pfile);
 						g_free(block_label);
-						
+
 						return -1;
 					}
 				}

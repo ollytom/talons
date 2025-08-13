@@ -28,11 +28,7 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
-#ifdef _WIN32
-# define MAP_FAILED	((char *) -1)
-#else
-# include <sys/mman.h>
-#endif
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -43,9 +39,6 @@
 #include "procmsg.h"
 #include "codeconv.h"
 #include "timing.h"
-#ifdef G_OS_WIN32
-#include <windows.h>
-#endif
 #include "tags.h"
 #include "prefs_common.h"
 #include "file-utils.h"
@@ -642,22 +635,7 @@ MsgCache *msgcache_read_cache(FolderItem *item, const gchar *cache_file)
 		else
 			map_len = -1;
 		if (map_len > 0) {
-#ifdef G_OS_WIN32
-			cache_data = NULL;
-			HANDLE hFile, hMapping;
-			hFile = (HANDLE) _get_osfhandle (fileno(fp));
-			if (hFile == (HANDLE) -1)
-				goto w32_fail;
-			hMapping = CreateFileMapping(hFile, NULL, PAGE_WRITECOPY, 0, 0, NULL);
-			if (!hMapping)
-				goto w32_fail;
-			cache_data = (unsigned char *)MapViewOfFile(hMapping, FILE_MAP_COPY, 0, 0, 0);
-			CloseHandle (hMapping);
-		w32_fail:
-			;
-#else
 			cache_data = mmap(NULL, map_len, PROT_READ, MAP_PRIVATE, fileno(fp), 0);
-#endif
 		}
 	} else {
 		cache_data = NULL;
@@ -780,11 +758,7 @@ MsgCache *msgcache_read_cache(FolderItem *item, const gchar *cache_file)
 	}
 bail_err:
 	if (cache_data != NULL && cache_data != MAP_FAILED) {
-#ifdef G_OS_WIN32
-		UnmapViewOfFile((void*) cache_data);
-#else
 		munmap(cache_data, map_len);
-#endif
 	}
 	fclose(fp);
 	if (conv != NULL) {
@@ -840,22 +814,7 @@ void msgcache_read_mark(MsgCache *cache, const gchar *mark_file)
 		else
 			map_len = -1;
 		if (map_len > 0) {
-#ifdef G_OS_WIN32
-			cache_data = NULL;
-			HANDLE hFile, hMapping;
-			hFile = (HANDLE) _get_osfhandle (fileno(fp));
-			if (hFile == (HANDLE) -1)
-				goto w32_fail2;
-			hMapping = CreateFileMapping(hFile, NULL, PAGE_WRITECOPY, 0, 0, NULL);
-			if (!hMapping)
-				goto w32_fail2;
-			cache_data = (unsigned char *)MapViewOfFile(hMapping, FILE_MAP_COPY, 0, 0, 0);
-			CloseHandle (hMapping);
-		w32_fail2:
-			;
-#else
 			cache_data = mmap(NULL, map_len, PROT_READ, MAP_PRIVATE, fileno(fp), 0);
-#endif
 		}
 	} else {
 		cache_data = NULL;
@@ -890,11 +849,7 @@ void msgcache_read_mark(MsgCache *cache, const gchar *mark_file)
 	}
 bail_err:
 	if (cache_data != NULL && cache_data != MAP_FAILED) {
-#ifdef G_OS_WIN32
-		UnmapViewOfFile((void*) cache_data);
-#else
 		munmap(cache_data, map_len);
-#endif
 	}
 	fclose(fp);
 	if (error) {
@@ -934,22 +889,7 @@ void msgcache_read_tags(MsgCache *cache, const gchar *tags_file)
 		else
 			map_len = -1;
 		if (map_len > 0) {
-#ifdef G_OS_WIN32
-			cache_data = NULL;
-			HANDLE hFile, hMapping;
-			hFile = (HANDLE) _get_osfhandle (fileno(fp));
-			if (hFile == (HANDLE) -1)
-				goto w32_fail6;
-			hMapping = CreateFileMapping(hFile, NULL, PAGE_WRITECOPY, 0, 0, NULL);
-			if (!hMapping)
-				goto w32_fail6;
-			cache_data = (unsigned char *)MapViewOfFile(hMapping, FILE_MAP_COPY, 0, 0, 0);
-			CloseHandle (hMapping);
-		w32_fail6:
-			;
-#else
 			cache_data = mmap(NULL, map_len, PROT_READ, MAP_PRIVATE, fileno(fp), 0);
-#endif
 		}
 	} else {
 		cache_data = NULL;
@@ -1002,11 +942,7 @@ void msgcache_read_tags(MsgCache *cache, const gchar *tags_file)
 	}
 bail_err:
 	if (cache_data != NULL && cache_data != MAP_FAILED) {
-#ifdef G_OS_WIN32
-		UnmapViewOfFile((void*) cache_data);
-#else
 		munmap(cache_data, map_len);
-#endif
 	}
 	fclose(fp);
 	if (error) {

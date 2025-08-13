@@ -974,7 +974,6 @@ void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 	TEXTVIEW_INSERT(_("')\n"));
 	TEXTVIEW_INSERT(_("       (alternately double-click, or click the middle "));
 	TEXTVIEW_INSERT(_("mouse button)\n"));
-#ifndef G_OS_WIN32
 	TEXTVIEW_INSERT(_("     - Or use "));
 	TEXTVIEW_INSERT_LINK(_("'Open with...'"), "cm://open_with", NULL);
 	TEXTVIEW_INSERT(_(" (Shortcut key: '"));
@@ -982,7 +981,6 @@ void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 	TEXTVIEW_INSERT(shortcut);
 	g_free(shortcut);
 	TEXTVIEW_INSERT(_("')"));
-#endif
 	TEXTVIEW_INSERT("\n");
 
 	textview_show_icon(textview, "dialog-information");
@@ -994,9 +992,7 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 	gchar buf[BUFFSIZE];
 	CodeConverter *conv;
 	const gchar *charset;
-#ifndef G_OS_WIN32
 	const gchar *p, *cmd;
-#endif
 	GSList *cur;
 	gboolean continue_write = TRUE;
 	glong wrote = 0, i = 0;
@@ -1065,7 +1061,6 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 			unlink(filename);
 		}
 		g_free(filename);
-#ifndef G_OS_WIN32
 	} else if ( g_ascii_strcasecmp(mimeinfo->subtype, "plain") &&
 		   (cmd = prefs_common.mime_textviewer) && *cmd &&
 		   (p = strchr(cmd, '%')) && *(p + 1) == 's') {
@@ -1128,11 +1123,8 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 		fclose(tmpfp);
 		waitpid(pid, pfd, 0);
 		g_unlink(fname);
-#endif
 	} else {
-#ifndef G_OS_WIN32
 textview_default:
-#endif
 		if (!g_ascii_strcasecmp(mimeinfo->subtype, "x-patch")
 				|| !g_ascii_strcasecmp(mimeinfo->subtype, "x-diff"))
 			textview->is_diff = TRUE;

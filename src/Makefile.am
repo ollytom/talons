@@ -19,18 +19,6 @@ endif
 
 bin_PROGRAMS = claws-mail
 
-if PLATFORM_WIN32
-%.o : %.rc
-	$(LIBTOOL) --mode=compile --tag=RC $(RC) -I$(srcdir) -i $< -o $@
-
-claws_mail_platform_ldflags = -Wl,w32-resource.o \
-	-Wl,--export-all-symbols,--out-implib=libclaws.a
-claws_mail_deps = w32-resource.o
-else
-claws_mail_platform_ldflags =
-claws_mail_deps =
-endif
-
 abook_source = \
 	addrbook.c \
 	addrclip.c \
@@ -312,7 +300,6 @@ CLEANFILES = \
 	     $(BUILT_SOURCES)
 
 EXTRA_DIST = \
-	w32-logo.ico \
 	pixmaps/addr_one.xpm \
 	pixmaps/addr_two.xpm \
 	pixmaps/address_book.xpm \
@@ -568,20 +555,3 @@ matcher_parser_lex.$(OBJEXT) : AM_CFLAGS += -Wno-unused-function
 quote_fmt_lex.$(OBJEXT) : AM_CFLAGS += -Wno-unused-function
 
 AM_YFLAGS = -d
-
-if CYGWIN
-claws-mail$(EXEEXT): $(claws_mail_OBJECTS) $(claws_mail_DEPENDENCIES)
-	@rm -f claws-mail$(EXEEXT)
-	@rm -f claws-mail.def claws-mail.base claws-mail.exp libclaws-mail.a .libs/libclaws-mail.a
-	$(LINK) -shared $(claws_mailLDFLAGS) -Wl,--out-implib=libclaws-mail.a -Wl,--export-all-symbols,--exclude-symbols,main $(claws_mail_OBJECTS) -Wl,--no-whole-archive $(claws_mail_LDADD) $(LIBS)
-	dlltool --output-def claws-mail.def --dllname claws-mail$(EXEEXT) --export-all-symbols --exclude-symbols main $(claws_mail_OBJECTS) gtk/.libs/libclawsgtk.a
-	$(LINK) $(claws_mail_LDFLAGS) -Wl,--base-file,claws-mail.base $(claws_mail_OBJECTS) $(claws_mail_LDADD) $(LIBS)
-	sleep 5
-	dlltool --base-file claws-mail.base --input-def claws-mail.def --output-exp claws-mail.exp
-	$(LINK) $(claws_mail_LDFLAGS) -Wl,claws-mail.exp $(claws_mail_OBJECTS) $(claws_mail_LDADD) $(LIBS)
-	@cp libclaws-mail.a .libs/libclaws-mail.a
-else
-#claws-mail$(EXEEXT): $(claws_mail_OBJECTS) $(claws_mail_DEPENDENCIES)
-#	@rm -f claws-mail$(EXEEXT)
-#	$(LINK) $(claws_mail_LDFLAGS) $(claws_mail_OBJECTS) $(claws_mail_LDADD) $(LIBS)
-endif

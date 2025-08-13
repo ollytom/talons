@@ -1026,10 +1026,6 @@ static gchar *news_item_get_path(Folder *folder, FolderItem *item)
                                            folder_path, NULL);
         }
         g_free(folder_path);
-#ifdef G_OS_WIN32
-	while (strchr(path, '/'))
-		*strchr(path, '/') = '\\';
-#endif
 	return path;
 }
 

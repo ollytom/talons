@@ -54,14 +54,7 @@
 #include "account.h"
 #include "file-utils.h"
 
-#ifdef G_OS_WIN32
-#include "w32_reg.h"
-#define REG_MIME_TYPE_VALUE "Content Type"
-#endif
-
-#ifndef G_OS_WIN32
 static GHashTable *procmime_get_mime_type_table	(void);
-#endif
 static MimeInfo *procmime_scan_file_short(const gchar *filename);
 static MimeInfo *procmime_scan_queue_file_short(const gchar *filename);
 static MimeInfo *procmime_scan_queue_file_full(const gchar *filename, gboolean short_scan);
@@ -1069,7 +1062,6 @@ gchar *procmime_get_mime_type(const gchar *filename)
 	gchar *ext = NULL;
 	gchar *base;
 	gchar *str;
-#ifndef G_OS_WIN32
 	static GHashTable *mime_type_table = NULL;
 	MimeType *mime_type;
 
@@ -1077,23 +1069,17 @@ gchar *procmime_get_mime_type(const gchar *filename)
 		mime_type_table = procmime_get_mime_type_table();
 		if (!mime_type_table) return NULL;
 	}
-#endif
 
 	if (filename == NULL)
 		return NULL;
 
 	base = g_path_get_basename(filename);
 	if ((p = strrchr(base, '.')) != NULL)
-#ifndef G_OS_WIN32
 		ext = g_utf8_strdown(p + 1, -1);
-#else
-		ext = g_utf8_strdown(p, -1);
-#endif
 	else
 		ext = g_utf8_strdown(base, -1);
 	g_free(base);
 
-#ifndef G_OS_WIN32
 	mime_type = g_hash_table_lookup(mime_type_table, ext);
 
 	if (mime_type) {
@@ -1105,15 +1091,9 @@ gchar *procmime_get_mime_type(const gchar *filename)
 	}
 	g_free(ext);
 	return NULL;
-#else
-	str = read_w32_registry_string(HKEY_CLASSES_ROOT, ext, REG_MIME_TYPE_VALUE);
-	debug_print("got type %s for %s\n", str, ext);
-	g_free(ext);
-	return str;
-#endif
 }
 
-#ifndef G_OS_WIN32
+
 static guint procmime_str_hash(gconstpointer gptr)
 {
 	guint hash_result = 0;
@@ -1170,7 +1150,6 @@ static GHashTable *procmime_get_mime_type_table(void)
 
 	return table;
 }
-#endif
 
 GList *procmime_get_mime_type_list(void)
 {

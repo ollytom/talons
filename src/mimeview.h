@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef MIMEVIEW_H
@@ -94,14 +94,14 @@ struct _MimeViewerFactory
 	 */
 	gchar **content_types;
 	gint priority;
-	
+
 	MimeViewer *(*create_viewer) (void);
 };
 
 struct _MimeViewer
 {
 	MimeViewerFactory *factory;
-	
+
 	GtkWidget 	*(*get_widget)		(MimeViewer *);
 	void 	 	(*show_mimepart)	(MimeViewer *, const gchar *infile, MimeInfo *);
 	void		(*clear_viewer)		(MimeViewer *);
@@ -110,7 +110,7 @@ struct _MimeViewer
 	gboolean	(*scroll_page)		(MimeViewer *, gboolean up);
 	void		(*scroll_one_line)	(MimeViewer *, gboolean up);
 	gboolean	(*text_search)		(MimeViewer *, gboolean backward,
-						 const gchar *str, 
+						 const gchar *str,
 						 gboolean case_sensitive);
 	void		(*print)		(MimeViewer *);
 	MimeView	*mimeview;
@@ -126,7 +126,7 @@ void mimeview_init		(MimeView	*mimeview);
 void mimeview_show_message	(MimeView	*mimeview,
 				 MimeInfo	*mimeinfo,
 				 const gchar	*file);
-gboolean mimeview_show_part	(MimeView 	*mimeview, 
+gboolean mimeview_show_part	(MimeView 	*mimeview,
 				 MimeInfo 	*partinfo);
 void mimeview_show_part_as_text (MimeView *mimeview,
 				 MimeInfo *partinfo);
@@ -141,18 +141,18 @@ gboolean mimeview_pass_key_press_event	(MimeView	*mimeview,
 
 void mimeview_register_viewer_factory	(MimeViewerFactory *factory);
 void mimeview_unregister_viewer_factory	(MimeViewerFactory *factory);
-void mimeview_handle_cmd		(MimeView 	*mimeview, 
+void mimeview_handle_cmd		(MimeView 	*mimeview,
 					 const gchar 	*cmd,
 					 GdkEventButton *event,
 					 gpointer	 data);
-void mimeview_select_mimepart_icon	(MimeView 	*mimeview, 
+void mimeview_select_mimepart_icon	(MimeView 	*mimeview,
 					 MimeInfo 	*partinfo);
-gboolean mimeview_scroll_page		(MimeView 	*mimeview, 
+gboolean mimeview_scroll_page		(MimeView 	*mimeview,
 					 gboolean 	 up);
-void mimeview_scroll_one_line		(MimeView 	*mimeview, 
+void mimeview_scroll_one_line		(MimeView 	*mimeview,
 					 gboolean 	 up);
 gint mimeview_get_selected_part_num	(MimeView 	*mimeview);
-void mimeview_select_part_num		(MimeView 	*mimeview, 
+void mimeview_select_part_num		(MimeView 	*mimeview,
 					 gint 		 i);
 gboolean mimeview_has_viewer_for_content_type
 					(MimeView	*mimeview,
@@ -162,9 +162,7 @@ void mimeview_save_as		(MimeView	*mimeview);
 void mimeview_display_as_text	(MimeView	*mimeview);
 void mimeview_launch		(MimeView	*mimeview,
 				 MimeInfo	*partinfo);
-#ifndef G_OS_WIN32
 void mimeview_open_with		(MimeView	*mimeview);
-#endif
 void mimeview_check_signature(MimeView *mimeview);
 void mimeview_select_next_part(MimeView *mimeview);
 void mimeview_select_prev_part(MimeView *mimeview);

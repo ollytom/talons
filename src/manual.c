@@ -31,26 +31,15 @@
 #  include <locale.h>
 #endif
 
-#if !defined(LC_MESSAGES) && defined(G_OS_WIN32)
-#include <libintl.h>
-#endif
-
-
 #include "prefs_common.h"
 #include "manual.h"
 #include "utils.h"
-
 
 static gchar *get_language()
 {
 	gchar *language;
 	gchar *c;
-
-#ifdef G_OS_WIN32
-	language = g_win32_getlocale();
-#else
 	language = g_strdup(setlocale(LC_MESSAGES, NULL));
-#endif
 	if (!language)
 		return g_strdup("en");
 

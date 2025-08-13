@@ -10,18 +10,12 @@ noinst_LTLIBRARIES = libclawsgtk.la
 EXTRA_DIST = \
 	claws-marshal.list
 
-if OS_WIN32
-arch_sources = w32_filesel.c
-else
-arch_sources = filesel.c
-endif
-
 libclawsgtk_la_SOURCES = \
 	about.c \
 	colorlabel.c \
 	combobox.c \
 	description_window.c \
-	$(arch_sources) \
+	filesel.c \
 	foldersort.c \
 	gtkaspell.c \
 	gtkcmctree.c \

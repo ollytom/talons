@@ -179,37 +179,13 @@ static void prefs_themes_file_install		(const gchar *filename, gpointer data);
 
 static void prefs_themes_file_stats(const gchar *filename, gpointer data)
 {
-#ifdef G_OS_WIN32
-	GFile *f;
-	GFileInfo *fi;
-	GError *error = NULL;
-#else
+
 	GStatBuf s;
-#endif
 	goffset size;
 	DirInfo *di = (DirInfo *)data;
 	gint len;
 	gint i;
 
-#ifdef G_OS_WIN32
-	f = g_file_new_for_path(filename);
-	fi = g_file_query_info(f, "standard::size,standard::type",
-			G_FILE_QUERY_INFO_NONE, NULL, &error);
-	if (error != NULL) {
-		g_warning(error->message);
-		g_error_free(error);
-		g_object_unref(f);
-		return;
-	}
-	if (g_file_info_get_file_type(fi) != G_FILE_TYPE_REGULAR) {
-		g_object_unref(fi);
-		g_object_unref(f);
-		return;
-	}
-	size = g_file_info_get_size(fi);
-	g_object_unref(fi);
-	g_object_unref(f);
-#else
 	if ((i = g_stat(filename, &s)) != 0) {
 		debug_print("g_stat on '%s' failed: %d\n", filename, i);
 		return;
@@ -218,7 +194,6 @@ static void prefs_themes_file_stats(const gchar *filename, gpointer data)
 		return;
 	}
 	size = s.st_size;
-#endif
 
 	di->bytes += size;
 	di->files++;

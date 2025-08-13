@@ -23,11 +23,7 @@
 
 #include <glib.h>
 
-#ifndef G_OS_WIN32
 #include <sys/wait.h>
-#else
-#define WEXITSTATUS(x) (x)
-#endif
 
 #include <errno.h>
 #include <stdio.h>
@@ -83,10 +79,10 @@ gint file_strip_crs(const gchar *file)
 	if (safe_fclose(outfp) == EOF) {
 		goto unlinkout;
 	}
-	
+
 	if (move_file(out, file, TRUE) < 0)
 		goto unlinkout;
-	
+
 	g_free(out);
 	return 0;
 unlinkout:
@@ -519,12 +515,10 @@ static gchar *file_read_to_str_full(const gchar *file, gboolean recode)
 	FILE *fp;
 	gchar *str;
 	GStatBuf s;
-#ifndef G_OS_WIN32
 	gint fd, err;
 	struct timeval timeout = {1, 0};
 	fd_set fds;
 	int fflags = 0;
-#endif
 
 	cm_return_val_if_fail(file != NULL, NULL);
 
@@ -537,13 +531,6 @@ static gchar *file_read_to_str_full(const gchar *file, gboolean recode)
 		return NULL;
 	}
 
-#ifdef G_OS_WIN32
-	fp = g_fopen (file, "rb");
-	if (fp == NULL) {
-		FILE_OP_ERROR(file, "open");
-		return NULL;
-	}
-#else	  
 	/* test whether the file is readable without blocking */
 	fd = g_open(file, O_RDONLY | O_NONBLOCK, 0);
 	if (fd == -1) {
@@ -565,7 +552,7 @@ static gchar *file_read_to_str_full(const gchar *file, gboolean recode)
 		close(fd);
 		return NULL;
 	}
-	
+
 	/* Now clear O_NONBLOCK */
 	if ((fflags = fcntl(fd, F_GETFL)) < 0) {
 		FILE_OP_ERROR(file, "fcntl (F_GETFL)");
@@ -577,7 +564,7 @@ static gchar *file_read_to_str_full(const gchar *file, gboolean recode)
 		close(fd);
 		return NULL;
 	}
-	
+
 	/* get the FILE pointer */
 	fp = fdopen(fd, "rb");
 
@@ -586,7 +573,6 @@ static gchar *file_read_to_str_full(const gchar *file, gboolean recode)
 		close(fd); /* if fp isn't NULL, we'll use fclose instead! */
 		return NULL;
 	}
-#endif
 
 	str = file_read_stream_to_str_full(fp, recode);
 
@@ -652,10 +638,6 @@ gint copy_dir(const gchar *src, const gchar *dst)
 		if (g_file_test(old_file, G_FILE_TEST_IS_REGULAR)) {
 			r = copy_file(old_file, new_file, TRUE);
 		}
-#ifndef G_OS_WIN32
-		/* Windows has no symlinks.  Or well, Vista seems to
-		   have something like this but the semantics might be
-		   different. Thus we don't use it under Windows. */
 		else if (g_file_test(old_file, G_FILE_TEST_IS_SYMLINK)) {
 			GError *error = NULL;
 			gchar *target = g_file_read_link(old_file, &error);
@@ -668,7 +650,6 @@ gint copy_dir(const gchar *src, const gchar *dst)
 				g_free(target);
 			}
 		}
-#endif /*G_OS_WIN32*/
 		else if (g_file_test(old_file, G_FILE_TEST_IS_DIR)) {
 			r = copy_dir(old_file, new_file);
 		}
@@ -702,9 +683,7 @@ FILE *my_tmpfile(void)
 	gchar *fname;
 	gint fd;
 	FILE *fp;
-#ifndef G_OS_WIN32
 	gchar buf[2]="\0";
-#endif
 
 	tmpdir = get_tmp_dir();
 	tmplen = strlen(tmpdir);
@@ -724,16 +703,13 @@ FILE *my_tmpfile(void)
 	if (fd < 0)
 		return tmpfile();
 
-#ifndef G_OS_WIN32
 	unlink(fname);
-	
+
 	/* verify that we can write in the file after unlinking */
 	if (write(fd, buf, 1) < 0) {
 		close(fd);
 		return tmpfile();
 	}
-	
-#endif
 
 	fp = fdopen(fd, "w+b");
 	if (!fp)
@@ -782,7 +758,7 @@ FILE *str_open_as_stream(const gchar *str)
 	return fp;
 }
 
-gint prefs_chmod_mode(gchar *chmod_pref) 
+gint prefs_chmod_mode(gchar *chmod_pref)
 {
 	gint newmode = 0;
 	gchar *tmp;

@@ -1406,12 +1406,7 @@ claws_io_invoke (GIOChannel   *source,
 	         gpointer      data)
 {
   ClawsIOClosure *closure = data;
-  int fd;
-#ifndef G_OS_WIN32
-  fd = g_io_channel_unix_get_fd (source);
-#else
-  fd = g_io_channel_win32_get_fd (source);
-#endif
+  int fd = g_io_channel_unix_get_fd (source);
   if (closure->condition & condition)
     closure->function (closure->data, fd, condition);
 
@@ -1445,14 +1440,7 @@ claws_input_add    (gint	      source,
   closure->notify = NULL;
   closure->data = data;
 
-#ifndef G_OS_WIN32
   channel = g_io_channel_unix_new (source);
-#else
-  if (is_sock)
-    channel = g_io_channel_win32_new_socket(source);
-  else
-    channel = g_io_channel_win32_new_fd(source);
-#endif
   result = g_io_add_watch_full (channel, G_PRIORITY_DEFAULT, condition,
 				claws_io_invoke,
 				closure, claws_io_destroy);

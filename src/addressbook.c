@@ -74,9 +74,7 @@
 #include "adbookbase.h"
 #include "exphtmldlg.h"
 #include "addrcustomattr.h"
-#ifdef G_OS_WIN32
-#undef interface
-#endif
+
 typedef enum
 {
 	COL_SOURCES	= 0,
@@ -1219,9 +1217,6 @@ static void addressbook_create(void)
 				      GDK_HINT_MIN_SIZE);
 	gtk_window_set_default_size(GTK_WINDOW(window), prefs_common.addressbookwin_width,
 				    prefs_common.addressbookwin_height);
-#ifdef G_OS_WIN32
-	gtk_window_move(GTK_WINDOW(window), 48, 48);
-#endif
 
 	if (!prefs_common.addressbook_use_editaddress_dialog) {
 		if (prefs_common.addressbook_vpaned_pos > 0)

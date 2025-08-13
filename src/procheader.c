@@ -418,43 +418,16 @@ void procheader_get_header_fields(FILE *fp, HeaderEntry hentry[])
 MsgInfo *procheader_parse_file(const gchar *file, MsgFlags flags,
 			       gboolean full, gboolean decrypted)
 {
-#ifdef G_OS_WIN32
-	GFile *f;
-	GFileInfo *fi;
-	GTimeVal tv;
-	GError *error = NULL;
-#else
 	GStatBuf s;
-#endif
 	FILE *fp;
 	MsgInfo *msginfo;
 
-#ifdef G_OS_WIN32
-	f = g_file_new_for_path(file);
-	fi = g_file_query_info(f, "standard::size,standard::type,time::modified",
-			G_FILE_QUERY_INFO_NONE, NULL, &error);
-	if (error != NULL) {
-		g_warning(error->message);
-		g_error_free(error);
-		g_object_unref(f);
-	}
-#else
 	if (g_stat(file, &s) < 0) {
 		FILE_OP_ERROR(file, "stat");
 		return NULL;
 	}
-#endif
-
-#ifdef G_OS_WIN32
-	if (g_file_info_get_file_type(fi) != G_FILE_TYPE_REGULAR) {
-		g_object_unref(fi);
-		g_object_unref(f);
-		return NULL;
-	}
-#else
 	if (!S_ISREG(s.st_mode))
 		return NULL;
-#endif
 
 	if ((fp = g_fopen(file, "rb")) == NULL) {
 		FILE_OP_ERROR(file, "g_fopen");
@@ -465,21 +438,9 @@ MsgInfo *procheader_parse_file(const gchar *file, MsgFlags flags,
 	fclose(fp);
 
 	if (msginfo) {
-#ifdef G_OS_WIN32
-		msginfo->size = g_file_info_get_size(fi);
-		g_file_info_get_modification_time(fi, &tv);
-		msginfo->mtime = tv.tv_sec;
-#else
 		msginfo->size = s.st_size;
 		msginfo->mtime = s.st_mtime;
-#endif
 	}
-
-#ifdef G_OS_WIN32
-	g_object_unref(fi);
-	g_object_unref(f);
-#endif
-
 	return msginfo;
 }
 
@@ -1170,27 +1131,6 @@ time_t procheader_date_parse(gchar *dest, const gchar *src, gint len)
 			break;
 		}
 	}
-
-#ifdef G_OS_WIN32
-	GTimeZone *tz;
-	GDateTime *dt, *dt2;
-
-#if GLIB_CHECK_VERSION(2,68,0)
-	tz = g_time_zone_new_identifier(zone);
-	if (tz == NULL)
-		tz = g_time_zone_new_utc();
-#else
-	tz = g_time_zone_new(zone); // can't return NULL no need to check for it
-#endif
-	dt = g_date_time_new(tz, 1, 1, 1, 0, 0, 0);
-	g_time_zone_unref(tz);
-	dt2 = g_date_time_add_full(dt, year-1, dmonth-1, day-1, hh, mm, ss);
-	g_date_time_unref(dt);
-
-	timer = g_date_time_to_unix(dt2);
-	g_date_time_unref(dt2);
-
-#else
 	struct tm t;
 	time_t tz_offset;
 
@@ -1217,7 +1157,6 @@ time_t procheader_date_parse(gchar *dest, const gchar *src, gint len)
 	if (tz_offset != -1)
 		timer += tzoffset_sec(&timer) - tz_offset;
 
-#endif
 	if (dest)
 		procheader_date_get_localtime(dest, len, timer);
 

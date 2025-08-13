@@ -45,11 +45,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <sys/param.h>
-#ifdef G_OS_WIN32
-#  include <ws2tcpip.h>
-#else
-#  include <sys/socket.h>
-#endif
+#include <sys/socket.h>
 
 #if (HAVE_WCTYPE_H && HAVE_WCHAR_H)
 #  include <wchar.h>
@@ -68,11 +64,6 @@
 #include <regex.h>
 
 #include <fcntl.h>
-
-#ifdef G_OS_WIN32
-#  include <direct.h>
-#  include <io.h>
-#endif
 
 #include "utils.h"
 #include "socket.h"
@@ -196,26 +187,12 @@ gchar *to_human_readable(goffset size)
 	}
 }
 
-/* compare paths */
 gint path_cmp(const gchar *s1, const gchar *s2)
 {
 	gint len1, len2;
-	int rc;
-#ifdef G_OS_WIN32
-	gchar *s1buf, *s2buf;
-#endif
 
 	if (s1 == NULL || s2 == NULL) return -1;
 	if (*s1 == '\0' || *s2 == '\0') return -1;
-
-#ifdef G_OS_WIN32
-	s1buf = g_strdup (s1);
-	s2buf = g_strdup (s2);
-	subst_char (s1buf, '/', G_DIR_SEPARATOR);
-	subst_char (s2buf, '/', G_DIR_SEPARATOR);
-	s1 = s1buf;
-	s2 = s2buf;
-#endif /* !G_OS_WIN32 */
 
 	len1 = strlen(s1);
 	len2 = strlen(s2);
@@ -223,12 +200,7 @@ gint path_cmp(const gchar *s1, const gchar *s2)
 	if (s1[len1 - 1] == G_DIR_SEPARATOR) len1--;
 	if (s2[len2 - 1] == G_DIR_SEPARATOR) len2--;
 
-	rc = strncmp(s1, s2, MAX(len1, len2));
-#ifdef G_OS_WIN32
-	g_free (s1buf);
-	g_free (s2buf);
-#endif /* !G_OS_WIN32 */
-	return rc;
+	return strncmp(s1, s2, MAX(len1, len2));
 }
 
 /* remove trailing return code */
@@ -941,11 +913,7 @@ void subst_for_filename(gchar *str)
 {
 	if (!str)
 		return;
-#ifdef G_OS_WIN32
-	subst_chars(str, "\t\r\n\\/*?:", '_');
-#else
 	subst_chars(str, "\t\r\n\\/*", '_');
-#endif
 }
 
 void subst_for_shellsafe_filename(gchar *str)
@@ -1267,7 +1235,6 @@ GList *uri_list_extract_filenames(const gchar *uri_list)
 		     * g_filename_from_uri() rejects escaped/locale encoded uri
 		     * string which come from Nautilus.
 		     */
-#ifndef G_OS_WIN32
 					if (g_utf8_validate(file, -1, NULL))
 						locale_file
 							= conv_codeset_strdup(
@@ -1276,9 +1243,6 @@ GList *uri_list_extract_filenames(const gchar *uri_list)
 								conv_get_locale_charset_str());
 					if (!locale_file)
 						locale_file = g_strdup(file + 5);
-#else
-					locale_file = g_filename_from_uri(escaped_utf8uri, NULL, NULL);
-#endif
 					result = g_list_append(result, locale_file);
 				}
 			}
@@ -1558,165 +1522,18 @@ gint scan_mailto_url(const gchar *mailto, gchar **from, gchar **to, gchar **cc, 
 	return 0;
 }
 
-
-#ifdef G_OS_WIN32
-#include <windows.h>
-#ifndef CSIDL_APPDATA
-#define CSIDL_APPDATA 0x001a
-#endif
-#ifndef CSIDL_LOCAL_APPDATA
-#define CSIDL_LOCAL_APPDATA 0x001c
-#endif
-#ifndef CSIDL_FLAG_CREATE
-#define CSIDL_FLAG_CREATE 0x8000
-#endif
-#define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
-
-#define RTLD_LAZY 0
-const char *
-w32_strerror (int w32_errno)
-{
-  static char strerr[256];
-  int ec = (int)GetLastError ();
-
-  if (w32_errno == 0)
-    w32_errno = ec;
-  FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, w32_errno,
-		 MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
-		 strerr, DIM (strerr)-1, NULL);
-  return strerr;
-}
-
-static __inline__ void *
-dlopen (const char * name, int flag)
-{
-  void * hd = LoadLibrary (name);
-  return hd;
-}
-
-static __inline__ void *
-dlsym (void * hd, const char * sym)
-{
-  if (hd && sym)
-    {
-      void * fnc = GetProcAddress (hd, sym);
-      if (!fnc)
-	return NULL;
-      return fnc;
-    }
-  return NULL;
-}
-
-
-static __inline__ const char *
-dlerror (void)
-{
-  return w32_strerror (0);
-}
-
-
-static __inline__ int
-dlclose (void * hd)
-{
-  if (hd)
-    {
-      FreeLibrary (hd);
-      return 0;
-    }
-  return -1;
-}
-
-static HRESULT
-w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
-{
-  static int initialized;
-  static HRESULT (WINAPI * func)(HWND,int,HANDLE,DWORD,LPSTR);
-
-  if (!initialized)
-    {
-      static char *dllnames[] = { "shell32.dll", "shfolder.dll", NULL };
-      void *handle;
-      int i;
-
-      initialized = 1;
-
-      for (i=0, handle = NULL; !handle && dllnames[i]; i++)
-	{
-	  handle = dlopen (dllnames[i], RTLD_LAZY);
-	  if (handle)
-	    {
-	      func = dlsym (handle, "SHGetFolderPathW");
-	      if (!func)
-		{
-		  dlclose (handle);
-		  handle = NULL;
-		}
-	    }
-	}
-    }
-
-  if (func)
-    return func (a,b,c,d,e);
-  else
-    return -1;
-}
-
-/* Returns a static string with the directroy from which the module
-   has been loaded.  Returns an empty string on error. */
-static char *w32_get_module_dir(void)
-{
-	static char *moddir;
-
-	if (!moddir) {
-		char name[MAX_PATH+10];
-		char *p;
-
-		if ( !GetModuleFileNameA (0, name, sizeof (name)-10) )
-			*name = 0;
-		else {
-			p = strrchr (name, '\\');
-			if (p)
-				*p = 0;
-			else
-				*name = 0;
-		}
-		moddir = g_strdup (name);
-	}
-	return moddir;
-}
-#endif /* G_OS_WIN32 */
-
 /* Return a static string with the locale dir. */
 const gchar *get_locale_dir(void)
 {
 	static gchar *loc_dir;
-
-#ifdef G_OS_WIN32
-	if (!loc_dir)
-		loc_dir = g_strconcat(w32_get_module_dir(), G_DIR_SEPARATOR_S,
-				      "\\share\\locale", NULL);
-#endif
 	if (!loc_dir)
 		loc_dir = LOCALEDIR;
-
 	return loc_dir;
 }
 
 
 const gchar *get_home_dir(void)
 {
-#ifdef G_OS_WIN32
-	static char home_dir_utf16[MAX_PATH] = "";
-	static gchar *home_dir_utf8 = NULL;
-	if (home_dir_utf16[0] == '\0') {
-		if (w32_shgetfolderpath
-			    (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE,
-			     NULL, 0, home_dir_utf16) < 0)
-				strcpy (home_dir_utf16, "C:\\Claws Mail");
-		home_dir_utf8 = g_utf16_to_utf8 ((const gunichar2 *)home_dir_utf16, -1, NULL, NULL, NULL);
-	}
-	return home_dir_utf8;
-#else
 	static const gchar *homeenv = NULL;
 
 	if (homeenv)
@@ -1728,7 +1545,6 @@ const gchar *get_home_dir(void)
 		homeenv = g_get_home_dir();
 
 	return homeenv;
-#endif
 }
 
 static gchar *claws_rc_dir = NULL;
@@ -1829,19 +1645,6 @@ const gchar *get_template_dir(void)
 	return template_dir;
 }
 
-#ifdef G_OS_WIN32
-const gchar *w32_get_cert_file(void)
-{
-	const gchar *cert_file = NULL;
-	if (!cert_file)
-		cert_file = g_strconcat(w32_get_module_dir(),
-				 "\\share\\claws-mail\\",
-				"ca-certificates.crt",
-				NULL);
-	return cert_file;
-}
-#endif
-
 /* Return the filepath of the claws-mail.desktop file */
 const gchar *get_desktop_file(void)
 {
@@ -1851,20 +1654,6 @@ const gchar *get_desktop_file(void)
   return NULL;
 #endif
 }
-
-#ifdef G_OS_WIN32
-/* Return the default directory for Themes. */
-const gchar *w32_get_themes_dir(void)
-{
-	static gchar *themes_dir = NULL;
-
-	if (!themes_dir)
-		themes_dir = g_strconcat(w32_get_module_dir(),
-					 "\\share\\claws-mail\\themes",
-					 NULL);
-	return themes_dir;
-}
-#endif
 
 const gchar *get_tmp_dir(void)
 {
@@ -1950,36 +1739,12 @@ gboolean is_numeric_host_address(const gchar *hostaddress)
 
 off_t get_file_size(const gchar *file)
 {
-#ifdef G_OS_WIN32
-	GFile *f;
-	GFileInfo *fi;
-	GError *error = NULL;
-	goffset size;
-
-	f = g_file_new_for_path(file);
-	fi = g_file_query_info(f, "standard::size",
-			G_FILE_QUERY_INFO_NONE, NULL, &error);
-	if (error != NULL) {
-		debug_print("get_file_size error: %s\n", error->message);
-		g_error_free(error);
-		g_object_unref(f);
-		return -1;
-	}
-	size = g_file_info_get_size(fi);
-	g_object_unref(fi);
-	g_object_unref(f);
-	return size;
-
-#else
 	GStatBuf s;
-
 	if (g_stat(file, &s) < 0) {
 		FILE_OP_ERROR(file, "stat");
 		return -1;
 	}
-
 	return s.st_size;
-#endif
 }
 
 time_t get_file_mtime(const gchar *file)
@@ -2013,26 +1778,12 @@ gboolean file_exist(const gchar *file, gboolean allow_fifo)
 }
 
 
-/* Test on whether FILE is a relative file name. This is
- * straightforward for Unix but more complex for Windows. */
+/* Test on whether FILE is a relative file name. */
 gboolean is_relative_filename(const gchar *file)
 {
 	if (!file)
 		return TRUE;
-#ifdef G_OS_WIN32
-	if ( *file == '\\' && file[1] == '\\' && strchr (file+2, '\\') )
-		return FALSE; /* Prefixed with a hostname - this can't
-			       * be a relative name. */
-
-	if ( ((*file >= 'a' && *file <= 'z')
-	      || (*file >= 'A' && *file <= 'Z'))
-	     && file[1] == ':')
-		file += 2;  /* Skip drive letter. */
-
-	return !(*file == '\\' || *file == '/');
-#else
 	return !(*file == G_DIR_SEPARATOR);
-#endif
 }
 
 
@@ -2648,7 +2399,6 @@ FILE *get_command_output_stream(const char* cmdline)
 	return fdopen(fd, "r");
 }
 
-#ifndef G_OS_WIN32
 static gint is_unchanged_uri_char(char c)
 {
 	switch (c) {
@@ -2684,12 +2434,10 @@ static void encode_uri(gchar *encoded_uri, gint bufsize, const gchar *uri)
 	}
 	encoded_uri[k] = 0;
 }
-#endif
 
 gint open_uri(const gchar *uri, const gchar *cmdline)
 {
 
-#ifndef G_OS_WIN32
 	gchar buf[BUFFSIZE];
 	gchar *p;
 	gchar encoded_uri[BUFFSIZE];
@@ -2711,9 +2459,6 @@ gint open_uri(const gchar *uri, const gchar *cmdline)
 	}
 
 	execute_command_line(buf, TRUE, NULL);
-#else
-	ShellExecute(NULL, "open", uri, NULL, NULL, SW_SHOW);
-#endif
 	return 0;
 }
 
@@ -2814,10 +2559,7 @@ time_t tzoffset_sec(time_t *now)
 	struct tm gmt, *lt;
 	gint off;
 	struct tm buf1, buf2;
-#ifdef G_OS_WIN32
-	if (now && *now < 0)
-		return 0;
-#endif
+
 	gmt = *gmtime_r(now, &buf1);
 	lt = localtime_r(now, &buf2);
 
@@ -2848,10 +2590,7 @@ gchar *tzoffset(time_t *now)
 	gint off;
 	gchar sign = '+';
 	struct tm buf1, buf2;
-#ifdef G_OS_WIN32
-	if (now && *now < 0)
-		return 0;
-#endif
+
 	gmt = *gmtime_r(now, &buf1);
 	lt = localtime_r(now, &buf2);
 
@@ -4249,11 +3988,7 @@ size_t fast_strftime(gchar *buf, gint buflen, const gchar *format, struct tm *lt
 				}
 				break;
 			case 'r':
-#ifdef G_OS_WIN32
-				strftime(subbuf, 64, "%I:%M:%S %p", lt);
-#else
 				strftime(subbuf, 64, "%r", lt);
-#endif
 				len = strlen(subbuf); CHECK_SIZE();
 				strncpy2(curpos, subbuf, buflen - total_done);
 				break;
@@ -4357,30 +4092,13 @@ size_t fast_strftime(gchar *buf, gint buflen, const gchar *format, struct tm *lt
 	return total_done;
 }
 
-#ifdef G_OS_WIN32
-#define WEXITSTATUS(x) (x)
-#endif
-
 static gchar *canonical_list_to_file(GSList *list)
 {
 	GString *result = g_string_new(NULL);
 	GSList *pathlist = g_slist_reverse(g_slist_copy(list));
 	GSList *cur;
 
-#ifndef G_OS_WIN32
 	result = g_string_append(result, G_DIR_SEPARATOR_S);
-#else
-	if (pathlist->data) {
-		const gchar *root = (gchar *)pathlist->data;
-		if (root[0] != '\0' && g_ascii_isalpha(root[0]) &&
-		    root[1] == ':') {
-			/* drive - don't prepend dir separator */
-		} else {
-			result = g_string_append(result, G_DIR_SEPARATOR_S);
-		}
-	}
-#endif
-
 	for (cur = pathlist; cur; cur = cur->next) {
 		result = g_string_append(result, (gchar *)cur->data);
 		if (cur->next)
@@ -4397,16 +4115,10 @@ static GSList *cm_split_path(const gchar *filename, int depth)
 	GSList *canonical_parts = NULL;
 	GStatBuf st;
 	int i;
-#ifndef G_OS_WIN32
 	gboolean follow_symlinks = TRUE;
-#endif
 
 	if (depth > 32) {
-#ifndef G_OS_WIN32
-		errno = ELOOP;
-#else
 		errno = EINVAL; /* can't happen, no symlink handling */
-#endif
 		return NULL;
 	}
 
@@ -4443,9 +4155,7 @@ static GSList *cm_split_path(const gchar *filename, int depth)
 			if(g_stat(tmp_path, &st) < 0) {
 				if (errno == ENOENT) {
 					errno = 0;
-#ifndef G_OS_WIN32
 					follow_symlinks = FALSE;
-#endif
 				}
 				if (errno != 0) {
 					g_free(tmp_path);
@@ -4455,7 +4165,6 @@ static GSList *cm_split_path(const gchar *filename, int depth)
 					return NULL;
 				}
 			}
-#ifndef G_OS_WIN32
 			if (follow_symlinks && g_file_test(tmp_path, G_FILE_TEST_IS_SYMLINK)) {
 				GError *error = NULL;
 				gchar *target = g_file_read_link(tmp_path, &error);
@@ -4488,7 +4197,6 @@ static GSList *cm_split_path(const gchar *filename, int depth)
 				}
 				g_free(target);
 			}
-#endif
 			g_free(tmp_path);
 		}
 	}
@@ -4552,16 +4260,6 @@ guchar *g_base64_decode_zero(const gchar *text, gsize *out_len)
 gboolean
 get_random_bytes(void *buf, size_t count)
 {
-	/* Open our prng source. */
-#if defined G_OS_WIN32
-	HCRYPTPROV rnd;
-
-	if (!CryptAcquireContext(&rnd, NULL, NULL, PROV_RSA_FULL, 0) &&
-			!CryptAcquireContext(&rnd, NULL, NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET)) {
-		debug_print("Could not acquire a CSP handle.\n");
-		return FALSE;
-	}
-#else
 	int rnd;
 	ssize_t ret;
 
@@ -4571,16 +4269,8 @@ get_random_bytes(void *buf, size_t count)
 		debug_print("Could not open /dev/urandom.\n");
 		return FALSE;
 	}
-#endif
 
 	/* Read data from the source into buf. */
-#if defined G_OS_WIN32
-	if (!CryptGenRandom(rnd, count, buf)) {
-		debug_print("Could not read %"G_GSIZE_FORMAT" random bytes.\n", count);
-		CryptReleaseContext(rnd, 0);
-		return FALSE;
-	}
-#else
 	ret = read(rnd, buf, count);
 	if (ret != count) {
 		FILE_OP_ERROR("/dev/urandom", "read");
@@ -4588,15 +4278,7 @@ get_random_bytes(void *buf, size_t count)
 		close(rnd);
 		return FALSE;
 	}
-#endif
-
-	/* Close the prng source. */
-#if defined G_OS_WIN32
-	CryptReleaseContext(rnd, 0);
-#else
 	close(rnd);
-#endif
-
 	return TRUE;
 }
 
@@ -4665,11 +4347,3 @@ gboolean get_serverportfp_from_filename(const gchar *str, gchar **server, gchar 
 	else
 		return TRUE;
 }
-
-#ifdef G_OS_WIN32
-gchar *win32_debug_log_path(void)
-{
-	return g_strconcat(g_get_tmp_dir(), G_DIR_SEPARATOR_S,
-			"claws-win32.log", NULL);
-}
-#endif

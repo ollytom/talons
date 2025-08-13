@@ -189,7 +189,6 @@ static int gnutls_cert_cb(gnutls_session_t session,
 
 const gchar *claws_ssl_get_cert_file(void)
 {
-#ifndef G_OS_WIN32
 	const char *cert_files[]={
 		"/etc/ssl/cert.pem",
 		"/etc/pki/tls/certs/ca-bundle.crt",
@@ -204,28 +203,22 @@ const gchar *claws_ssl_get_cert_file(void)
 		"/usr/lib/ssl/cert.pem",
 		NULL};
 	int i;
-#endif
 
 	/* We honor this environment variable on all platforms. */
 	if (g_getenv("SSL_CERT_FILE"))
 		return g_getenv("SSL_CERT_FILE");
 
-#ifndef G_OS_WIN32
 	for (i = 0; cert_files[i]; i++) {
 		if (is_file_exist(cert_files[i]))
 			return cert_files[i];
 	}
 	return NULL;
-#else
-	return w32_get_cert_file();
-#endif
 }
 
 const gchar *claws_ssl_get_cert_dir(void)
 {
 	if (g_getenv("SSL_CERT_DIR"))
 		return g_getenv("SSL_CERT_DIR");
-#ifndef G_OS_WIN32
 	const char *cert_dirs[]={
 		"/etc/pki/tls/certs",
 		"/etc/certs",
@@ -243,9 +236,6 @@ const gchar *claws_ssl_get_cert_dir(void)
 			return cert_dirs[i];
 	}
 	return NULL;
-#else
-	return NULL;
-#endif
 }
 
 void ssl_init(void)

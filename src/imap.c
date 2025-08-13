@@ -1263,7 +1263,6 @@ static IMAPSession *imap_session_new(Folder * folder,
 		}
 	}
 
-#ifndef G_OS_WIN32
 	if (account->set_tunnelcmd) {
 		r = imap_threaded_connect_cmd(folder,
 					      account->tunnelcmd,
@@ -1271,7 +1270,6 @@ static IMAPSession *imap_session_new(Folder * folder,
 					      port);
 	}
 	else
-#endif
 	{
 #ifdef USE_GNUTLS
 
@@ -3187,36 +3185,6 @@ static FolderItem *imap_create_special_folder(Folder *folder,
 	return new_item;
 }
 
-#ifdef G_OS_WIN32
-static gchar *imap_encode_unsafe_chars(const gchar *str)
-{
-	gchar *ret = NULL, *o_ret;
-	gchar *i;
-	if (!str)
-		return NULL;
-	ret = g_malloc(3*strlen(str)+1);
-	o_ret = ret;
-	for (i = (gchar *)str; *i; i++) {
-		switch(*i) {
-			case ':':
-			case '|':
-			case '<':
-			case '>':
-			case '*':
-			case '?':
-			case '#':
-				*ret++ = '%';
-				*ret++ = '0'+(*i/10);
-				*ret++ = '0'+(*i%10);
-				break;
-			default:
-				*ret++ = *i;
-		}
-	}
-	*ret++ = '\0';
-	return o_ret;
-}
-#endif
 static gchar *imap_item_get_path(Folder *folder, FolderItem *item)
 {
 	gchar *folder_path, *path;
@@ -3229,11 +3197,7 @@ static gchar *imap_item_get_path(Folder *folder, FolderItem *item)
 
 	g_return_val_if_fail(folder_path != NULL, NULL);
 
-#ifdef G_OS_UNIX
 	item_path = g_strdup(item->path);
-#else
-	item_path = imap_encode_unsafe_chars(item->path);
-#endif
 
         if (g_path_is_absolute(folder_path)) {
                 if (item_path)
@@ -3252,12 +3216,7 @@ static gchar *imap_item_get_path(Folder *folder, FolderItem *item)
         }
         g_free(folder_path);
         g_free(item_path);
-#ifdef G_OS_WIN32
-	while (strchr(path, '/'))
-		*strchr(path, '/') = '\\';
-#endif
-
-	return path;
+        return path;
 }
 
 static FolderItem *imap_create_folder(Folder *folder, FolderItem *parent,

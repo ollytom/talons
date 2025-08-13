@@ -23,13 +23,8 @@
 
 #include "defs.h"
 
-#ifdef G_OS_WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
 #include <sys/socket.h>
 #include <netinet/in.h>
-#endif
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -370,10 +365,8 @@ typedef struct AdvancedPage
 	GtkWidget *crosspost_checkbtn;
  	GtkWidget *crosspost_colormenu;
 
-#ifndef G_OS_WIN32
 	GtkWidget *tunnelcmd_checkbtn;
 	GtkWidget *tunnelcmd_entry;
-#endif
 
 	GtkWidget *sent_folder_checkbtn;
 	GtkWidget *sent_folder_entry;
@@ -1024,7 +1017,6 @@ static PrefParam advanced_param[] = {
 	 NULL, NULL, NULL},
 #endif
 
-#ifndef G_OS_WIN32
 	{"set_tunnelcmd", "FALSE", &tmp_ac_prefs.set_tunnelcmd, P_BOOL,
 	 &advanced_page.tunnelcmd_checkbtn,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
@@ -1032,7 +1024,6 @@ static PrefParam advanced_param[] = {
 	{"tunnelcmd", NULL, &tmp_ac_prefs.tunnelcmd, P_STRING,
 	 &advanced_page.tunnelcmd_entry,
 	 prefs_set_data_from_entry, prefs_set_entry},
-#endif
 	{"mark_crosspost_read", "FALSE", &tmp_ac_prefs.mark_crosspost_read, P_BOOL,
 	 &advanced_page.crosspost_checkbtn,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
@@ -3355,10 +3346,8 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	gchar *tip_domain;
 	GtkWidget *checkbtn_crosspost;
  	GtkWidget *colormenu_crosspost;
-#ifndef G_OS_WIN32
 	GtkWidget *checkbtn_tunnelcmd;
 	GtkWidget *entry_tunnelcmd;
-#endif
 	GtkWidget *folder_frame;
 	GtkWidget *vbox3;
 	GtkWidget *table;
@@ -3436,7 +3425,6 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	SET_TOGGLE_SENSITIVITY (checkbtn_domain, entry_domain);
 	CLAWS_SET_TIP(entry_domain, tip_domain);
 
-#ifndef G_OS_WIN32
 	PACK_HBOX (hbox1);
 	PACK_CHECK_BUTTON (hbox1, checkbtn_tunnelcmd,
 			   _("Use command to communicate with server"));
@@ -3444,7 +3432,6 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	gtk_widget_show (entry_tunnelcmd);
 	gtk_box_pack_start (GTK_BOX (hbox1), entry_tunnelcmd, TRUE, TRUE, 0);
 	SET_TOGGLE_SENSITIVITY (checkbtn_tunnelcmd, entry_tunnelcmd);
-#endif
 
 	PACK_HBOX (hbox1);
 	PACK_CHECK_BUTTON (hbox1, checkbtn_crosspost,
@@ -3521,11 +3508,8 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	page->domain_entry		= entry_domain;
  	page->crosspost_checkbtn	= checkbtn_crosspost;
  	page->crosspost_colormenu	= colormenu_crosspost;
-
-#ifndef G_OS_WIN32
 	page->tunnelcmd_checkbtn	= checkbtn_tunnelcmd;
 	page->tunnelcmd_entry	= entry_tunnelcmd;
-#endif
 	page->sent_folder_checkbtn  = sent_folder_checkbtn;
 	page->sent_folder_entry   = sent_folder_entry;
 	page->queue_folder_checkbtn  = queue_folder_checkbtn;
@@ -5476,10 +5460,8 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_show(advanced_page.nntpport_hbox);
 		gtk_widget_show(advanced_page.crosspost_checkbtn);
 		gtk_widget_show(advanced_page.crosspost_colormenu);
-#ifndef G_OS_WIN32
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
-#endif
 		gtk_widget_hide(receive_page.imapdir_label);
 		gtk_widget_hide(receive_page.imapdir_entry);
 		gtk_widget_hide(receive_page.subsonly_checkbtn);
@@ -5558,10 +5540,8 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(advanced_page.nntpport_hbox);
 		gtk_widget_hide(advanced_page.crosspost_checkbtn);
 		gtk_widget_hide(advanced_page.crosspost_colormenu);
-#ifndef G_OS_WIN32
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
-#endif
 		gtk_widget_hide(receive_page.imapdir_label);
 		gtk_widget_hide(receive_page.imapdir_entry);
 		gtk_widget_hide(receive_page.subsonly_checkbtn);
@@ -5649,10 +5629,8 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(advanced_page.nntpport_hbox);
 		gtk_widget_hide(advanced_page.crosspost_checkbtn);
 		gtk_widget_hide(advanced_page.crosspost_colormenu);
-#ifndef G_OS_WIN32
 		gtk_widget_show(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_show(advanced_page.tunnelcmd_entry);
-#endif
 		gtk_widget_show(receive_page.imapdir_label);
 		gtk_widget_show(receive_page.imapdir_entry);
 		gtk_widget_show(receive_page.subsonly_checkbtn);
@@ -5729,10 +5707,8 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(advanced_page.nntpport_hbox);
 		gtk_widget_hide(advanced_page.crosspost_checkbtn);
 		gtk_widget_hide(advanced_page.crosspost_colormenu);
-#ifndef G_OS_WIN32
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
-#endif
 		gtk_widget_hide(receive_page.imapdir_label);
 		gtk_widget_hide(receive_page.imapdir_entry);
 		gtk_widget_hide(receive_page.subsonly_checkbtn);
@@ -5816,10 +5792,8 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(advanced_page.nntpport_hbox);
 		gtk_widget_hide(advanced_page.crosspost_checkbtn);
 		gtk_widget_hide(advanced_page.crosspost_colormenu);
-#ifndef G_OS_WIN32
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
-#endif
 		gtk_widget_hide(receive_page.imapdir_label);
 		gtk_widget_hide(receive_page.imapdir_entry);
 		gtk_widget_hide(receive_page.subsonly_checkbtn);
@@ -6019,39 +5993,21 @@ void prefs_account_unregister_page(PrefsPage *page)
 gchar *prefs_account_cache_dir(PrefsAccount *ac_prefs, gboolean for_server)
 {
 	gchar *dir = NULL;
-#ifdef G_OS_WIN32
-	gchar *sanitized_server;
-#endif
 
 	if (ac_prefs->protocol == A_IMAP4) {
-#ifdef G_OS_WIN32
-		sanitized_server = g_strdup(ac_prefs->recv_server);
-		g_strdelimit(sanitized_server, ":", ',');
-#endif
 		if (for_server) {
 			dir = g_strconcat(get_imap_cache_dir(),
 					  G_DIR_SEPARATOR_S,
-#ifdef G_OS_WIN32
-					  sanitized_server,
-#else
 					  ac_prefs->recv_server,
-#endif
 					  NULL);
 		} else {
 			dir = g_strconcat(get_imap_cache_dir(),
 					  G_DIR_SEPARATOR_S,
-#ifdef G_OS_WIN32
-					  sanitized_server,
-#else
 					  ac_prefs->recv_server,
-#endif
 					  G_DIR_SEPARATOR_S,
 					  ac_prefs->userid,
 					  NULL);
 		}
-#ifdef G_OS_WIN32
-		g_free(sanitized_server);
-#endif
 	}
 
 	return dir;

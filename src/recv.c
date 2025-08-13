@@ -30,9 +30,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifndef G_OS_WIN32
 #include <sys/time.h>
-#endif
 
 #include "recv.h"
 #include "socket.h"

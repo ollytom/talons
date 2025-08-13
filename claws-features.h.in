@@ -6,4 +6,3 @@
 #undef USE_ENCHANT
 #undef USE_GNUTLS
 #undef USE_GPGME
-#undef __CYGWIN__

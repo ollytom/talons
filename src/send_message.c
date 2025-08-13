@@ -31,9 +31,7 @@
 #include <string.h>
 #include <signal.h>
 #include <sys/types.h>
-#ifndef G_OS_WIN32
 #include <sys/wait.h>
-#endif
 
 #include "send_message.h"
 #include "session.h"
@@ -158,11 +156,7 @@ gint send_message_local(const gchar *command, FILE *fp)
 	argv = strsplit_with_quote(command, " ", 0);
 
 	if (g_spawn_async_with_pipes(NULL, argv, NULL,
-#ifdef G_OS_WIN32
-                                     0,
-#else
 				     G_SPAWN_DO_NOT_REAP_CHILD,
-#endif
                                      NULL, NULL,
 				     &pid, &child_stdin, NULL, NULL,
 				     NULL) == FALSE) {
@@ -190,14 +184,12 @@ gint send_message_local(const gchar *command, FILE *fp)
 		}
 	}
 
-	fd_close(child_stdin);
+	close(child_stdin);
 
-#ifndef G_OS_WIN32
 	gint status;
 	waitpid(pid, &status, 0);
 	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
 		err = TRUE;
-#endif
 
 	g_spawn_close_pid(pid);
 

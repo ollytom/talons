@@ -19,11 +19,6 @@
 #include "config.h"
 #include "defs.h"
 
-#ifdef G_OS_WIN32
-#define UNICODE
-#define _UNICODE
-#endif
-
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gdk/gdkkeysyms.h>
@@ -93,9 +88,6 @@
 #include "socket.h"
 #include "printing.h"
 #include "send_message.h"
-#ifdef G_OS_WIN32
-#include "w32_reg.h"
-#endif
 
 /* list of all instantiated MainWindow */
 static GList *mainwin_list = NULL;
@@ -179,9 +171,6 @@ static void log_window_show_cb	(GtkAction	*action,
 				  gpointer	 data);
 static void filtering_debug_window_show_cb	(GtkAction	*action,
 				  gpointer	 data);
-#ifdef G_OS_WIN32
-static void debug_log_show_cb(GtkAction *action, gpointer data);
-#endif
 
 static void inc_cancel_cb		(GtkAction	*action,
 				  gpointer	 data);
@@ -394,11 +383,6 @@ static void manual_faq_open_cb	 (GtkAction	*action,
 static void legend_open_cb	 (GtkAction	*action,
 				  gpointer	 data);
 
-#ifdef G_OS_WIN32
-static void set_default_client_cb (GtkAction	*action,
-				  gpointer	 data);
-#endif
-
 static void scan_tree_func	 (Folder	*folder,
 				  FolderItem	*item,
 				  gpointer	 data);
@@ -450,9 +434,7 @@ static gboolean any_folder_want_synchronise(void);
 static void save_part_as_cb(GtkAction *action, gpointer data);
 static void view_part_as_text_cb(GtkAction *action, gpointer data);
 static void open_part_cb(GtkAction *action, gpointer data);
-#ifndef G_OS_WIN32
 static void open_part_with_cb(GtkAction *action, gpointer data);
-#endif
 static void check_signature_cb(GtkAction *action, gpointer data);
 static void goto_next_part_cb(GtkAction *action, gpointer data);
 static void goto_prev_part_cb(GtkAction *action, gpointer data);
@@ -609,9 +591,7 @@ static GtkActionEntry mainwin_entries[] =
 	{"View/Part",                   NULL, N_("Message part"), NULL, NULL, NULL },
 	{"View/Part/AsText",            NULL, N_("View as text"), "T", NULL, G_CALLBACK(view_part_as_text_cb) },
 	{"View/Part/Open",              NULL, N_("Open"), "L", NULL, G_CALLBACK(open_part_cb) },
-#ifndef G_OS_WIN32
 	{"View/Part/OpenWith",          NULL, N_("Open with..."), "O", NULL, G_CALLBACK(open_part_with_cb) },
-#endif
 	/* {"View/---",                 NULL, "---", NULL, NULL, NULL }, */
 
 	{"View/Quotes",                 NULL, N_("Quotes"), NULL, NULL, NULL },
@@ -752,9 +732,7 @@ static GtkActionEntry mainwin_entries[] =
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/FilteringLog",                       NULL, N_("Filtering Lo_g"), NULL, NULL, G_CALLBACK(filtering_debug_window_show_cb) },
 	{"Tools/NetworkLog",                         NULL, N_("Network _Log"), "<shift><control>L", NULL, G_CALLBACK(log_window_show_cb) },
-#ifdef G_OS_WIN32
-	{"Tools/DebugLog",                           NULL, N_("Debug _Log"), NULL, NULL, G_CALLBACK(debug_log_show_cb) },
-#endif
+
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/ForgetSessionPasswords",             NULL, N_("_Forget all session passwords"), NULL, NULL, G_CALLBACK(forget_session_passwords_cb) },
 	{"Tools/ForgetPrimaryPassphrase",             NULL, N_("Forget _primary passphrase"), NULL, NULL, G_CALLBACK(forget_primary_passphrase_cb) },
@@ -779,9 +757,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Help/Manual",                              NULL, N_("_Manual"), NULL, NULL, G_CALLBACK(manual_open_cb) },
 	{"Help/FAQ",                                 NULL, N_("_Online User-contributed FAQ"), NULL, NULL, G_CALLBACK(manual_faq_open_cb) },
 	{"Help/IconLegend",                          NULL, N_("Icon _Legend"), NULL, NULL, G_CALLBACK(legend_open_cb) },
-#ifdef G_OS_WIN32
-	{"Help/SetDefault",                          NULL, N_("Set as default client"), NULL, NULL, G_CALLBACK(set_default_client_cb) },
-#endif
 	{"Help/---",                                 NULL, "---", NULL, NULL, NULL },
 	{"Help/About",                               NULL, N_("_About"), NULL, NULL, G_CALLBACK(about_cb) },
 };
@@ -1658,9 +1633,7 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "Part", "View/Part", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Part", "AsText", "View/Part/AsText", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Part", "Open", "View/Part/Open", GTK_UI_MANAGER_MENUITEM)
-#ifndef G_OS_WIN32
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Part", "OpenWith", "View/Part/OpenWith", GTK_UI_MANAGER_MENUITEM)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "Separator8", "View/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "UpdateSummary", "View/UpdateSummary", GTK_UI_MANAGER_MENUITEM)
 
@@ -1788,9 +1761,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator7", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "FilteringLog", "Tools/FilteringLog", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "NetworkLog", "Tools/NetworkLog", GTK_UI_MANAGER_MENUITEM)
-#ifdef G_OS_WIN32
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "DebugLog", "Tools/DebugLog", GTK_UI_MANAGER_MENUITEM)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator8", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "ForgetSessionPasswords", "Tools/ForgetSessionPasswords", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "ForgetPrimaryPassphrase", "Tools/ForgetPrimaryPassphrase", GTK_UI_MANAGER_MENUITEM)
@@ -1818,10 +1788,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Help", "Manual", "Help/Manual", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Help", "FAQ", "Help/FAQ", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Help", "IconLegend", "Help/IconLegend", GTK_UI_MANAGER_MENUITEM)
-#ifdef G_OS_WIN32
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Help", "Separator1", "Help/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Help", "SetDefault", "Help/SetDefault", GTK_UI_MANAGER_MENUITEM)
-#endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Help", "Separator2", "Help/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Help", "About", "Help/About", GTK_UI_MANAGER_MENUITEM)
 
@@ -4168,34 +4134,6 @@ static void filtering_debug_window_show_cb(GtkAction *action, gpointer data)
 	log_window_show(mainwin->filtering_debugwin);
 }
 
-#ifdef G_OS_WIN32
-static void debug_log_show_cb(GtkAction *action, gpointer data)
-{
-	GError *error = NULL;
-	gchar *logpath8 = win32_debug_log_path();
-	gunichar2 *logpath16;
-
-	debug_print("opening '%s'\n", logpath8);
-
-	logpath16 = g_utf8_to_utf16(logpath8, -1, NULL, NULL, &error);
-
-	if (error != NULL) {
-		g_warning("couldn't convert debug log path '%s' to UTF-16: %s",
-				logpath8, error->message);
-		g_error_free(error);
-		g_free(logpath16);
-		return;
-	}
-
-	HINSTANCE ret = ShellExecute(NULL, NULL, (LPCWSTR)logpath16,
-			NULL, NULL, SW_SHOW);
-
-	g_free(logpath8);
-	g_free(logpath16);
-	debug_print("ShellExecute result: %"G_GSIZE_FORMAT"\n", (gsize)ret);
-}
-#endif
-
 static void inc_cancel_cb(GtkAction *action, gpointer data)
 {
 	inc_cancel_all();
@@ -4991,116 +4929,6 @@ static void legend_open_cb(GtkAction *action, gpointer data)
 	legend_show();
 }
 
-#ifdef G_OS_WIN32
-static void set_default_client_cb(GtkAction *action, gpointer data)
-{
-	char exename[MAX_PATH];
-	gchar *binary_icon = NULL;
-	gchar *binary_compose = NULL;
-	gchar *binary_run = NULL;
-	gboolean r;
-	if ( !GetModuleFileNameA (0, exename, sizeof (exename)) ) {
-		alertpanel_error(_("Can not register as default client: impossible to get executable path."));
-		return;
-	}
-	binary_icon = g_strconcat(exename, ",0", NULL);
-	binary_compose = g_strconcat(exename, " --compose %1", NULL);
-	binary_run = g_strconcat(exename, NULL);
-
-	/* Try to set the Mail Start menu item to Claws. It may fail if we're not root; we don't care */
-	r = write_w32_registry_string(HKEY_LOCAL_MACHINE,
-		"Software\\Clients\\Mail",
-		"",
-		"Claws Mail");
-
-	r = write_w32_registry_string(HKEY_CURRENT_USER,
-		"Software\\Clients\\Mail\\Claws Mail",
-		"",
-		"Claws Mail");
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Clients\\Mail\\Claws Mail",
-			"DLLPath",
-			"");
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Clients\\Mail\\Claws Mail\\Protocols\\mailto",
-			"",
-			"URL:MailTo-Protocol");
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Clients\\Mail\\Claws Mail\\Protocols\\mailto",
-			"URL Protocol",
-			"");
-	if (r)
-		r = write_w32_registry_dword (HKEY_CURRENT_USER,
-			"Software\\Clients\\Mail\\Claws Mail\\Protocols\\mailto",
-			"EditFlags",
-			2);
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Clients\\Mail\\Claws Mail\\Protocols\\mailto",
-			"FriendlyTypeName",
-			"Claws-Mail URL");
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Clients\\Mail\\Claws Mail\\Protocols\\mailto\\DefaultIcon",
-			"",
-			binary_icon);
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Clients\\Mail\\Claws Mail\\Protocols\\mailto\\shell\\open\\command",
-			"",
-			binary_compose);
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Clients\\Mail\\Claws Mail\\shell\\open\\command",
-			"",
-			binary_run);
-
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Classes\\mailto",
-			"",
-			"URL:MailTo-Protocol");
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Classes\\mailto",
-			"URL Protocol",
-			"");
-	if (r)
-		r = write_w32_registry_dword (HKEY_CURRENT_USER,
-			"Software\\Classes\\mailto",
-			"EditFlags",
-			2);
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Classes\\mailto",
-			"FriendlyTypeName",
-			"Claws-Mail URL");
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Classes\\mailto\\DefaultIcon",
-			"",
-			binary_icon);
-	if (r)
-		r = write_w32_registry_string(HKEY_CURRENT_USER,
-			"Software\\Classes\\mailto\\shell\\open\\command",
-			"",
-			binary_compose);
-
-	if (r) {
-		SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)"Software\\Clients\\Mail");
-		alertpanel_notice(_("Claws Mail has been registered as default client."));
-	} else {
-		alertpanel_error(_("Can not register as default client: impossible to write to the registry."));
-	}
-	g_free(binary_icon);
-	g_free(binary_compose);
-	g_free(binary_run);
-}
-#endif
-
 static void scan_tree_func(Folder *folder, FolderItem *item, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
@@ -5390,7 +5218,7 @@ static void open_part_cb(GtkAction *action, gpointer data)
 	&&  mainwin->messageview->mimeview)
 		mimeview_launch(mainwin->messageview->mimeview, NULL);
 }
-#ifndef G_OS_WIN32
+
 static void open_part_with_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
@@ -5399,7 +5227,7 @@ static void open_part_with_cb(GtkAction *action, gpointer data)
 	&&  mainwin->messageview->mimeview)
 		mimeview_open_with(mainwin->messageview->mimeview);
 }
-#endif
+
 static void check_signature_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;

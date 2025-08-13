@@ -65,17 +65,10 @@
 /* Dependecies to be removed ?! */
 #include "prefs_account.h"
 
-/* Define possible missing constants for Windows. */
-#ifdef G_OS_WIN32
-# ifndef S_IRGRP
-# define S_IRGRP 0
-# define S_IWGRP 0
-# endif
 # ifndef S_IROTH
 # define S_IROTH 0
 # define S_IWOTH 0
 # endif
-#endif
 
 static GList *folder_list = NULL;
 static GSList *class_list = NULL;
@@ -4057,11 +4050,6 @@ static gchar *folder_item_get_tags_file(FolderItem *item)
 	identifier = folder_item_get_identifier(item);
 	cm_return_val_if_fail(identifier != NULL, NULL);
 
-#ifdef G_OS_WIN32
-	while (strchr(identifier, '/'))
-		*strchr(identifier, '/') = '\\';
-#endif
-
 	path = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 			   TAGS_DIR, G_DIR_SEPARATOR_S,
 			   identifier, NULL);
@@ -4866,16 +4854,5 @@ gint folder_item_search_msgs_local	(Folder			*folder,
 /* Tests if a local (on disk) folder name is acceptable. */
 gboolean folder_local_name_ok(const gchar *name)
 {
-#ifdef G_OS_WIN32
-	if (name[0] == '.' || name[strlen(name) - 1] == '.') {
-		alertpanel_error(_("A folder name cannot begin or end with a dot."));
-		return FALSE;
-	}
-	if (name[strlen(name) - 1] == ' ') {
-		alertpanel_error(_("A folder name can not end with a space."));
-		return FALSE;
-	}
-#endif
-
 	return TRUE;
 }

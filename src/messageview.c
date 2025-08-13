@@ -179,9 +179,7 @@ static gboolean messageview_update_msg	(gpointer source, gpointer data);
 static void save_part_as_cb(GtkAction *action, gpointer data);
 static void view_part_as_text_cb(GtkAction *action, gpointer data);
 static void open_part_cb(GtkAction *action, gpointer data);
-#ifndef G_OS_WIN32
 static void open_part_with_cb(GtkAction *action, gpointer data);
-#endif
 static void check_signature_cb(GtkAction *action, gpointer data);
 static void goto_next_part_cb(GtkAction *action, gpointer data);
 static void goto_prev_part_cb(GtkAction *action, gpointer data);
@@ -272,9 +270,7 @@ static GtkActionEntry msgview_entries[] =
 	{"View/Part",                                NULL, N_("Message part"), NULL, NULL, NULL },
 	{"View/Part/AsText",                         NULL, N_("View as text"), "T", NULL, G_CALLBACK(view_part_as_text_cb) },
 	{"View/Part/Open",                           NULL, N_("Open"), "L", NULL, G_CALLBACK(open_part_cb) },
-#ifndef G_OS_WIN32
 	{"View/Part/OpenWith",                       NULL, N_("Open with..."), "O", NULL, G_CALLBACK(open_part_with_cb) },
-#endif
 
 	{"View/Quotes",                              NULL, N_("Quotes"), NULL, NULL, NULL },
 
@@ -594,9 +590,7 @@ static void messageview_add_toolbar(MessageView *msgview, GtkWidget *window)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/View", "Part", "View/Part", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/View/Part", "AsText", "View/Part/AsText", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/View/Part", "Open", "View/Part/Open", GTK_UI_MANAGER_MENUITEM)
-#ifndef G_OS_WIN32
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/View/Part", "OpenWith", "View/Part/OpenWith", GTK_UI_MANAGER_MENUITEM)
-#endif
 
 /* Message menu */
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Message", "Compose", "Message/Compose", GTK_UI_MANAGER_MENUITEM)
@@ -693,10 +687,6 @@ static MessageView *messageview_create_with_new_window_visible(MainWindow *mainw
 	}
 	gtk_window_set_geometry_hints(GTK_WINDOW(window), NULL, &geometry,
 				      GDK_HINT_MIN_SIZE);
-
-#ifdef G_OS_WIN32
-	gtk_window_move(GTK_WINDOW(window), 48, 48);
-#endif
 
 	msgview = messageview_create(mainwin);
 
@@ -3043,7 +3033,7 @@ static void open_part_cb(GtkAction *action, gpointer data)
 	if (messageview->mimeview)
 		mimeview_launch(messageview->mimeview, NULL);
 }
-#ifndef G_OS_WIN32
+
 static void open_part_with_cb(GtkAction *action, gpointer data)
 {
 	MessageView *messageview = (MessageView *)data;
@@ -3051,7 +3041,7 @@ static void open_part_with_cb(GtkAction *action, gpointer data)
 	if (messageview->mimeview)
 		mimeview_open_with(messageview->mimeview);
 }
-#endif
+
 static void check_signature_cb(GtkAction *action, gpointer data)
 {
 	MessageView *messageview = (MessageView *)data;

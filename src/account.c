@@ -867,9 +867,6 @@ static void account_edit_create(void)
 				      GDK_HINT_MIN_SIZE);
 	gtk_window_set_default_size(GTK_WINDOW(window), prefs_common.accountswin_width,
 				    prefs_common.accountswin_height);
-#ifdef G_OS_WIN32
-	gtk_window_move(GTK_WINDOW(window), 48, 48);
-#endif
 
 	edit_account.window    = window;
 	edit_account.list_view = list_view;
@@ -1062,10 +1059,8 @@ static void account_clone(GtkWidget *widget, gpointer data)
         ACP_FASSIGN(mark_crosspost_read);
         ACP_FASSIGN(crosspost_col);
 
-#ifndef G_OS_WIN32
         ACP_FASSIGN(set_tunnelcmd);
         ACP_FDUP(tunnelcmd);
-#endif
 
         ACP_FDUP(imap_dir);
 	ACP_FASSIGN(imap_subsonly);

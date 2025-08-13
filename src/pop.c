@@ -644,8 +644,8 @@ Session *pop3_session_new(PrefsAccount *account)
 	       debug_print("POP - Oauth2 name: %s Two stage POP: %i\n", oa2->oa2_name, oa2->oa2_two_stage_pop);
 	       session->two_stage_pop = oa2->oa2_two_stage_pop;
 	}
-#endif	
-	
+#endif
+
 	return SESSION(session);
 }
 
@@ -810,9 +810,6 @@ gint pop3_write_uidl_list(Pop3Session *session)
 		goto err_write;
 	}
 	fp = NULL;
-#ifdef G_OS_WIN32
-	unlink(path);
-#endif
 	if (g_rename(tmp_path, path) < 0) {
 		FILE_OP_ERROR(path, "rename");
 		goto err_write;

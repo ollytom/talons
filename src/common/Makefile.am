@@ -12,13 +12,8 @@ DESKTOPFILEPATH=$(datadir)/applications/claws-mail.desktop
 
 noinst_LTLIBRARIES = libclawscommon.la
 
-if OS_WIN32
-arch_sources = w32_reg.c
-arch_headers = w32_reg.h
-else
 arch_files =
 arch_header =
-endif
 
 libclawscommon_la_SOURCES = $(arch_sources) \
 	codeconv.c \

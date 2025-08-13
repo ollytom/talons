@@ -97,11 +97,6 @@ dnl AC_PROG_RANLIB
 AC_PROG_LEX(noyywrap)
 AC_PROG_YACC
 AC_LIB_PREFIX
-AU_DEFUN([AC_LIBTOOL_WIN32_DLL],
-[AC_REQUIRE(AC_CANONICAL_HOST)_LT_SET_OPTION([LT_INIT],[win32-dll])
-m4_warn([obsolete],[AC_LIBTOOL_WIN32_DLL: Remove this warning and the call to _LT_SET_OPTION when you
-put the 'win32-dll' option into LT_INIT's first parameter.])
-])
 
 LT_INIT
 LT_PROG_RC
@@ -124,47 +119,15 @@ AC_SYS_LARGEFILE
 dnl Copied from the official gtk+-2 configure.in
 AC_MSG_CHECKING([for host platform])
 case "$host" in
-  *-*-mingw*|*-*-cygwin*)
-    platform_win32=yes
-    LDFLAGS="$LDFLAGS -mwindows -Wl,--export-all-symbols"
-    ;;
 	*-apple-*)
 		platform_osx=yes
 		LDFLAGS="$LDFLAGS -Wl,-export_dynamic"
 		;;
-  *)
-    platform_win32=no
+	*)
 		platform_osx=no
 		LDFLAGS="$LDFLAGS -Wl,--export-dynamic"
-    ;;
+		;;
 esac
-AM_CONDITIONAL(PLATFORM_WIN32, test x"$platform_win32" = x"yes")
-AM_CONDITIONAL(PLATFORM_OSX, test x"$platform_osx" = x"yes")
-AC_MSG_RESULT([$host])
-
-AC_MSG_CHECKING([for native Win32])
-case "$host" in
-  *-*-mingw*)
-    os_win32=yes
-    ;;
-  *)
-    os_win32=no
-    ;;
-esac
-AC_MSG_RESULT([$os_win32])
-AM_CONDITIONAL(OS_WIN32, test x"$os_win32" = x"yes")
-
-AC_MSG_CHECKING([for Cygwin])
-case "$host" in
-  *-*-cygwin*)
-    env_cygwin=yes
-    ;;
-  *)
-    env_cygwin=no
-    ;;
-esac
-AC_MSG_RESULT([$env_cygwin])
-AM_CONDITIONAL(CYGWIN, test x"$env_cygwin" = x"yes")
 
 AC_MSG_CHECKING([for time_t format specifier])
 _gcc_cflags_save=$CFLAGS
@@ -195,10 +158,6 @@ fi
 case "$target" in
 *-darwin*)
 	AM_CFLAGS="$AM_CFLAGS -fno-common"
-	;;
-*-*-mingw*)
-	AM_CFLAGS="$AM_CFLAGS -mms-bitfields"
-	LIBS="$LIBS -lws2_32 -lregex"
 	;;
 *-*-solaris*)
 	AM_CFLAGS="$AM_CFLAGS -std=gnu99"
@@ -389,13 +348,8 @@ dnl RC dir (will be default at a certain point in time)
 AC_ARG_WITH(config-dir,    [  --with-config-dir=RCDIR      Local configuration dir (default: .claws-mail)],
 	      ac_cv_with_config_dir="$withval", ac_cv_with_config_dir="")
 
-dnl Set correct default value based on platform
 if test x"$ac_cv_with_config_dir" = x""; then
-	if test x"$platform_win32" = xyes; then
-		ac_cv_with_config_dir="Claws-mail"
-	else
-		ac_cv_with_config_dir=".claws-mail"
-	fi
+	ac_cv_with_config_dir=".claws-mail"
 fi
 AC_DEFINE_UNQUOTED(CFG_RC_DIR, "$ac_cv_with_config_dir", Configuration directory)
 
@@ -419,11 +373,6 @@ else
 	enable_oauth2=no
 fi
 
-dnl ************************
-dnl ** GTK user interface **
-dnl ************************
-
-dnl Checks for GTK
 PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.20 cairo)
 
 AC_ARG_ENABLE(deprecated,
@@ -463,34 +412,28 @@ fi
 
 dnl
 dnl Check whether we need to pass -lresolv
-dnl We know that we don't need it for W32.
 dnl
-if test x$os_win32 = xno; then
-  t_oldLibs="$LIBS"
-  LIBS="$LIBS"
-  ac_cv_var__res_options=no
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
- 	     #include <sys/socket.h>
+t_oldLibs="$LIBS"
+LIBS="$LIBS"
+ac_cv_var__res_options=no
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
+	     #include <sys/socket.h>
 	     #include <netinet/in.h>
  	     #include <arpa/nameser.h>
 	     #include <resolv.h>]], [[_res.options = RES_INIT;]])],[ac_cv_var__res_options=yes],[]);
-  if test "$ac_cv_var__res_options" != "yes"; then
+if test "$ac_cv_var__res_options" != "yes"; then
 	LIBRESOLV="-lresolv"
-  fi
-  LIBS="$t_oldLibs"
+fi
+LIBS="$t_oldLibs"
 
-  if test "x$LIBRESOLV" = "x"; then
+if test "x$LIBRESOLV" = "x"; then
 	AC_CHECK_LIB(resolv, res_query, [LIBRESOLV=-lresolv])
 	LIBS="$t_oldLibs"
-  fi
 fi
 AC_SUBST(LIBRESOLV)
 
 LIBS="$LIBS $LIBRESOLV"
 
-dnl #######################################################################
-dnl # Check for startup notification
-dnl #######################################################################
 if test "x$enable_startup_notification" = "xyes"; then
 	PKG_CHECK_MODULES(STARTUP_NOTIFICATION, pkg_info libstartup-notification-1.0 >= 0.5,
 	[
@@ -715,7 +658,6 @@ Makefile
 po/Makefile.in
 src/common/version.h
 src/Makefile
-src/w32-resource.rc
 src/common/Makefile
 src/common/passcrypt.h
 src/common/tests/Makefile

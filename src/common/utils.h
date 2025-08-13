@@ -57,12 +57,6 @@
 /* Handling Base64 content in procmime and prefs_customheader */
 #define B64_LINE_SIZE 57
 
-#ifdef G_OS_WIN32
-
-#define fsync _commit
-
-#define pipe(phandles)  _pipe (phandles, 4096, _O_BINARY)
-#endif
 /* Wrappers for C library function that take pathname arguments. */
 #  include <glib/gstdio.h>
 
@@ -415,10 +409,7 @@ gchar *get_tmp_file			(void);
 const gchar *get_domain_name		(void);
 gboolean is_numeric_host_address	(const gchar *hostaddress);
 const gchar *get_desktop_file(void);
-#ifdef G_OS_WIN32
-const gchar *w32_get_themes_dir    (void);
-const gchar *w32_get_cert_file		(void);
-#endif
+
 /* file / directory handling */
 off_t get_file_size		(const gchar	*file);
 time_t get_file_mtime		(const gchar *file);
@@ -556,9 +547,5 @@ gboolean get_random_bytes(void *buf, size_t count);
 #endif
 
 gboolean get_serverportfp_from_filename(const gchar *str, gchar **server, gchar **port, gchar **fp);
-
-#ifdef G_OS_WIN32
-gchar *win32_debug_log_path(void);
-#endif
 
 #endif /* __UTILS_H__ */

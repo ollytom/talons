@@ -74,75 +74,6 @@ PrefsCommon prefs_common;
 
 GtkWidget *notebook;
 
-#ifdef G_OS_WIN32
-/*
- * In the Windows version prefs_common contains
- *   - the non-OS-specific settings of the "Common" section and
- *   - the OS-specific settings of the "CommonWin32" section
- * The OS-specific settings of the "Common" section are not used
- * but saved in prefs_unix.
- */
-
-#  define SPECIFIC_PREFS prefs_unix
-
-static PrefsCommon prefs_unix;
-
-static PrefParam param_os_specific[] = {
-	/* Receive */
-	{"ext_inc_path", "",
-	 &prefs_common.extinc_cmd, P_STRING, NULL, NULL, NULL},
-	{"newmail_notify_cmd", "",
-	 &prefs_common.newmail_notify_cmd, P_STRING, NULL, NULL, NULL},
-
-	/* new fonts */
-	{"message_font_gtk2",	"Monospace 9",
-	 &prefs_common.textfont,		P_STRING, NULL, NULL, NULL},
-        {"print_font_gtk2",     "Monospace 9",
-         &prefs_common.printfont,		P_STRING, NULL, NULL, NULL},
-	{"small_font_gtk2",	"Sans 9",
-	  &prefs_common.smallfont,		P_STRING, NULL, NULL, NULL},
-	{"normal_font_gtk2",	"Sans 9",
-	  &prefs_common.normalfont,		P_STRING, NULL, NULL, NULL},
-	{"bold_font_gtk2",	"Sans 9 Bold",
-	  &prefs_common.boldfont,		P_STRING, NULL, NULL, NULL},
-	/* Message */
-	{"attach_save_directory", NULL,
-	 &prefs_common.attach_save_dir, P_STRING, NULL, NULL, NULL},
-	{"attach_save_chmod", "",
-	 &prefs_common.attach_save_chmod, P_INT, NULL, NULL, NULL},
-	{"attach_load_directory", NULL,
-	 &prefs_common.attach_load_dir, P_STRING, NULL, NULL, NULL},
-
-	/* MIME viewer */
-	{"mime_textviewer", NULL,
-	 &prefs_common.mime_textviewer,   P_STRING, NULL, NULL, NULL},
-	{"mime_open_command", "notepad '%s'",
-	 &prefs_common.mime_open_cmd,     P_STRING, NULL, NULL, NULL},
-
-	/* Interface */
-	{"pixmap_theme_path", DEFAULT_PIXMAP_THEME,
-	 &prefs_common.pixmap_theme_path, P_STRING, NULL, NULL, NULL},
-#ifdef HAVE_SVG
-	{"enable_alpha_svg", "TRUE",
-	 &prefs_common.enable_alpha_svg, P_BOOL, NULL, NULL, NULL},
-	{"enable_pixmap_scaling", "TRUE",
-	 &prefs_common.enable_pixmap_scaling, P_BOOL, NULL, NULL, NULL},
-	{"pixmap_scaling_auto", "TRUE",
-	 &prefs_common.pixmap_scaling_auto, P_BOOL, NULL, NULL, NULL},
-	{"pixmap_scaling_ppi", "96",
-	 &prefs_common.pixmap_scaling_ppi, P_INT, NULL, NULL, NULL},
-#endif
-
-	/* Other */
-	{"ext_editor_command", "notepad %s",
-	 &prefs_common.ext_editor_cmd, P_STRING, NULL, NULL, NULL},
-
-	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
-};
-#else
-#  define SPECIFIC_PREFS prefs_common
-#endif
-
 /*
    parameter name, default value, pointer to the prefs variable, data type,
    pointer to the widget pointer,
@@ -157,7 +88,7 @@ static PrefParam param[] = {
 	/* Receive */
 	{"use_ext_inc", "FALSE", &prefs_common.use_extinc, P_BOOL,
 	 NULL, NULL, NULL},
-	{"ext_inc_path", DEFAULT_INC_PATH, &SPECIFIC_PREFS.extinc_cmd, P_STRING,
+	{"ext_inc_path", DEFAULT_INC_PATH, &prefs_common.extinc_cmd, P_STRING,
 	 NULL, NULL, NULL},
 
 	{"autochk_newmail", "FALSE", &prefs_common.autochk_newmail, P_BOOL,
@@ -174,7 +105,7 @@ static PrefParam param[] = {
 	 P_BOOL, NULL, NULL, NULL},
  	{"newmail_notify_auto", "FALSE", &prefs_common.newmail_notify_auto,
 	P_BOOL, NULL, NULL, NULL},
- 	{"newmail_notify_cmd", "", &SPECIFIC_PREFS.newmail_notify_cmd, P_STRING,
+ 	{"newmail_notify_cmd", "", &prefs_common.newmail_notify_cmd, P_STRING,
  	 NULL, NULL, NULL},
 	{"receive_dialog_mode", "2", &prefs_common.recv_dialog_mode, P_ENUM,
 	 NULL, NULL, NULL},
@@ -317,15 +248,15 @@ static PrefParam param[] = {
 
 	/* Display */
 	{"message_font_gtk2",	"Monospace 9",
-	 &SPECIFIC_PREFS.textfont,			P_STRING, NULL, NULL, NULL},
+	 &prefs_common.textfont,			P_STRING, NULL, NULL, NULL},
         {"print_font_gtk2",     "Monospace 9",
-         &SPECIFIC_PREFS.printfont,             P_STRING, NULL, NULL, NULL},
+         &prefs_common.printfont,             P_STRING, NULL, NULL, NULL},
 	{"small_font_gtk2",	"Sans 9",
-	  &SPECIFIC_PREFS.smallfont,		P_STRING, NULL, NULL, NULL},
+	  &prefs_common.smallfont,		P_STRING, NULL, NULL, NULL},
 	{"normal_font_gtk2",	"Sans 9",
-	  &SPECIFIC_PREFS.normalfont,		P_STRING, NULL, NULL, NULL},
+	  &prefs_common.normalfont,		P_STRING, NULL, NULL, NULL},
 	{"bold_font_gtk2",	"Sans Bold 9",
-	  &SPECIFIC_PREFS.boldfont,		P_STRING, NULL, NULL, NULL},
+	  &prefs_common.boldfont,		P_STRING, NULL, NULL, NULL},
 
 	{"use_different_print_font", "FALSE", &prefs_common.use_different_print_font, P_BOOL,
 	 NULL, NULL, NULL},
@@ -720,17 +651,17 @@ static PrefParam param[] = {
 	{"attach_desc", "TRUE", &prefs_common.attach_desc, P_BOOL,
 	 NULL, NULL, NULL},
 	{"attach_save_directory", NULL,
-	 &SPECIFIC_PREFS.attach_save_dir, P_STRING, NULL, NULL, NULL},
+	 &prefs_common.attach_save_dir, P_STRING, NULL, NULL, NULL},
 	{"attach_save_chmod", "",
-	 &SPECIFIC_PREFS.attach_save_chmod, P_INT, NULL, NULL, NULL},
+	 &prefs_common.attach_save_chmod, P_INT, NULL, NULL, NULL},
 	{"attach_load_directory", NULL,
-	 &SPECIFIC_PREFS.attach_load_dir, P_STRING, NULL, NULL, NULL},
+	 &prefs_common.attach_load_dir, P_STRING, NULL, NULL, NULL},
 
 	/* MIME viewer */
 	{"mime_textviewer",   NULL,
-	 &SPECIFIC_PREFS.mime_textviewer,   P_STRING, NULL, NULL, NULL},
+	 &prefs_common.mime_textviewer,   P_STRING, NULL, NULL, NULL},
 	{"mime_open_command", "xdg-open '%s'",
-	 &SPECIFIC_PREFS.mime_open_cmd,     P_STRING, NULL, NULL, NULL},
+	 &prefs_common.mime_open_cmd,     P_STRING, NULL, NULL, NULL},
 	{"show_inline_attachments", "TRUE",
 	 &prefs_common.show_inline_attachments, P_BOOL, NULL, NULL, NULL},
 
@@ -798,20 +729,20 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 
 	{"pixmap_theme_path", DEFAULT_PIXMAP_THEME,
-	 &SPECIFIC_PREFS.pixmap_theme_path, P_STRING,
+	 &prefs_common.pixmap_theme_path, P_STRING,
 	 NULL, NULL, NULL},
 #ifdef HAVE_SVG
 	{"enable_alpha_svg", "TRUE",
-	 &SPECIFIC_PREFS.enable_alpha_svg, P_BOOL,
+	 &prefs_common.enable_alpha_svg, P_BOOL,
 	 NULL, NULL, NULL},
 	{"enable_pixmap_scaling", "TRUE",
-	 &SPECIFIC_PREFS.enable_pixmap_scaling, P_BOOL,
+	 &prefs_common.enable_pixmap_scaling, P_BOOL,
 	 NULL, NULL, NULL},
 	{"pixmap_scaling_auto", "TRUE",
-	 &SPECIFIC_PREFS.pixmap_scaling_auto, P_BOOL,
+	 &prefs_common.pixmap_scaling_auto, P_BOOL,
 	 NULL, NULL, NULL},
 	{"pixmap_scaling_ppi", "96",
-	 &SPECIFIC_PREFS.pixmap_scaling_ppi, P_INT,
+	 &prefs_common.pixmap_scaling_ppi, P_INT,
 	 NULL, NULL, NULL},
 #endif
 
@@ -836,15 +767,10 @@ static PrefParam param[] = {
 	 P_INT, NULL, NULL, NULL},
 
 	/* Other */
-#ifndef G_OS_WIN32
 	{"uri_open_command", DEFAULT_BROWSER_CMD,
-	 &SPECIFIC_PREFS.uri_cmd, P_STRING, NULL, NULL, NULL},
-#else
-	{"gtk_theme", DEFAULT_W32_GTK_THEME,
-	 &SPECIFIC_PREFS.gtk_theme, P_STRING, NULL, NULL, NULL},
-#endif
+	 &prefs_common.uri_cmd, P_STRING, NULL, NULL, NULL},
 	{"ext_editor_command", DEFAULT_EDITOR_CMD,
-	 &SPECIFIC_PREFS.ext_editor_cmd, P_STRING, NULL, NULL, NULL},
+	 &prefs_common.ext_editor_cmd, P_STRING, NULL, NULL, NULL},
 	{"cmds_use_system_default", "TRUE",
 	 &prefs_common.cmds_use_system_default, P_BOOL, NULL, NULL, NULL},
 	{"add_address_by_click", "FALSE", &prefs_common.add_address_by_click,
@@ -1267,9 +1193,6 @@ void prefs_common_read_config(void)
 
 	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, COMMON_RC, NULL);
 	prefs_read_config(param, "Common", rcpath, NULL);
-#ifdef G_OS_WIN32
-	prefs_read_config(param_os_specific, "CommonWin32", rcpath, NULL);
-#endif
 
 	g_free(rcpath);
 
@@ -1346,9 +1269,6 @@ static void prefs_common_save_history_to_dir(const gchar *dirname, const gchar *
 		goto out;
 	}
 	fp = NULL;
-#ifdef G_OS_WIN32
-	unlink(path);
-#endif
 	if (g_rename(tmp_path, path) < 0) {
 		FILE_OP_ERROR(path, "rename");
 		goto out;
@@ -1374,9 +1294,6 @@ static void prefs_common_save_history(const gchar *history, GList *list)
 void prefs_common_write_config(void)
 {
 	prefs_write_config(param, "Common", COMMON_RC);
-#ifdef G_OS_WIN32
-	prefs_write_config(param_os_specific, "CommonWin32", COMMON_RC);
-#endif
 
 	prefs_common_save_history(COMMAND_HISTORY,
 		prefs_common.mime_open_cmd_history);
@@ -1598,9 +1515,6 @@ const gchar *prefs_common_translated_header_name(const gchar *header_name)
 
 const gchar *prefs_common_get_uri_cmd(void)
 {
-#ifdef G_OS_WIN32
-	return NULL;
-#else
 	gchar *tmp = NULL;
 
 	if (!prefs_common.cmds_use_system_default)
@@ -1612,7 +1526,6 @@ const gchar *prefs_common_get_uri_cmd(void)
 
 	g_free(tmp);
 	return "xdg-open %s";
-#endif
 }
 
 const gchar *prefs_common_get_ext_editor_cmd(void)

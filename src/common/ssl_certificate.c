@@ -33,13 +33,9 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <errno.h>
-#ifdef G_OS_WIN32
-#  include <winsock2.h>
-#else
-#  include <sys/socket.h>
-#  include <netinet/in.h>
-#  include <netdb.h>
-#endif /* G_OS_WIN32 */
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #include "ssl_certificate.h"
 #include "utils.h"
 #include "log.h"
@@ -82,11 +78,11 @@ static gchar *get_certificate_chain_path(const gchar *host, const gchar *port, c
 	return result;
 }
 
-char * readable_fingerprint(unsigned char *src, int len) 
+char * readable_fingerprint(unsigned char *src, int len)
 {
 	int i=0;
 	char * ret;
-	
+
 	if (src == NULL)
 		return NULL;
 	ret = g_strdup("");
@@ -112,13 +108,13 @@ static gnutls_x509_crt_t x509_crt_copy(gnutls_x509_crt_t src)
     gnutls_datum_t tmp;
     gnutls_x509_crt_t dest;
     size = 0;
-    
+
     if (gnutls_x509_crt_init(&dest) != 0) {
 	g_warning("couldn't gnutls_x509_crt_init");
         return NULL;
     }
 
-    if (gnutls_x509_crt_export(src, GNUTLS_X509_FMT_DER, NULL, &size) 
+    if (gnutls_x509_crt_export(src, GNUTLS_X509_FMT_DER, NULL, &size)
         != GNUTLS_E_SHORT_MEMORY_BUFFER) {
 	g_warning("couldn't gnutls_x509_crt_export to get size");
         gnutls_x509_crt_deinit(dest);
@@ -151,7 +147,7 @@ static SSLCertificate *ssl_certificate_new(gnutls_x509_crt_t x509_cert, const gc
 {
 	SSLCertificate *cert = g_new0(SSLCertificate, 1);
 	size_t n;
-	unsigned char md[128];	
+	unsigned char md[128];
 
 	if (host == NULL || x509_cert == NULL) {
 		ssl_certificate_destroy(cert);
@@ -161,7 +157,7 @@ static SSLCertificate *ssl_certificate_new(gnutls_x509_crt_t x509_cert, const gc
 	cert->status = (guint)-1;
 	cert->host = g_strdup(host);
 	cert->port = port;
-	
+
 	/* fingerprint */
 	n = sizeof(md);
 	gnutls_x509_crt_get_fingerprint(cert->x509_cert, GNUTLS_DIG_MD5, md, &n);
@@ -174,7 +170,7 @@ static void gnutls_export_X509_fp(FILE *fp, gnutls_x509_crt_t x509_cert, gnutls_
 	char output[10*1024];
 	size_t cert_size = 10*1024;
 	int r;
-	
+
 	if ((r = gnutls_x509_crt_export(x509_cert, format, output, &cert_size)) < 0) {
 		g_warning("couldn't export cert %s (%"G_GSIZE_FORMAT")", gnutls_strerror(r), cert_size);
 		return;
@@ -189,10 +185,10 @@ size_t gnutls_i2d_X509(gnutls_x509_crt_t x509_cert, unsigned char **output)
 {
 	size_t cert_size = 10*1024;
 	int r;
-	
+
 	if (output == NULL)
 		return 0;
-	
+
 	*output = malloc(cert_size);
 
 	if ((r = gnutls_x509_crt_export(x509_cert, GNUTLS_X509_FMT_DER, *output, &cert_size)) < 0) {
@@ -208,10 +204,10 @@ size_t gnutls_i2d_PrivateKey(gnutls_x509_privkey_t pkey, unsigned char **output)
 {
 	size_t key_size = 10*1024;
 	int r;
-	
+
 	if (output == NULL)
 		return 0;
-	
+
 	*output = malloc(key_size);
 
 	if ((r = gnutls_x509_privkey_export(pkey, GNUTLS_X509_FMT_DER, *output, &key_size)) < 0) {
@@ -255,7 +251,7 @@ static int gnutls_import_X509_list_fp(FILE *fp, gnutls_x509_crt_fmt_t format,
 		return -EIO;
 	}
 
-	if ((r = gnutls_x509_crt_list_import(crt_list, &max, 
+	if ((r = gnutls_x509_crt_list_import(crt_list, &max,
 			&tmp, format, flags)) < 0) {
 		debug_print("cert import failed: %s\n", gnutls_strerror(r));
 		free(tmp.data);
@@ -363,9 +359,9 @@ static void ssl_certificate_save (SSLCertificate *cert)
 	gchar *file, *port;
 	FILE *fp;
 
-	file = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, 
+	file = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
 			  "certs", G_DIR_SEPARATOR_S, NULL);
-	
+
 	if (!is_dir_exist(file))
 		make_dir_hier(file);
 	g_free(file);
@@ -388,7 +384,7 @@ static void ssl_certificate_save (SSLCertificate *cert)
 
 }
 
-void ssl_certificate_destroy(SSLCertificate *cert) 
+void ssl_certificate_destroy(SSLCertificate *cert)
 {
 	if (cert == NULL)
 		return;
@@ -425,7 +421,7 @@ SSLCertificate *ssl_certificate_find (const gchar *host, gushort port, const gch
 	gboolean must_rename = FALSE;
 
 	buf = g_strdup_printf("%d", port);
-	
+
 	if (fingerprint != NULL) {
 		file = get_certificate_path(host, buf, fingerprint);
 		fp = g_fopen(file, "rb");
@@ -449,7 +445,7 @@ SSLCertificate *ssl_certificate_find (const gchar *host, gushort port, const gch
 		g_free(buf);
 		return NULL;
 	}
-	
+
 	if ((tmp_x509 = gnutls_import_X509_fp(fp, GNUTLS_X509_FMT_DER)) != NULL) {
 		cert = ssl_certificate_new(tmp_x509, host, port);
 		debug_print("got cert %p\n", cert);
@@ -458,7 +454,7 @@ SSLCertificate *ssl_certificate_find (const gchar *host, gushort port, const gch
 
 	fclose(fp);
 	g_free(file);
-	
+
 	if (must_rename) {
 		gchar *old = get_certificate_path(host, buf, NULL);
 		gchar *new = get_certificate_path(host, buf, fingerprint);
@@ -482,7 +478,7 @@ static gboolean ssl_certificate_compare (SSLCertificate *cert_a, SSLCertificate 
 	if (cert_a == NULL || cert_b == NULL)
 		return FALSE;
 
-	if ((r = gnutls_x509_crt_export(cert_a->x509_cert, GNUTLS_X509_FMT_DER, NULL, &cert_size_a)) 
+	if ((r = gnutls_x509_crt_export(cert_a->x509_cert, GNUTLS_X509_FMT_DER, NULL, &cert_size_a))
 	    != GNUTLS_E_SHORT_MEMORY_BUFFER) {
 		g_warning("couldn't gnutls_x509_crt_export to get size a %s", gnutls_strerror(r));
 		return FALSE;
@@ -521,7 +517,7 @@ static gboolean ssl_certificate_compare (SSLCertificate *cert_a, SSLCertificate 
 	}
 	g_free(output_a);
 	g_free(output_b);
-	
+
 	return TRUE;
 }
 
@@ -551,7 +547,7 @@ static guint check_cert(SSLCertificate *cert)
 	}
 	fclose(fp);
 	fp = NULL;
-	
+
 	buf = g_strdup_printf("%d", cert->port);
 	chain_file = get_certificate_chain_path(cert->host, buf, cert->fingerprint);
 	g_free(buf);
@@ -581,7 +577,7 @@ static guint check_cert(SSLCertificate *cert)
 		if (!fingerprint || strcmp(fingerprint, cert->fingerprint)) {
 			debug_print("saved chain fingerprint does not match current : %s / %s\n",
 				cert->fingerprint, fingerprint);
-				
+
 			return (guint)-1;
 		}
 		g_free(fingerprint);
@@ -627,11 +623,11 @@ static gboolean ssl_certificate_is_valid(SSLCertificate *cert, guint status)
 	return ssl_certificate_check_subject_cn(cert);
 }
 
-char *ssl_certificate_check_signer (SSLCertificate *cert, guint status) 
+char *ssl_certificate_check_signer (SSLCertificate *cert, guint status)
 {
 	gnutls_x509_crt_t x509_cert = cert ? cert->x509_cert : NULL;
 
-	if (!cert) 
+	if (!cert)
 		return g_strdup(_("Internal error"));
 
 	if (status == (guint)-1) {
@@ -659,10 +655,10 @@ static void ssl_certificate_save_chain(gnutls_x509_crt_t *certs, gint len, const
 	gint i;
 	gchar *file = NULL;
 	FILE *fp = NULL;
-	
+
 	for (i = 0; i < len; i++) {
 		size_t n;
-		unsigned char md[128];	
+		unsigned char md[128];
 		gnutls_x509_crt_t cert = certs[i];
 
 		if (i == 0) {
@@ -692,7 +688,7 @@ static void ssl_certificate_save_chain(gnutls_x509_crt_t *certs, gint len, const
 		safe_fclose(fp);
 }
 
-gboolean ssl_certificate_check (gnutls_x509_crt_t x509_cert, guint status, 
+gboolean ssl_certificate_check (gnutls_x509_crt_t x509_cert, guint status,
 				const gchar *host, gushort port,
 				gboolean accept_if_valid)
 {
@@ -832,7 +828,7 @@ gboolean ssl_certificate_check_chain(gnutls_x509_crt_t *certs, gint chain_len,
 
 		if (r < 0)
 			g_warning("can't read SSL_CERT_FILE '%s': %s",
-				claws_ssl_get_cert_file(), 
+				claws_ssl_get_cert_file(),
 				gnutls_strerror(r));
 	} else {
 		debug_print("Can't find SSL ca-certificates file\n");
@@ -865,7 +861,7 @@ gnutls_x509_crt_t ssl_certificate_get_x509_from_pem_file(const gchar *file)
 	gnutls_x509_crt_t x509 = NULL;
 	if (!file)
 		return NULL;
-	
+
 	if (is_file_exist(file)) {
 		FILE *fp = g_fopen(file, "r");
 		if (fp) {
@@ -888,7 +884,7 @@ gnutls_x509_privkey_t ssl_certificate_get_pkey_from_pem_file(const gchar *file)
 	gnutls_x509_privkey_t key = NULL;
 	if (!file)
 		return NULL;
-	
+
 	if (is_file_exist(file)) {
 		FILE *fp = g_fopen(file, "r");
 		if (fp) {
@@ -1078,7 +1074,7 @@ gchar *ssl_certificate_get_subject_cn(SSLCertificate *cert)
 	gchar subject_cn[BUFFSIZE];
 	size_t n = BUFFSIZE;
 
-	if(gnutls_x509_crt_get_dn_by_oid(cert->x509_cert, 
+	if(gnutls_x509_crt_get_dn_by_oid(cert->x509_cert,
 		GNUTLS_OID_X520_COMMON_NAME, 0, 0, subject_cn, &n))
 		return g_strdup(_("<not in certificate>"));
 

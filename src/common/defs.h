@@ -102,16 +102,9 @@
 #define MARK_VERSION		2
 #define TAGS_VERSION		1
 
-#ifdef G_OS_WIN32
-#  define ACTIONS_RC		"actionswinrc"
-#  define COMMAND_HISTORY	"command_history_win"
-#  define DEFAULT_SIGNATURE	"signature.txt"
-#  define DEFAULT_W32_GTK_THEME "MS-Windows"
-#else
-#  define ACTIONS_RC		"actionsrc"
-#  define COMMAND_HISTORY	"command_history"
-#  define DEFAULT_SIGNATURE	".signature"
-#endif
+#define ACTIONS_RC		"actionsrc"
+#define COMMAND_HISTORY	"command_history"
+#define DEFAULT_SIGNATURE	".signature"
 
 #define DEFAULT_INC_PATH	"/usr/bin/mh/inc"
 #define DEFAULT_INC_PROGRAM	"inc"

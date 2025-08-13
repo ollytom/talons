@@ -27,13 +27,8 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
-#if defined G_OS_UNIX
 #include <fcntl.h>
 #include <unistd.h>
-#elif defined G_OS_WIN32
-#include <windows.h>
-#include <wincrypt.h>
-#endif
 
 #include "common/passcrypt.h"
 #include "common/pkcs5_pbkdf2.h"

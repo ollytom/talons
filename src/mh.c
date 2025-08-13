@@ -45,19 +45,6 @@
 #include "file-utils.h"
 #include "prefs_common.h"
 
-/* Define possible missing constants for Windows. */
-#ifdef G_OS_WIN32
-# ifndef S_IRGRP
-# define S_IRGRP 0
-# define S_IWGRP 0
-# endif
-# ifndef S_IROTH
-# define S_IROTH 0
-# define S_IWOTH 0
-# endif
-#endif
-
-
 static void	mh_folder_init		(Folder		*folder,
 					 const gchar	*name,
 					 const gchar	*path);
@@ -731,15 +718,8 @@ static gint mh_remove_all_msg(Folder *folder, FolderItem *item)
 static gboolean mh_is_msg_changed(Folder *folder, FolderItem *item,
 				  MsgInfo *msginfo)
 {
-#ifdef G_OS_WIN32
-	GFile *f;
-	GFileInfo *fi;
-	GTimeVal tv;
-	GError *error = NULL;
-#else
 	GStatBuf s;
 	int r;
-#endif
 	gchar *path;
 	gchar *parent_path;
 
@@ -748,27 +728,6 @@ static gboolean mh_is_msg_changed(Folder *folder, FolderItem *item,
 			G_DIR_SEPARATOR, msginfo->msgnum);
 	g_free(parent_path);
 
-#ifdef G_OS_WIN32
-	f = g_file_new_for_path(path);
-	g_free(path);
-	fi = g_file_query_info(f, "standard::size,time::modified",
-			G_FILE_QUERY_INFO_NONE, NULL, &error);
-	if (error != NULL) {
-		g_warning(error->message);
-		g_error_free(error);
-		g_object_unref(f);
-		return TRUE;
-	}
-
-	g_file_info_get_modification_time(fi, &tv);
-	if (msginfo->size != g_file_info_get_size(fi) || (
-			(msginfo->mtime - tv.tv_sec != 0) &&
-			abs(msginfo->mtime - tv.tv_sec) != 3600)) {
-		g_error_free(error);
-		g_object_unref(f);
-		return TRUE;
-	}
-#else
 	r = g_stat(path, &s);
 	g_free(path);
 	if (r < 0 ||
@@ -778,8 +737,6 @@ static gboolean mh_is_msg_changed(Folder *folder, FolderItem *item,
 		(msginfo->mtime - s.st_mtime != -3600))) {
 		return TRUE;
 	}
-#endif
-
 	return FALSE;
 }
 
@@ -833,11 +790,7 @@ static gint mh_create_tree(Folder *folder)
 	cm_return_val_if_fail(folder != NULL, -1);
 
 	rootpath = LOCAL_FOLDER(folder)->rootpath;
-#ifdef G_OS_UNIX
 	if (*rootpath == '/') {
-#elif defined G_OS_WIN32
-	if (g_ascii_isalpha(*rootpath) && !strncmp(rootpath + 1, ":\\", 2)) {
-#endif
 		/* Folder path is absolute. */
 		rootpath = g_strdup(rootpath);
 	} else {
