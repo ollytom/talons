@@ -46,7 +46,6 @@
 #include <sys/file.h>
 #endif
 
-#include "wizard.h"
 #ifdef HAVE_STARTUP_NOTIFICATION
 #ifdef GDK_WINDOWING_X11
 # define SN_API_NOT_YET_FROZEN
@@ -558,7 +557,6 @@ int main(int argc, char *argv[])
 	FolderView *folderview;
 	GdkPixbuf *icon;
 	guint num_folder_class = 0;
-	gboolean asked_for_migration = FALSE;
 	gboolean start_done = TRUE;
 	gboolean never_ran = FALSE;
 	gboolean mainwin_shown = FALSE;
@@ -627,22 +625,18 @@ int main(int argc, char *argv[])
 		if (is_dir_exist(OLD_GTK2_RC_DIR)) {
 			r = migrate_old_config(OLD_GTK2_RC_DIR, get_rc_dir(),
 					       g_strconcat("Sylpheed-Claws 2.6.0 ", _("(or older)"), NULL));
-			asked_for_migration = TRUE;
 		} else if (is_dir_exist(OLDER_GTK2_RC_DIR)) {
 			r = migrate_old_config(OLDER_GTK2_RC_DIR, get_rc_dir(),
 					       g_strconcat("Sylpheed-Claws 1.9.15 ",_("(or older)"), NULL));
-			asked_for_migration = TRUE;
 		} else if (is_dir_exist(OLD_GTK1_RC_DIR)) {
 			r = migrate_old_config(OLD_GTK1_RC_DIR, get_rc_dir(),
 					       g_strconcat("Sylpheed-Claws 1.0.5 ",_("(or older)"), NULL));
-			asked_for_migration = TRUE;
 		} else if (is_dir_exist(SYLPHEED_RC_DIR)) {
 			r = migrate_old_config(SYLPHEED_RC_DIR, get_rc_dir(), "Sylpheed");
-			asked_for_migration = TRUE;
 		}
 
 		/* If migration failed or the user didn't want to do it,
-		 * we create a new one (and we'll hit wizard later).
+		 * we create a new one.
 		 */
 		if (r == FALSE && !is_dir_exist(get_rc_dir())) {
 #ifdef G_OS_UNIX
@@ -786,22 +780,11 @@ int main(int argc, char *argv[])
 		prefs_destroy_cache();
 
 		if (ret == -2) {
-			/* config_version update failed in folder_read_list(). We
-			 * do not want to run the wizard, just exit. */
+			/* config_version update failed in folder_read_list(). */
 			debug_print("Folderlist version upgrade failed, exiting\n");
 			exit(203);
 		}
 
-		/* if run_wizard returns FALSE it's because it's
-		 * been cancelled. We can't do much but exit.
-		 * however, if the user was asked for a migration,
-		 * we remove the newly created directory so that
-		 * he's asked again for migration on next launch.*/
-		if (!run_wizard(mainwin, TRUE)) {
-			if (asked_for_migration)
-				remove_dir_recursive(RC_DIR);
-			exit(1);
-		}
 		main_window_reflect_prefs_all_now();
 		folder_write_list();
 		never_ran = TRUE;
@@ -809,11 +792,6 @@ int main(int argc, char *argv[])
 
 	if (!account_get_list()) {
 		prefs_destroy_cache();
-		if (!run_wizard(mainwin, FALSE)) {
-			if (asked_for_migration)
-				remove_dir_recursive(RC_DIR);
-			exit(1);
-		}
 		if(!account_get_list()) {
 			exit_claws(mainwin);
 			exit(1);

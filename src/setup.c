@@ -31,7 +31,6 @@
 #include "mainwindow.h"
 #include "gtkutils.h"
 #include "mh.h"
-#include "wizard.h"
 #define SETUP_DIALOG_WIDTH	540
 
 static void scan_tree_func(Folder *folder, FolderItem *item, gpointer data);

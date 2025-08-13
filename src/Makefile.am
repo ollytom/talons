@@ -159,7 +159,6 @@ claws_mail_SOURCES = \
 	toolbar.c \
 	undo.c \
 	uri_opener.c \
-	wizard.c \
 	$(abook_source)
 
 claws_mailincludedir = $(pkgincludedir)
@@ -279,7 +278,6 @@ claws_mailinclude_HEADERS = \
 	undo.h \
 	uri_opener.h \
 	viewtypes.h \
-	wizard.h \
 	$(abook_headers)
 
 BUILT_SOURCES = \

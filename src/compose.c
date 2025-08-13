@@ -7663,7 +7663,6 @@ static Compose *compose_create(PrefsAccount *account,
 #endif
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu", "Options", "Options", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu", "Tools", "Tools", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu", "Help", "Help", GTK_UI_MANAGER_MENU)
 
 /* Compose menu */
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Message", "Send", "Message/Send", GTK_UI_MANAGER_MENUITEM)
@@ -7819,9 +7818,6 @@ static Compose *compose_create(PrefsAccount *account,
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools/Template", "PlaceHolder", "Tools/Template/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools", "Actions", "Tools/Actions", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools/Actions", "PlaceHolder", "Tools/Actions/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
-
-/* Help menu */
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Help", "About", "Help/About", GTK_UI_MANAGER_MENUITEM)
 
 	menubar = gtk_ui_manager_get_widget(compose->ui_manager, "/Menu");
 	gtk_widget_show_all(menubar);
@@ -9576,7 +9572,6 @@ static char *ext_editor_menu_entries[] = {
 #endif
 	"Menu/Tools/ShowRuler",
 	"Menu/Tools/Actions",
-	"Menu/Help",
 	NULL
 };
 
@@ -9919,7 +9914,6 @@ static void compose_allow_user_actions (Compose *compose, gboolean allow)
 #endif
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options", allow);
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Tools", allow);
-	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Help", allow);
 
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(compose->text), allow);
 
