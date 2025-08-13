@@ -30,7 +30,6 @@
 #include "codeconv.h"
 #include "utils.h"
 #include "entity.h"
-#include "file-utils.h"
 
 #define SC_HTMLBUFSIZE	8192
 #define HR_STR		"────────────────────────────────────────────────"

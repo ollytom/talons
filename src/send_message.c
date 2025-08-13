@@ -56,7 +56,6 @@
 #include "inc.h"
 #include "log.h"
 #include "passwordstore.h"
-#include "file-utils.h"
 #ifdef USE_OAUTH2
 #include "oauth2.h"
 #endif

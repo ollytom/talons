@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -29,7 +29,6 @@
 
 #include "enriched.h"
 #include "utils.h"
-#include "file-utils.h"
 
 #define ERTFBUFSIZE	8192
 
@@ -39,8 +38,8 @@ static void ertf_append_char		(ERTFParser	*parser,
 					 gchar		 ch);
 
 static ERTFState ertf_parse_tag		(ERTFParser	*parser);
-static void ertf_get_parenthesis	(ERTFParser	*parser, 
-					 gchar		*buf, 
+static void ertf_get_parenthesis	(ERTFParser	*parser,
+					 gchar		*buf,
 					 gint 		 len);
 
 ERTFParser *ertf_parser_new(FILE *fp, CodeConverter *conv)
@@ -82,7 +81,7 @@ gchar *ertf_parse(ERTFParser *parser)
 		if (ertf_read_line(parser) == ERTF_EOF)
 			return NULL;
 	}
-	
+
 	while (*parser->bufp != '\0') {
 		switch (*parser->bufp) {
 			case '<':
@@ -96,8 +95,8 @@ gchar *ertf_parse(ERTFParser *parser)
 					return parser->str->str;
 				break;
 			case '\n':
-			case '\r':	
-				if (parser->bufp[0] == '\r' && parser->bufp[1] == '\n') 
+			case '\r':
+				if (parser->bufp[0] == '\r' && parser->bufp[1] == '\n')
 						parser->bufp++;
 
 				if (!parser->pre) {
@@ -114,7 +113,7 @@ gchar *ertf_parse(ERTFParser *parser)
 				ertf_append_char(parser, *parser->bufp++);
 		}
 	}
-	
+
 	return parser->str->str;
 }
 
@@ -177,9 +176,9 @@ static ERTFState ertf_parse_tag(ERTFParser *parser)
 	gchar buf[ERTFBUFSIZE];
 	gchar *p;
 	gchar *down;
-	
+
 	ertf_get_parenthesis (parser, buf, sizeof(buf));
-	
+
 	for (p = buf; *p != '\0'; p++) {
 		if (isspace (*(guchar *)p)) {
 			*p = '\0';
@@ -203,7 +202,7 @@ static ERTFState ertf_parse_tag(ERTFParser *parser)
 	g_free(down);
 	return parser->state;
 }
-		
+
 static void ertf_get_parenthesis(ERTFParser *parser, gchar *buf, gint len)
 {
 	gchar *p;

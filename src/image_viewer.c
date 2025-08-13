@@ -26,7 +26,6 @@
 #include <gtk/gtk.h>
 
 #include "procmime.h"
-#include "file-utils.h"
 #include "utils.h"
 #include "mimeview.h"
 
