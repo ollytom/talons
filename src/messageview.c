@@ -57,7 +57,6 @@
 #include "hooks.h"
 #include "filtering.h"
 #include "partial_download.h"
-#include "uri_opener.h"
 #include "inc.h"
 #include "log.h"
 #include "privacy.h"
@@ -166,8 +165,6 @@ static void add_address_cb		(GtkAction	*action,
 static void create_filter_cb		(GtkAction	*action,
 					 gpointer	 data);
 static void create_processing_cb	(GtkAction	*action,
-					 gpointer	 data);
-static void open_urls_cb		(GtkAction	*action,
 					 gpointer	 data);
 
 static void about_cb			(GtkAction	*action,
@@ -309,8 +306,6 @@ static GtkActionEntry msgview_entries[] =
 	{"Tools/CreateProcessingRule/BySubject",     NULL, N_("By _Subject"), NULL, NULL, G_CALLBACK(create_processing_cb) },
 	{"Tools/CreateProcessingRule/BySender",      NULL, N_("By S_ender"), NULL, NULL, G_CALLBACK(create_processing_cb) },
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
-
-	{"Tools/ListUrls",                           NULL, N_("List _URLs..."), "<control><shift>U", NULL, G_CALLBACK(open_urls_cb) },
 
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/Actions",                            NULL, N_("Actio_ns"), NULL, NULL, NULL },
@@ -625,9 +620,6 @@ static void messageview_add_toolbar(MessageView *msgview, GtkWidget *window)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySubject", "Tools/CreateProcessingRule/BySubject", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySender", "Tools/CreateProcessingRule/BySender", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "Separator2", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
-
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "ListUrls", "Tools/ListUrls", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "Separator3", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "Actions", "Tools/Actions", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/Actions", "PlaceHolder", "Tools/Actions/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
@@ -2884,12 +2876,6 @@ static void create_processing_cb(GtkAction *gaction, gpointer data)
 				    (PrefsFilterType)action, 1);
 }
 
-static void open_urls_cb(GtkAction *action, gpointer data)
-{
-	MessageView *messageview = (MessageView *)data;
-	messageview_list_urls(messageview);
-}
-
 static void about_cb(GtkAction *gaction, gpointer data)
 {
 	about_show();
@@ -2967,47 +2953,6 @@ void messageview_learn (MessageView *msgview, gboolean is_spam)
 		toolbar_set_learn_button
 			(msgview->mainwin->toolbar,
 			 MSG_IS_SPAM(msgview->msginfo->flags)?LEARN_HAM:LEARN_SPAM);
-}
-
-void messageview_list_urls (MessageView	*msgview)
-{
-	GSList *cur = msgview->mimeview->textview->uri_list;
-	GSList *newlist = NULL;
-	GHashTable *uri_hashtable;
-	gchar *tmp;
-
-	uri_hashtable = g_hash_table_new_full(g_str_hash, g_str_equal,
-					 (GDestroyNotify) g_free, NULL);
-
-	for (; cur; cur = cur->next) {
-		ClickableText *uri = (ClickableText *)cur->data;
-		if (uri->uri &&
-		    (!g_ascii_strncasecmp(uri->uri, "ftp.", 4) ||
-		     !g_ascii_strncasecmp(uri->uri, "ftp:", 4) ||
-		     !g_ascii_strncasecmp(uri->uri, "ftps:", 5) ||
-		     !g_ascii_strncasecmp(uri->uri, "sftp:", 5) ||
-		     !g_ascii_strncasecmp(uri->uri, "www.", 4) ||
-		     !g_ascii_strncasecmp(uri->uri, "webcal:", 7) ||
-		     !g_ascii_strncasecmp(uri->uri, "webcals:", 8) ||
-		     !g_ascii_strncasecmp(uri->uri, "http:", 5) ||
-		     !g_ascii_strncasecmp(uri->uri, "https:", 6)))
-		{
-			tmp = g_utf8_strdown(uri->uri, -1);
-
-			if (g_hash_table_lookup(uri_hashtable, tmp)) {
-				g_free(tmp);
-				continue;
-			}
-
-			newlist = g_slist_prepend(newlist, uri);
-			g_hash_table_insert(uri_hashtable, tmp,
-					    GUINT_TO_POINTER(g_str_hash(tmp)));
-		}
-	}
-	newlist = g_slist_reverse(newlist);
-	uri_opener_open(msgview, newlist);
-	g_slist_free(newlist);
-	g_hash_table_destroy(uri_hashtable);
 }
 
 static void save_part_as_cb(GtkAction *action, gpointer data)

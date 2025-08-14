@@ -162,7 +162,6 @@ static void prefs_keybind_preset_changed(GtkComboBox *widget)
 		{"<Actions>/Menu/Message/Marks/MarkRead",		""},
 
 		{"<Actions>/Menu/Tools/AddressBook",			"<shift><control>A"},
-		{"<Actions>/Menu/Tools/ListUrls",			"<shift><control>U"},
 		{"<Actions>/Menu/Tools/Execute",			"X"},
 		{"<Actions>/Menu/Tools/Expunge",			"<control>E"},
 		{"<Actions>/Menu/Tools/NetworkLog",			"<shift><control>L"},

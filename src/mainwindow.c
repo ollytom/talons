@@ -707,9 +707,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Tools/CreateProcessingRule/ByTo",          NULL, N_("By _To"), NULL, NULL, G_CALLBACK(create_processing_cb) },
 	{"Tools/CreateProcessingRule/BySubject",     NULL, N_("By _Subject"), NULL, NULL, G_CALLBACK(create_processing_cb) },
 	{"Tools/CreateProcessingRule/BySender",      NULL, N_("By S_ender"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
-
-	{"Tools/ListUrls",                           NULL, N_("List _URLs..."), "<shift><control>U", NULL, G_CALLBACK(open_urls_cb) },
 
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/Actions",                            NULL, N_("Actio_ns"), NULL, NULL, NULL },
@@ -1593,9 +1590,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySubject", "Tools/CreateProcessingRule/BySubject", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySender", "Tools/CreateProcessingRule/BySender", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator2", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
-
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "ListUrls", "Tools/ListUrls", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator3", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Actions", "Tools/Actions", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/Actions", "PlaceHolder", "Tools/Actions/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
@@ -2914,7 +2908,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	SET_SENSITIVE("Menu/Tools/RunProcessing", M_HAVE_PROCESSING);
 	SET_SENSITIVE("Menu/Tools/CreateFilterRule", M_SINGLE_TARGET_EXIST, M_UNLOCKED);
 	SET_SENSITIVE("Menu/Tools/CreateProcessingRule", M_SINGLE_TARGET_EXIST, M_UNLOCKED);
-	SET_SENSITIVE("Menu/Tools/ListUrls", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/Tools/Actions", M_TARGET_EXIST, M_ACTIONS_EXIST);
 	SET_SENSITIVE("Menu/Tools/Execute", M_DELAY_EXEC);
 	SET_SENSITIVE("Menu/Tools/Expunge", M_DELETED_EXISTS);
@@ -4166,16 +4159,6 @@ static void reedit_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 	summary_reedit(mainwin->summaryview);
-}
-
-static void open_urls_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	if (!mainwin->summaryview->displayed && mainwin->summaryview->selected) {
-		summary_display_msg_selected(mainwin->summaryview,
-					     prefs_common.show_all_headers);
-	}
-	messageview_list_urls(mainwin->messageview);
 }
 
 static void add_address_cb(GtkAction *action, gpointer data)
