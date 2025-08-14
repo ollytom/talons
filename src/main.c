@@ -65,14 +65,12 @@
 #include "main.h"
 #include "mainwindow.h"
 #include "folderview.h"
-#include "image_viewer.h"
 #include "summaryview.h"
 #include "prefs_common.h"
 #include "prefs_account.h"
 #include "prefs_actions.h"
 #include "prefs_ext_prog.h"
 #include "prefs_fonts.h"
-#include "prefs_image_viewer.h"
 #include "prefs_message.h"
 #include "prefs_migration.h"
 #include "prefs_receive.h"
@@ -702,8 +700,6 @@ int main(int argc, char *argv[])
 	prefs_ext_prog_init();
 	prefs_wrapping_init();
 	prefs_compose_writing_init();
-	image_viewer_init();
-	prefs_image_viewer_init();
 	prefs_quote_init();
 	prefs_summaries_init();
 	prefs_message_init();
@@ -1036,7 +1032,6 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_ext_prog_done();
 	prefs_wrapping_done();
 	prefs_compose_writing_done();
-	image_viewer_done();
 	prefs_quote_done();
 	prefs_summaries_done();
 	prefs_message_done();

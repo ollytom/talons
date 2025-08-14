@@ -55,7 +55,6 @@
 #include "mimeview.h"
 #include "alertpanel.h"
 #include "menu.h"
-#include "image_viewer.h"
 #include "filesel.h"
 #include "inputdialog.h"
 #include "tags.h"
@@ -116,6 +115,9 @@ static GdkCursor *watch_cursor= NULL;
 #define TEXTVIEW_FONT_SIZE_MIN -75 /* this gives 5 zoom out steps at 15% */
 #define TEXTVIEW_FONT_SIZE_MAX 3100 /* this gives 200 zoom in steps at 15% */
 #define TEXTVIEW_FONT_SIZE_UNSET -666 /* default value when unset (must be lower than TEXTVIEW_FONT_SIZE_MIN */
+
+#define WIDTH 48
+#define HEIGHT 48
 
 /* font size in session (will apply to next message views we open */
 /* must be lower than TEXTVIEW_FONT_SIZE_MIN */
@@ -245,44 +247,14 @@ static GtkActionEntry textview_mail_popup_entries[] =
 	{"TextviewPopupMail/Copy",		NULL, N_("Copy this add_ress"), NULL, NULL, G_CALLBACK(copy_mail_to_uri_cb) },
 };
 
-static gboolean move_textview_image_cb (gpointer data)
-{
-#ifndef WIDTH
-#  define WIDTH 48
-#  define HEIGHT 48
-#endif
-	TextView *textview = (TextView *)data;
-	GtkAllocation allocation;
-	gint x, wx, wy;
-	gtk_widget_get_allocation(textview->text, &allocation);
-	x = allocation.width - WIDTH - 5;
-	gtk_text_view_buffer_to_window_coords(
-		GTK_TEXT_VIEW(textview->text),
-		GTK_TEXT_WINDOW_TEXT, x, 5, &wx, &wy);
-	gtk_text_view_move_child(GTK_TEXT_VIEW(textview->text),
-		textview->image, wx, wy);
-
-	return G_SOURCE_REMOVE;
-}
-
 static void scrolled_cb (GtkAdjustment *adj, gpointer data)
 {
-	TextView *textview = (TextView *)data;
-
-	if (textview->image) {
-		move_textview_image_cb(textview);
-	}
 }
 
 static void textview_size_allocate_cb	(GtkWidget	*widget,
 					 GtkAllocation	*allocation,
 					 gpointer	 data)
 {
-	TextView *textview = (TextView *)data;
-
-	if (textview->image) {
-		g_timeout_add(0, &move_textview_image_cb, textview);
-	}
 }
 
 TextView *textview_create(void)
@@ -293,7 +265,6 @@ TextView *textview_create(void)
 	GtkWidget *text;
 	GtkTextBuffer *buffer;
 	GtkClipboard *clipboard;
-	GtkAdjustment *adj;
 
 	debug_print("Creating text view...\n");
 	textview = g_new0(TextView, 1);
@@ -320,8 +291,6 @@ TextView *textview_create(void)
 	clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
 	gtk_text_buffer_add_selection_clipboard(buffer, clipboard);
 
-	gtk_widget_ensure_style(text);
-
 	g_object_ref(scrolledwin);
 
 	gtk_container_add(GTK_CONTAINER(scrolledwin), text);
@@ -334,10 +303,6 @@ TextView *textview_create(void)
 			 G_CALLBACK(textview_leave_notify), textview);
 	g_signal_connect(G_OBJECT(text), "visibility-notify-event",
 			 G_CALLBACK(textview_visibility_notify), textview);
-	adj = gtk_scrolled_window_get_vadjustment(
-		GTK_SCROLLED_WINDOW(scrolledwin));
-	g_signal_connect(G_OBJECT(adj), "value-changed",
-			 G_CALLBACK(scrolled_cb), textview);
 	g_signal_connect(G_OBJECT(text), "size_allocate",
 			 G_CALLBACK(textview_size_allocate_cb),
 			 textview);
@@ -630,10 +595,9 @@ void textview_show_part(TextView *textview, MimeInfo *mimeinfo, FILE *fp)
 
 static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 {
-	GtkAllocation allocation;
 	GtkTextView *text;
 	GtkTextBuffer *buffer;
-	GtkTextIter iter, start_iter;
+	GtkTextIter iter;
 	gchar buf[BUFFSIZE];
 	GPtrArray *headers = NULL;
 	const gchar *name;
@@ -706,58 +670,6 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 		gtk_text_buffer_insert(buffer, &iter, "\n", 1);
 		TEXTVIEW_INSERT_LINK(buf, "cm://select_attachment", mimeinfo);
 		gtk_text_buffer_insert(buffer, &iter, " \n", -1);
-		if (mimeinfo->type == MIMETYPE_IMAGE  && mimeinfo->subtype &&
-		    g_ascii_strcasecmp(mimeinfo->subtype, "x-eps") &&
-		    prefs_common.inline_img ) {
-			GdkPixbuf *pixbuf;
-			GError *error = NULL;
-			ClickableText *uri;
-
-
-			pixbuf = procmime_get_part_as_pixbuf(mimeinfo, &error);
-			if (error != NULL) {
-				g_warning("can't load the image: %s", error->message);
-				g_error_free(error);
-				return;
-			}
-
-			if (textview->stop_loading) {
-				return;
-			}
-
-			gtk_widget_get_allocation(textview->scrolledwin, &allocation);
-			pixbuf = claws_load_pixbuf_fitting(pixbuf, prefs_common.inline_img,
-					prefs_common.fit_img_height, allocation.width,
-					allocation.height);
-
-			if (textview->stop_loading) {
-				return;
-			}
-
-			uri = g_new0(ClickableText, 1);
-			uri->uri = g_strdup("");
-			uri->filename = g_strdup("cm://select_attachment");
-			uri->data = mimeinfo;
-
-			uri->start = gtk_text_iter_get_offset(&iter);
-			gtk_text_buffer_insert_pixbuf(buffer, &iter, pixbuf);
-			g_object_unref(pixbuf);
-			if (textview->stop_loading) {
-				g_free(uri);
-				return;
-			}
-			uri->end = gtk_text_iter_get_offset(&iter);
-
-			textview->uri_list =
-				g_slist_prepend(textview->uri_list, uri);
-
-			gtk_text_buffer_insert(buffer, &iter, " ", 1);
-			gtk_text_buffer_get_iter_at_offset(buffer, &start_iter, uri->start);
-			gtk_text_buffer_apply_tag_by_name(buffer, "link",
-						&start_iter, &iter);
-
-			GTK_EVENTS_FLUSH();
-		}
 	} else if (mimeinfo->type == MIMETYPE_TEXT) {
 		if (prefs_common.display_header && (charcount > 0))
 			gtk_text_buffer_insert(buffer, &iter, "\n", 1);
@@ -1761,9 +1673,6 @@ void textview_clear(TextView *textview)
 	textview->prev_quote_level = -1;
 
 	textview->body_pos = 0;
-	if (textview->image)
-		gtk_widget_destroy(textview->image);
-	textview->image = NULL;
 	textview->avatar_type = 0;
 
 	if (textview->messageview->mainwin->cursor_count == 0) {

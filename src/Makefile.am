@@ -78,7 +78,6 @@ claws_mail_SOURCES = \
 	folderview.c \
 	headerview.c \
 	html.c \
-	image_viewer.c \
 	imap.c \
 	imap_gtk.c \
 	import.c \
@@ -117,7 +116,6 @@ claws_mail_SOURCES = \
 	prefs_folder_item.c \
 	prefs_fonts.c \
 	prefs_gtk.c \
-	prefs_image_viewer.c \
 	prefs_logging.c \
 	prefs_matcher.c \
 	prefs_message.c \
@@ -190,7 +188,6 @@ claws_mailinclude_HEADERS = \
 	folderview.h \
 	headerview.h \
 	html.h \
-	image_viewer.h \
 	imap.h \
 	imap_gtk.h \
 	import.h \
@@ -231,7 +228,6 @@ claws_mailinclude_HEADERS = \
 	prefs_folder_item.h \
 	prefs_fonts.h \
 	prefs_gtk.h \
-	prefs_image_viewer.h \
 	prefs_logging.h \
 	prefs_matcher.h \
 	prefs_message.h \

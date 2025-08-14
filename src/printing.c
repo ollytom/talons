@@ -25,7 +25,6 @@
 #include "defs.h"
 
 #include "printing.h"
-#include "image_viewer.h"
 
 #include "gtkutils.h"
 #include "toolbar.h"
@@ -48,7 +47,6 @@ struct _PrintData {
 	guint npages;
 	gint sel_start;
 	gint sel_end;
-	GHashTable *images;
 	gint img_cnt;
 	gdouble zoom;
 	gdouble ypos_line;
@@ -128,12 +126,6 @@ static gint     printing_text_iter_get_offset_bytes(PrintData *, const GtkTextIt
 #define PREVIEW_ZOOM_FAC 1.41
 #define PREVIEW_ZOOM_MAX 10.
 #define PREVIEW_ZOOM_MIN 0.2
-
-static void free_pixbuf(gpointer key, gpointer value, gpointer data)
-{
-	PangoAttrShape *attr = (PangoAttrShape *) value;
-	g_object_unref(G_OBJECT(attr->data));
-}
 
 gpointer printing_get_renderer_data(PrintData *print_data)
 {
@@ -264,8 +256,6 @@ void printing_print_full(GtkWindow *parent, PrintRenderer *renderer, gpointer re
 
 	print_data->zoom = 1.;
 
-	print_data->images = g_hash_table_new(g_direct_hash, g_direct_equal);
-
 	print_data->pango_context = renderer->get_pango_context(renderer_data);
 
 	print_data->to_print = renderer->get_data_to_print(renderer_data, sel_start, sel_end);
@@ -297,8 +287,6 @@ void printing_print_full(GtkWindow *parent, PrintRenderer *renderer, gpointer re
 		printing_store_settings(gtk_print_operation_get_print_settings(op));
 	}
 
-	g_hash_table_foreach(print_data->images, free_pixbuf, NULL);
-	g_hash_table_destroy(print_data->images);
 	if (print_data->to_print)
 		g_free(print_data->to_print);
 	g_list_free(print_data->page_breaks);
@@ -927,17 +915,10 @@ static void printing_textview_cb_begin_print(GtkPrintOperation *op, GtkPrintCont
 
 	do {
 		PangoRectangle logical_rect;
-		PangoAttrShape *attr = NULL;
 
 		if (ii >= start) {
 			pango_layout_iter_get_line_extents(iter, NULL, &logical_rect);
-
-			if ((attr = g_hash_table_lookup(print_data->images,
-						GINT_TO_POINTER(pango_layout_iter_get_index(iter)))) != NULL) {
-				line_height = (double)gdk_pixbuf_get_height(GDK_PIXBUF(attr->data));
-			} else {
-				line_height = ((double)logical_rect.height) / PANGO_SCALE;
-			}
+			line_height = ((double)logical_rect.height) / PANGO_SCALE;
 		}
 		if ((page_height + line_height) > height) {
 			page_breaks = g_list_prepend(page_breaks, GINT_TO_POINTER(ii));
@@ -1078,7 +1059,6 @@ static void printing_textview_cb_draw_page(GtkPrintOperation *op, GtkPrintContex
 	do {
 		PangoRectangle logical_rect;
 		PangoLayoutLine *line;
-		PangoAttrShape *attr = NULL;
 		int baseline;
 
 		if (ii >= start) {
@@ -1112,19 +1092,7 @@ static void printing_textview_cb_draw_page(GtkPrintOperation *op, GtkPrintContex
 				      ((double)logical_rect.x) / PANGO_SCALE,
 				      ((double)baseline) / PANGO_SCALE - start_pos);
 
-			if ((attr = g_hash_table_lookup(print_data->images,
-			     GINT_TO_POINTER(pango_layout_iter_get_index(iter)))) != NULL) {
-				cairo_surface_t *surface;
-
-				surface = pixbuf_to_surface(GDK_PIXBUF(attr->data));
-				cairo_set_source_surface (cr, surface,
-							  ((double)logical_rect.x) / PANGO_SCALE,
-							  ((double)baseline) / PANGO_SCALE - start_pos);
-				cairo_paint (cr);
-				cairo_surface_destroy (surface);
-			} else {
-				pango_cairo_show_layout_line(cr, line);
-			}
+			pango_cairo_show_layout_line(cr, line);
 		}
 		ii++;
 	} while(ii < end && (notlast = pango_layout_iter_next_line(iter)));
@@ -1181,32 +1149,6 @@ static void printing_layout_set_text_attributes(PrintData *print_data,
 		PangoUnderline underline;
 		gboolean strikethrough;
 		gint weight;
-		GdkPixbuf *image;
-
-		if (prefs_common.print_imgs && (image = gtk_text_iter_get_pixbuf(&iter)) != NULL) {
-			PangoRectangle rect = {0, 0, 0, 0};
-			gint startpos = printing_text_iter_get_offset_bytes(print_data, &iter);
-			gint h = gdk_pixbuf_get_height(image);
-			gint w = gdk_pixbuf_get_width(image);
-			gint a_h = gtk_print_context_get_height(context);
-			gint a_w = gtk_print_context_get_width(context);
-			gint r_h, r_w;
-			GdkPixbuf *scaled = NULL;
-			image_viewer_get_resized_size(w, h, a_w, a_h, &r_w, &r_h);
-			rect.x = 0;
-			rect.y = 0;
-			rect.width = r_w * PANGO_SCALE;
-			rect.height = r_h * PANGO_SCALE;
-
-			scaled = gdk_pixbuf_scale_simple(image, r_w, r_h, GDK_INTERP_BILINEAR);
-			attr = pango_attr_shape_new_with_data (&rect, &rect,
-							       scaled, NULL, NULL);
-			attr->start_index = startpos;
-			attr->end_index = startpos+1;
-			pango_attr_list_insert(attr_list, attr);
-			g_hash_table_insert(print_data->images, GINT_TO_POINTER(startpos), attr);
-			print_data->img_cnt++;
-		}
 
 		if (gtk_text_iter_ends_tag(&iter, NULL)) {
 			PangoAttrColor *attr_color;
