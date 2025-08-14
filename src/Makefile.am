@@ -76,7 +76,6 @@ claws_mail_SOURCES = \
 	foldersel.c \
 	folderutils.c \
 	folderview.c \
-	grouplistdialog.c \
 	headerview.c \
 	html.c \
 	image_viewer.c \
@@ -99,7 +98,6 @@ claws_mail_SOURCES = \
 	mimeview.c \
 	msgcache.c \
 	news.c \
-	news_gtk.c \
 	noticeview.c \
 	oauth2.c \
 	partial_download.c \
@@ -190,7 +188,6 @@ claws_mailinclude_HEADERS = \
 	foldersel.h \
 	folderutils.h \
 	folderview.h \
-	grouplistdialog.h \
 	headerview.h \
 	html.h \
 	image_viewer.h \
@@ -215,7 +212,6 @@ claws_mailinclude_HEADERS = \
 	mimeview.h \
 	msgcache.h \
 	news.h \
-	news_gtk.h \
 	noticeview.h \
 	oauth2.h \
 	partial_download.h \

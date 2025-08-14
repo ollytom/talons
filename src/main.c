@@ -109,7 +109,6 @@
 #include "prefs_toolbar.h"
 #include "mh_gtk.h"
 #include "imap_gtk.h"
-#include "news_gtk.h"
 #include "matcher.h"
 #include "tags.h"
 #include "hooks.h"
@@ -736,7 +735,6 @@ int main(int argc, char *argv[])
 
 	mh_gtk_init();
 	imap_gtk_init();
-	news_gtk_init();
 
 	mainwin = main_window_create();
 

@@ -36,7 +36,6 @@
 
 #include "nntp-thread.h"
 #include "news.h"
-#include "news_gtk.h"
 #include "socket.h"
 #include "recv.h"
 #include "procmsg.h"
@@ -1361,7 +1360,6 @@ static gboolean news_scan_required(Folder *folder, FolderItem *item)
 
 void news_synchronise(FolderItem *item, gint days)
 {
-	news_gtk_synchronise(item, days);
 }
 
 static gint news_rename_folder(Folder *folder, FolderItem *item,
