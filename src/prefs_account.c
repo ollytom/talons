@@ -448,7 +448,6 @@ static void prefs_account_enum_set_radiobtn		(PrefParam *pparam);
 static void prefs_account_nntpauth_toggled(GtkToggleButton *button, gpointer user_data);
 static void prefs_account_mailcmd_toggled(GtkToggleButton *button,  gpointer user_data);
 static void prefs_account_showpwd_toggled(GtkEntry *entry, gpointer user_data);
-static void prefs_account_entry_changed_newline_check_cb(GtkWidget *entry, gpointer user_data);
 static void prefs_account_filter_on_recv_toggled(GtkToggleButton *button, gpointer user_data);
 
 #if USE_ENCHANT
@@ -1366,9 +1365,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 	gtk_grid_attach(GTK_GRID(serv_table), uid_entry, 1, 7, 2, 1);
 	gtk_widget_set_hexpand(uid_entry, TRUE);
 	gtk_widget_set_halign(uid_entry, GTK_ALIGN_FILL);
-	g_signal_connect(G_OBJECT(uid_entry), "changed",
-			G_CALLBACK(prefs_account_entry_changed_newline_check_cb),
-			GINT_TO_POINTER(ac_prefs->protocol));
 
 	pass_entry = gtk_entry_new ();
 	gtk_widget_show (pass_entry);
@@ -1386,10 +1382,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 					GTK_ENTRY_ICON_SECONDARY, _("Show password"));
 	g_signal_connect(pass_entry, "icon-press",
 			 G_CALLBACK(prefs_account_showpwd_toggled), NULL);
-
-	g_signal_connect(G_OBJECT(pass_entry), "changed",
-			G_CALLBACK(prefs_account_entry_changed_newline_check_cb),
-			GINT_TO_POINTER(ac_prefs->protocol));
 
 	nntpserv_label = gtk_label_new (_("News server"));
 	gtk_widget_show (nntpserv_label);
@@ -2056,9 +2048,6 @@ static void send_create_widget_func(PrefsPage * _page,
 	gtk_widget_show (smtp_uid_entry);
 	gtk_widget_set_size_request (smtp_uid_entry, DEFAULT_ENTRY_WIDTH, -1);
 	gtk_box_pack_start (GTK_BOX (hbox), smtp_uid_entry, TRUE, TRUE, 0);
-	g_signal_connect(G_OBJECT(smtp_uid_entry), "changed",
-			G_CALLBACK(prefs_account_entry_changed_newline_check_cb),
-			GINT_TO_POINTER(ac_prefs->protocol));
 
 	label = gtk_label_new (_("Password"));
 	gtk_widget_show (label);
@@ -2078,10 +2067,6 @@ static void send_create_widget_func(PrefsPage * _page,
 					GTK_ENTRY_ICON_SECONDARY, _("Show password"));
 	g_signal_connect(smtp_pass_entry, "icon-press",
 			 G_CALLBACK(prefs_account_showpwd_toggled), NULL);
-
-	g_signal_connect(G_OBJECT(smtp_pass_entry), "changed",
-			G_CALLBACK(prefs_account_entry_changed_newline_check_cb),
-			GINT_TO_POINTER(ac_prefs->protocol));
 
 	PACK_SPACER(vbox4, vbox_spc, VSPACING_NARROW_2);
 
@@ -5789,20 +5774,6 @@ static void prefs_account_showpwd_toggled(GtkEntry *entry,
 		gtk_entry_set_icon_tooltip_text(GTK_ENTRY(entry),
 						GTK_ENTRY_ICON_SECONDARY,
 						_("Hide password"));
-	}
-}
-
-static void prefs_account_entry_changed_newline_check_cb(GtkWidget *entry,
-		gpointer user_data)
-{
-	static GdkColor red = { (guint32)0, (guint16)0xff, (guint16)0x70, (guint16)0x70 };
-
-	if (strchr(gtk_entry_get_text(GTK_ENTRY(entry)), '\n') != NULL) {
-		/* Entry contains a newline, light it up. */
-		debug_print("found newline in string, painting entry red\n");
-		gtk_widget_modify_base(entry, GTK_STATE_NORMAL, &red);
-	} else {
-		gtk_widget_modify_base(entry, GTK_STATE_NORMAL, NULL);
 	}
 }
 
