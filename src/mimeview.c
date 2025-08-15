@@ -2447,8 +2447,6 @@ static void icon_list_append_icon (MimeView *mimeview, MimeInfo *mimeinfo)
 	case MIMETYPE_TEXT:
 		if (mimeinfo->subtype && !g_ascii_strcasecmp(mimeinfo->subtype, "html"))
 			stockp = STOCK_PIXMAP_MIME_TEXT_HTML;
-		else if  (mimeinfo->subtype && !g_ascii_strcasecmp(mimeinfo->subtype, "enriched"))
-			stockp = STOCK_PIXMAP_MIME_TEXT_ENRICHED;
 		else if  (mimeinfo->subtype && !g_ascii_strcasecmp(mimeinfo->subtype, "calendar"))
 			stockp = STOCK_PIXMAP_MIME_TEXT_CALENDAR;
 		else if  (mimeinfo->subtype && (!g_ascii_strcasecmp(mimeinfo->subtype, "x-patch")

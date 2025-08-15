@@ -67,7 +67,6 @@ claws_mail_SOURCES = \
 	customheader.c \
 	displayheader.c \
 	edittags.c \
-	enriched.c \
 	entity.c \
 	export.c \
 	filtering.c \
@@ -176,7 +175,6 @@ claws_mailinclude_HEADERS = \
 	customheader.h \
 	displayheader.h \
 	edittags.h \
-	enriched.h \
 	entity.h \
 	export.h \
 	filtering.h \
@@ -389,7 +387,6 @@ EXTRA_DIST = \
 	pixmaps/mime_ps.xpm \
 	pixmaps/mime_calendar.xpm \
 	pixmaps/mime_pgpsig.xpm \
-	pixmaps/mime_text_enriched.xpm \
 	pixmaps/mime_text_html.xpm \
 	pixmaps/mime_text_patch.xpm \
 	pixmaps/mime_text_plain.xpm \

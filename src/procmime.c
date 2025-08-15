@@ -43,7 +43,6 @@
 #include "uuencode.h"
 #include "unmime.h"
 #include "html.h"
-#include "enriched.h"
 #include "codeconv.h"
 #include "utils.h"
 #include "prefs_common.h"
@@ -802,18 +801,6 @@ gboolean procmime_scan_text_content(MimeInfo *mimeinfo,
 				break;
 		}
 		sc_html_parser_destroy(parser);
-		conv_code_converter_destroy(conv);
-	} else if (mimeinfo->type == MIMETYPE_TEXT && !g_ascii_strcasecmp(mimeinfo->subtype, "enriched")) {
-		ERTFParser *parser;
-		CodeConverter *conv;
-
-		conv = conv_code_converter_new(src_codeset);
-		parser = ertf_parser_new(tmpfp, conv);
-		while ((str = ertf_parse(parser)) != NULL) {
-			if ((scan_ret = scan_callback(str, cb_data)) == TRUE)
-				break;
-		}
-		ertf_parser_destroy(parser);
 		conv_code_converter_destroy(conv);
 	} else if (mimeinfo->type == MIMETYPE_TEXT && mimeinfo->disposition != DISPOSITIONTYPE_ATTACHMENT) {
 		while (fgets(buf, sizeof(buf), tmpfp) != NULL) {

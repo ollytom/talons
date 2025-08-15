@@ -46,7 +46,6 @@
 #include "gtkutils.h"
 #include "procmime.h"
 #include "html.h"
-#include "enriched.h"
 #include "compose.h"
 #include "addressbook.h"
 #include "addrindex.h"
@@ -138,9 +137,6 @@ static void textview_set_font_zoom(TextView *textview);
 			  textview->messageview->statusbar_cid);	   \
 }
 
-static void textview_show_ertf		(TextView	*textview,
-					 FILE		*fp,
-					 CodeConverter	*conv);
 static void textview_add_part		(TextView	*textview,
 					 MimeInfo	*mimeinfo);
 static void textview_add_parts		(TextView	*textview,
@@ -943,19 +939,6 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 			unlink(filename);
 		}
 		g_free(filename);
-	} else if (!g_ascii_strcasecmp(mimeinfo->subtype, "enriched")) {
-		gchar *filename;
-
-		filename = procmime_get_tmp_file_name(mimeinfo);
-		if (procmime_get_part(filename, mimeinfo) == 0) {
-			tmpfp = g_fopen(filename, "rb");
-			if (tmpfp) {
-				textview_show_ertf(textview, tmpfp, conv);
-				fclose(tmpfp);
-			}
-			unlink(filename);
-		}
-		g_free(filename);
 	} else if ( g_ascii_strcasecmp(mimeinfo->subtype, "plain") &&
 		   (cmd = prefs_common.mime_textviewer) && *cmd &&
 		   (p = strchr(cmd, '%')) && *(p + 1) == 's') {
@@ -1143,35 +1126,6 @@ static void textview_show_html(TextView *textview, FILE *fp,
 	account_sigsep_matchlist_delete();
 
 	sc_html_parser_destroy(parser);
-}
-
-static void textview_show_ertf(TextView *textview, FILE *fp,
-			       CodeConverter *conv)
-{
-	ERTFParser *parser;
-	gchar *str;
-	gint lines = 0;
-
-	parser = ertf_parser_new(fp, conv);
-	cm_return_if_fail(parser != NULL);
-
-	account_sigsep_matchlist_create();
-
-	while ((str = ertf_parse(parser)) != NULL) {
-		textview_write_line(textview, str, NULL, FALSE);
-		lines++;
-		if (lines % 500 == 0)
-			GTK_EVENTS_FLUSH();
-		if (textview->stop_loading) {
-			account_sigsep_matchlist_delete();
-			ertf_parser_destroy(parser);
-			return;
-		}
-	}
-
-	account_sigsep_matchlist_delete();
-
-	ertf_parser_destroy(parser);
 }
 
 #define ADD_TXT_POS(bp_, ep_, pti_) \
