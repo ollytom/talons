@@ -329,81 +329,6 @@ static void chk_update_val(GtkWidget *widget, gpointer data)
 	*val = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
-static gboolean migrate_old_config(const gchar *old_cfg_dir, const gchar *new_cfg_dir, const gchar *oldversion)
-{
-	gchar *message = g_strdup_printf(_("Configuration for %s found.\n"
-			 "Do you want to migrate this configuration?"), oldversion);
-
-	if (!strcmp(oldversion, "Sylpheed")) {
-		gchar *message2 = g_strdup_printf(_("\n\nYour Sylpheed filtering rules can be converted by a\n"
-			     "script available at %s."), TOOLS_URI);
-		gchar *tmp = g_strconcat(message, message2, NULL);
-		g_free(message2);
-		g_free(message);
-        message = tmp;
-	}
-
-	gint r = 0;
-	GtkWidget *window = NULL;
-	GtkWidget *keep_backup_chk;
-	gboolean backup = TRUE;
-
-	keep_backup_chk = gtk_check_button_new_with_label (_("Keep old configuration"));
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(keep_backup_chk), TRUE);
-	CLAWS_SET_TIP(keep_backup_chk,
-			     _("Keeping a backup will allow you to go back to an "
-			       "older version, but may take a while if you have "
-			       "cached IMAP or News data, and will take some extra "
-			       "room on your disk."));
-
-	g_signal_connect(G_OBJECT(keep_backup_chk), "toggled",
-			G_CALLBACK(chk_update_val), &backup);
-
-	if (alertpanel_full(_("Migration of configuration"), message,
-		 	NULL, _("_No"), NULL, _("_Yes"), NULL, NULL, ALERTFOCUS_SECOND,
-			FALSE, keep_backup_chk, ALERT_QUESTION) != G_ALERTALTERNATE) {
-		return FALSE;
-	}
-
-	/* we can either do a fast migration requiring not any extra disk
-	 * space, or a slow one that copies the old configuration and leaves
-	 * it in place. */
-	if (backup) {
-backup_mode:
-		window = label_window_create(_("Copying configuration... This may take a while..."));
-		GTK_EVENTS_FLUSH();
-
-		r = copy_dir(old_cfg_dir, new_cfg_dir);
-		label_window_destroy(window);
-
-		/* if copy failed, we'll remove the partially copied
-		 * new directory */
-		if (r != 0) {
-			alertpanel_error(_("Migration failed!"));
-			remove_dir_recursive(new_cfg_dir);
-		} else {
-			if (!backup) {
-				/* fast mode failed, but we don't want backup */
-				remove_dir_recursive(old_cfg_dir);
-			}
-		}
-	} else {
-		window = label_window_create(_("Migrating configuration..."));
-		GTK_EVENTS_FLUSH();
-
-		r = g_rename(old_cfg_dir, new_cfg_dir);
-		label_window_destroy(window);
-
-		/* if g_rename failed, we'll try to copy */
-		if (r != 0) {
-			FILE_OP_ERROR(new_cfg_dir, "g_rename");
-			debug_print("rename failed, trying copy\n");
-			goto backup_mode;
-		}
-	}
-	return (r == 0);
-}
-
 static gboolean sc_exiting = FALSE;
 static gboolean show_at_startup = TRUE;
 
@@ -610,41 +535,11 @@ int main(int argc, char *argv[])
 
 	CHDIR_RETURN_VAL_IF_FAIL(get_home_dir(), 1);
 
-	/* no config dir exists. See if we can migrate an old config. */
 	if (!is_dir_exist(get_rc_dir())) {
-		prefs_destroy_cache();
-		gboolean r = FALSE;
-
-		/* if one of the old dirs exist, we'll ask if the user
-		 * want to migrates, and r will be TRUE if he said yes
-		 * and migration succeeded, and FALSE otherwise.
-		 */
-		if (is_dir_exist(OLD_GTK2_RC_DIR)) {
-			r = migrate_old_config(OLD_GTK2_RC_DIR, get_rc_dir(),
-					       g_strconcat("Sylpheed-Claws 2.6.0 ", _("(or older)"), NULL));
-		} else if (is_dir_exist(OLDER_GTK2_RC_DIR)) {
-			r = migrate_old_config(OLDER_GTK2_RC_DIR, get_rc_dir(),
-					       g_strconcat("Sylpheed-Claws 1.9.15 ",_("(or older)"), NULL));
-		} else if (is_dir_exist(OLD_GTK1_RC_DIR)) {
-			r = migrate_old_config(OLD_GTK1_RC_DIR, get_rc_dir(),
-					       g_strconcat("Sylpheed-Claws 1.0.5 ",_("(or older)"), NULL));
-		} else if (is_dir_exist(SYLPHEED_RC_DIR)) {
-			r = migrate_old_config(SYLPHEED_RC_DIR, get_rc_dir(), "Sylpheed");
-		}
-
-		/* If migration failed or the user didn't want to do it,
-		 * we create a new one.
-		 */
-		if (r == FALSE && !is_dir_exist(get_rc_dir())) {
-#ifdef G_OS_UNIX
-			if (copy_dir(SYSCONFDIR "/skel/.claws-mail", get_rc_dir()) < 0) {
-#endif
-				if (!is_dir_exist(get_rc_dir()) && make_dir(get_rc_dir()) < 0) {
-					exit(1);
-				}
-#ifdef G_OS_UNIX
+		if (copy_dir(SYSCONFDIR "/skel/.claws-mail", get_rc_dir()) < 0) {
+			if (!is_dir_exist(get_rc_dir()) && make_dir(get_rc_dir()) < 0) {
+				exit(1);
 			}
-#endif
 		}
 	}
 
@@ -655,8 +550,7 @@ int main(int argc, char *argv[])
 	userrc = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, MENU_RC, NULL);
 
 	if (copy_file(userrc, userrc, TRUE) < 0) {
-		g_warning("can't copy %s to %s.bak",
-			  userrc, userrc);
+		g_warning("can't copy %s to %s.bak", userrc, userrc);
 	}
 
 	gtk_accel_map_load (userrc);
