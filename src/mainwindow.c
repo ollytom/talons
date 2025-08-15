@@ -47,7 +47,6 @@
 #include "procmsg.h"
 #include "import.h"
 #include "export.h"
-#include "edittags.h"
 #include "password.h"
 #include "prefs_common.h"
 #include "prefs_actions.h"
@@ -80,7 +79,6 @@
 #include "folderutils.h"
 #include "foldersort.h"
 #include "icon_legend.h"
-#include "tags.h"
 #include "textview.h"
 #include "imap.h"
 #include "news.h"
@@ -337,8 +335,6 @@ static void create_processing_cb (GtkAction	*action,
 static void prefs_template_open_cb	(GtkAction	*action,
 				  gpointer	 data);
 static void prefs_actions_open_cb	(GtkAction	*action,
-				  gpointer	 data);
-static void prefs_tags_open_cb		(GtkAction	*action,
 				  gpointer	 data);
 static void prefs_account_open_cb	(GtkAction	*action,
 				  gpointer	 data);
@@ -745,7 +741,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Configuration/Filtering",                  NULL, N_("_Filtering..."), NULL, NULL, G_CALLBACK(prefs_filtering_open_cb) },
 	{"Configuration/Templates",                  NULL, N_("_Templates..."), NULL, NULL, G_CALLBACK(prefs_template_open_cb) },
 	{"Configuration/Actions",                    NULL, N_("_Actions..."), NULL, NULL, G_CALLBACK(prefs_actions_open_cb) },
-	{"Configuration/Tags",                       NULL, N_("Tag_s..."), NULL, NULL, G_CALLBACK(prefs_tags_open_cb) },
 
 /* Help menu */
 	{"Help/Manual",                              NULL, N_("_Manual"), NULL, NULL, G_CALLBACK(manual_open_cb) },
@@ -861,120 +856,6 @@ static GtkRadioActionEntry mainwin_radio_dec_entries[] =
 static gboolean offline_ask_sync = TRUE;
 static gboolean is_obscured = FALSE;
 
-static void mainwindow_tags_menu_item_activate_item_cb(GtkMenuItem *menu_item,
-							  gpointer data)
-{
-	MainWindow *mainwin;
-	GtkMenuShell *menu;
-	GList *children, *cur;
-	GSList *sel;
-	GHashTable *menu_table = g_hash_table_new_full(
-					g_direct_hash,
-					g_direct_equal,
-					NULL, NULL);
-	GHashTable *menu_allsel_table = g_hash_table_new_full(
-					g_direct_hash,
-					g_direct_equal,
-					NULL, NULL);
-	gint sel_len;
-	mainwin = (MainWindow *)data;
-	cm_return_if_fail(mainwin != NULL);
-
-	sel = summary_get_selection(mainwin->summaryview);
-	if (!sel) return;
-
-	menu = GTK_MENU_SHELL(mainwin->tags_menu);
-	cm_return_if_fail(menu != NULL);
-
-	/* NOTE: don't return prematurely because we set the "dont_toggle"
-	 * state for check menu items */
-	g_object_set_data(G_OBJECT(menu), "dont_toggle",
-			  GINT_TO_POINTER(1));
-
-	/* clear items. get item pointers. */
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		if (GTK_IS_CHECK_MENU_ITEM(cur->data)) {
-			gint id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cur->data),
-				"tag_id"));
-			gtk_check_menu_item_set_active
-				(GTK_CHECK_MENU_ITEM(cur->data), FALSE);
-
-			g_hash_table_insert(menu_table, GINT_TO_POINTER(id), GTK_CHECK_MENU_ITEM(cur->data));
-			g_hash_table_insert(menu_allsel_table, GINT_TO_POINTER(id), GINT_TO_POINTER(0));
-		}
-	}
-
-	g_list_free(children);
-
-	/* iterate all messages and set the state of the appropriate
-	 * items */
-	sel_len = 0;
-	for (; sel != NULL; sel = sel->next) {
-		MsgInfo *msginfo;
-		GSList *tags = NULL;
-		GtkCheckMenuItem *item;
-		msginfo = (MsgInfo *)sel->data;
-		sel_len++;
-		if (msginfo) {
-			tags =  msginfo->tags;
-			if (!tags)
-				continue;
-
-			for (; tags; tags = tags->next) {
-				gint num_checked = GPOINTER_TO_INT(g_hash_table_lookup(menu_allsel_table, tags->data));
-				item = g_hash_table_lookup(menu_table, GINT_TO_POINTER(tags->data));
-				if (item && !gtk_check_menu_item_get_active(item)) {
-					gtk_check_menu_item_set_active
-						(item, TRUE);
-				}
-				num_checked++;
-				g_hash_table_replace(menu_allsel_table, tags->data, GINT_TO_POINTER(num_checked));
-			}
-		}
-	}
-
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		if (GTK_IS_CHECK_MENU_ITEM(cur->data)) {
-			gint id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cur->data),
-				"tag_id"));
-			gint num_checked = GPOINTER_TO_INT(g_hash_table_lookup(menu_allsel_table, GINT_TO_POINTER(id)));
-			if (num_checked < sel_len && num_checked > 0)
-				gtk_check_menu_item_set_inconsistent(GTK_CHECK_MENU_ITEM(cur->data), TRUE);
-			else
-				gtk_check_menu_item_set_inconsistent(GTK_CHECK_MENU_ITEM(cur->data), FALSE);
-		}
-	}
-	g_list_free(children);
-	g_slist_free(sel);
-	g_hash_table_destroy(menu_table);
-	g_hash_table_destroy(menu_allsel_table);
-	/* reset "dont_toggle" state */
-	g_object_set_data(G_OBJECT(menu), "dont_toggle",
-			  GINT_TO_POINTER(0));
-}
-
-static void mainwindow_tags_menu_item_activate_cb(GtkWidget *widget,
-						     gpointer data)
-{
-	gint id = GPOINTER_TO_INT(data);
-	gboolean set = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
-	MainWindow *mainwin;
-
-	mainwin = g_object_get_data(G_OBJECT(widget), "mainwin");
-	cm_return_if_fail(mainwin != NULL);
-
-	/* "dont_toggle" state set? */
-	if (g_object_get_data(G_OBJECT(mainwin->tags_menu),
-				"dont_toggle"))
-		return;
-
-	if (!set)
-		id = -id;
-	summary_set_tag(mainwin->summaryview, id, NULL);
-}
-
 void mainwin_accel_changed_cb (GtkAccelGroup *accelgroup, guint keyval, GdkModifierType modifier,
 				  GClosure *closure, GtkMenuItem *item)
 {
@@ -997,106 +878,6 @@ void mainwin_accel_changed_cb (GtkAccelGroup *accelgroup, guint keyval, GdkModif
 		}
 	}
 	g_list_free(closures);
-}
-
-static void mainwindow_tags_menu_item_apply_tags_activate_cb(GtkWidget *widget,
-						     gpointer data)
-{
-	MainWindow *mainwin;
-
-	mainwin = g_object_get_data(G_OBJECT(widget), "mainwin");
-	cm_return_if_fail(mainwin != NULL);
-
-	/* "dont_toggle" state set? */
-	if (g_object_get_data(G_OBJECT(mainwin->tags_menu),
-				"dont_toggle"))
-		return;
-
-	tags_window_open(summary_get_selection(mainwin->summaryview));
-}
-
-static gint mainwin_tag_cmp_list(gconstpointer a, gconstpointer b)
-{
-	gint id_a = GPOINTER_TO_INT(a);
-	gint id_b = GPOINTER_TO_INT(b);
-	const gchar *tag_a = tags_get_tag(id_a);
-	const gchar *tag_b = tags_get_tag(id_b);
-
-
- 	if (tag_a == NULL)
- 		return tag_b == NULL ? 0:1;
-
- 	if (tag_b == NULL)
- 		return 1;
-
- 	return g_utf8_collate(tag_a, tag_b);
-}
-
-static void mainwindow_tags_menu_create(MainWindow *mainwin, gboolean refresh)
-{
-	GtkWidget *label_menuitem;
-	GtkWidget *menu;
-	GtkWidget *item;
-	GSList *cur = tags_get_list();
-	GSList *orig = NULL;
-	gboolean existing_tags = FALSE;
-	gchar *accel_path;
-	cur = orig = g_slist_sort(cur, mainwin_tag_cmp_list);
-
-	label_menuitem = gtk_ui_manager_get_widget(mainwin->ui_manager, "/Menu/Message/Tags");
-	g_signal_connect(G_OBJECT(label_menuitem), "activate",
-			 G_CALLBACK(mainwindow_tags_menu_item_activate_item_cb),
-			   mainwin);
-
-	gtk_widget_show(label_menuitem);
-
-	menu = gtk_menu_new();
-	gtk_menu_set_accel_group (GTK_MENU (menu),
-		gtk_ui_manager_get_accel_group(mainwin->ui_manager));
-
-	/* create tags menu items */
-	for (; cur; cur = cur->next) {
-		gint id = GPOINTER_TO_INT(cur->data);
-		const gchar *tag = tags_get_tag(id);
-
-		item = gtk_check_menu_item_new_with_label(tag);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-		g_signal_connect(G_OBJECT(item), "activate",
-				 G_CALLBACK(mainwindow_tags_menu_item_activate_cb),
-				 GINT_TO_POINTER(id));
-		g_object_set_data(G_OBJECT(item), "mainwin",
-				  mainwin);
-		g_object_set_data(G_OBJECT(item), "tag_id",
-				  GINT_TO_POINTER(id));
-		gtk_widget_show(item);
-		accel_path = g_strconcat("<ClawsTags>/",tag, NULL);
-		gtk_menu_item_set_accel_path(GTK_MENU_ITEM(item), accel_path);
-		g_free(accel_path);
-		existing_tags = TRUE;
-	}
-	if (existing_tags) {
-		/* separator */
-		item = gtk_separator_menu_item_new();
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-		gtk_widget_show(item);
-	}
-
-	item = gtk_menu_item_new_with_label(_("Modify tags..."));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-	g_signal_connect(G_OBJECT(item), "activate",
-			 G_CALLBACK(mainwindow_tags_menu_item_apply_tags_activate_cb),
-			 NULL);
-	g_object_set_data(G_OBJECT(item), "mainwin",
-			  mainwin);
-	gtk_widget_show(item);
-	accel_path = g_strdup_printf("<ClawsTags>/ModifyTags");
-	gtk_menu_item_set_accel_path(GTK_MENU_ITEM(item), accel_path);
-	g_free(accel_path);
-	gtk_accel_map_add_entry("<ClawsTags>/ModifyTags", GDK_KEY_T, GDK_CONTROL_MASK|GDK_SHIFT_MASK);
-	g_slist_free(orig);
-	gtk_widget_show(menu);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(label_menuitem), menu);
-	mainwin->tags_menu = menu;
 }
 
 static void warning_btn_pressed(GtkButton *btn, gpointer data)
@@ -1920,8 +1701,6 @@ MainWindow *main_window_create()
 	if (prefs_common.work_offline)
 		online_switch_clicked (GTK_BUTTON(online_switch), mainwin);
 
-	mainwindow_tags_menu_create(mainwin, FALSE);
-
 	if (prefs_common.mainwin_fullscreen) {
 		cm_toggle_menu_set_active_full(mainwin->ui_manager,
 			"Menu/View/FullScreen",
@@ -2073,41 +1852,6 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 void main_window_reflect_prefs_all_now(void)
 {
 	reflect_prefs_timeout_cb(GINT_TO_POINTER(FALSE));
-}
-
-static gint tags_tag = 0;
-static gboolean main_window_reflect_tags_changes_real(gpointer data)
-{
-	GtkMenuShell *menu;
-	GList *children, *cur;
-	MainWindow *mainwin = (MainWindow *)data;
-
-	if (summary_is_locked(mainwin->summaryview)) {
-		return TRUE;
-	}
-	/* re-create tags submenu */
-	menu = GTK_MENU_SHELL(mainwin->tags_menu);
-	cm_return_val_if_fail(menu != NULL, FALSE);
-
-	/* clear items. get item pointers. */
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(cur->data), NULL);
-	}
-	g_list_free(children);
-	mainwindow_tags_menu_create(mainwin, TRUE);
-	summary_reflect_tags_changes(mainwin->summaryview);
-
-	tags_tag = 0;
-	return FALSE;
-}
-
-void main_window_reflect_tags_changes(MainWindow *mainwin)
-{
-	if (tags_tag == 0) {
-		tags_tag = g_timeout_add(100, main_window_reflect_tags_changes_real,
-						mainwin);
-	}
 }
 
 void main_window_reflect_prefs_all_real(gboolean pixmap_theme_changed)
@@ -2694,11 +2438,6 @@ SensitiveCondMask main_window_get_current_state(MainWindow *mainwin)
 
 	if (prefs_common.actions_list && g_slist_length(prefs_common.actions_list))
 		UPDATE_STATE(M_ACTIONS_EXIST);
-
-	tmp = tags_get_list();
-	if (tmp && g_slist_length(tmp))
-		UPDATE_STATE(M_TAGS_EXIST);
-	g_slist_free(tmp);
 
 	if (procmsg_have_queued_mails_fast() && !procmsg_is_sending())
 		UPDATE_STATE(M_HAVE_QUEUED_MAILS);
@@ -4657,10 +4396,6 @@ static void prefs_actions_open_cb(GtkAction *action, gpointer data)
 	prefs_actions_open(mainwin);
 }
 
-static void prefs_tags_open_cb(GtkAction *action, gpointer data)
-{
-	tags_window_open(NULL);
-}
 #ifdef USE_GNUTLS
 static void ssl_manager_open_cb(GtkAction *action, gpointer data)
 {

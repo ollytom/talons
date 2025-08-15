@@ -3690,7 +3690,6 @@ static void *imap_get_uncached_messages_thread(void *data)
 
 	if (got_alien_tags) {
 		tags_write_tags();
-		main_window_reflect_tags_changes(mainwindow_get_mainwindow());
 	}
 
 	imap_lep_set_free(seq_list);
@@ -5458,7 +5457,6 @@ bail:
 
 	if (got_alien_tags) {
 		tags_write_tags();
-		main_window_reflect_tags_changes(mainwindow_get_mainwindow());
 	}
 
 	if (flags_hash)

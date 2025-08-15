@@ -108,7 +108,6 @@
 #include "mh_gtk.h"
 #include "imap_gtk.h"
 #include "matcher.h"
-#include "tags.h"
 #include "hooks.h"
 #include "menu.h"
 #include "quicksearch.h"
@@ -602,7 +601,6 @@ int main(int argc, char *argv[])
 	prefs_logging_init();
 	prefs_receive_init();
 	prefs_send_init();
-	tags_read_tags();
 	matcher_init();
 #ifdef USE_ENCHANT
 	gtkaspell_checkers_init();
@@ -934,7 +932,6 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_receive_done();
 	prefs_logging_done();
 	prefs_send_done();
-	tags_write_tags();
 #ifdef USE_ENCHANT
 	prefs_spelling_done();
 	gtkaspell_checkers_quit();

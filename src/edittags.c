@@ -386,7 +386,6 @@ static void tags_window_close(void)
 		g_slist_free(tagswindow.msglist);
 	tagswindow.msglist = NULL;
 	TAGS_WINDOW_LOCK();
-	main_window_reflect_tags_changes(mainwindow_get_mainwindow());
 	TAGS_WINDOW_UNLOCK();
 	tags_window_list_view_clear_tags(tagswindow.taglist);
 	gtk_widget_hide(tagswindow.window);
@@ -449,7 +448,6 @@ static void tags_window_add_tag(void)
 				summary_set_tag(
 					mainwindow_get_mainwindow()->summaryview,
 					id, NULL);
-			main_window_reflect_tags_changes(mainwindow_get_mainwindow());
 			tags_window_list_view_insert_tag(tagswindow.taglist, NULL, id);
 		}
 		fis.tag_id = id;
