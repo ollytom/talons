@@ -35,7 +35,6 @@
 #include "md5.h"
 #include "prefs_account.h"
 #include "utils.h"
-#include "recv.h"
 #include "partial_download.h"
 #include "log.h"
 #include "hooks.h"

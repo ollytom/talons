@@ -37,7 +37,6 @@
 #include "nntp-thread.h"
 #include "news.h"
 #include "socket.h"
-#include "recv.h"
 #include "procmsg.h"
 #include "procheader.h"
 #include "folder.h"

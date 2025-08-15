@@ -52,7 +52,6 @@
 #include "session.h"
 #include "procmsg.h"
 #include "socket.h"
-#include "recv.h"
 #include "procheader.h"
 #include "prefs_account.h"
 #include "codeconv.h"

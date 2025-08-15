@@ -43,7 +43,6 @@
 #include "socket.h"
 #include "ssl.h"
 #include "pop.h"
-#include "recv.h"
 #include "mbox.h"
 #include "file-utils.h"
 #include "utils.h"
