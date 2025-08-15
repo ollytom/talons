@@ -333,8 +333,6 @@ static void create_filter_cb	 (GtkAction	*action,
 				  gpointer	 data);
 static void create_processing_cb (GtkAction	*action,
 				  gpointer	 data);
-static void open_urls_cb	 (GtkAction	*action,
-				  gpointer	 data);
 
 static void prefs_template_open_cb	(GtkAction	*action,
 				  gpointer	 data);
