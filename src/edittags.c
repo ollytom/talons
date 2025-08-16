@@ -250,10 +250,6 @@ static void tags_popup_delete (GtkAction *action, gpointer data)
 		return;
 
 	gtk_list_store_remove(GTK_LIST_STORE(model), &sel);
-	if (mainwindow_get_mainwindow() != NULL)
-		summaryview = mainwindow_get_mainwindow()->summaryview;
-	if (summaryview)
-		summary_set_tag(summaryview, -id, NULL);
 	tags_remove_tag(id);
 	tags_write_tags();
 	TAGS_WINDOW_UNLOCK();
@@ -276,15 +272,6 @@ static void tags_popup_delete_all (GtkAction *action, gpointer data)
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(tagswindow.taglist));
 	gtk_list_store_clear(GTK_LIST_STORE(model));
 
-	if (mainwindow_get_mainwindow() != NULL)
-		summaryview = mainwindow_get_mainwindow()->summaryview;
-	cur = tags = tags_get_list();
-	for (; cur; cur = cur->next) {
-		gint id = GPOINTER_TO_INT(cur->data);
-		if (summaryview)
-			summary_set_tag(summaryview, -id, NULL);
-		tags_remove_tag(id);
-	}
 	g_slist_free(tags);
 	tags_write_tags();
 
@@ -444,10 +431,6 @@ static void tags_window_add_tag(void)
 		if (id == -1) {
 			id = tags_add_tag(new_tag);
 			tags_write_tags();
-			if (mainwindow_get_mainwindow())
-				summary_set_tag(
-					mainwindow_get_mainwindow()->summaryview,
-					id, NULL);
 			tags_window_list_view_insert_tag(tagswindow.taglist, NULL, id);
 		}
 		fis.tag_id = id;
@@ -462,10 +445,6 @@ static void tags_window_add_tag(void)
 			GtkTreeModel *model = gtk_tree_view_get_model(
 				GTK_TREE_VIEW(tagswindow.taglist));
 
-			if (mainwindow_get_mainwindow())
-				summary_set_tag(
-					mainwindow_get_mainwindow()->summaryview,
-					id, NULL);
 			selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tagswindow.taglist));
 			gtk_tree_selection_select_iter(selection, &fis.iter);
 			path = gtk_tree_model_get_path(model, &fis.iter);
@@ -691,8 +670,6 @@ static void tags_selected_toggled(GtkCellRendererToggle *widget,
 			   -1);
 
 	TAGS_WINDOW_LOCK();
-	if (summaryview)
-		summary_set_tag(summaryview, set ? tag_id : -tag_id, NULL);
 	TAGS_WINDOW_UNLOCK();
 }
 
@@ -727,23 +704,12 @@ static void tags_selected_edited(GtkCellRendererText *widget,
 	tag_id = GPOINTER_TO_INT(tmp);
 
 	TAGS_WINDOW_LOCK();
-	if (selected) {
-		if (summaryview)
-			summary_set_tag(summaryview, -tag_id, NULL);
-	}
 
 	tags_update_tag(tag_id, new_text);
 
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 			   TAG_NAME, new_text,
 			   -1);
-	if (selected) {
-		if (summaryview)
-			summary_set_tag(summaryview, tag_id, NULL);
-	} else  {
-		if (summaryview)
-			summary_set_tag(summaryview, 0, NULL);
-	}
 	TAGS_WINDOW_UNLOCK();
 }
 

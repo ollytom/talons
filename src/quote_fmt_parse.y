@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 %{
@@ -154,7 +154,7 @@ gint quote_fmt_get_line(void)
 
 gint quote_fmt_get_cursor_pos(void)
 {
-	return cursor_pos;	
+	return cursor_pos;
 }
 
 #define INSERT(buf) \
@@ -222,7 +222,7 @@ void quote_fmt_init(MsgInfo *info, const gchar *my_quote_str,
 	escaped_string = string_is_escaped;
 
 	if (!var_table)
-		var_table = g_hash_table_new_full(g_str_hash, g_str_equal, 
+		var_table = g_hash_table_new_full(g_str_hash, g_str_equal,
 				g_free, g_free);
 
         /*
@@ -293,28 +293,28 @@ static void quote_fmt_show_date(const MsgInfo *msginfo, const gchar *format)
 
 	if (!msginfo->date)
 		return;
-	
-	/* 
-	 * ALF - GNU C's strftime() has a nice format specifier 
-	 * for time zone offset (%z). Non-standard however, so 
+
+	/*
+	 * ALF - GNU C's strftime() has a nice format specifier
+	 * for time zone offset (%z). Non-standard however, so
 	 * emulate it.
 	 */
 
-#define RLEFT (sizeof result) - (rptr - result)	
+#define RLEFT (sizeof result) - (rptr - result)
 
 	zone[0] = 0;
     result[0] = '\0';
 
 	if (procheader_date_parse_to_tm(msginfo->date, &lt, zone)) {
 		/*
-		 * break up format string in tiny bits delimited by valid %z's and 
+		 * break up format string in tiny bits delimited by valid %z's and
 		 * feed it to strftime(). don't forget that '%%z' mean literal '%z'.
 		 */
 		for (rptr = result, fptr = format; fptr && *fptr && rptr < &result[sizeof result - 1];) {
 			int	    perc, zlen;
 			const char *p;
 			char	   *tmp;
-			
+
 			if (NULL != (zptr = strtzspec(fptr, &zlen))) {
 				/*
 				 * count nr. of prepended percent chars
@@ -332,7 +332,7 @@ static void quote_fmt_show_date(const MsgInfo *msginfo, const gchar *format)
 				/*
 				 * append time zone offset
 				 */
-				if (zone[0] && perc % 2) 
+				if (zone[0] && perc % 2)
 					rptr += g_snprintf(rptr, RLEFT, "%s", zone);
 				fptr = zptr + zlen;
 			} else {
@@ -340,18 +340,18 @@ static void quote_fmt_show_date(const MsgInfo *msginfo, const gchar *format)
 				fptr  = NULL;
 			}
 		}
-		
+
 		if (g_utf8_validate(result, -1, NULL)) {
 			INSERT(result);
 		} else {
-			gchar *utf = conv_codeset_strdup(result, 
+			gchar *utf = conv_codeset_strdup(result,
 				conv_get_locale_charset_str_no_utf8(),
 				CS_INTERNAL);
-			if (utf == NULL || 
+			if (utf == NULL ||
 			    !g_utf8_validate(utf, -1, NULL)) {
 				g_free(utf);
 				utf = g_malloc(strlen(result)*2+1);
-				conv_localetodisp(utf, 
+				conv_localetodisp(utf,
 					strlen(result)*2+1, result);
 			}
 			if (g_utf8_validate(utf, -1, NULL)) {
@@ -360,8 +360,8 @@ static void quote_fmt_show_date(const MsgInfo *msginfo, const gchar *format)
 			g_free(utf);
 		}
 	}
-#undef RLEFT			
-}		
+#undef RLEFT
+}
 
 static void quote_fmt_show_first_name(const MsgInfo *msginfo)
 {
@@ -369,8 +369,8 @@ static void quote_fmt_show_first_name(const MsgInfo *msginfo)
 	gchar *str;
 
 	if (!msginfo->fromname)
-		return;	
-	
+		return;
+
 	p = (guchar*)strchr(msginfo->fromname, ',');
 	if (p != NULL) {
 		/* fromname is like "Duck, Donald" */
@@ -401,7 +401,7 @@ static void quote_fmt_show_last_name(const MsgInfo *msginfo)
 
 	/* This probably won't work together very well with Middle
            names and the like - thth */
-	if (!msginfo->fromname) 
+	if (!msginfo->fromname)
 		return;
 
 	str = alloca(strlen(msginfo->fromname) + 1);
@@ -417,20 +417,20 @@ static void quote_fmt_show_last_name(const MsgInfo *msginfo)
 			p = str;
 			while (*p && !isspace(*p)) p++;
 			if (*p) {
-			    /* We found a space. Get first 
+			    /* We found a space. Get first
 			     none-space char and insert
 			     rest of string from there. */
 			    while (*p && isspace(*p)) p++;
 			    if (*p) {
 				INSERT(p);
 			    } else {
-				/* If there is no none-space 
-				 char, just insert whole 
+				/* If there is no none-space
+				 char, just insert whole
 				 fromname. */
 				INSERT(str);
 			    }
 			} else {
-			    /* If there is no space, just 
+			    /* If there is no space, just
 			     insert whole fromname. */
 			    INSERT(str);
 			}
@@ -446,7 +446,7 @@ static void quote_fmt_show_sender_initial(const MsgInfo *msginfo)
 	gchar *cur;
 	gint len = 0;
 
-	if (!msginfo->fromname) 
+	if (!msginfo->fromname)
 		return;
 
 	p = (guchar *)msginfo->fromname;
@@ -495,10 +495,10 @@ static void quote_fmt_show_msg(MsgInfo *msginfo, const gchar *body,
 
 			if (!signature && account_sigsep_matchlist_nchar_found(buf, "%s\n"))
 				break;
-		
+
 			if (quoted && quote_str)
 				INSERT(quote_str);
-			
+
 			INSERT(buf);
 		}
 		account_sigsep_matchlist_delete();
@@ -510,7 +510,7 @@ static void quote_fmt_insert_file(const gchar *filename)
 {
 	FILE *file;
 	char buffer[PATH_MAX];
-	
+
 	if ((file = g_fopen(filename, "rb")) != NULL) {
 		while (fgets(buffer, sizeof(buffer), file)) {
 			INSERT(buffer);
@@ -538,7 +538,7 @@ static void quote_fmt_insert_user_input(const gchar *varname)
     gchar *buf = NULL;
     gchar *text = NULL;
 
-    if (dry_run) 
+    if (dry_run)
 	    return;
 
     if ((text = g_hash_table_lookup(var_table, varname)) == NULL) {
@@ -719,7 +719,7 @@ string:
 	| string CHARACTER
 	{
 		size_t len;
-		
+
 		strncpy($$, $1, sizeof($$));
 		$$[sizeof($$) - 1] = '\0';
 		len = strlen($$);
@@ -870,14 +870,6 @@ special:
 #ifdef USE_ENCHANT
 		INSERT(default_dictionary);
 #endif
-	}
-	| SHOW_TAGS
-	{
-		gchar *tags = procmsg_msginfo_get_tags_str(msginfo);
-		if (tags) {
-			INSERT(tags);
-		}
-		g_free(tags);
 	}
 	| SHOW_BACKSLASH
 	{

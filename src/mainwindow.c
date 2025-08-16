@@ -665,10 +665,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Message/Marks/Lock",                       NULL, N_("Lock"), NULL, NULL, G_CALLBACK(lock_msgs_cb) },
 	{"Message/Marks/Unlock",                     NULL, N_("Unlock"), NULL, NULL, G_CALLBACK(unlock_msgs_cb) },
 
-	{"Message/ColorLabel",                       NULL, N_("Color la_bel"), NULL, NULL, NULL },
-	{"Message/Tags",                             NULL, N_("Ta_gs"), NULL, NULL, NULL },
-	/*{"Message/---",                            NULL, "---", NULL, NULL, NULL },*/
-
 	{"Message/Reedit",                           NULL, N_("Re-_edit"), NULL, NULL, G_CALLBACK(reedit_cb) },
 	/*{"Message/---",                            NULL, "---", NULL, NULL, NULL },*/
 
@@ -791,8 +787,6 @@ static GtkRadioActionEntry mainwin_sort_radio_entries[] = { /* sort_summary_cb *
 	{"View/Sort/From",                       NULL, N_("By _From"), NULL, NULL, SORT_BY_FROM }, /* radio SORT_BY_FROM */
 	{"View/Sort/To",                         NULL, N_("By _To"), NULL, NULL, SORT_BY_TO }, /* radio SORT_BY_TO */
 	{"View/Sort/Subject",                    NULL, N_("By s_ubject"), NULL, NULL, SORT_BY_SUBJECT }, /* radio SORT_BY_SUBJECT */
-	{"View/Sort/Color",                      NULL, N_("By _color label"), NULL, NULL, SORT_BY_LABEL }, /* radio SORT_BY_LABEL */
-	{"View/Sort/Tag",                        NULL, N_("By tag"), NULL, NULL, SORT_BY_TAGS }, /* radio SORT_BY_TAGS */
 	{"View/Sort/Mark",                       NULL, N_("By _mark"), NULL, NULL, SORT_BY_MARK }, /* radio SORT_BY_MARK */
 	{"View/Sort/Status",                     NULL, N_("By _status"), NULL, NULL, SORT_BY_STATUS }, /* radio SORT_BY_STATUS */
 	{"View/Sort/Attachment",                 NULL, N_("By a_ttachment"), NULL, NULL, SORT_BY_MIME }, /* radio SORT_BY_MIME */
@@ -1137,8 +1131,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "From", "View/Sort/From", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "To", "View/Sort/To", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "Subject", "View/Sort/Subject", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "Color", "View/Sort/Color", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "Tag", "View/Sort/Tag", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "Mark", "View/Sort/Mark", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "Status", "View/Sort/Status", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View/Sort", "Attachment", "View/Sort/Attachment", GTK_UI_MANAGER_MENUITEM)
@@ -1336,8 +1328,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "Separator5", "Message/Marks/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "Lock", "Message/Marks/Lock", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "Unlock", "Message/Marks/Unlock", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "ColorLabel", "Message/ColorLabel", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "Tags", "Message/Tags", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "Separator5", "Message/---", GTK_UI_MANAGER_SEPARATOR)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "Reedit", "Message/Reedit", GTK_UI_MANAGER_MENUITEM)
@@ -1408,7 +1398,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Filtering", "Configuration/Filtering", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Templates", "Configuration/Templates", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Actions", "Configuration/Actions", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Tags", "Configuration/Tags", GTK_UI_MANAGER_MENUITEM)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Separator2", "Configuration/---", GTK_UI_MANAGER_SEPARATOR)
 
@@ -2631,8 +2620,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	SET_SENSITIVE("Menu/Message/Marks/UnignoreThread", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/Message/Marks/Lock", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/Message/Marks/Unlock", M_TARGET_EXIST);
-	SET_SENSITIVE("Menu/Message/ColorLabel", M_TARGET_EXIST);
-	SET_SENSITIVE("Menu/Message/Tags", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/Message/Reedit", M_HAVE_ACCOUNT, M_ALLOW_REEDIT);
 	SET_SENSITIVE("Menu/Message/CheckSignature", M_SINGLE_TARGET_EXIST);
 
@@ -2699,8 +2686,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 		menu_path = "Menu/View/Sort/To"; break;
 	case SORT_BY_SUBJECT:
 		menu_path = "Menu/View/Sort/Subject"; break;
-	case SORT_BY_LABEL:
-		menu_path = "Menu/View/Sort/Color"; break;
 	case SORT_BY_MARK:
 		menu_path = "Menu/View/Sort/Mark"; break;
 	case SORT_BY_STATUS:
@@ -2711,8 +2696,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 		menu_path = "Menu/View/Sort/Score"; break;
 	case SORT_BY_LOCKED:
 		menu_path = "Menu/View/Sort/Locked"; break;
-	case SORT_BY_TAGS:
-		menu_path = "Menu/View/Sort/Tag"; break;
 	case SORT_BY_NONE:
 	default:
 		menu_path = "Menu/View/Sort/DontSort"; break;

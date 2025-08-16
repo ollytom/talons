@@ -325,23 +325,6 @@ static gboolean filteringaction_apply(FilteringAction * action, MsgInfo * info)
 		info->to_filter_folder = dest_folder;
 		return TRUE;
 
-	case MATCHACTION_SET_TAG:
-	case MATCHACTION_UNSET_TAG:
-		val = tags_get_id_for_str(action->destination);
-		if (val == -1) {
-			debug_print("*** tag '%s' not found\n",
-				action->destination ?action->destination :"(null)");
-			return FALSE;
-		}
-		FLUSH_COPY_IF_NEEDED(info);
-		procmsg_msginfo_update_tags(info, (action->type == MATCHACTION_SET_TAG), val);
-		return TRUE;
-
-	case MATCHACTION_CLEAR_TAGS:
-		FLUSH_COPY_IF_NEEDED(info);
-		procmsg_msginfo_clear_tags(info);
-		return TRUE;
-
 	case MATCHACTION_DELETE:
 		FLUSH_COPY_IF_NEEDED(info);
 		info->filter_op = IS_DELE;

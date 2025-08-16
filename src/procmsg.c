@@ -47,7 +47,6 @@
 #include "mainwindow.h"
 #include "summaryview.h"
 #include "log.h"
-#include "tags.h"
 #include "inc.h"
 #include "privacy.h"
 #include "file-utils.h"
@@ -1560,17 +1559,16 @@ static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_ses
 				       {NULL,    NULL, FALSE}};
 	FILE *fp;
 	gint filepos;
-	gint mailval = 0, newsval = 0;
+	gint mailval = 0;
 	gchar *from = NULL;
 	gchar *smtpserver = NULL;
 	GSList *to_list = NULL;
-	GSList *newsgroup_list = NULL;
 	gchar *savecopyfolder = NULL;
 	gchar *replymessageid = NULL;
 	gchar *fwdmessageid = NULL;
 	gchar *buf;
 	gint hnum;
-	PrefsAccount *mailac = NULL, *newsac = NULL;
+	PrefsAccount *mailac = NULL;
 	gboolean encrypt = FALSE;
 	FolderItem *outbox;
 
@@ -1600,14 +1598,8 @@ static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_ses
 		case Q_RECIPIENTS:
 			to_list = address_list_append(to_list, p);
 			break;
-		case Q_NEWSGROUPS:
-			newsgroup_list = newsgroup_list_append(newsgroup_list, p);
-			break;
 		case Q_MAIL_ACCOUNT_ID:
 			mailac = account_find_from_id(atoi(p));
-			break;
-		case Q_NEWS_ACCOUNT_ID:
-			newsac = account_find_from_id(atoi(p));
 			break;
 		case Q_SAVE_COPY_FOLDER:
 			if (savecopyfolder == NULL)
@@ -1690,7 +1682,7 @@ send_mail:
 				}
 			}
 		}
-	} else if (!to_list && !newsgroup_list) {
+	} else if (!to_list) {
 		if (errstr) {
 			if (*errstr) g_free(*errstr);
 			*errstr = g_strdup(_("Couldn't determine sending information. "
@@ -1704,58 +1696,10 @@ send_mail:
 		mailval = -1;
 	}
 
-	if (newsgroup_list && newsac && (mailval == 0)) {
-		Folder *folder;
-		gchar *tmp = NULL;
-		gchar buf[BUFFSIZE];
-		FILE *tmpfp;
-
-    		/* write to temporary file */
-    		tmp = g_strdup_printf("%s%cnntp%p", get_tmp_dir(),
-                    	    G_DIR_SEPARATOR, file);
-    		if ((tmpfp = g_fopen(tmp, "wb")) == NULL) {
-            		FILE_OP_ERROR(tmp, "g_fopen");
-            		newsval = -1;
-			alertpanel_error(_("Couldn't create temporary file for news sending."));
-    		} else {
-    			if (change_file_mode_rw(tmpfp, tmp) < 0) {
-            			FILE_OP_ERROR(tmp, "chmod");
-				g_warning("can't change file mode");
-    			}
-
-			while ((newsval == 0) && fgets(buf, sizeof(buf), fp) != NULL) {
-				if (fputs(buf, tmpfp) == EOF) {
-					FILE_OP_ERROR(tmp, "fputs");
-					newsval = -1;
-					if (errstr) {
-						if (*errstr) g_free(*errstr);
-						*errstr = g_strdup_printf(_("Error when writing temporary file for news sending."));
-					}
-				}
-			}
-			safe_fclose(tmpfp);
-
-			if (newsval == 0) {
-				debug_print("Sending message by news\n");
-
-				folder = FOLDER(newsac->folder);
-
-    				newsval = news_post(folder, tmp);
-    				if (newsval < 0 && errstr)  {
-					if (*errstr) g_free(*errstr);
-					*errstr = g_strdup_printf(_("Error occurred while posting the message to %s."),
-                            		 newsac->nntp_server);
-				}
-			}
-			unlink(tmp);
-		}
-		g_free(tmp);
-	}
-
 	fclose(fp);
 
 	/* save message to outbox */
-	if (mailval == 0 && newsval == 0 && savecopyfolder) {
+	if (mailval == 0 && savecopyfolder) {
 		debug_print("saving sent message to %s...\n", savecopyfolder);
 
 		if (!encrypt || !mailac->save_encrypted_as_clear_text) {
@@ -1842,12 +1786,11 @@ send_mail:
 	g_free(from);
 	g_free(smtpserver);
 	slist_free_strings_full(to_list);
-	slist_free_strings_full(newsgroup_list);
 	g_free(savecopyfolder);
 	g_free(replymessageid);
 	g_free(fwdmessageid);
 
-	return (newsval != 0 ? newsval : mailval);
+	return (mailval);
 }
 
 gint procmsg_send_message_queue(const gchar *file, gchar **errstr, FolderItem *queue, gint msgnum, gboolean *queued_removed)
@@ -2502,67 +2445,3 @@ gboolean procmsg_have_trashed_mails_fast (void)
 	return result;
 }
 
-gchar *procmsg_msginfo_get_tags_str(MsgInfo *msginfo)
-{
-	GSList *cur = NULL;
-	gchar *tags = NULL;
-
-	if (!msginfo)
-		return NULL;
-
-	if (msginfo->tags == NULL)
-		return NULL;
-	for (cur = msginfo->tags; cur; cur = cur->next) {
-		const gchar *tag = tags_get_tag(GPOINTER_TO_INT(cur->data));
-		if (!tag)
-			continue;
-		if (!tags)
-			tags = g_strdup(tag);
-		else {
-			int olen = strlen(tags);
-			int nlen = olen + strlen(tag) + 2 /* strlen(", ") */;
-			tags = g_realloc(tags, nlen+1);
-			if (!tags)
-				return NULL;
-			strcpy(tags+olen, ", ");
-			strcpy(tags+olen+2, tag);
-			tags[nlen]='\0';
-		}
-	}
-	return tags;
-}
-
-void procmsg_msginfo_update_tags(MsgInfo *msginfo, gboolean set, gint id)
-{
-	GSList changed;
-
-	if (id == 0)
-		return;
-
-	if (!set) {
-		msginfo->tags = g_slist_remove(
-					msginfo->tags,
-					GINT_TO_POINTER(id));
-		changed.data = GINT_TO_POINTER(id);
-		changed.next = NULL;
-		folder_item_commit_tags(msginfo->folder, msginfo, NULL, &changed);
-	} else {
-		if (!g_slist_find(msginfo->tags, GINT_TO_POINTER(id))) {
-			msginfo->tags = g_slist_append(
-					msginfo->tags,
-					GINT_TO_POINTER(id));
-		}
-		changed.data = GINT_TO_POINTER(id);
-		changed.next = NULL;
-		folder_item_commit_tags(msginfo->folder, msginfo, &changed, NULL);
-	}
-
-}
-
-void procmsg_msginfo_clear_tags(MsgInfo *msginfo)
-{
-	GSList *unset = msginfo->tags;
-	msginfo->tags = NULL;
-	folder_item_commit_tags(msginfo->folder, msginfo, NULL, unset);
-	g_slist_free(unset);
-}

@@ -70,9 +70,7 @@
 #include "folderutils.h"
 #include "quicksearch.h"
 #include "partial_download.h"
-#include "tags.h"
 #include "log.h"
-#include "edittags.h"
 #include "manual.h"
 #include "manage_window.h"
 #include "avatars.h"
@@ -168,11 +166,6 @@ static void summary_display_msg_full	(SummaryView		*summaryview,
 static void summary_set_row_marks	(SummaryView		*summaryview,
 					 GtkCMCTreeNode		*row);
 
-static gboolean summary_set_row_tag	(SummaryView 		*summaryview,
-					 GtkCMCTreeNode 		*row,
-					 gboolean		 refresh,
-					 gboolean 		 set,
-					 gint 			 id);
 /* message handling */
 static void summary_mark_row		(SummaryView		*summaryview,
 					 GtkCMCTreeNode		*row);
@@ -223,15 +216,6 @@ void summary_simplify_subject(SummaryView *summaryview, gchar * rexp,
 
 static void summary_filter_func		(MsgInfo		*msginfo,
 					 PrefsAccount		*ac_prefs);
-
-static void summary_tags_menu_item_activate_cb
-					  (GtkWidget	*widget,
-					   gpointer	 data);
-static void summary_tags_menu_item_activate_item_cb
-					  (GtkMenuItem	*label_menu_item,
-					   gpointer	 data);
-static void summary_tags_menu_create(SummaryView	*summaryview,
-					   gboolean  refresh);
 
 static GtkWidget *summary_ctree_create	(SummaryView	*summaryview);
 
@@ -294,8 +278,6 @@ static void summary_subject_clicked	(GtkWidget		*button,
 static void summary_score_clicked	(GtkWidget		*button,
 					 SummaryView		*summaryview);
 static void summary_locked_clicked	(GtkWidget		*button,
-					 SummaryView		*summaryview);
-static void summary_tags_clicked	(GtkWidget		*button,
 					 SummaryView		*summaryview);
 
 static void summary_start_drag		(GtkWidget        *widget,
@@ -368,9 +350,6 @@ static gint summary_cmp_by_subject	(GtkCMCList		*clist,
 					 gconstpointer		 ptr1,
 					 gconstpointer		 ptr2);
 static gint summary_cmp_by_locked	(GtkCMCList 		*clist,
-				         gconstpointer 		 ptr1,
-					 gconstpointer 		 ptr2);
-static gint summary_cmp_by_tags		(GtkCMCList 		*clist,
 				         gconstpointer 		 ptr1,
 					 gconstpointer 		 ptr2);
 
@@ -962,7 +941,6 @@ void summary_init(SummaryView *summaryview)
 	summaryview->simplify_subject_preg = NULL;
 	summary_clear_list(summaryview);
 	summary_set_column_titles(summaryview);
-	summary_tags_menu_create(summaryview, FALSE);
 	main_create_mailing_list_menu (summaryview->mainwin, NULL);
 	summary_set_menu_sensitive(summaryview);
 
@@ -2829,38 +2807,6 @@ static void summary_set_column_titles(SummaryView *summaryview)
 	}
 }
 
-void summary_reflect_tags_changes(SummaryView *summaryview)
-{
-	GtkMenuShell *menu;
-	GList *children, *cur;
-	GtkCMCTreeNode *node;
-	GtkCMCTree *ctree = GTK_CMCTREE(summaryview->ctree);
-	gboolean froze = FALSE;
-	gboolean redisplay = FALSE;
-
-	menu = GTK_MENU_SHELL(summaryview->tags_menu);
-	cm_return_if_fail(menu != NULL);
-
-	/* clear items. get item pointers. */
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(cur->data), NULL);
-	}
-	g_list_free(children);
-	summary_tags_menu_create(summaryview, TRUE);
-
-	START_LONG_OPERATION(summaryview, TRUE);
-	for (node = GTK_CMCTREE_NODE(GTK_CMCLIST(ctree)->row_list); node != NULL;
-	     node = gtkut_ctree_node_next(ctree, node)) {
-		redisplay |= summary_set_row_tag(summaryview,
-					   node, TRUE, FALSE, 0);
-	}
-	END_LONG_OPERATION(summaryview);
-	if (redisplay)
-		summary_redisplay_msg(summaryview);
-}
-
-
 void summary_reflect_prefs(void)
 {
 	static gchar *last_smallfont = NULL;
@@ -2961,9 +2907,6 @@ void summary_sort(SummaryView *summaryview,
 		break;
 	case SORT_BY_LOCKED:
 		cmp_func = (GtkCMCListCompareFunc)summary_cmp_by_locked;
-		break;
-	case SORT_BY_TAGS:
-		cmp_func = (GtkCMCListCompareFunc)summary_cmp_by_tags;
 		break;
 	case SORT_BY_NONE:
 		break;
@@ -3296,7 +3239,7 @@ static inline void summary_set_header(SummaryView *summaryview, gchar *text[],
 	static gchar from_buf[BUFFSIZE], to_buf[BUFFSIZE];
 	static gchar tmp1[BUFFSIZE], tmp2[BUFFSIZE+4], tmp3[BUFFSIZE];
 	gint *col_pos = summaryview->col_pos;
-	gchar *from_text = NULL, *to_text = NULL, *tags_text = NULL;
+	gchar *from_text = NULL, *to_text = NULL;
 	gboolean should_swap = FALSE;
 	gboolean vert_layout = (prefs_common.layout_mode == VERTICAL_LAYOUT);
 	gboolean small_layout = (prefs_common.layout_mode == SMALL_LAYOUT);
@@ -3327,19 +3270,6 @@ static inline void summary_set_header(SummaryView *summaryview, gchar *text[],
 		text[col_pos[S_COL_SCORE]] = itos_buf(col_score, msginfo->score);
 	else
 		text[col_pos[S_COL_SCORE]] = "";
-
-	if (summaryview->col_state[summaryview->col_pos[S_COL_TAGS]].visible) {
-		tags_text = procmsg_msginfo_get_tags_str(msginfo);
-		if (!tags_text) {
-			text[col_pos[S_COL_TAGS]] = "-";
-		} else {
-			strncpy2(tmp1, tags_text, sizeof(tmp1));
-			tmp1[sizeof(tmp1)-1]='\0';
-			g_free(tags_text);
-			text[col_pos[S_COL_TAGS]] = tmp1;
-		}
-	} else
-		text[col_pos[S_COL_TAGS]] = "";
 
 	/* slow! */
 	if (summaryview->col_state[summaryview->col_pos[S_COL_DATE]].visible ||
@@ -5846,169 +5776,6 @@ void summary_filter_open(SummaryView *summaryview, PrefsFilterType type,
 	summary_msginfo_filter_open(item, msginfo, type, processing_rule);
 }
 
-static gboolean summary_set_row_tag(SummaryView *summaryview, GtkCMCTreeNode *row, gboolean refresh, gboolean set, gint id)
-{
-	GtkCMCTree *ctree = GTK_CMCTREE(summaryview->ctree);
-	MsgInfo *msginfo;
-	gchar *tags_str = NULL;
-	msginfo = gtk_cmctree_node_get_row_data(ctree, row);
-	cm_return_val_if_fail(msginfo, FALSE);
-
-	procmsg_msginfo_update_tags(msginfo, set, id);
-
-	if (summaryview->col_state[summaryview->col_pos[S_COL_TAGS]].visible) {
-		tags_str = procmsg_msginfo_get_tags_str(msginfo);
-		gtk_cmctree_node_set_text(ctree, row,
-				summaryview->col_pos[S_COL_TAGS],
-				tags_str?tags_str:"-");
-		g_free(tags_str);
-	}
-
-	summary_set_row_marks(summaryview, row);
-	if (row == summaryview->displayed) {
-		return TRUE;
-	}
-	return FALSE;
-}
-
-void summary_set_tag(SummaryView *summaryview, gint tag_id,
-			    GtkWidget *widget)
-{
-	GtkCMCTree *ctree = GTK_CMCTREE(summaryview->ctree);
-	GList *cur;
-	gboolean set = tag_id > 0;
-	gint real_id = set? tag_id:-tag_id;
-	gboolean froze = FALSE;
-	gboolean redisplay = FALSE;
-
-	if (summary_is_locked(summaryview))
-		return;
-	START_LONG_OPERATION(summaryview, FALSE);
-	folder_item_set_batch(summaryview->folder_item, TRUE);
-	for (cur = GTK_CMCLIST(ctree)->selection; cur != NULL && cur->data != NULL; cur = cur->next) {
-		redisplay |= summary_set_row_tag(summaryview,
-					   GTK_CMCTREE_NODE(cur->data), FALSE, set, real_id);
-	}
-	folder_item_set_batch(summaryview->folder_item, FALSE);
-	END_LONG_OPERATION(summaryview);
-	if (redisplay)
-		summary_redisplay_msg(summaryview);
-}
-
-static void summary_tags_menu_item_activate_cb(GtkWidget *widget,
-						     gpointer data)
-{
-	gint id = GPOINTER_TO_INT(data);
-	gboolean set = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
-	SummaryView *summaryview;
-
-	summaryview = g_object_get_data(G_OBJECT(widget), "summaryview");
-	cm_return_if_fail(summaryview != NULL);
-
-	/* "dont_toggle" state set? */
-	if (g_object_get_data(G_OBJECT(summaryview->tags_menu),
-				"dont_toggle"))
-		return;
-
-	if (!set)
-		id = -id;
-	summary_set_tag(summaryview, id, NULL);
-}
-
-static void summary_tags_menu_item_activate_item_cb(GtkMenuItem *menu_item,
-							  gpointer data)
-{
-	GtkMenuShell *menu;
-	GList *children, *cur;
-	GList *sel;
-	GHashTable *menu_table = g_hash_table_new_full(
-					g_direct_hash,
-					g_direct_equal,
-					NULL, NULL);
-	GHashTable *menu_allsel_table = g_hash_table_new_full(
-					g_direct_hash,
-					g_direct_equal,
-					NULL, NULL);
-	gint sel_len;
-	SummaryView *summaryview = (SummaryView *)data;
-	cm_return_if_fail(summaryview != NULL);
-
-	sel = GTK_CMCLIST(summaryview->ctree)->selection;
-	if (!sel) return;
-
-	menu = GTK_MENU_SHELL(summaryview->tags_menu);
-	cm_return_if_fail(menu != NULL);
-
-	/* NOTE: don't return prematurely because we set the "dont_toggle"
-	 * state for check menu items */
-	g_object_set_data(G_OBJECT(menu), "dont_toggle",
-			  GINT_TO_POINTER(1));
-
-	/* clear items. get item pointers. */
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		if (GTK_IS_CHECK_MENU_ITEM(cur->data)) {
-			gint id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cur->data),
-				"tag_id"));
-			gtk_check_menu_item_set_active
-				(GTK_CHECK_MENU_ITEM(cur->data), FALSE);
-
-			g_hash_table_insert(menu_table, GINT_TO_POINTER(id), GTK_CHECK_MENU_ITEM(cur->data));
-			g_hash_table_insert(menu_allsel_table, GINT_TO_POINTER(id), GINT_TO_POINTER(0));
-		}
-	}
-
-	g_list_free(children);
-
-	/* iterate all messages and set the state of the appropriate
-	 * items */
-	sel_len = 0;
-	for (; sel != NULL; sel = sel->next) {
-		MsgInfo *msginfo;
-		GSList *tags = NULL;
-		GtkCheckMenuItem *item;
-		msginfo = gtk_cmctree_node_get_row_data
-			(GTK_CMCTREE(summaryview->ctree),
-			 GTK_CMCTREE_NODE(sel->data));
-		sel_len++;
-		if (msginfo) {
-			tags =  msginfo->tags;
-			if (!tags)
-				continue;
-
-			for (; tags; tags = tags->next) {
-				gint num_checked = GPOINTER_TO_INT(g_hash_table_lookup(menu_allsel_table, tags->data));
-				item = g_hash_table_lookup(menu_table, GINT_TO_POINTER(tags->data));
-				if (item && !gtk_check_menu_item_get_active(item)) {
-					gtk_check_menu_item_set_active
-						(item, TRUE);
-				}
-				num_checked++;
-				g_hash_table_replace(menu_allsel_table, tags->data, GINT_TO_POINTER(num_checked));
-			}
-		}
-	}
-
-	children = gtk_container_get_children(GTK_CONTAINER(menu));
-	for (cur = children; cur != NULL && cur->data != NULL; cur = cur->next) {
-		if (GTK_IS_CHECK_MENU_ITEM(cur->data)) {
-			gint id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(cur->data),
-				"tag_id"));
-			gint num_checked = GPOINTER_TO_INT(g_hash_table_lookup(menu_allsel_table, GINT_TO_POINTER(id)));
-			if (num_checked < sel_len && num_checked > 0)
-				gtk_check_menu_item_set_inconsistent(GTK_CHECK_MENU_ITEM(cur->data), TRUE);
-			else
-				gtk_check_menu_item_set_inconsistent(GTK_CHECK_MENU_ITEM(cur->data), FALSE);
-		}
-	}
-	g_list_free(children);
-	g_hash_table_destroy(menu_table);
-	g_hash_table_destroy(menu_allsel_table);
-	/* reset "dont_toggle" state */
-	g_object_set_data(G_OBJECT(menu), "dont_toggle",
-			  GINT_TO_POINTER(0));
-}
-
 void summaryview_destroy(SummaryView *summaryview)
 {
 	if(summaryview->simplify_subject_preg) {
@@ -6016,105 +5783,6 @@ void summaryview_destroy(SummaryView *summaryview)
 		g_free(summaryview->simplify_subject_preg);
 		summaryview->simplify_subject_preg = NULL;
 	}
-}
-static void summary_tags_menu_item_apply_tags_activate_cb(GtkWidget *widget,
-						     gpointer data)
-{
-	SummaryView *summaryview;
-
-	summaryview = g_object_get_data(G_OBJECT(widget), "summaryview");
-	cm_return_if_fail(summaryview != NULL);
-
-	/* "dont_toggle" state set? */
-	if (g_object_get_data(G_OBJECT(summaryview->tags_menu),
-				"dont_toggle"))
-		return;
-
-	tags_window_open(summary_get_selection(summaryview));
-}
-
-static gint summary_tag_cmp_list(gconstpointer a, gconstpointer b)
-{
-	gint id_a = GPOINTER_TO_INT(a);
-	gint id_b = GPOINTER_TO_INT(b);
-	const gchar *tag_a = tags_get_tag(id_a);
-	const gchar *tag_b = tags_get_tag(id_b);
-
-	if (tag_a == NULL)
-		return tag_b == NULL ? 0:1;
-
-	if (tag_b == NULL)
-		return 1;
-
-	return g_utf8_collate(tag_a, tag_b);
-}
-
-static void summary_tags_menu_create(SummaryView *summaryview, gboolean refresh)
-{
-
-	GtkWidget *label_menuitem;
-	GtkWidget *menu;
-	GtkWidget *item;
-	GSList *cur = tags_get_list();
-	GSList *orig = NULL;
-	gboolean existing_tags = FALSE;
-	gchar *accel_path = NULL;
-
-	cur = orig = g_slist_sort(cur, summary_tag_cmp_list);
-	label_menuitem = gtk_ui_manager_get_widget(summaryview->mainwin->ui_manager, "/Menus/SummaryViewPopup/Tags");
-	g_signal_connect(G_OBJECT(label_menuitem), "activate",
-			 G_CALLBACK(summary_tags_menu_item_activate_item_cb),
-			   summaryview);
-
-	gtk_widget_show(label_menuitem);
-
-	menu = gtk_menu_new();
-
-	gtk_menu_set_accel_group (GTK_MENU (menu),
-		gtk_ui_manager_get_accel_group(summaryview->mainwin->ui_manager));
-
-	/* create tags menu items */
-	for (; cur; cur = cur->next) {
-		gint id = GPOINTER_TO_INT(cur->data);
-		const gchar *tag = tags_get_tag(id);
-		item = gtk_check_menu_item_new_with_label(tag);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-		g_signal_connect(G_OBJECT(item), "activate",
-				 G_CALLBACK(summary_tags_menu_item_activate_cb),
-				 GINT_TO_POINTER(id));
-		g_object_set_data(G_OBJECT(item), "summaryview",
-				  summaryview);
-		g_object_set_data(G_OBJECT(item), "tag_id",
-				  GINT_TO_POINTER(id));
-		gtk_widget_show(item);
-		accel_path = g_strconcat("<ClawsTags>/",tag, NULL);
-		gtk_menu_item_set_accel_path(GTK_MENU_ITEM(item), accel_path);
-		g_free(accel_path);
-		existing_tags = TRUE;
-	}
-	if (existing_tags) {
-		/* separator */
-		item = gtk_separator_menu_item_new();
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-		gtk_widget_show(item);
-	}
-
-	item = gtk_menu_item_new_with_label(_("Modify tags..."));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-	g_signal_connect(G_OBJECT(item), "activate",
-			 G_CALLBACK(summary_tags_menu_item_apply_tags_activate_cb),
-			 NULL);
-	g_object_set_data(G_OBJECT(item), "summaryview",
-			  summaryview);
-	gtk_widget_show(item);
-	accel_path = g_strdup_printf("<ClawsTags>/ModifyTags");
-	gtk_menu_item_set_accel_path(GTK_MENU_ITEM(item), accel_path);
-	g_free(accel_path);
-
-	g_slist_free(orig);
-	gtk_widget_show(menu);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(label_menuitem), menu);
-	summaryview->tags_menu = menu;
 }
 
 static gboolean summary_popup_menu(GtkWidget *widget, gpointer data)
@@ -6414,7 +6082,6 @@ static GtkWidget *summary_ctree_create(SummaryView *summaryview)
 	CLIST_BUTTON_SIGNAL_CONNECT(S_COL_SUBJECT, summary_subject_clicked)
 	CLIST_BUTTON_SIGNAL_CONNECT(S_COL_SCORE  , summary_score_clicked)
 	CLIST_BUTTON_SIGNAL_CONNECT(S_COL_LOCKED , summary_locked_clicked)
-	CLIST_BUTTON_SIGNAL_CONNECT(S_COL_TAGS   , summary_tags_clicked)
 
 #undef CLIST_BUTTON_SIGNAL_CONNECT
 
@@ -7090,12 +6757,6 @@ static void summary_locked_clicked(GtkWidget *button,
 	summary_sort_by_column_click(summaryview, SORT_BY_LOCKED);
 }
 
-static void summary_tags_clicked(GtkWidget *button,
-				   SummaryView *summaryview)
-{
-	summary_sort_by_column_click(summaryview, SORT_BY_TAGS);
-}
-
 static void summary_start_drag(GtkWidget *widget, gint button, GdkEvent *event,
 			       SummaryView *summaryview)
 {
@@ -7433,42 +7094,6 @@ static gint summary_cmp_by_to(GtkCMCList *clist, gconstpointer ptr1,
  		return -1;
 
 	res = g_utf8_collate(str1, str2);
-	return (res != 0)? res: summary_cmp_by_date(clist, ptr1, ptr2);
-}
-
-static gint summary_cmp_by_tags(GtkCMCList *clist, gconstpointer ptr1,
-				gconstpointer ptr2)
-{
-	gchar *str1, *str2;
-	const GtkCMCListRow *r1 = (const GtkCMCListRow *) ptr1;
-	const GtkCMCListRow *r2 = (const GtkCMCListRow *) ptr2;
-	const SummaryView *sv = g_object_get_data(G_OBJECT(clist), "summaryview");
-	MsgInfo *msginfo1 = ((GtkCMCListRow *)ptr1)->data;
-	MsgInfo *msginfo2 = ((GtkCMCListRow *)ptr2)->data;
-	gint res;
-	cm_return_val_if_fail(sv, -1);
-
-	if (sv->col_state[sv->col_pos[S_COL_TAGS]].visible) {
-		str1 = g_strdup(GTK_CMCELL_TEXT(r1->cell[sv->col_pos[S_COL_TAGS]])->text);
-		str2 = g_strdup(GTK_CMCELL_TEXT(r2->cell[sv->col_pos[S_COL_TAGS]])->text);
-	} else {
-		str1 = procmsg_msginfo_get_tags_str(msginfo1);
-		str2 = procmsg_msginfo_get_tags_str(msginfo2);
-	}
-
-	if (!str1) {
-		res = (str2 != NULL);
-		g_free(str2);
-		return res;
-	}
-	if (!str2) {
-		g_free(str1);
- 		return -1;
-	}
-
-	res = g_utf8_collate(str1, str2);
-	g_free(str1);
-	g_free(str2);
 	return (res != 0)? res: summary_cmp_by_date(clist, ptr1, ptr2);
 }
 

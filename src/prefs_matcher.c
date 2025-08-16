@@ -50,7 +50,6 @@
 #include "combobox.h"
 
 #include "matcher_parser.h"
-#include "tags.h"
 #include "addressbook.h"
 
 static void prefs_matcher_addressbook_select(void);
@@ -111,7 +110,6 @@ static struct Matcher {
 	GtkTreeModel *model_set;
 	GtkTreeModel *model_size;
 	GtkTreeModel *model_size_units;
-	GtkTreeModel *model_tags;
 	GtkTreeModel *model_test;
 	GtkTreeModel *model_thread;
 
@@ -311,8 +309,6 @@ static int header_name_to_crit(const gchar *header)
 		return CRITERIA_MESSAGEID;
 	if (!strcasecmp(header, "In-Reply-To"))
 		return CRITERIA_INREPLYTO;
-	if (!strcasecmp(header, "Newsgroups"))
-		return CRITERIA_NEWSGROUPS;
 	if (!strcasecmp(header, "References"))
 		return CRITERIA_REFERENCES;
 
@@ -371,7 +367,6 @@ static void prefs_matcher_models_create(void)
 	COMBOBOX_ADD(store, "To or Cc", CRITERIA_TO_OR_CC);
 	COMBOBOX_ADD(store, "Message-ID", CRITERIA_MESSAGEID);
 	COMBOBOX_ADD(store, "In-Reply-To", CRITERIA_INREPLYTO);
-	COMBOBOX_ADD(store, "Newsgroups", CRITERIA_NEWSGROUPS);
 	COMBOBOX_ADD(store, "References", CRITERIA_REFERENCES);
 	COMBOBOX_ADD(store, "Sender", CRITERIA_HEADER);
 	COMBOBOX_ADD(store, "X-ML-Name", CRITERIA_HEADER);
@@ -412,11 +407,6 @@ static void prefs_matcher_models_create(void)
 	COMBOBOX_ADD(store, _("yes"), CRITERIA_PARTIAL);
 	COMBOBOX_ADD(store, _("no"), CRITERIA_PARTIAL);
 	matcher.model_partial = GTK_TREE_MODEL(store);
-
-	store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
-	COMBOBOX_ADD(store, _("Any tags"), CRITERIA_TAGGED);
-	COMBOBOX_ADD(store, _("Specific tag"), CRITERIA_TAG);
-	matcher.model_tags = GTK_TREE_MODEL(store);
 
 	store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
 	COMBOBOX_ADD(store, _("ignored"), CRITERIA_IGNORE_THREAD);
@@ -631,7 +621,6 @@ static void prefs_matcher_create(void)
 	COMBOBOX_ADD(store, _("Size"), MATCH_SIZE);
 	COMBOBOX_ADD(store, _("Partially downloaded"), MATCH_PARTIAL);
 	COMBOBOX_ADD(store, _("Address book"), MATCH_ABOOK);
-	COMBOBOX_ADD(store, _("Tags"), MATCH_TAGS);
 	COMBOBOX_ADD(store, _("External program test"), MATCH_TEST);
 	COMBOBOX_ADD(store, _("Date"), MATCH_DATE);
 
@@ -920,7 +909,6 @@ static gboolean match_combo2_model_set(void)
 	    model == matcher.model_phrase ||
 	    model == matcher.model_set ||
 	    model == matcher.model_size_units ||
-	    model == matcher.model_tags ||
 	    model == matcher.model_thread)
 		return TRUE;
 	else
@@ -997,9 +985,6 @@ static void prefs_matcher_set_dialog(MatcherList *matchers)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(matcher.bool_op_combo), bool_op);
 
 	prefs_matcher_reset_condition();
-
-	combobox_set_sensitive(GTK_COMBO_BOX(matcher.criteria_combo), MATCH_TAGS,
-			(tags_get_size() > 0) ? TRUE : FALSE);
 }
 
 /*!
@@ -1099,9 +1084,6 @@ static gint prefs_matcher_get_criteria_from_matching(gint matching_id)
 	case MATCHCRITERIA_PARTIAL:
 	case MATCHCRITERIA_NOT_PARTIAL:
 		return CRITERIA_PARTIAL;
-	case MATCHCRITERIA_COLORLABEL:
-	case MATCHCRITERIA_NOT_COLORLABEL:
-		return CRITERIA_COLORLABEL;
 	case MATCHCRITERIA_IGNORE_THREAD:
 	case MATCHCRITERIA_NOT_IGNORE_THREAD:
 		return CRITERIA_IGNORE_THREAD;
@@ -1120,9 +1102,6 @@ static gint prefs_matcher_get_criteria_from_matching(gint matching_id)
 	case MATCHCRITERIA_NOT_CC:
 	case MATCHCRITERIA_CC:
 		return CRITERIA_CC;
-	case MATCHCRITERIA_NOT_NEWSGROUPS:
-	case MATCHCRITERIA_NEWSGROUPS:
-		return CRITERIA_NEWSGROUPS;
 	case MATCHCRITERIA_NOT_MESSAGEID:
 	case MATCHCRITERIA_MESSAGEID:
 		return CRITERIA_MESSAGEID;
@@ -1135,12 +1114,6 @@ static gint prefs_matcher_get_criteria_from_matching(gint matching_id)
 	case MATCHCRITERIA_NOT_TO_AND_NOT_CC:
 	case MATCHCRITERIA_TO_OR_CC:
 		return CRITERIA_TO_OR_CC;
-	case MATCHCRITERIA_NOT_TAG:
-	case MATCHCRITERIA_TAG:
-		return CRITERIA_TAG;
-	case MATCHCRITERIA_NOT_TAGGED:
-	case MATCHCRITERIA_TAGGED:
-		return CRITERIA_TAGGED;
 	case MATCHCRITERIA_NOT_BODY_PART:
 	case MATCHCRITERIA_BODY_PART:
 		return CRITERIA_BODY_PART;
@@ -1226,8 +1199,6 @@ static gint prefs_matcher_get_matching_from_criteria(gint criteria_id)
 		return MATCHCRITERIA_SIGNED;
 	case CRITERIA_PARTIAL:
 		return MATCHCRITERIA_PARTIAL;
-	case CRITERIA_COLORLABEL:
-		return MATCHCRITERIA_COLORLABEL;
 	case CRITERIA_IGNORE_THREAD:
 		return MATCHCRITERIA_IGNORE_THREAD;
 	case CRITERIA_WATCH_THREAD:
@@ -1242,12 +1213,6 @@ static gint prefs_matcher_get_matching_from_criteria(gint criteria_id)
 		return MATCHCRITERIA_CC;
 	case CRITERIA_TO_OR_CC:
 		return MATCHCRITERIA_TO_OR_CC;
-	case CRITERIA_TAG:
-		return MATCHCRITERIA_TAG;
-	case CRITERIA_TAGGED:
-		return MATCHCRITERIA_TAGGED;
-	case CRITERIA_NEWSGROUPS:
-		return MATCHCRITERIA_NEWSGROUPS;
 	case CRITERIA_MESSAGEID:
 		return MATCHCRITERIA_MESSAGEID;
 	case CRITERIA_INREPLYTO:
@@ -1330,8 +1295,6 @@ static gint prefs_matcher_not_criteria(gint matcher_criteria)
 		return MATCHCRITERIA_NOT_SIGNED;
 	case MATCHCRITERIA_PARTIAL:
 		return MATCHCRITERIA_NOT_PARTIAL;
-	case MATCHCRITERIA_COLORLABEL:
-		return MATCHCRITERIA_NOT_COLORLABEL;
 	case MATCHCRITERIA_IGNORE_THREAD:
 		return MATCHCRITERIA_NOT_IGNORE_THREAD;
 	case MATCHCRITERIA_WATCH_THREAD:
@@ -1346,12 +1309,6 @@ static gint prefs_matcher_not_criteria(gint matcher_criteria)
 		return MATCHCRITERIA_NOT_CC;
 	case MATCHCRITERIA_TO_OR_CC:
 		return MATCHCRITERIA_NOT_TO_AND_NOT_CC;
-	case MATCHCRITERIA_TAG:
-		return MATCHCRITERIA_NOT_TAG;
-	case MATCHCRITERIA_TAGGED:
-		return MATCHCRITERIA_NOT_TAGGED;
-	case MATCHCRITERIA_NEWSGROUPS:
-		return MATCHCRITERIA_NOT_NEWSGROUPS;
 	case MATCHCRITERIA_MESSAGEID:
 		return MATCHCRITERIA_NOT_MESSAGEID;
 	case MATCHCRITERIA_INREPLYTO:
@@ -1398,14 +1355,11 @@ static gint prefs_matcher_get_criteria(void)
 	case MATCH_HEADER:
 		header = gtk_entry_get_text(GTK_ENTRY(matcher.header_entry));
 		return header_name_to_crit(header);
-	case MATCH_LABEL:
-		return CRITERIA_COLORLABEL;
 	case MATCH_PARTIAL:
 		return CRITERIA_PARTIAL;
 	case MATCH_TEST:
 		return CRITERIA_TEST;
 	case MATCH_PHRASE:
-	case MATCH_TAGS:
 	case MATCH_THREAD:
 		return combobox_get_active_data(GTK_COMBO_BOX(
 					matcher.criteria_combo2));
@@ -1422,7 +1376,6 @@ static gint prefs_matcher_get_pred(const gint criteria)
 	case CRITERIA_TO:
 	case CRITERIA_CC:
 	case CRITERIA_TO_OR_CC:
-	case CRITERIA_NEWSGROUPS:
 	case CRITERIA_MESSAGEID:
 	case CRITERIA_INREPLYTO:
 	case CRITERIA_REFERENCES:
@@ -1431,8 +1384,6 @@ static gint prefs_matcher_get_pred(const gint criteria)
 	case CRITERIA_HEADERS_CONT:
 	case CRITERIA_BODY_PART:
 	case CRITERIA_MESSAGE:
-	case CRITERIA_TAG:
-	case CRITERIA_TAGGED:
 	case CRITERIA_TEST:
 		return gtk_combo_box_get_active(GTK_COMBO_BOX(matcher.match_combo));
 	case CRITERIA_FOUND_IN_ADDRESSBOOK:
@@ -1446,7 +1397,6 @@ static gint prefs_matcher_get_pred(const gint criteria)
 	case CRITERIA_SPAM:
 	case CRITERIA_HAS_ATTACHMENT:
 	case CRITERIA_SIGNED:
-	case CRITERIA_COLORLABEL:
 		return gtk_combo_box_get_active(GTK_COMBO_BOX(matcher.match_combo2));
 	case CRITERIA_WATCH_THREAD:
 		return gtk_combo_box_get_active(GTK_COMBO_BOX(matcher.criteria_combo2)) - 2;
@@ -1517,7 +1467,6 @@ static MatcherProp *prefs_matcher_dialog_to_matcher(void)
 	case CRITERIA_PARTIAL:
 	case CRITERIA_IGNORE_THREAD:
 	case CRITERIA_WATCH_THREAD:
-	case CRITERIA_TAGGED:
 		break;
 
 	case CRITERIA_SUBJECT:
@@ -1525,8 +1474,6 @@ static MatcherProp *prefs_matcher_dialog_to_matcher(void)
 	case CRITERIA_TO:
 	case CRITERIA_CC:
 	case CRITERIA_TO_OR_CC:
-	case CRITERIA_TAG:
-	case CRITERIA_NEWSGROUPS:
 	case CRITERIA_MESSAGEID:
 	case CRITERIA_INREPLYTO:
 	case CRITERIA_REFERENCES:
@@ -1849,7 +1796,7 @@ static void prefs_matcher_second_criteria_sel(GtkWidget *widget,
 	gint criteria2 = combobox_get_active_data(GTK_COMBO_BOX(
 						matcher.criteria_combo2));
 
-	if(criteria != MATCH_PHRASE && criteria != MATCH_TAGS) return;
+	if(criteria != MATCH_PHRASE) return;
 
 	if(criteria == MATCH_PHRASE) {
 		switch(criteria2) {
@@ -1869,26 +1816,6 @@ static void prefs_matcher_second_criteria_sel(GtkWidget *widget,
 			gtk_label_set_text(GTK_LABEL(matcher.match_label),
 					_("Whole message"));
 			break;
-		}
-	}
-
-	if(criteria == MATCH_TAGS) {
-		if(criteria2 == CRITERIA_TAGGED) {
-			prefs_matcher_enable_widget(matcher.upper_filler, FALSE);
-			prefs_matcher_enable_widget(matcher.match_label2, TRUE);
-			prefs_matcher_enable_widget(matcher.string_entry, FALSE);
-			prefs_matcher_enable_widget(matcher.case_checkbtn, FALSE);
-			prefs_matcher_enable_widget(matcher.regexp_checkbtn, FALSE);
-		} else {
-			prefs_matcher_enable_widget(matcher.upper_filler, TRUE);
-			prefs_matcher_enable_widget(matcher.match_label2, FALSE);
-			prefs_matcher_enable_widget(matcher.string_entry, TRUE);
-			prefs_matcher_enable_widget(matcher.case_checkbtn, TRUE);
-			prefs_matcher_enable_widget(matcher.regexp_checkbtn, TRUE);
-			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
-						matcher.regexp_checkbtn), FALSE);
-			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
-						matcher.case_checkbtn), FALSE);
 		}
 	}
 }
@@ -1922,14 +1849,12 @@ static void prefs_matcher_criteria_select(GtkWidget *widget,
 				     value == MATCH_PHRASE  ||
 				     value == MATCH_HEADER  ||
 				     value == MATCH_PARTIAL ||
-				     value == MATCH_TAGS    ||
 				     value == MATCH_THREAD));
 	prefs_matcher_enable_widget(matcher.headers_combo,
 				    (value == MATCH_HEADER));
 	prefs_matcher_enable_widget(matcher.criteria_combo2,
 				    (value == MATCH_PHRASE  ||
 				     value == MATCH_PARTIAL ||
-				     value == MATCH_TAGS    ||
 				     value == MATCH_THREAD));
 	prefs_matcher_enable_widget(matcher.match_combo2,
 				    (value == MATCH_ABOOK ||
@@ -1940,8 +1865,7 @@ static void prefs_matcher_criteria_select(GtkWidget *widget,
 	prefs_matcher_enable_widget(matcher.match_label2,
 				    (value == MATCH_ABOOK ||
 				     value == MATCH_FLAG  ||
-				     value == MATCH_LABEL ||
-				     value == MATCH_TAGS));
+				     value == MATCH_LABEL));
 	prefs_matcher_enable_widget(matcher.header_addr_combo,
 				    (value == MATCH_ABOOK));
 	prefs_matcher_enable_widget(matcher.string_entry,
@@ -2044,14 +1968,6 @@ static void prefs_matcher_criteria_select(GtkWidget *widget,
 				  	  matcher.numeric_entry), 0, 100000);
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(matcher.numeric_entry), 0);
 		gtk_label_set_text(GTK_LABEL(matcher.match_label), _("Size is"));
-		break;
-	case MATCH_TAGS:
-		prefs_matcher_set_model(matcher.criteria_combo2, matcher.model_tags);
-		prefs_matcher_set_model(matcher.match_combo, matcher.model_contain);
-		gtk_label_set_text(GTK_LABEL(matcher.criteria_label2), _("Scope:"));
-		gtk_label_set_text(GTK_LABEL(matcher.match_label), _("Message"));
-		gtk_label_set_text(GTK_LABEL(matcher.match_label2), _("tags"));
-		prefs_matcher_second_criteria_sel(NULL, NULL);
 		break;
 	case MATCH_THREAD:
 		prefs_matcher_set_model(matcher.criteria_combo2, matcher.model_thread);
@@ -2337,7 +2253,6 @@ static void prefs_matcher_set_criteria(const gint criteria)
 	case CRITERIA_TO:
 	case CRITERIA_CC:
 	case CRITERIA_TO_OR_CC:
-	case CRITERIA_NEWSGROUPS:
 	case CRITERIA_MESSAGEID:
 	case CRITERIA_INREPLYTO:
 	case CRITERIA_REFERENCES:
@@ -2352,13 +2267,6 @@ static void prefs_matcher_set_criteria(const gint criteria)
 		break;
 	case CRITERIA_TEST:
 		match_criteria = MATCH_TEST;
-		break;
-	case CRITERIA_COLORLABEL:
-		match_criteria = MATCH_LABEL;
-		break;
-	case CRITERIA_TAG:
-	case CRITERIA_TAGGED:
-		match_criteria = MATCH_TAGS;
 		break;
 	case CRITERIA_UNREAD:
 	case CRITERIA_NEW:
@@ -2400,7 +2308,6 @@ static void prefs_matcher_set_criteria(const gint criteria)
 					matcher.match_combo), criteria);
 		break;
 	case MATCH_PHRASE:
-	case MATCH_TAGS:
 		combobox_select_by_data(GTK_COMBO_BOX(
 					matcher.criteria_combo2), criteria);
 		break;
@@ -2462,7 +2369,6 @@ static gboolean prefs_matcher_selected(GtkTreeSelection *selector,
 	case MATCHCRITERIA_HAS_NO_ATTACHMENT:
 	case MATCHCRITERIA_NOT_SIGNED:
 	case MATCHCRITERIA_NOT_PARTIAL:
-	case MATCHCRITERIA_NOT_COLORLABEL:
 	case MATCHCRITERIA_NOT_IGNORE_THREAD:
 	case MATCHCRITERIA_NOT_WATCH_THREAD:
 	case MATCHCRITERIA_NOT_SUBJECT:
@@ -2470,9 +2376,6 @@ static gboolean prefs_matcher_selected(GtkTreeSelection *selector,
 	case MATCHCRITERIA_NOT_TO:
 	case MATCHCRITERIA_NOT_CC:
 	case MATCHCRITERIA_NOT_TO_AND_NOT_CC:
-	case MATCHCRITERIA_NOT_TAG:
-	case MATCHCRITERIA_NOT_TAGGED:
-	case MATCHCRITERIA_NOT_NEWSGROUPS:
 	case MATCHCRITERIA_NOT_MESSAGEID:
 	case MATCHCRITERIA_NOT_INREPLYTO:
 	case MATCHCRITERIA_NOT_REFERENCES:
@@ -2496,8 +2399,6 @@ static gboolean prefs_matcher_selected(GtkTreeSelection *selector,
 	case MATCHCRITERIA_NOT_TO:
 	case MATCHCRITERIA_NOT_CC:
 	case MATCHCRITERIA_NOT_TO_AND_NOT_CC:
-	case MATCHCRITERIA_NOT_TAG:
-	case MATCHCRITERIA_NOT_NEWSGROUPS:
 	case MATCHCRITERIA_NOT_MESSAGEID:
 	case MATCHCRITERIA_NOT_INREPLYTO:
 	case MATCHCRITERIA_NOT_REFERENCES:
@@ -2511,8 +2412,6 @@ static gboolean prefs_matcher_selected(GtkTreeSelection *selector,
 	case MATCHCRITERIA_TO:
 	case MATCHCRITERIA_CC:
 	case MATCHCRITERIA_TO_OR_CC:
-	case MATCHCRITERIA_TAG:
-	case MATCHCRITERIA_NEWSGROUPS:
 	case MATCHCRITERIA_MESSAGEID:
 	case MATCHCRITERIA_INREPLYTO:
 	case MATCHCRITERIA_REFERENCES:
@@ -2623,7 +2522,6 @@ static gboolean prefs_matcher_selected(GtkTreeSelection *selector,
 	case CRITERIA_TO:
 	case CRITERIA_CC:
 	case CRITERIA_TO_OR_CC:
-	case CRITERIA_NEWSGROUPS:
 	case CRITERIA_MESSAGEID:
 	case CRITERIA_INREPLYTO:
 	case CRITERIA_REFERENCES:
@@ -2632,8 +2530,6 @@ static gboolean prefs_matcher_selected(GtkTreeSelection *selector,
 	case CRITERIA_HEADERS_CONT:
 	case CRITERIA_BODY_PART:
 	case CRITERIA_MESSAGE:
-	case CRITERIA_TAG:
-	case CRITERIA_TAGGED:
 	case CRITERIA_TEST:
 		gtk_combo_box_set_active(GTK_COMBO_BOX(matcher.match_combo),
 					negative_cond ? PREDICATE_DOES_NOT_CONTAIN :
@@ -2650,7 +2546,6 @@ static gboolean prefs_matcher_selected(GtkTreeSelection *selector,
 	case CRITERIA_SPAM:
 	case CRITERIA_HAS_ATTACHMENT:
 	case CRITERIA_SIGNED:
-	case CRITERIA_COLORLABEL:
 		gtk_combo_box_set_active(GTK_COMBO_BOX(matcher.match_combo2),
 					 negative_cond ? PREDICATE_FLAG_DISABLED :
 					 		 PREDICATE_FLAG_ENABLED);

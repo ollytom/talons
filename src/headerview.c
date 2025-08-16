@@ -185,8 +185,6 @@ void headerview_init(HeaderView *headerview)
 
 void headerview_show(HeaderView *headerview, MsgInfo *msginfo)
 {
-	gchar *tags = procmsg_msginfo_get_tags_str(msginfo);
-
 	headerview_clear(headerview);
 
 	gtk_label_set_text(GTK_LABEL(headerview->from_body_label),
@@ -197,22 +195,9 @@ void headerview_show(HeaderView *headerview, MsgInfo *msginfo)
 		gtk_widget_show(headerview->to_header_label);
 		gtk_widget_show(headerview->to_body_label);
 	}
-	if (msginfo->newsgroups) {
-		gtk_label_set_text(GTK_LABEL(headerview->ng_body_label),
-				   msginfo->newsgroups);
-		gtk_widget_show(headerview->ng_header_label);
-		gtk_widget_show(headerview->ng_body_label);
-	}
 	gtk_label_set_text(GTK_LABEL(headerview->subject_body_label),
 			   msginfo->subject ? msginfo->subject :
 			   _("(No Subject)"));
-	if (tags) {
-		gtk_label_set_text(GTK_LABEL(headerview->tags_body_label),
-				   tags);
-		gtk_widget_show(headerview->tags_header_label);
-		gtk_widget_show(headerview->tags_body_label);
-		g_free(tags);
-	}
 	if (!headerview_show_avatar(headerview, msginfo))
 		return;
 
