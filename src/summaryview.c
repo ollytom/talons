@@ -416,7 +416,6 @@ static const gchar *const col_label[N_SUMMARY_COLS] = {
 	N_("#"),       /* S_COL_NUMBER  */
 	N_("Score"),   /* S_COL_SCORE   */
 	"",            /* S_COL_LOCKED  */
-	N_("Tags"),    /* S_COL_TAGS    */
 };
 
 void summary_freeze(SummaryView *summaryview)
@@ -5536,11 +5535,6 @@ void summary_collapse_threads(SummaryView *summaryview)
 	summaryview->thread_collapsed = TRUE;
 
 	gtk_cmctree_node_moveto(ctree, summaryview->selected, 0, 0.5, 0);
-}
-
-static void account_rules_radio_button_toggled_cb(GtkToggleButton *btn, gpointer data)
-{
-	prefs_common.apply_per_account_filtering_rules = GPOINTER_TO_INT(data);
 }
 
 void summaryview_destroy(SummaryView *summaryview)

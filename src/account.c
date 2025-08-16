@@ -163,20 +163,6 @@ static void account_double_clicked		(GtkTreeView		*list_view,
 						 GtkTreeViewColumn	*column,
 						 gpointer		 data);
 
-static void drag_begin				(GtkTreeView *list_view,
-						 GdkDragContext *context,
-						 gpointer data);
-
-static void drag_end				(GtkTreeView *list_view,
-						 GdkDragContext *context,
-						 gpointer data);
-
-static void account_row_changed_while_drag_drop	(GtkTreeModel *model,
-						 GtkTreePath  *path,
-						 GtkTreeIter  *iter,
-						 gpointer      arg3,
-						 GtkTreeView  *list_view);
-
 static void account_flush_state(void)
 {
 	account_set_menu();
@@ -1562,14 +1548,6 @@ static GtkWidget *account_list_view_create(void)
 	                 G_CALLBACK(account_double_clicked),
 			 list_view);
 
-	g_signal_connect(G_OBJECT(list_view), "drag_begin",
-			 G_CALLBACK(drag_begin),
-			 list_view);
-
-	g_signal_connect(G_OBJECT(list_view), "drag_end",
-			 G_CALLBACK(drag_end),
-			 list_view);
-
 	gtk_tree_view_set_reorderable(list_view, TRUE);
 	return GTK_WIDGET(list_view);
 }
@@ -1797,40 +1775,6 @@ static void account_double_clicked(GtkTreeView		*list_view,
 				   gpointer		 data)
 {
 	account_edit_prefs(NULL, NULL);
-}
-
-static void drag_begin(GtkTreeView *list_view,
-		      GdkDragContext *context,
-		      gpointer data)
-{
-	/* XXX unfortunately a completed drag & drop does not emit
-	 * a "rows_reordered" signal, but a "row_changed" signal.
-	 * So during drag and drop, listen to "row_changed", and
-	 * update the account list accordingly */
-
-	GtkTreeModel *model = gtk_tree_view_get_model(list_view);
-	g_signal_connect(G_OBJECT(model), "row_changed",
-			 G_CALLBACK(account_row_changed_while_drag_drop),
-			 list_view);
-}
-
-static void drag_end(GtkTreeView *list_view,
-		    GdkDragContext *context,
-		    gpointer data)
-{
-	GtkTreeModel *model = gtk_tree_view_get_model(list_view);
-	g_signal_handlers_disconnect_by_func(G_OBJECT(model),
-					     G_CALLBACK(account_row_changed_while_drag_drop),
-					     list_view);
-}
-
-static void account_row_changed_while_drag_drop(GtkTreeModel *model,
-				   GtkTreePath  *path,
-				   GtkTreeIter  *iter,
-				   gpointer      arg3,
-				   GtkTreeView  *list_view)
-{
-	account_list_set();
 }
 
 gchar *account_get_signature_str(PrefsAccount *account)
