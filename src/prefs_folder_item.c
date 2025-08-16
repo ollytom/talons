@@ -976,17 +976,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	rowcount++;
 
 	if (item_protocol(item) != A_NNTP) {
-		/* Request Return Receipt */
-		checkbtn_request_return_receipt = gtk_check_button_new_with_label
-			(_("Request Return Receipt"));
-		gtk_grid_attach(GTK_GRID(table), checkbtn_request_return_receipt, 0, rowcount, 1, 1);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_request_return_receipt),
-					     item->ret_rcpt ? TRUE : FALSE);
-
-		request_return_receipt_rec_checkbtn = gtk_check_button_new();
-		gtk_grid_attach(GTK_GRID(table), request_return_receipt_rec_checkbtn, 2, rowcount, 1, 1);
-		rowcount++;
-
 		/* Save Copy to Folder */
 		checkbtn_save_copy_to_folder = gtk_check_button_new_with_label
 			(_("Save copy of outgoing messages to this folder instead of Sent"));

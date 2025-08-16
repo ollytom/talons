@@ -470,8 +470,6 @@ static void compose_activate_privacy_system     (Compose *compose,
                                          PrefsAccount *account,
 					 gboolean warn);
 static void compose_apply_folder_privacy_settings(Compose *compose, FolderItem *folder_item);
-static void compose_toggle_return_receipt_cb(GtkToggleAction *action,
-					 gpointer	 data);
 static void compose_toggle_remove_refs_cb(GtkToggleAction *action,
 					 gpointer	 data);
 static void compose_reply_change_mode	(Compose *compose, ComposeMode action);
@@ -686,7 +684,6 @@ static GtkToggleActionEntry compose_toggle_entries[] =
 	{"Edit/AutoIndent",          NULL, N_("Auto _indent"), NULL, NULL, G_CALLBACK(compose_toggle_autoindent_cb), FALSE }, /* Toggle */
 	{"Options/Sign",             NULL, N_("Si_gn"), NULL, NULL, G_CALLBACK(compose_toggle_sign_cb), FALSE }, /* Toggle */
 	{"Options/Encrypt",          NULL, N_("_Encrypt"), NULL, NULL, G_CALLBACK(compose_toggle_encrypt_cb), FALSE }, /* Toggle */
-	{"Options/RequestRetRcpt",   NULL, N_("_Request Return Receipt"), NULL, NULL, G_CALLBACK(compose_toggle_return_receipt_cb), FALSE }, /* Toggle */
 	{"Options/RemoveReferences", NULL, N_("Remo_ve references"), NULL, NULL, G_CALLBACK(compose_toggle_remove_refs_cb), FALSE }, /* Toggle */
 	{"Tools/ShowRuler",          NULL, N_("Show _ruler"), NULL, NULL, G_CALLBACK(compose_toggle_ruler_cb), FALSE }, /* Toggle */
 };
@@ -1015,28 +1012,9 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 	if (account->protocol != A_NNTP) {
 		if (mailto && *mailto != '\0') {
 			mfield = compose_entries_set(compose, mailto, COMPOSE_TO);
-
 		} else {
 			compose_set_folder_prefs(compose, item, TRUE);
 		}
-		if (item && item->ret_rcpt) {
-			cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Options/RequestRetRcpt", TRUE);
-		}
-	} else {
-		if (mailto && *mailto != '\0') {
-			if (!strchr(mailto, '@'))
-				mfield = compose_entries_set(compose, mailto, COMPOSE_NEWSGROUPS);
-			else
-				mfield = compose_entries_set(compose, mailto, COMPOSE_TO);
-		} else if (item && FOLDER_CLASS(item->folder) == news_get_class()) {
-			compose_entry_append(compose, item->path, COMPOSE_NEWSGROUPS, PREF_FOLDER);
-			mfield = TO_FIELD_PRESENT;
-		}
-		/*
-		 * CLAWS: just don't allow return receipt request, even if the user
-		 * may want to send an email. simple but foolproof.
-		 */
-		cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options/RequestRetRcpt", FALSE);
 	}
 	compose_add_field_list( compose, listAddress );
 
@@ -1516,9 +1494,6 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 		compose->replyinfo = procmsg_msginfo_copy(msginfo);
 
 	compose_extract_original_charset(compose);
-
-    	if (msginfo->folder && msginfo->folder->ret_rcpt)
-		cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Options/RequestRetRcpt", TRUE);
 
 	/* Set save folder */
 	if (msginfo->folder && msginfo->folder->prefs && msginfo->folder->prefs->save_copy_to_folder) {
@@ -2353,10 +2328,6 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 			g_free(queueheader_buf);
 		}
 		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf, "RRCPT:")) {
-			gint active = atoi(&queueheader_buf[strlen("RRCPT:")]);
-			if (active) {
-				cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Options/RequestRetRcpt", TRUE);
-			}
 			g_free(queueheader_buf);
 		}
 	}
@@ -6168,10 +6139,6 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 		err |= (fprintf(fp, "SCF:%s\n", savefolderid) < 0);
 		g_free(savefolderid);
 	}
-	/* Save copy folder */
-	if (compose->return_receipt) {
-		err |= (fprintf(fp, "RRCPT:1\n") < 0);
-	}
 	/* Message-ID of message replying to */
 	if ((compose->replyinfo != NULL) && (compose->replyinfo->msgid != NULL)) {
 		gchar *folderid = NULL;
@@ -6639,30 +6606,16 @@ static gchar *compose_get_header(Compose *compose)
 
 		g_string_append_printf(header, "From: %s <%s>\n",
 			qname, from_address);
-		if (!IS_IN_CUSTOM_HEADER("Disposition-Notification-To") &&
-		    compose->return_receipt) {
-			compose_convert_header(compose, buf, sizeof(buf), from_name,
-					       strlen("Disposition-Notification-To: "),
-					       TRUE);
-			g_string_append_printf(header, "Disposition-Notification-To: %s <%s>\n", buf, from_address);
-		}
 		if (qname != name)
 			g_free(qname);
 	} else {
 		g_string_append_printf(header, "From: %s\n", from_address);
-		if (!IS_IN_CUSTOM_HEADER("Disposition-Notification-To") &&
-		    compose->return_receipt)
-			g_string_append_printf(header, "Disposition-Notification-To: %s\n", from_address);
-
 	}
 	g_free(from_name);
 	g_free(from_address);
 
 	/* To */
 	compose_add_headerfield_from_headerlist(compose, header, "To", ", ");
-
-	/* Newsgroups */
-	compose_add_headerfield_from_headerlist(compose, header, "Newsgroups", ",");
 
 	/* Cc */
 	compose_add_headerfield_from_headerlist(compose, header, "Cc", ", ");
@@ -7745,8 +7698,6 @@ static Compose *compose_create(PrefsAccount *account,
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Sign", "Options/Sign", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Encrypt", "Options/Encrypt", GTK_UI_MANAGER_MENUITEM)
 
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Separator3", "Options/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "RequestRetRcpt", "Options/RequestRetRcpt", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Separator4", "Options/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "RemoveReferences", "Options/RemoveReferences", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Separator5", "Options/---", GTK_UI_MANAGER_SEPARATOR)
@@ -10046,9 +9997,6 @@ gboolean compose_draft (gpointer data, guint action)
 		err |= (fprintf(fp, "SCF:%s\n", savefolderid) < 0);
 		g_free(savefolderid);
 	}
-	if (compose->return_receipt) {
-		err |= (fprintf(fp, "RRCPT:1\n") < 0);
-	}
 	if (compose->privacy_system) {
 		err |= (fprintf(fp, "X-Claws-Sign:%d\n", compose->use_signing) < 0);
 		err |= (fprintf(fp, "X-Claws-Encrypt:%d\n", compose->use_encryption) < 0);
@@ -11507,16 +11455,6 @@ static void compose_header_drag_received_cb (GtkWidget		*widget,
 		return;
 	}
 	gtk_drag_finish(drag_context, TRUE, FALSE, time);
-}
-
-static void compose_toggle_return_receipt_cb(GtkToggleAction *action, gpointer data)
-{
-	Compose *compose = (Compose *)data;
-
-	if (gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action)))
-		compose->return_receipt = TRUE;
-	else
-		compose->return_receipt = FALSE;
 }
 
 static void compose_toggle_remove_refs_cb(GtkToggleAction *action, gpointer data)
