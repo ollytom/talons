@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __HEADERVIEW_H__
@@ -38,8 +38,6 @@ struct _HeaderView
 	GtkWidget *ng_body_label;
 	GtkWidget *subject_header_label;
 	GtkWidget *subject_body_label;
-	GtkWidget *tags_header_label;
-	GtkWidget *tags_body_label;
 
 	GtkWidget *image;
 };

@@ -559,7 +559,6 @@ struct _PrefsCommon
 
 	gboolean two_line_vert;
 	gboolean inherit_folder_props;
-	gboolean flush_metadata;
 
 	gint nav_history_length;
 

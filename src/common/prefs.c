@@ -105,8 +105,6 @@ PrefFile *prefs_write_open(const gchar *path)
 	return pfile;
 }
 
-gboolean prefs_common_get_flush_metadata (void);
-
 /*!
  *\brief	Close and free preferences file
  *		Creates final file from temp, creates backup

@@ -1023,9 +1023,6 @@ static PrefParam param[] = {
 	{"inherit_folder_properties", "FALSE", &prefs_common.inherit_folder_props, P_BOOL,
 	 NULL, NULL, NULL},
 
-	{"flush_metadata", "TRUE", &prefs_common.flush_metadata, P_BOOL,
-	 NULL, NULL, NULL},
-
 	{"nav_history_length", "50", &prefs_common.nav_history_length, P_INT,
 	 NULL, NULL, NULL},
 
@@ -1479,11 +1476,6 @@ const gchar *prefs_common_get_ext_editor_cmd(void)
 	g_free(tmp);
 	return "xdg-open %s";
 #endif /* 0 */
-}
-
-gboolean prefs_common_get_flush_metadata (void)
-{
-	return prefs_common.flush_metadata;
 }
 
 PrefsCommon *prefs_common_get_prefs(void)

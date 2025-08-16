@@ -65,8 +65,6 @@ HeaderView *headerview_create(void)
 	GtkWidget *ng_body_label;
 	GtkWidget *subject_header_label;
 	GtkWidget *subject_body_label;
-	GtkWidget *tags_header_label;
-	GtkWidget *tags_body_label;
 
 	debug_print("Creating header view...\n");
 	headerview = g_new0(HeaderView, 1);
@@ -92,20 +90,16 @@ HeaderView *headerview_create(void)
 	ng_body_label        = gtk_label_new("");
 	subject_header_label = gtk_label_new(prefs_common_translated_header_name("Subject:"));
 	subject_body_label   = gtk_label_new("");
-	tags_header_label = gtk_label_new(_("Tags:"));
-	tags_body_label   = gtk_label_new("");
 
 	gtk_label_set_selectable(GTK_LABEL(from_body_label), TRUE);
 	gtk_label_set_selectable(GTK_LABEL(to_body_label), TRUE);
 	gtk_label_set_selectable(GTK_LABEL(ng_body_label), TRUE);
 	gtk_label_set_selectable(GTK_LABEL(subject_body_label), TRUE);
-	gtk_label_set_selectable(GTK_LABEL(tags_body_label), TRUE);
 
 	gtk_widget_set_can_focus(from_body_label, FALSE);
 	gtk_widget_set_can_focus(to_body_label, FALSE);
 	gtk_widget_set_can_focus(ng_body_label, FALSE);
 	gtk_widget_set_can_focus(subject_body_label, FALSE);
-	gtk_widget_set_can_focus(tags_body_label, FALSE);
 
 	gtk_box_pack_start(GTK_BOX(hbox1), from_header_label, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox1), from_body_label, FALSE, FALSE, 0);
@@ -115,17 +109,13 @@ HeaderView *headerview_create(void)
 	gtk_box_pack_start(GTK_BOX(hbox1), ng_body_label, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox2), subject_header_label, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox2), subject_body_label, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox3), tags_header_label, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox3), tags_body_label, TRUE, TRUE, 0);
 
 	gtk_label_set_xalign(GTK_LABEL(to_body_label), 0.0);
 	gtk_label_set_xalign(GTK_LABEL(ng_body_label), 0.0);
 	gtk_label_set_xalign(GTK_LABEL(subject_body_label), 0.0);
-	gtk_label_set_xalign(GTK_LABEL(tags_body_label), 0.0);
 	gtk_label_set_ellipsize(GTK_LABEL(to_body_label), PANGO_ELLIPSIZE_END);
 	gtk_label_set_ellipsize(GTK_LABEL(ng_body_label), PANGO_ELLIPSIZE_END);
 	gtk_label_set_ellipsize(GTK_LABEL(subject_body_label), PANGO_ELLIPSIZE_END);
-	gtk_label_set_ellipsize(GTK_LABEL(tags_body_label), PANGO_ELLIPSIZE_END);
 
 	headerview->hbox = hbox;
 	headerview->from_header_label    = from_header_label;
@@ -136,8 +126,6 @@ HeaderView *headerview_create(void)
 	headerview->ng_body_label        = ng_body_label;
 	headerview->subject_header_label = subject_header_label;
 	headerview->subject_body_label   = subject_body_label;
-	headerview->tags_header_label = tags_header_label;
-	headerview->tags_body_label   = tags_body_label;
 	headerview->image = NULL;
 
 	gtk_widget_show_all(hbox);
@@ -156,7 +144,6 @@ void headerview_set_font(HeaderView *headerview)
 		gtk_widget_override_font(headerview->to_body_label, normalfont);
 		gtk_widget_override_font(headerview->ng_body_label, normalfont);
 		gtk_widget_override_font(headerview->subject_body_label, normalfont);
-		gtk_widget_override_font(headerview->tags_body_label, normalfont);
 		pango_font_description_free(normalfont);
 	}
 
@@ -171,7 +158,6 @@ void headerview_set_font(HeaderView *headerview)
 		gtk_widget_override_font(headerview->to_header_label, boldfont);
 		gtk_widget_override_font(headerview->ng_header_label, boldfont);
 		gtk_widget_override_font(headerview->subject_header_label, boldfont);
-		gtk_widget_override_font(headerview->tags_header_label, boldfont);
 		pango_font_description_free(boldfont);
 	}
 }
@@ -335,13 +321,10 @@ void headerview_clear(HeaderView *headerview)
 	gtk_label_set_text(GTK_LABEL(headerview->to_body_label), "");
 	gtk_label_set_text(GTK_LABEL(headerview->ng_body_label), "");
 	gtk_label_set_text(GTK_LABEL(headerview->subject_body_label), "");
-	gtk_label_set_text(GTK_LABEL(headerview->tags_body_label), "");
 	gtk_widget_hide(headerview->to_header_label);
 	gtk_widget_hide(headerview->to_body_label);
 	gtk_widget_hide(headerview->ng_header_label);
 	gtk_widget_hide(headerview->ng_body_label);
-	gtk_widget_hide(headerview->tags_header_label);
-	gtk_widget_hide(headerview->tags_body_label);
 
 	if (headerview->image && gtk_widget_get_visible(headerview->image)) {
 		gtk_widget_hide(headerview->image);

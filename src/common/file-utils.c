@@ -35,14 +35,12 @@
 #include "utils.h"
 #include "file-utils.h"
 
-gboolean prefs_common_get_flush_metadata(void);
-
 int safe_fclose(FILE *fp)
 {
 	if (fflush(fp) != 0) {
 		return EOF;
 	}
-	if (prefs_common_get_flush_metadata() && fsync(fileno(fp)) != 0) {
+	if (fsync(fileno(fp)) != 0) {
 		return EOF;
 	}
 	return fclose(fp);
