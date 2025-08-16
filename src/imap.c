@@ -176,8 +176,6 @@ struct _IMAPFolderItem
 	gboolean should_trash_cache;
 	gint can_create_flags;
 
-	GHashTable *tags_set_table;
-	GHashTable *tags_unset_table;
 	GSList *ok_flags;
 
 };
@@ -326,10 +324,6 @@ static gint imap_status			(IMAPSession	*session,
 					 guint32	*uid_validity,
 					 gint		*unseen,
 					 gboolean	 block);
-static void	imap_commit_tags	(FolderItem 	*item,
-					 MsgInfo	*msginfo,
-					 GSList		*set_tags,
-					 GSList		*unset_tags);
 
 static gchar imap_get_path_separator		(IMAPSession	*session,
 						 IMAPFolder	*folder,
@@ -504,7 +498,6 @@ FolderClass *imap_get_class(void)
 		imap_class.set_batch = imap_set_batch;
 		imap_class.synchronise = imap_synchronise;
 		imap_class.remove_cached_msg = imap_remove_cached_msg;
-		imap_class.commit_tags = imap_commit_tags;
 	}
 
 	return &imap_class;
@@ -1508,17 +1501,6 @@ static void imap_remove_cached_msg(Folder *folder, FolderItem *item, MsgInfo *ms
 		unlink(filename);
 	}
 	g_free(filename);
-}
-
-typedef struct _TagsData {
-	gchar *str;
-	GSList *msglist;
-	IMAPFolderItem *item;
-} TagsData;
-
-static void imap_commit_tags(FolderItem *item, MsgInfo *msginfo, GSList *tags_set, GSList *tags_unset)
-{
-	fprintf(stderr, "TODO: delete imap_commit_tags\n");
 }
 
 static gchar *imap_fetch_msg_full(Folder *folder, FolderItem *item, gint uid,
@@ -5079,7 +5061,6 @@ static /*gint*/ void *imap_get_flags_thread(void *data)
 	gboolean reverse_seen = FALSE;
 	gboolean selected_folder;
 	gint exists_cnt, unseen_cnt;
-	gboolean got_alien_tags = FALSE;
 
 	session = imap_session_get(folder);
 
@@ -5304,10 +5285,6 @@ bail:
 		g_hash_table_insert(msgflags, msginfo, GINT_TO_POINTER(flags));
 	}
 
-	if (got_alien_tags) {
-		tags_write_tags();
-	}
-
 	if (flags_hash)
 		g_hash_table_destroy(flags_hash);
 	if (tags_hash)
@@ -5405,50 +5382,6 @@ static gboolean process_flags(gpointer key, gpointer value, gpointer user_data)
 	return TRUE;
 }
 
-static gboolean process_tags(gpointer key, gpointer value, gpointer user_data)
-{
-	gboolean tags_set = GPOINTER_TO_INT(user_data);
-	TagsData *data = (TagsData *)value;
-	IMAPFolderItem *_item = data->item;
-	FolderItem *item = (FolderItem *)_item;
-	gchar *str = data->str;
-	gint ok = MAILIMAP_ERROR_BAD_STATE;
-	IMAPSession *session = NULL;
-
-	debug_print("getting session...\n");
-	session = imap_session_get(item->folder);
-
-	data->msglist = g_slist_reverse(data->msglist);
-
-	debug_print("IMAP %ssetting tags %s for %d messages\n",
-		tags_set?"":"un",
-		str,
-		g_slist_length(data->msglist));
-
-	lock_session(session);
-	if (session) {
-		ok = imap_select(session, IMAP_FOLDER(item->folder), item,
-			 NULL, NULL, NULL, NULL, NULL, FALSE);
-	}
-	if (ok == MAILIMAP_NO_ERROR) {
-		GSList list;
-		list.data = str;
-		list.next = NULL;
-		ok = imap_set_message_flags(session, IMAP_FOLDER_ITEM(item),
-			data->msglist, 0, &list, tags_set);
-	} else {
-		g_warning("can't select mailbox %s", item->path);
-	}
-
-	if (!is_fatal(ok))
-		unlock_session(session);
-
-	g_slist_free(data->msglist);
-	g_free(data->str);
-	g_free(data);
-	return TRUE;
-}
-
 static void process_hashtable(IMAPFolderItem *item)
 {
 	if (item->flags_set_table) {
@@ -5461,17 +5394,6 @@ static void process_hashtable(IMAPFolderItem *item)
 		g_hash_table_destroy(item->flags_unset_table);
 		item->flags_unset_table = NULL;
 	}
-	if (item->tags_set_table) {
-		g_hash_table_foreach_remove(item->tags_set_table, process_tags, GINT_TO_POINTER(TRUE));
-		g_hash_table_destroy(item->tags_set_table);
-		item->tags_set_table = NULL;
-	}
-	if (item->tags_unset_table) {
-		g_hash_table_foreach_remove(item->tags_unset_table, process_tags, GINT_TO_POINTER(FALSE));
-		g_hash_table_destroy(item->tags_unset_table);
-		item->tags_unset_table = NULL;
-	}
-
 }
 
 static void imap_set_batch (Folder *folder, FolderItem *_item, gboolean batch)
@@ -5492,12 +5414,6 @@ static void imap_set_batch (Folder *folder, FolderItem *_item, gboolean batch)
 		}
 		if (!item->flags_unset_table) {
 			item->flags_unset_table = g_hash_table_new(NULL, g_direct_equal);
-		}
-		if (!item->tags_set_table) {
-			item->tags_set_table = g_hash_table_new(NULL, g_direct_equal);
-		}
-		if (!item->tags_unset_table) {
-			item->tags_unset_table = g_hash_table_new(NULL, g_direct_equal);
 		}
 		session = imap_session_get(folder);
 		if (session) {
