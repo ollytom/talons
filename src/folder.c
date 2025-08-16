@@ -2596,8 +2596,6 @@ static void folder_item_read_cache(FolderItem *item)
 		} else
 			msgcache_read_mark(item->cache, mark_file);
 
-		msgcache_read_tags(item->cache, tags_file);
-
 		g_free(cache_file);
 		g_free(mark_file);
 		g_free(tags_file);

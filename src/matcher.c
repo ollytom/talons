@@ -497,36 +497,6 @@ free_strs:
 }
 
 /*!
- *\brief	Find out if a tag matches a condition
- *
- *\param	prop Matcher structure
- *\param	msginfo message to check
- *
- *\return	gboolean TRUE if msginfo matches the condition in the
- *		matcher structure
- */
-static gboolean matcherprop_tag_match(MatcherProp *prop, MsgInfo *msginfo,
-					 const gchar *debug_context)
-{
-	gboolean ret = FALSE;
-	GSList *cur;
-
-	if (msginfo == NULL || msginfo->tags == NULL)
-		return FALSE;
-
-	for (cur = msginfo->tags; cur; cur = cur->next) {
-		const gchar *str = tags_get_tag(GPOINTER_TO_INT(cur->data));
-		if (!str)
-			continue;
-		if (matcherprop_string_match(prop, str, debug_context)) {
-			ret = TRUE;
-			break;
-		}
-	}
-	return ret;
-}
-
-/*!
  *\brief	Find out if the string-ed list matches a condition
  *
  *\param	prop Matcher structure
@@ -744,14 +714,6 @@ static gboolean matcherprop_match(MatcherProp *prop,
 	case MATCHCRITERIA_NOT_TO_AND_NOT_CC:
 		return !matcherprop_string_match(prop, info->to, context_str[CONTEXT_TO])
 		     && !matcherprop_string_match(prop, info->cc, context_str[CONTEXT_CC]);
-	case MATCHCRITERIA_TAG:
-		return matcherprop_tag_match(prop, info, context_str[CONTEXT_TAG]);
-	case MATCHCRITERIA_NOT_TAG:
-		return !matcherprop_tag_match(prop, info, context_str[CONTEXT_TAG]);
-	case MATCHCRITERIA_TAGGED:
-		return info->tags != NULL;
-	case MATCHCRITERIA_NOT_TAGGED:
-		return info->tags == NULL;
 	case MATCHCRITERIA_AGE_GREATER:
 		age_mult_hours = 24;
 		/* Fallthrough intended */

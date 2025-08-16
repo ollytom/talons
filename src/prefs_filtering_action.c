@@ -330,7 +330,6 @@ static void prefs_filtering_action_create(void)
 	GtkWidget *dest_entry;
 	GtkWidget *dest_btn;
 	GtkWidget *score_entry;
-	GtkWidget *tags_combo;
 
 	GtkWidget *reg_hbox;
 	GtkWidget *btn_hbox;
@@ -497,18 +496,6 @@ static void prefs_filtering_action_create(void)
 
 	score_entry = gtk_spin_button_new_with_range(-1000, 1000, 1);
 	gtk_box_pack_start(GTK_BOX(hbox1), score_entry, FALSE, FALSE, 0);
-
-	tags_combo = gtk_combo_box_text_new ();
-	gtk_size_group_add_widget(size_action, tags_combo);
-
-	for (tmp = tags = tags_get_list() ; tmp != NULL;
-	     tmp = tmp->next) {
-		gchar *name = g_strdup(tags_get_tag(GPOINTER_TO_INT(tmp->data)));
-
-		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tags_combo), (gpointer) name);
-		g_free(name);
-	}
-	g_slist_free(tags);
 
 	prefs_filtering_action_check_widget_width(tags_combo);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(tags_combo), 0);
@@ -681,8 +668,7 @@ static void prefs_filtering_action_set_dialog(GSList *action_list)
 
         prefs_filtering_action_reset_dialog();
 
-        combobox_set_sensitive(GTK_COMBO_BOX(filtering_action.action_combo), 9,
-        		(tags_get_size() > 0) ? TRUE : FALSE);
+        combobox_set_sensitive(GTK_COMBO_BOX(filtering_action.action_combo), 9, FALSE);
 }
 
 /*!

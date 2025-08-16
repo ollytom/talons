@@ -1518,111 +1518,7 @@ typedef struct _TagsData {
 
 static void imap_commit_tags(FolderItem *item, MsgInfo *msginfo, GSList *tags_set, GSList *tags_unset)
 {
-	IMAPSession *session;
-	gint ok, can_create_tags;
-	Folder *folder = NULL;
-	TagsData *ht_data = NULL;
-	GSList *cur;
-
-	g_return_if_fail(item != NULL);
-	g_return_if_fail(msginfo != NULL);
-
-	folder = item->folder;
-	debug_print("getting session...\n");
-	session = imap_session_get(folder);
-
-	if (!session) {
-		debug_print("can't get session\n");
-		return;
-	}
-
-	ok = imap_select(session, IMAP_FOLDER(folder), item,
-			 NULL, NULL, NULL, NULL, &can_create_tags, FALSE);
-
-	if (ok != MAILIMAP_NO_ERROR) {
-		return;
-	}
-
-
-	if (IMAP_FOLDER_ITEM(item)->can_create_flags != ITEM_CAN_CREATE_FLAGS)
-		return;
-
-	if (IMAP_FOLDER_ITEM(item)->batching) {
-		/* instead of performing an UID STORE command for each message change,
-		 * as a lot of them can change "together", we just fill in hashtables
-		 * and defer the treatment so that we're able to send only one
-		 * command.
-		 */
-		debug_print("IMAP batch mode on, deferring tags change\n");
-		for (cur = tags_set; cur; cur = cur->next) {
-			gint cur_tag = GPOINTER_TO_INT(cur->data);
-			if (cur_tag) {
-				ht_data = g_hash_table_lookup(IMAP_FOLDER_ITEM(item)->tags_set_table,
-					GINT_TO_POINTER(cur_tag));
-				if (ht_data == NULL) {
-					ht_data = g_new0(TagsData, 1);
-					ht_data->str = g_strdup(tags_get_tag(cur_tag));
-					ht_data->item = IMAP_FOLDER_ITEM(item);
-					g_hash_table_insert(IMAP_FOLDER_ITEM(item)->tags_set_table,
-						GINT_TO_POINTER(cur_tag), ht_data);
-				}
-				ht_data->msglist = g_slist_prepend(ht_data->msglist, GINT_TO_POINTER(msginfo->msgnum));
-			}
-		}
-		for (cur = tags_unset; cur; cur = cur->next) {
-			gint cur_tag = GPOINTER_TO_INT(cur->data);
-			if (cur_tag) {
-				ht_data = g_hash_table_lookup(IMAP_FOLDER_ITEM(item)->tags_unset_table,
-					GINT_TO_POINTER(cur_tag));
-				if (ht_data == NULL) {
-					ht_data = g_new0(TagsData, 1);
-					ht_data->str = g_strdup(tags_get_tag(cur_tag));
-					ht_data->item = IMAP_FOLDER_ITEM(item);
-					g_hash_table_insert(IMAP_FOLDER_ITEM(item)->tags_unset_table,
-						GINT_TO_POINTER(cur_tag), ht_data);
-				}
-				ht_data->msglist = g_slist_prepend(ht_data->msglist, GINT_TO_POINTER(msginfo->msgnum));
-			}
-		}
-	} else {
-		GSList *list_set = NULL;
-		GSList *list_unset = NULL;
-		GSList numlist;
-
-		numlist.data = GINT_TO_POINTER(msginfo->msgnum);
-		numlist.next = NULL;
-
-		debug_print("IMAP changing tags NOW\n");
-		for (cur = tags_set; cur; cur = cur->next) {
-			gint cur_tag = GPOINTER_TO_INT(cur->data);
-			const gchar *str = tags_get_tag(cur_tag);
-			if (IS_NOT_RESERVED_TAG(str))
-				list_set = g_slist_prepend(list_set, g_strdup(str));
-		}
-		if (list_set) {
-			ok = imap_set_message_flags(session,
-				IMAP_FOLDER_ITEM(item), &numlist, 0, list_set, TRUE);
-			slist_free_strings_full(list_set);
-			if (ok != MAILIMAP_NO_ERROR) {
-				return;
-			}
-		}
-
-		for (cur = tags_unset; cur; cur = cur->next) {
-			gint cur_tag = GPOINTER_TO_INT(cur->data);
-			const gchar *str = tags_get_tag(cur_tag);
-			if (IS_NOT_RESERVED_TAG(str))
-				list_unset = g_slist_prepend(list_unset, g_strdup(str));
-		}
-		if (list_unset) {
-			ok = imap_set_message_flags(session,
-				IMAP_FOLDER_ITEM(item), &numlist, 0, list_unset, FALSE);
-			slist_free_strings_full(list_unset);
-			if (ok != MAILIMAP_NO_ERROR) {
-				return;
-			}
-		}
-	}
+	fprintf(stderr, "TODO: delete imap_commit_tags\n");
 }
 
 static gchar *imap_fetch_msg_full(Folder *folder, FolderItem *item, gint uid,
@@ -3608,7 +3504,6 @@ static void *imap_get_uncached_messages_thread(void *data)
 	GSList *newlist = NULL;
 	GSList *llast = NULL;
 	GSList *seq_list, *cur;
-	gboolean got_alien_tags = FALSE;
 
 	debug_print("uncached_messages\n");
 
@@ -3647,7 +3542,7 @@ static void *imap_get_uncached_messages_thread(void *data)
 		for(i = 0 ; i < carray_count(env_list) ; i += 2) {
 			struct imap_fetch_env_info * info;
 			MsgInfo * msginfo;
-			GSList *tags = NULL, *cur = NULL;
+			GSList *tags = NULL;
 			info = carray_get(env_list, i);
 			tags = carray_get(env_list, i+1);
 			msginfo = imap_envelope_from_lep(info, item);
@@ -3658,24 +3553,6 @@ static void *imap_get_uncached_messages_thread(void *data)
 			g_slist_free(msginfo->tags);
 			msginfo->tags = NULL;
 
-			for (cur = tags; cur; cur = cur->next) {
-				gchar *real_tag = imap_modified_utf7_to_utf8(cur->data, TRUE);
-				gint id = 0;
-				id = tags_get_id_for_str(real_tag);
-				if (id == -1) {
-					id = tags_add_tag(real_tag);
-					got_alien_tags = TRUE;
-				}
-				if (!g_slist_find(msginfo->tags, GINT_TO_POINTER(id))) {
-					msginfo->tags = g_slist_prepend(
-							msginfo->tags,
-							GINT_TO_POINTER(id));
-				}
-				g_free(real_tag);
-			}
-			if (msginfo->tags)
-				msginfo->tags = g_slist_reverse(msginfo->tags);
-			slist_free_strings_full(tags);
 			msginfo->folder = item;
 			if (!newlist)
 				llast = newlist = g_slist_append(newlist, msginfo);
@@ -3684,12 +3561,7 @@ static void *imap_get_uncached_messages_thread(void *data)
 				llast = llast->next;
 			}
 		}
-
 		imap_fetch_env_free(env_list);
-	}
-
-	if (got_alien_tags) {
-		tags_write_tags();
 	}
 
 	imap_lep_set_free(seq_list);
@@ -5427,29 +5299,6 @@ bail:
 			else if (wasnew)
 				flags |= MSG_NEW;
 			flags |= oldflags;
-
-			if (tags_hash != NULL) {
-				GSList *tags = g_hash_table_lookup(tags_hash, GINT_TO_POINTER(msginfo->msgnum));
-				GSList *cur;
-
-				g_slist_free(msginfo->tags);
-				msginfo->tags = NULL;
-
-				for (cur = tags; cur; cur = cur->next) {
-					gchar *real_tag = imap_modified_utf7_to_utf8(cur->data, TRUE);
-					gint id = 0;
-					id = tags_get_id_for_str(real_tag);
-					if (id == -1) {
-						id = tags_add_tag(real_tag);
-						got_alien_tags = TRUE;
-					}
-					msginfo->tags = g_slist_append(
-								msginfo->tags,
-								GINT_TO_POINTER(id));
-					g_free(real_tag);
-				}
-				slist_free_strings_full(tags);
-			}
 		}
 
 		g_hash_table_insert(msgflags, msginfo, GINT_TO_POINTER(flags));

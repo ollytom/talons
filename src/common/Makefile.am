@@ -35,7 +35,6 @@ libclawscommon_la_SOURCES = $(arch_sources) \
 	string_match.c \
 	stringtable.c \
 	claws.c \
-	tags.c \
 	template.c \
 	utils.c \
 	uuencode.c \

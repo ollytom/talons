@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __TAGS_H__
@@ -34,16 +34,6 @@
          strcmp((tag), "NotJunk") && \
          strcmp((tag), "NoJunk") && \
          strcmp((tag), "Junk") && \
-         strcmp((tag), "$Forwarded")) 
+         strcmp((tag), "$Forwarded"))
 
-void tags_read_tags(void);
-void tags_write_tags(void);
-gint tags_add_tag(const gchar *tag);
-void tags_remove_tag(gint id);
-void tags_update_tag(gint id, const gchar *tag);
-const gchar *tags_get_tag(gint id);
-gint tags_get_id_for_str(const gchar *str);
-GSList *tags_get_list(void);
-guint tags_get_size(void);
-
-#endif 
+#endif

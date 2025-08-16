@@ -66,7 +66,6 @@ claws_mail_SOURCES = \
 	compose.c \
 	customheader.c \
 	displayheader.c \
-	edittags.c \
 	entity.c \
 	export.c \
 	folder.c \
@@ -170,7 +169,6 @@ claws_mailinclude_HEADERS = \
 	compose.h \
 	customheader.h \
 	displayheader.h \
-	edittags.h \
 	entity.h \
 	export.h \
 	folder.h \
