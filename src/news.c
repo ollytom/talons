@@ -21,8 +21,6 @@
 #include "claws-features.h"
 #endif
 
-#ifdef HAVE_LIBETPAN
-
 #include "defs.h"
 
 #include <glib.h>
@@ -1425,84 +1423,3 @@ void nntp_disconnect_all(gboolean have_connectivity)
 	nntp_main_set_timeout(prefs_common.io_timeout_secs);
 }
 
-#else
-#include <glib.h>
-#include <glib/gi18n.h>
-#include <gtk/gtk.h>
-#include "folder.h"
-#include "alertpanel.h"
-
-static FolderClass news_class;
-
-static void warn_etpan(void)
-{
-	static gboolean missing_news_warning = TRUE;
-	if (missing_news_warning) {
-		missing_news_warning = FALSE;
-		alertpanel_error(
-			_("You have one or more News accounts "
-			  "defined. However this version of "
-			  "Claws Mail has been built without "
-			  "News support; your News accounts are "
-			  "disabled.\n\n"
-			  "You probably need to "
-			  "install libetpan and recompile "
-			  "Claws Mail."));
-	}
-}
-static Folder *news_folder_new(const gchar *name, const gchar *path)
-{
-	warn_etpan();
-	return NULL;
-}
-void news_group_list_free(GSList *group_list)
-{
-	warn_etpan();
-}
-void news_remove_group_list_cache(Folder *folder)
-{
-	warn_etpan();
-}
-int news_folder_locked(Folder *folder)
-{
-	warn_etpan();
-	return 0;
-}
-gint news_post(Folder *folder, const gchar *file)
-{
-	warn_etpan();
-	return -1;
-}
-
-gint news_cancel_article(Folder * folder, MsgInfo * msginfo)
-{
-	warn_etpan();
-	return -1;
-}
-
-GSList *news_get_group_list(Folder *folder)
-{
-	warn_etpan();
-	return NULL;
-}
-
-
-FolderClass *news_get_class(void)
-{
-	if (news_class.idstr == NULL) {
-		news_class.type = F_NEWS;
-		news_class.idstr = "news";
-		news_class.uistr = "News";
-
-		/* Folder functions */
-		news_class.new_folder = news_folder_new;
-	};
-
-	return &news_class;
-}
-
-void nntp_disconnect_all(gboolean have_connectivity)
-{
-}
-
-#endif

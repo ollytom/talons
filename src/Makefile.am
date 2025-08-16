@@ -22,7 +22,6 @@ bin_PROGRAMS = claws-mail
 abook_source = \
 	addrbook.c \
 	addrclip.c \
-	addrcustomattr.c \
 	addressbook.c \
 	addressbook_foldersel.c \
 	addrindex.c \
@@ -38,7 +37,6 @@ abook_headers = \
 	adbookbase.h \
 	addrbook.h \
 	addrclip.h \
-	addrcustomattr.h \
 	addressbook.h \
 	addressbook_foldersel.h \
 	addrindex.h \

@@ -61,8 +61,6 @@
 #include "passwordstore.h"
 #include "file-utils.h"
 
-#include "addrcustomattr.h"
-
 enum {
 	DATEFMT_FMT,
 	DATEFMT_TXT,
@@ -1150,7 +1148,6 @@ void prefs_common_read_config(void)
 		prefs_common_read_history(MESSAGE_SEARCH_HISTORY);
 	prefs_common.compose_save_to_history =
 		prefs_common_read_history(COMPOSE_SAVE_TO_HISTORY);
-	prefs_common.addressbook_custom_attributes = addressbook_update_custom_attr_from_prefs();
 }
 
 #define TRY(func) \

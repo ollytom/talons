@@ -70,7 +70,6 @@
 #include "addrclip.h"
 #include "addrgather.h"
 #include "adbookbase.h"
-#include "addrcustomattr.h"
 
 typedef enum
 {
@@ -294,7 +293,6 @@ static void addressbook_list_select_add		( AddrItemObject    *aio,
 static void addressbook_list_select_remove	( AddrItemObject    *aio );
 
 static void addressbook_find_duplicates_cb	( GtkAction *action, gpointer data );
-static void addressbook_edit_custom_attr_cb	( GtkAction *action, gpointer data );
 static void addressbook_select_all_cb		( GtkAction *action, gpointer data );
 static void addressbook_clip_cut_cb		( GtkAction *action, gpointer data );
 static void addressbook_clip_copy_cb		( GtkAction *action, gpointer data );
@@ -381,7 +379,6 @@ static GtkActionEntry addressbook_entries[] =
 
 	{"Tools/---",			NULL, "---", NULL, NULL, NULL },
 	{"Tools/FindDuplicates",	NULL, N_("Find duplicates..."), NULL, NULL, G_CALLBACK(addressbook_find_duplicates_cb) },
-	{"Tools/EditAttrs",		NULL, N_("Edit custom attributes..."), NULL, NULL, G_CALLBACK(addressbook_edit_custom_attr_cb) },
 };
 
 static GtkActionEntry addressbook_tree_popup_entries[] =
@@ -872,11 +869,7 @@ static void addressbook_create(void)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Edit", "Mailto", "Address/Mailto", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Edit", "Merge", "Address/Merge", GTK_UI_MANAGER_MENUITEM)
 
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "Separator1", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "ExportHTML", "Tools/ExportHTML", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "Separator2", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "FindDuplicates", "Tools/FindDuplicates", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Menu/Tools", "EditAttrs", "Tools/EditAttrs", GTK_UI_MANAGER_MENUITEM)
 
 	gtk_window_add_accel_group(GTK_WINDOW(window),
 			gtk_ui_manager_get_accel_group(ui_manager));
@@ -1752,8 +1745,6 @@ static void addressbook_menuitem_set_sensitive( AddressObject *obj, GtkCMCTreeNo
 
 	cm_menu_set_sensitive_full( addrbook.ui_manager, "Menu/Book/EditBook",      canEditTr );
 	cm_menu_set_sensitive_full( addrbook.ui_manager, "Menu/Book/DeleteBook",    canEditTr );
-
-	cm_menu_set_sensitive_full( addrbook.ui_manager, "Menu/Tools/ExportHTML", canExport );
 }
 
 /**
@@ -4297,21 +4288,6 @@ static void addressbook_refresh_current( void ) {
 static gchar *_tempMessage_ = N_( "Busy searching..." );
 
 /**
- * Address search idle function. This function is called during UI idle time
- * while a search is in progress.
- *
- * \param data Idler data.
- */
-static void addressbook_search_idle( gpointer data ) {
-	/*
-	gint queryID;
-
-	queryID = GPOINTER_TO_INT( data );
-	g_print( "addressbook_ldap_idle... queryID=%d\n", queryID );
-	*/
-}
-
-/**
  * Search completion callback function. This removes the query from the idle
  * list.
  *
@@ -4359,7 +4335,6 @@ static void addressbook_perform_search(
 	ItemFolder *folder;
 	gchar *name;
 	gint queryID;
-	guint idleID;
 
 	/* Setup a query */
 	if( *searchTerm == '\0' || strlen( searchTerm ) < 1 ) return;
@@ -4375,14 +4350,6 @@ static void addressbook_perform_search(
 	queryID = addrindex_setup_explicit_search(
 		ds, searchTerm, folder, addressbook_search_callback_end, NULL );
 	if( queryID == 0 ) return;
-
-	/* Set up idler function */
-	idleID = g_idle_add(
-			(GSourceFunc) addressbook_search_idle,
-			GINT_TO_POINTER( queryID ) );
-	if (idleID == 0) {
-		g_message("error adding addressbook_search_idle\n");
-	}
 
 	/* Start search, sit back and wait for something to happen */
 	addrindex_start_search( queryID );
@@ -5037,11 +5004,6 @@ void addressbook_harvest(
 static void addressbook_find_duplicates_cb(GtkAction *action, gpointer data)
 {
 	addrduplicates_find(GTK_WINDOW(addrbook.window));
-}
-
-static void addressbook_edit_custom_attr_cb(GtkAction *action, gpointer data)
-{
-	addressbook_custom_attr_edit();
 }
 
 static void addressbook_start_drag(GtkWidget *widget, gint button,
