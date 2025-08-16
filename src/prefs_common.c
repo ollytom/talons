@@ -666,20 +666,6 @@ static PrefParam param[] = {
 	{"pixmap_theme_path", DEFAULT_PIXMAP_THEME,
 	 &prefs_common.pixmap_theme_path, P_STRING,
 	 NULL, NULL, NULL},
-#ifdef HAVE_SVG
-	{"enable_alpha_svg", "TRUE",
-	 &prefs_common.enable_alpha_svg, P_BOOL,
-	 NULL, NULL, NULL},
-	{"enable_pixmap_scaling", "TRUE",
-	 &prefs_common.enable_pixmap_scaling, P_BOOL,
-	 NULL, NULL, NULL},
-	{"pixmap_scaling_auto", "TRUE",
-	 &prefs_common.pixmap_scaling_auto, P_BOOL,
-	 NULL, NULL, NULL},
-	{"pixmap_scaling_ppi", "96",
-	 &prefs_common.pixmap_scaling_ppi, P_INT,
-	 NULL, NULL, NULL},
-#endif
 
 	{"run_processingrules_before_mark_all", "FALSE", &prefs_common.run_processingrules_before_mark_all, P_BOOL,
 	 NULL, NULL, NULL},

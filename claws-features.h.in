@@ -1,6 +1,5 @@
 #undef HAVE_LIBETPAN
 #undef HAVE_VALGRIND
-#undef HAVE_SVG
 #undef USE_ENCHANT
 #undef USE_GNUTLS
 #undef USE_GPGME

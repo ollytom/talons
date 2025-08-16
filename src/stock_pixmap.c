@@ -24,10 +24,6 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <string.h>
-#ifdef HAVE_SVG
-#include <librsvg/rsvg.h>
-#include <math.h>
-#endif
 
 #include "defs.h"
 #include "stock_pixmap.h"
@@ -474,9 +470,6 @@ static StockPixmapData pixmaps[] =
 static const char *extension[] = {
 	".png",
 	".xpm",
-#ifdef HAVE_SVG
-	".svg",
-#endif
 	NULL
 };
 
@@ -511,208 +504,6 @@ GtkWidget *stock_pixmap_widget(StockPixmap icon)
 	return NULL;
 }
 
-#ifdef HAVE_SVG
-/*
- * Renders a SVG into a Cairo context at the given dimensions keeping
- * the aspect ratio.
- *
- * Adapted from https://developer.gnome.org/rsvg/2.40/RsvgHandle.html
- * #rsvg-handle-set-size-callback
- */
-void render_scaled_proportionally(RsvgHandle *handle, cairo_t *cr, int width, int height)
-{
-#if LIBRSVG_CHECK_VERSION(2, 46, 0)
-	if (cairo_status(cr) == CAIRO_STATUS_SUCCESS) {
-		const RsvgRectangle viewport = {
-			.x = 0,
-			.y = 0,
-			.width = width,
-			.height = height,
-		};
-		GError *err = NULL;
-
-		cairo_rectangle(cr, 0, 0, width, height);
-		cairo_clip(cr);
-
-		rsvg_handle_render_document(handle, cr, &viewport, &err);
-		if (err != NULL) {
-			g_warning("unable to render SVG document (%d): %s", err->code, err->message);
-			g_error_free(err);
-		}
-	}
-#else
-	RsvgDimensionData dimensions;
-	double x_factor, y_factor;
-	double scale_factor;
-
-	rsvg_handle_get_dimensions(handle, &dimensions);
-
-	x_factor = (double) width / dimensions.width;
-	y_factor = (double) height / dimensions.height;
-
-	scale_factor = MIN(x_factor, y_factor);
-
-	cairo_scale(cr, scale_factor, scale_factor);
-
-	rsvg_handle_render_cairo(handle, cr);
-#endif
-}
-
-/*
- * Generates a new Pixbuf from a Cairo context of the given dimensions.
- *
- * Adapted from https://gist.github.com/bert/985903
- */
-GdkPixbuf *pixbuf_from_cairo(cairo_t *cr, gboolean alpha, int width, int height)
-{
-	gint p_stride, /* Pixbuf stride value */
-	     p_n_channels, /* RGB -> 3, RGBA -> 4 */
-	     s_stride; /* Surface stride value */
-	guchar *p_pixels, /* Pixbuf's pixel data */
-	       *s_pixels; /* Surface's pixel data */
-	cairo_surface_t *surface; /* Temporary image surface */
-	GdkPixbuf *pixbuf; /* Returned pixbuf */
-
-	/* Create pixbuf */
-	pixbuf = gdk_pixbuf_new
-			(GDK_COLORSPACE_RGB, alpha, 8, width, height);
-	if (pixbuf == NULL) {
-		g_warning("failed to create a new %d x %d pixbuf", width, height);
-		return NULL;
-	}
-	/* Obtain surface from where pixel values will be copied */
-	surface = cairo_get_target(cr);
-	if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
-		g_warning("invalid cairo surface for copying");
-		return NULL;
-	}
-	/* Inspect pixbuf */
-	g_object_get(G_OBJECT(pixbuf),
-		"rowstride", &p_stride,
-		"n-channels", &p_n_channels,
-		"pixels", &p_pixels,
-		NULL);
-	/* and surface */
-	s_stride = cairo_image_surface_get_stride(surface);
-	s_pixels = cairo_image_surface_get_data(surface);
-
-	/* Copy pixel data from surface to pixbuf */
-	while (height--) {
-		gint i;
-		guchar *p_iter = p_pixels, *s_iter = s_pixels;
-		for (i = 0; i < width; i++) {
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-			/* Pixbuf: RGB(A) - Surface: BGRA */
-			gdouble alpha_factor = (gdouble)0xff / s_iter[3];
-			p_iter[0] = (guchar)( s_iter[2] * alpha_factor + .5 );
-			p_iter[1] = (guchar)( s_iter[1] * alpha_factor + .5 );
-			p_iter[2] = (guchar)( s_iter[0] * alpha_factor + .5 );
-			if (p_n_channels == 4)
-				 p_iter[3] = s_iter[3];
-#elif G_BYTE_ORDER == G_BIG_ENDIAN
-			/* Pixbuf: RGB(A) - Surface: ARGB */
-			gdouble alpha_factor = (gdouble)0xff / s_iter[0];
-			p_iter[0] = (guchar)( s_iter[1] * alpha_factor + .5 );
-			p_iter[1] = (guchar)( s_iter[2] * alpha_factor + .5 );
-			p_iter[2] = (guchar)( s_iter[3] * alpha_factor + .5 );
-			if (p_n_channels == 4)
-				p_iter[3] = s_iter[0];
-#else /* PDP endianness */
-			/* Pixbuf: RGB(A) - Surface: RABG */
-			gdouble alpha_factor = (gdouble)0xff / s_iter[1];
-			p_iter[0] = (guchar)( s_iter[0] * alpha_factor + .5 );
-			p_iter[1] = (guchar)( s_iter[3] * alpha_factor + .5 );
-			p_iter[2] = (guchar)( s_iter[2] * alpha_factor + .5 );
-			if (p_n_channels == 4)
-				p_iter[3] = s_iter[1];
-#endif
-			s_iter += 4;
-			p_iter += p_n_channels;
-		}
-		s_pixels += s_stride;
-		p_pixels += p_stride;
-	}
-	/* Destroy context */
-	cairo_destroy(cr);
-
-	return pixbuf;
-}
-
-/*
- * Renders a SVG file into a pixbuf with the dimensions of the
- * given pixmap data (optionally with alpha channel).
- */
-GdkPixbuf *pixbuf_from_svg_like_icon(char *filename, GError **error, StockPixmapData *icondata, gboolean alpha)
-{
-	int width, height;
-	cairo_surface_t *surface;
-	cairo_t *context;
-	RsvgHandle *handle;
-
-	cm_return_val_if_fail(filename != NULL, NULL);
-	cm_return_val_if_fail(icondata != NULL, NULL);
-
-	/* load SVG file */
-	handle = rsvg_handle_new_from_file(filename, error);
-	if (handle == NULL) {
-		g_warning("failed loading SVG '%s': %s (%d)", filename,
-				(*error)->message, (*error)->code);
-		return NULL;
-	}
-
-	/* scale dimensions */
-	if (prefs_common.enable_pixmap_scaling) {
-		/* default is pixmap icon size */
-		if (sscanf((icondata->data)[0], "%d %d ", &width, &height) != 2) {
-			g_warning("failed reading icondata width and height");
-			return NULL;
-		}
-		/* which can be modified by some factor */
-		if (prefs_common.pixmap_scaling_ppi > 0) {
-			gdouble factor = (gdouble) prefs_common.pixmap_scaling_ppi / MIN_PPI;
-			width = (int) floor(factor * width);
-			height = (int) floor(factor * height);
-		}
-	} else { /* render using SVG size */
-#if LIBRSVG_CHECK_VERSION(2, 52, 0)
-		double svg_width, svg_height;
-
-		rsvg_handle_get_intrinsic_size_in_pixels(handle, &svg_width, &svg_height);
-		width = (int) svg_width;
-		height = (int) svg_height;
-#else
-		RsvgDimensionData dimension;
-
-		rsvg_handle_get_dimensions (handle, &dimension);
-		width = dimension.width;
-		height = dimension.height;
-#endif
-	}
-
-	/* create drawing context */
-	surface = cairo_image_surface_create(
-			alpha? CAIRO_FORMAT_ARGB32: CAIRO_FORMAT_RGB24,
-			width, height);
-	if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
-		g_warning("failed to create a cairo surface: %s",
-				cairo_status_to_string(cairo_surface_status(surface)));
-		g_object_unref(handle);
-		return NULL;
-	}
-	context = cairo_create(surface);
-	cairo_surface_destroy(surface);
-	if (cairo_status(context) != CAIRO_STATUS_SUCCESS) {
-		g_warning("failed to create a cairo context: %s",
-				cairo_status_to_string(cairo_status(context)));
-		cairo_destroy(context);
-		return NULL;
-	}
-	/* render SVG */
-	render_scaled_proportionally(handle, context, width, height);
-	/* build result and destroy context */
-	return pixbuf_from_cairo(context, alpha, width, height);
-}
-#endif
 
 gint priv_pixbuf_gdk(PrivPixmap icon, GdkPixbuf **pixbuf)
 {
@@ -771,16 +562,7 @@ try_next_extension:
 							     NULL);
 				if (is_file_exist(icon_file_name)) {
 					GError *err = NULL;
-#ifdef HAVE_SVG
-					if (!strncmp(extension[i], ".svg", 4)) {
-						pix = pixbuf_from_svg_like_icon(icon_file_name, &err, pix_d,
-								prefs_common.enable_alpha_svg);
-					} else {
-						pix = gdk_pixbuf_new_from_file(icon_file_name, &err);
-					}
-#else
 					pix = gdk_pixbuf_new_from_file(icon_file_name, &err);
-#endif
 					if (err) g_error_free(err);
 				}
 				if (pix) {

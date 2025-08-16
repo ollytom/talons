@@ -418,16 +418,6 @@ static GtkWidget *about_create_child_page_features(void)
 	gtk_text_buffer_insert(buffer, &iter,
 		(gchar *)C_("libetpan", "adds support for IMAP and NNTP servers\n"), -1);
 
-#if HAVE_SVG
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
-#else
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, inactive_pixbuf);
-#endif
-	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" librSVG "), -1,
-						 "bold", NULL);
-	gtk_text_buffer_insert(buffer, &iter,
-		(gchar *)C_("librSVG", "adds support for SVG themes\n"), -1);
-
 #if USE_OAUTH2
 	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
 #else

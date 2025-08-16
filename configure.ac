@@ -204,10 +204,6 @@ AC_ARG_ENABLE(valgrind,
 		[  --disable-valgrind              Do not build valgrind support for debugging],
 		[enable_valgrind=$enableval], [enable_valgrind=yes])
 
-AC_ARG_ENABLE(svg,
-        [  --disable-svg                   Do not build SVG support],
-        [enable_svg=$enableval], [enable_svg=yes])
-
 AC_ARG_ENABLE(tests,
 				[  --enable-tests                   Build unit tests],
 				[enable_tests=$enableval], [enable_tests=no])
@@ -491,25 +487,6 @@ else
 fi
 AM_CONDITIONAL(CLAWS_LIBETPAN, test "x$libetpan_result" = "xyes")
 
-dnl librsvg
-AC_MSG_CHECKING([whether to use librsvg])
-if test x"$enable_svg" = xyes; then
-	AC_MSG_RESULT(yes)
-    PKG_CHECK_MODULES([SVG], [librsvg-2.0 >= 2.39.0 cairo >= 1.0.0],
-    [
-        AC_SUBST(SVG_CFLAGS)
-        AC_SUBST(SVG_LIBS)
-		AC_DEFINE(HAVE_SVG, 1, [Define if librsvg2 is available for SVG support])
-		enable_svg=yes
-	],
-	[
-		AC_MSG_NOTICE([SVG support deactivated as librsvg2 >= 2.39.0 was not found])
-		enable_svg=no
-	])
-else
-	AC_MSG_RESULT(no)
-fi
-
 AC_MSG_CHECKING([whether to use valgrind])
 if test x$enable_valgrind = xyes; then
 	AC_MSG_RESULT(yes)
@@ -618,7 +595,6 @@ echo "enchant              : $enable_enchant"
 echo "IMAP4 (libetpan)     : $enable_libetpan"
 echo "NNTP (libetpan)      : $enable_libetpan"
 echo "Manual               : $enable_manual"
-echo "SVG support          : $enable_svg"
 echo "Unit tests           : $enable_tests"
 echo "Valgrind support     : $enable_valgrind"
 

@@ -49,9 +49,6 @@
 #ifdef HAVE_VALGRIND
 #include <valgrind.h>
 #endif
-#ifdef HAVE_SVG
-#include <librsvg/rsvg.h>
-#endif
 
 #include "claws.h"
 #include "main.h"
@@ -404,13 +401,6 @@ static void main_dump_features_list(gboolean show_debug_only)
 		debug_print(" libetpan %d.%d\n", LIBETPAN_VERSION_MAJOR, LIBETPAN_VERSION_MINOR);
 	else
 		g_print(" libetpan %d.%d\n", LIBETPAN_VERSION_MAJOR, LIBETPAN_VERSION_MINOR);
-#endif
-
-#if HAVE_SVG
-	if (show_debug_only)
-		debug_print(" librSVG " LIBRSVG_VERSION "\n");
-	else
-		g_print(" librSVG " LIBRSVG_VERSION "\n");
 #endif
 }
 

@@ -155,10 +155,6 @@
 
 #define DEFAULT_PIXMAP_THEME	"INTERNAL_DEFAULT"
 #define PIXMAP_THEME_DIR		"themes"
-#ifdef HAVE_SVG
-#define MIN_PPI 96
-#define MAX_PPI 300
-#endif
 
 #define AVATAR_NONE	0
 #define AVATAR_XFACE	1
