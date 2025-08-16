@@ -46,14 +46,6 @@
 #include <sys/file.h>
 #endif
 
-#ifdef HAVE_STARTUP_NOTIFICATION
-#ifdef GDK_WINDOWING_X11
-# define SN_API_NOT_YET_FROZEN
-# include <libsn/sn-launchee.h>
-# include <gdk/gdkx.h>
-#endif
-#endif
-
 #ifdef HAVE_VALGRIND
 #include <valgrind.h>
 #endif
@@ -134,11 +126,6 @@
 
 gchar *prog_version;
 
-#ifdef HAVE_STARTUP_NOTIFICATION
-static SnLauncheeContext *sn_context = NULL;
-static SnDisplay *sn_display = NULL;
-#endif
-
 static gint lock_socket = -1;
 static gint lock_socket_tag = 0;
 
@@ -218,50 +205,6 @@ static void exit_claws			(MainWindow *mainwin);
 static MainWindow *static_mainwindow;
 
 static gboolean emergency_exit = FALSE;
-
-#ifdef HAVE_STARTUP_NOTIFICATION
-static void sn_error_trap_push(SnDisplay *display, Display *xdisplay)
-{
-	gdk_error_trap_push();
-}
-
-static void sn_error_trap_pop(SnDisplay *display, Display *xdisplay)
-{
-	gdk_error_trap_pop();
-}
-
-static void startup_notification_complete(gboolean with_window)
-{
-	Display *xdisplay;
-	GtkWidget *hack = NULL;
-
-	if (with_window) {
-		/* this is needed to make the startup notification leave,
-		 * if we have been launched from a menu.
-		 * We have to display a window, so let it be very little */
-		hack = gtk_window_new(GTK_WINDOW_POPUP);
-		gtk_window_move(GTK_WINDOW(hack), 0, 0);
-		gtk_widget_set_size_request(hack, 1, 1);
-		gtk_widget_show(hack);
-	}
-
-	xdisplay = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
-	sn_display = sn_display_new(xdisplay,
-				sn_error_trap_push,
-				sn_error_trap_pop);
-	sn_context = sn_launchee_context_new_from_environment(sn_display,
-						 DefaultScreen(xdisplay));
-
-	if (sn_context != NULL)	{
-		sn_launchee_context_complete(sn_context);
-		sn_launchee_context_unref(sn_context);
-		sn_display_unref(sn_display);
-	}
-	if (with_window) {
-		gtk_widget_destroy(hack);
-	}
-}
-#endif /* HAVE_STARTUP_NOTIFICATION */
 
 static void claws_gtk_idle(void)
 {
@@ -499,14 +442,6 @@ int main(int argc, char *argv[])
 	/* check and create unix domain socket for remote operation */
 	lock_socket = prohibit_duplicate_launch(&argc, &argv);
 	if (lock_socket < 0) {
-#ifdef HAVE_STARTUP_NOTIFICATION
-#ifdef GDK_WINDOWING_X11
-	if (GDK_IS_X11_DISPLAY(gdk_display_get_default())) {
-		if (gtk_init_check(&argc, &argv))
-			startup_notification_complete(TRUE);
-	}
-#endif
-#endif
 		return 0;
 	}
 
@@ -769,14 +704,6 @@ int main(int argc, char *argv[])
 	}
 
 	static_mainwindow = mainwin;
-
-#ifdef HAVE_STARTUP_NOTIFICATION
-#ifdef GDK_WINDOWING_X11
-	if (GDK_IS_X11_DISPLAY(gdk_display_get_default()))
-		startup_notification_complete(FALSE);
-#endif
-#endif
-
 	folder_item_update_thaw();
 	folderview_thaw(mainwin->folderview);
 	main_window_cursor_normal(mainwin);

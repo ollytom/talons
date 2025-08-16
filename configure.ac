@@ -196,10 +196,6 @@ AC_ARG_ENABLE(enchant,
 		[  --disable-enchant               Do not build Enchant support for spell-checking],
 		[enable_enchant=$enableval], [enable_enchant=yes])
 
-AC_ARG_ENABLE(startup-notification,
-		[  --disable-startup-notification  Do not startup notification support],
-		[enable_startup_notification=$enableval], [enable_startup_notification=yes])
-
 AC_ARG_ENABLE(libetpan,
 		[  --disable-libetpan              Do not build libetpan support for IMAP4/NNTP],
 		[enable_libetpan=$enableval], [enable_libetpan=yes])
@@ -429,22 +425,6 @@ AC_SUBST(LIBRESOLV)
 
 LIBS="$LIBS $LIBRESOLV"
 
-if test "x$enable_startup_notification" = "xyes"; then
-	PKG_CHECK_MODULES(STARTUP_NOTIFICATION, pkg_info libstartup-notification-1.0 >= 0.5,
-	[
-		AC_DEFINE(HAVE_STARTUP_NOTIFICATION, 1, [Define if we're using libstartup-notification.])
-		echo "Building with libstartup-notification"
-		enable_startup_notification=yes
-	],
-	[
-		echo "Building without libstartup-notification"
-		enable_startup_notification=no
-	])
-
-	AC_SUBST(STARTUP_NOTIFICATION_CFLAGS)
-	AC_SUBST(STARTUP_NOTIFICATION_LIBS)
-fi
-
 dnl Libetpan
 AC_MSG_CHECKING([whether to use libetpan])
 if test x"$enable_libetpan" = xyes; then
@@ -582,17 +562,6 @@ fi
 AC_SUBST(EXPAT_CFLAGS)
 AC_SUBST(EXPAT_LIBS)
 
-dnl libarchive *****************************************************************
-PKG_CHECK_MODULES(LIBARCHIVE, libarchive, HAVE_ARCHIVE=yes, HAVE_ARCHIVE=no)
-AC_SUBST(ARCHIVE_LIBS)
-AC_SUBST(ARCHIVE_CFLAGS)
-AC_CHECK_LIB([archive], [archive_read_new],
-		       ARCHIVE_LIBS=-larchive
-		       HAVE_ARCHIVE=yes
-		       AC_SUBST(ARCHIVE_LIBS,$ARCHIVE_CFLAGS),
-		       HAVE_ARCHIVE=no
-		       )
-
 dnl cairo **********************************************************************
 PKG_CHECK_MODULES(CAIRO, cairo >= 1.12.0, HAVE_CAIRO=yes, HAVE_CAIRO=no)
 AC_SUBST(CAIRO_CFLAGS)
@@ -602,11 +571,6 @@ dnl fontconfig *****************************************************************
 PKG_CHECK_MODULES(FONTCONFIG, fontconfig, HAVE_FONTCONFIG=yes, HAVE_FONTCONFIG=no)
 AC_SUBST(FONTCONFIG_CFLAGS)
 AC_SUBST(FONTCONFIG_LIBS)
-
-dnl libical ********************************************************************
-PKG_CHECK_MODULES(LIBICAL, libical >= 2.0, HAVE_LIBICAL=yes, HAVE_LIBICAL=no)
-AC_SUBST(LIBICAL_CFLAGS)
-AC_SUBST(LIBICAL_LIBS)
 
 dnl Gpgme **********************************************************************
 PKG_CHECK_MODULES(GPGME, [gpgme >= 1.1.1], HAVE_GPGME_PKGCONFIG=yes, HAVE_GPGME_PKGCONFIG=no)
@@ -622,22 +586,6 @@ if test x"$HAVE_GPGME_PKGCONFIG" = xyes -o x"$HAVE_GPGME_CONFIG" = xyes; then
 else
 	HAVE_GPGME=no
 fi
-
-dnl libnotify ******************************************************************
-PKG_CHECK_MODULES(libnotify, libnotify >= 0.4.3, HAVE_LIBNOTIFY=yes, HAVE_LIBNOTIFY=no)
-if test x"$HAVE_LIBNOTIFY" = xyes; then
-	AC_DEFINE(HAVE_LIBNOTIFY, 1, [Define if libnotify support is enabled])
-fi
-AC_SUBST(libnotify_CFLAGS)
-AC_SUBST(libnotify_LIBS)
-
-dnl libcanberra-gtk3 ************************************************************
-PKG_CHECK_MODULES(libcanberra_gtk3, libcanberra-gtk3, HAVE_LIBCANBERRA_GTK=yes, HAVE_LIBCANBERRA_GTK=no)
-if test x"$HAVE_LIBCANBERRA_GTK" = xyes; then
-	AC_DEFINE(HAVE_LIBCANBERRA_GTK, 1, [Define if libcanberra-gtk3 support is enabled])
-fi
-AC_SUBST(libcanberra_gtk3_CFLAGS)
-AC_SUBST(libcanberra_gtk3_LIBS)
 
 AC_CONFIG_FILES([
 Makefile
@@ -672,7 +620,6 @@ echo "NNTP (libetpan)      : $enable_libetpan"
 echo "Manual               : $enable_manual"
 echo "SVG support          : $enable_svg"
 echo "Unit tests           : $enable_tests"
-echo "Startup notification : $enable_startup_notification"
 echo "Valgrind support     : $enable_valgrind"
 
 if test -n "$more_debug_output_modules"; then
