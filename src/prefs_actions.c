@@ -45,7 +45,6 @@
 #include "description_window.h"
 #include "manual.h"
 #include "menu.h"
-#include "prefs_filtering_action.h"
 #include "matcher_parser.h"
 #include "prefs_toolbar.h"
 #include "file-utils.h"
@@ -66,7 +65,6 @@ static struct Actions
 	GtkWidget *window;
 
 	GtkWidget *ok_btn;
-	GtkWidget *filter_btn;
 	GtkWidget *name_entry;
 	GtkWidget *cmd_entry;
 	GtkWidget *info_btn;
@@ -123,9 +121,7 @@ static GtkWidget *prefs_actions_list_view_create	(void);
 static void prefs_actions_create_list_view_columns	(GtkWidget *list_view);
 static void prefs_actions_select_row(GtkTreeView *list_view, GtkTreePath *path);
 
-static void prefs_action_filter_radiobtn_cb(GtkWidget *widget, gpointer data);
 static void prefs_action_shell_radiobtn_cb(GtkWidget *widget, gpointer data);
-static void prefs_action_filterbtn_cb(GtkWidget *widget, gpointer data);
 
 void prefs_actions_open(MainWindow *mainwin)
 {
@@ -169,13 +165,11 @@ static void prefs_actions_create(MainWindow *mainwin)
 	GtkWidget *table;
 
 	GtkWidget *shell_radiobtn;
-	GtkWidget *filter_radiobtn;
 
 	GtkWidget *name_label;
 	GtkWidget *name_entry;
 	GtkWidget *cmd_label;
 	GtkWidget *cmd_entry;
-	GtkWidget *filter_btn;
 
 	GtkWidget *reg_hbox;
 	GtkWidget *btn_hbox;
@@ -416,9 +410,7 @@ static void prefs_actions_create(MainWindow *mainwin)
 
 	actions.name_entry = name_entry;
 	actions.cmd_entry  = cmd_entry;
-	actions.filter_btn = filter_btn;
 	actions.shell_radiobtn = shell_radiobtn;
-	actions.filter_radiobtn = filter_radiobtn;
 
 	actions.actions_list_view = cond_list_view;
 }
@@ -1262,43 +1254,12 @@ static void prefs_actions_select_row(GtkTreeView *list_view, GtkTreePath *path)
 	return;
 }
 
-static void prefs_action_filter_radiobtn_cb(GtkWidget *widget, gpointer data)
-{
-	if (actions.filter_btn)
-		gtk_widget_set_sensitive(actions.filter_btn, TRUE);
-	if (actions.cmd_entry)
-		gtk_widget_set_sensitive(actions.cmd_entry, FALSE);
-	if (actions.info_btn)
-		gtk_widget_set_sensitive(actions.info_btn, FALSE);
-}
-
 static void prefs_action_shell_radiobtn_cb(GtkWidget *widget, gpointer data)
 {
-	if (actions.filter_btn)
-		gtk_widget_set_sensitive(actions.filter_btn, FALSE);
 	if (actions.cmd_entry)
 		gtk_widget_set_sensitive(actions.cmd_entry, TRUE);
 	if (actions.info_btn)
 		gtk_widget_set_sensitive(actions.info_btn, TRUE);
-}
-
-static void prefs_action_filterbtn_cb(GtkWidget *widget, gpointer data)
-{
-	gchar *action_str, **tokens;
-
-	action_str = gtk_editable_get_chars(GTK_EDITABLE(actions.cmd_entry), 0, -1);
-	if(modified &&
-	   *action_str != '\0' &&
-	   alertpanel(_("Entry was modified"),
-			_("Opening the filter action dialog will clear current modifications "
-			"of the command-line."),
-			NULL, _("_Close"), NULL, _("_Open"), NULL, NULL,
-		        ALERTFOCUS_SECOND) == G_ALERTDEFAULT) {
-		return;
-	}
-	tokens = g_strsplit_set(action_str, "{}", 5);
-	g_free(action_str);
-	g_strfreev(tokens);
 }
 
 void prefs_actions_rename_path(const gchar *old_path, const gchar *new_path)
