@@ -44,7 +44,6 @@
 #include "codeconv.h"
 #include "prefs_gtk.h"
 #include "account.h"
-#include "filtering.h"
 #include "procheader.h"
 #include "hooks.h"
 #include "log.h"
@@ -759,9 +758,6 @@ void folder_tree_destroy(Folder *folder)
 	cm_return_if_fail(folder != NULL);
 
 	node = folder->node;
-
-	prefs_filtering_clear_folder(folder);
-
 	if (node != NULL) {
 		g_node_traverse(node, G_POST_ORDER, G_TRAVERSE_ALL, -1,
 				folder_tree_destroy_func, NULL);
@@ -1976,71 +1972,6 @@ static gint syncronize_flags(FolderItem *item, MsgInfoList *msglist)
 	return ret;
 }
 
-static gint folder_item_syncronize_flags(FolderItem *item)
-{
-	MsgInfoList *msglist = NULL;
-	GSList *cur;
-	gint ret = 0;
-
-	cm_return_val_if_fail(item != NULL, -1);
-	cm_return_val_if_fail(item->folder != NULL, -1);
-	cm_return_val_if_fail(item->folder->klass != NULL, -1);
-	if (item->no_select)
-		return -1;
-
-	item->scanning = ITEM_SCANNING_WITH_FLAGS;
-
-	if (item->cache == NULL)
-		folder_item_read_cache(item);
-
-	msglist = msgcache_get_msg_list(item->cache);
-
-	ret = syncronize_flags(item, msglist);
-
-	for (cur = msglist; cur != NULL; cur = g_slist_next(cur)) {
-		procmsg_msginfo_free((MsgInfo **)&(cur->data));
-	}
-
-	g_slist_free(msglist);
-
-	item->scanning = ITEM_NOT_SCANNING;
-
-	return ret;
-}
-
-static void folder_item_process_open (FolderItem *item,
-				 void (*before_proc_func)(gpointer data),
-				 void (*after_proc_func)(gpointer data),
-				 gpointer data)
-{
-	gchar *buf;
-	if (item == NULL)
-		return;
-	if((item->folder->klass->scan_required != NULL) &&
-	   (item->folder->klass->scan_required(item->folder, item))) {
-		folder_item_scan_full(item, TRUE);
-	} else {
-		folder_item_syncronize_flags(item);
-	}
-
-	/* Processing */
-	if (item->prefs->enable_processing_when_opening) {
-		buf = g_strdup_printf(_("Processing (%s)...\n"),
-			      item->path ? item->path : item->name);
-		g_free(buf);
-
-		if (before_proc_func)
-			before_proc_func(data);
-
-		folder_item_apply_processing(item);
-
-		if (after_proc_func)
-			after_proc_func(data);
-	}
-	item->processing_pending = FALSE;
-	return;
-}
-
 gint folder_item_open(FolderItem *item)
 {
 	if (item->no_select)
@@ -2051,9 +1982,7 @@ gint folder_item_open(FolderItem *item)
 		return -2;
 	}
 
-	item->processing_pending = TRUE;
-	folder_item_process_open (item, NULL, NULL, NULL);
-
+	item->processing_pending = FALSE;
 	item->opened = TRUE;
 	return 0;
 }
@@ -2354,65 +2283,22 @@ gint folder_item_scan_full(FolderItem *item, gboolean filtering)
 	item->scanning = ITEM_SCANNING;
 
 	if (newmsg_list != NULL) {
-		GSList *elem, *to_filter = NULL;
-		gboolean do_filter = (filtering == TRUE) &&
-			(item->folder->account != NULL) &&
-			(item->folder->account->filter_on_recv) &&
-			((item->stype == F_INBOX) ||
-			 ((item->stype == F_NORMAL) &&
-			  (FOLDER_TYPE(item->folder) == F_NEWS)));
-
+		GSList *elem = NULL;
 		for (elem = newmsg_list; elem != NULL; elem = g_slist_next(elem)) {
 			MsgInfo *msginfo = (MsgInfo *) elem->data;
 
 			msgcache_add_msg(item->cache, msginfo);
-			if (!do_filter) {
-				exists_list = g_slist_prepend(exists_list, msginfo);
+			exists_list = g_slist_prepend(exists_list, msginfo);
 
-				if(prefs_common.thread_by_subject &&
-					MSG_IS_IGNORE_THREAD(msginfo->flags) &&
-					!subject_table_lookup(subject_table, msginfo->subject)) {
-					subject_table_insert(subject_table, msginfo->subject, msginfo);
-				}
+			if(prefs_common.thread_by_subject &&
+				MSG_IS_IGNORE_THREAD(msginfo->flags) &&
+				!subject_table_lookup(subject_table, msginfo->subject)) {
+				subject_table_insert(subject_table, msginfo->subject, msginfo);
 			}
 		}
 
-		if (do_filter) {
-			GSList *unfiltered;
-
-			folder_item_set_batch(item, TRUE);
-			procmsg_msglist_filter(newmsg_list, item->folder->account,
-					&to_filter, &unfiltered,
-					TRUE);
-			folder_item_set_batch(item, FALSE);
-
-			filtering_move_and_copy_msgs(newmsg_list);
-			if (to_filter != NULL) {
-				for (elem = to_filter; elem; elem = g_slist_next(elem)) {
-					MsgInfo *msginfo = (MsgInfo *)elem->data;
-					procmsg_msginfo_free(&msginfo);
-				}
-				g_slist_free(to_filter);
-			}
-			if (unfiltered != NULL) {
-				for (elem = unfiltered; elem; elem = g_slist_next(elem)) {
-					MsgInfo *msginfo = (MsgInfo *)elem->data;
-					exists_list = g_slist_prepend(exists_list, msginfo);
-
-					if(prefs_common.thread_by_subject &&
-						MSG_IS_IGNORE_THREAD(msginfo->flags) &&
-						!subject_table_lookup(subject_table, msginfo->subject)) {
-						subject_table_insert(subject_table, msginfo->subject, msginfo);
-					}
-				}
-				g_slist_free(unfiltered);
-			}
-			if (prefs_common.real_time_sync)
+		if (prefs_common.real_time_sync)
 				folder_item_synchronise(item);
-		} else {
-			if (prefs_common.real_time_sync)
-				folder_item_synchronise(item);
-		}
 
 		g_slist_free(newmsg_list);
 
@@ -3342,7 +3228,6 @@ static FolderItem *folder_item_move_recursive(FolderItem *src, FolderItem *dest,
 	if (!copy) {
 		debug_print("updating rules : %s => %s\n", old_id, new_id);
 		if (old_id != NULL && new_id != NULL) {
-			prefs_filtering_rename_path(old_id, new_id);
 			account_rename_path(old_id, new_id);
 		}
 	}
@@ -4429,83 +4314,6 @@ static gboolean persist_prefs_free(gpointer key, gpointer val, gpointer data)
 	g_free(key);
 	g_free(val);
 	return TRUE;
-}
-
-void folder_item_apply_processing(FolderItem *item)
-{
-	GSList *processing_list;
-	GSList *mlist, *cur;
-	guint total = 0, curmsg = 0;
-	gint last_apply_per_account;
-
-	cm_return_if_fail(item != NULL);
-
-	if (item->no_select)
-	       return;
-
-	processing_list = item->prefs->processing;
-
-	if (!processing_enabled(pre_global_processing) &&
-	    !processing_enabled(processing_list) &&
-	    !processing_enabled(post_global_processing))
-		return;
-
-	debug_print("processing %s\n", item->name);
-	folder_item_update_freeze();
-
-	inc_lock();
-
-	mlist = folder_item_get_msg_list(item);
-	total = g_slist_length(mlist);
-	statusbar_print_all(_("Processing messages..."));
-
-	last_apply_per_account = prefs_common.apply_per_account_filtering_rules;
-	prefs_common.apply_per_account_filtering_rules = FILTERING_ACCOUNT_RULES_SKIP;
-
-	folder_item_set_batch(item, TRUE);
-	for (cur = mlist ; cur != NULL ; cur = cur->next) {
-		MsgInfo * msginfo;
-
-		msginfo = (MsgInfo *) cur->data;
-
-                /* reset parameters that can be modified by processing */
-                msginfo->hidden = 0;
-                msginfo->score = 0;
-
-		statusbar_progress_all(curmsg++,total, 10);
-
-                /* apply pre global rules */
-		filter_message_by_msginfo(pre_global_processing, msginfo, NULL,
-				FILTERING_PRE_PROCESSING, NULL);
-
-                /* apply rules of the folder */
-		filter_message_by_msginfo(processing_list, msginfo, NULL,
-				FILTERING_FOLDER_PROCESSING, item->name);
-
-                /* apply post global rules */
-		filter_message_by_msginfo(post_global_processing, msginfo, NULL,
-				FILTERING_POST_PROCESSING, NULL);
-		if (curmsg % 1000 == 0)
-			GTK_EVENTS_FLUSH();
-	}
-	folder_item_set_batch(item, FALSE);
-
-	prefs_common.apply_per_account_filtering_rules = last_apply_per_account;
-
-	if (pre_global_processing || processing_list
-	    || post_global_processing)
-		filtering_move_and_copy_msgs(mlist);
-	for (cur = mlist ; cur != NULL ; cur = cur->next) {
-		procmsg_msginfo_free((MsgInfo **)&(cur->data));
-	}
-	g_slist_free(mlist);
-
-	statusbar_progress_all(0,0,0);
-	statusbar_pop_all();
-
-	inc_unlock();
-
-	folder_item_update_thaw();
 }
 
 /*

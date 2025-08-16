@@ -55,7 +55,6 @@
 #include "inputdialog.h"
 #include "alertpanel.h"
 #include "folder.h"
-#include "filtering.h"
 #include "log.h"
 #include "hooks.h"
 #include "logwindow.h"
@@ -760,7 +759,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 				&filtered, &unfiltered,
 				pop3_session->ac_prefs->filter_on_recv);
 
-		filtering_move_and_copy_msgs(msglist);
 		if (unfiltered != NULL)
 			folder_item_move_msgs(inbox, unfiltered);
 

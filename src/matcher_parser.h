@@ -14,13 +14,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef MATCHER_PARSER_H
 #define MATCHER_PARSER_H
 
-#include "filtering.h"
 #include <glib.h>
 
 extern FILE *matcher_parserin;
@@ -32,7 +31,6 @@ int matcher_parserparse			(void);
 
 MatcherList *matcher_parser_get_cond	(gchar *str, gboolean *is_fast);
 MatcherProp *matcher_parser_get_prop	(gchar *str);
-FilteringProp *matcher_parser_get_filtering	(gchar *str);
 GSList *matcher_parser_get_action_list(gchar *str);
 
 #endif

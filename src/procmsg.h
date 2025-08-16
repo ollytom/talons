@@ -73,20 +73,20 @@
 
 #define MSG_IGNORE_THREAD	(1U << 10)   /* ignore threads */
 #define MSG_LOCKED		(1U << 11)   /* msg is locked  */
-#define MSG_RETRCPT_SENT	(1U << 12)   /* new one */ 
-#define MSG_SPAM		(1U << 13)   /* new one */ 
+#define MSG_RETRCPT_SENT	(1U << 12)   /* new one */
+#define MSG_SPAM		(1U << 13)   /* new one */
 #define MSG_POSTFILTERED	(1U << 14)
 #define MSG_WATCH_THREAD	(1U << 15)   /* watch threads */
 #define MSG_FULLY_CACHED	(1U << 16)   /* IMAP: fully cached */
 #define MSG_RETRCPT_GOT		(1U << 17)   /* got return receipt */
- 	
+
 /* RESERVED */
 #define	MSG_RESERVED_CLAWS	(1U << 30)   /* for Claws Mail */
 #define	MSG_RESERVED		(1U << 31)
 
 #define MSG_MOVE		(1U << 0)
 #define MSG_COPY		(1U << 1)
-#define MSG_MOVE_DONE		(1U << 15)		
+#define MSG_MOVE_DONE		(1U << 15)
 #define MSG_QUEUED		(1U << 16)
 #define MSG_DRAFT		(1U << 17)
 #define MSG_ENCRYPTED		(1U << 18)
@@ -161,7 +161,6 @@ typedef enum {
 } MsgInfoUpdateFlags;
 
 #include "prefs_account.h"
-#include "prefs_filtering.h"
 #include "folder.h"
 
 struct _MsgFlags
@@ -211,7 +210,7 @@ struct _MsgInfo
 	FolderItem *folder;
 	FolderItem *to_folder;
 
-	FolderItem *to_filter_folder;	
+	FolderItem *to_filter_folder;
 	FiltOp filter_op;
 
 	GSList *references;
@@ -221,7 +220,7 @@ struct _MsgInfo
 
 	/* used only for encrypted messages */
 	gchar *plaintext_file;
-        
+
         gint hidden;
 
 	/* used only for partially received messages */
@@ -311,7 +310,7 @@ void	procmsg_copy_messages		(GSList		*mlist);
 /* return path is locale charset */
 gchar  *procmsg_get_message_file_path	(MsgInfo	*msginfo);
 gchar  *procmsg_get_message_file	(MsgInfo	*msginfo);
-gchar  *procmsg_get_message_file_full	(MsgInfo	*msginfo, 
+gchar  *procmsg_get_message_file_full	(MsgInfo	*msginfo,
 					 gboolean 	 get_headers,
 					 gboolean	 get_body);
 GSList *procmsg_get_message_file_list	(MsgInfoList	*mlist);
@@ -319,11 +318,6 @@ void	procmsg_message_file_list_free	(MsgInfoList	*file_list);
 FILE   *procmsg_open_message		(MsgInfo	*msginfo,
 					 gboolean	skip_special_headers);
 gboolean procmsg_msg_exist		(MsgInfo	*msginfo);
-
-void	procmsg_get_filter_keyword	(MsgInfo	  *msginfo,
-					 gchar	         **header,
-					 gchar	         **key,
-					 PrefsFilterType   type);
 
 void	procmsg_empty_all_trash		(void);
 
@@ -339,7 +333,7 @@ MsgInfo *procmsg_msginfo_new_ref	(MsgInfo 	*msginfo);
 MsgInfo *procmsg_msginfo_copy		(MsgInfo	*msginfo);
 MsgInfo *procmsg_msginfo_get_full_info	(MsgInfo	*msginfo);
 MsgInfo *procmsg_msginfo_get_full_info_from_file
-					(MsgInfo *msginfo, 
+					(MsgInfo *msginfo,
 					const gchar *file);
 void	 procmsg_msginfo_free		(MsgInfo	**msginfo);
 guint	 procmsg_msginfo_memusage	(MsgInfo	*msginfo);
@@ -352,7 +346,7 @@ gint procmsg_send_message_queue_with_lock(const gchar *file,
 
 gint procmsg_send_message_queue		(const gchar *file,
 					 gchar **errstr,
-					 FolderItem *queue, 
+					 FolderItem *queue,
 					 gint msgnum,
 					 gboolean *queued_removed);
 
@@ -362,12 +356,12 @@ void procmsg_msginfo_set_flags		(MsgInfo *msginfo,
 void procmsg_msginfo_unset_flags	(MsgInfo *msginfo,
 					 MsgPermFlags perm_flags,
 					 MsgTmpFlags tmp_flags);
-void procmsg_msginfo_change_flags	(MsgInfo *msginfo, 
-					 MsgPermFlags add_perm_flags, 
+void procmsg_msginfo_change_flags	(MsgInfo *msginfo,
+					 MsgPermFlags add_perm_flags,
 					 MsgTmpFlags add_tmp_flags,
-					 MsgPermFlags rem_perm_flags, 
+					 MsgPermFlags rem_perm_flags,
 					 MsgTmpFlags rem_tmp_flags);
-gint procmsg_remove_special_headers	(const gchar 	*in, 
+gint procmsg_remove_special_headers	(const gchar 	*in,
 					 const gchar 	*out);
 
 gint procmsg_save_to_outbox(FolderItem *outbox, const gchar *file);
@@ -376,14 +370,14 @@ gboolean procmsg_msg_has_flagged_parent	(MsgInfo 	*info,
 gboolean procmsg_msg_has_marked_parent	(MsgInfo	*info);
 void procmsg_msginfo_set_to_folder	(MsgInfo 	*msginfo,
 					 FolderItem 	*to_folder);
-void procmsg_msglist_filter		(GSList 	*list, 
-					 PrefsAccount 	*ac, 
+void procmsg_msglist_filter		(GSList 	*list,
+					 PrefsAccount 	*ac,
 					 GSList 	**filtered,
 					 GSList 	**unfiltered,
 					 gboolean 	 do_filter);
 
 MsgInfo *procmsg_msginfo_new_from_mimeinfo
-					(MsgInfo 	*src_msginfo, 
+					(MsgInfo 	*src_msginfo,
 					 MimeInfo	*mimeinfo);
 
 void procmsg_register_spam_learner (int (*learn_func)(MsgInfo *info, GSList *list, gboolean spam));

@@ -57,7 +57,6 @@
 #include "msgcache.h"
 #include "textview.h"
 #include "matcher_parser.h" /* CLAWS */
-#include "filtering.h"
 #include "procheader.h"
 
 typedef struct _Children		Children;
@@ -698,7 +697,7 @@ static void message_actions_execute(MessageView *msgview, guint action_nb,
 
 static gboolean execute_filtering_actions(gchar *action, GSList *msglist)
 {
-	GSList *action_list, *p;
+	GSList *action_list;
 	const gchar *sbegin, *send;
 	gchar *action_string;
 	SummaryView *summaryview = NULL;
@@ -731,19 +730,12 @@ static gboolean execute_filtering_actions(gchar *action, GSList *msglist)
 	}
 	g_free(action_string);
 
-	/* apply actions on each message info */
-	for (p = msglist; p && p->data; p = g_slist_next(p)) {
-		filteringaction_apply_action_list(action_list, (MsgInfo *) p->data);
-	}
-
 	if (summaryview) {
 		summary_lock(summaryview);
 		main_window_cursor_wait(mainwin);
 		summary_freeze(summaryview);
 		folder_item_update_freeze();
 	}
-
-	filtering_move_and_copy_msgs(msglist);
 
 	if (summaryview) {
 		folder_item_update_thaw();
@@ -752,8 +744,6 @@ static gboolean execute_filtering_actions(gchar *action, GSList *msglist)
 		summary_unlock(summaryview);
 		summary_show(summaryview, summaryview->folder_item, FALSE);
 	}
-	for (p = action_list; p; p = g_slist_next(p))
-		if (p->data) filteringaction_free(p->data);
 	g_slist_free(action_list);
 	return TRUE;
 }

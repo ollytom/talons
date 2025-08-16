@@ -24,7 +24,6 @@
 #include <glib/gi18n.h>
 
 #include "utils.h"
-#include "filtering.h"
 #include "procheader.h"
 #include "matcher.h"
 #include "matcher_parser.h"
@@ -45,11 +44,9 @@ static gchar *name = NULL;
 static gint account_id = 0;
 static MatcherList *cond;
 static GSList *action_list = NULL;
-static FilteringAction *action = NULL;
 static gboolean matcher_is_fast = TRUE;
 static gboolean disable_warnings = FALSE;
 
-static FilteringProp *filtering;
 static gboolean filtering_ptr_externally_managed = FALSE;
 
 static GSList **prefs_filtering = NULL;
@@ -92,39 +89,6 @@ void matcher_parser_start_parsing(FILE *f)
 
 
 void * matcher_parser_scan_string(const char * str);
-
-FilteringProp *matcher_parser_get_filtering(gchar *str)
-{
-	void *bufstate;
-	void *tmp_str = NULL;
-
-	/* little hack to allow passing rules with no names */
-	if (!strncmp(str, "rulename ", 9))
-		tmp_str = g_strdup(str);
-	else
-		tmp_str = g_strconcat("rulename \"\" ", str, NULL);
-
-	/* bad coding to enable the sub-grammar matching
-	   in yacc */
-	matcher_parserlineno = 1;
-	matcher_parse_op = MATCHER_PARSE_NO_EOL;
-	matcher_parserrestart(NULL);
-	matcher_parserpop_buffer_state();
-        matcher_parser_init();
-	bufstate = matcher_parser_scan_string((const char *) tmp_str);
-        matcher_parser_switch_to_buffer(bufstate);
-	/* Indicate that we will be using the global "filtering" pointer,
-	 * so that yyparse does not free it in "filtering_action_list"
-	 * section. */
-	filtering_ptr_externally_managed = TRUE;
-	if (matcher_parserparse() != 0)
-		filtering = NULL;
-	matcher_parse_op = MATCHER_PARSE_FILE;
-	matcher_parser_delete_buffer(bufstate);
-	g_free(tmp_str);
-	filtering_ptr_externally_managed = FALSE; /* Return to normal. */
-	return filtering;
-}
 
 static gboolean check_quote_symetry(gchar *str)
 {
@@ -373,9 +337,6 @@ int matcher_parserwrap(void)
 
 file:
 {
-	if (matcher_parse_op == MATCHER_PARSE_FILE) {
-		prefs_filtering = &pre_global_processing;
-	}
 }
 file_line_list;
 
@@ -407,15 +368,6 @@ MATCHER_SECTION MATCHER_EOL
                         /* backward compatibility */
                         enable_compatibility = 1;
                 }
-		else if (!strcmp(folder, "preglobal")) {
-			prefs_filtering = &pre_global_processing;
-                }
-		else if (!strcmp(folder, "postglobal")) {
-			prefs_filtering = &post_global_processing;
-                }
-		else if (!strcmp(folder, "filtering")) {
-                        prefs_filtering = &filtering_rules;
-		}
                 else {
 			item = folder_find_item_from_identifier(folder);
 			if (item != NULL) {
@@ -519,41 +471,12 @@ MATCHER_ACCOUNT MATCHER_INTEGER
 filtering:
 filtering_action_list
 {
-	filtering = filteringprop_new(enabled, name, account_id, cond, action_list);
 	enabled = TRUE;
 	account_id = 0;
 	g_free(name);
 	name = NULL;
-        if (enable_compatibility) {
-                prefs_filtering = &filtering_rules;
-                if (action_list != NULL) {
-                        FilteringAction * first_action;
-
-                        first_action = action_list->data;
-
-                        if (first_action->type == MATCHACTION_CHANGE_SCORE)
-                                prefs_filtering = &pre_global_processing;
-                }
-        }
-
 	cond = NULL;
 	action_list = NULL;
-
-	if ((matcher_parse_op == MATCHER_PARSE_FILE) &&
-            (prefs_filtering != NULL)) {
-		*prefs_filtering = g_slist_append(*prefs_filtering,
-						  filtering);
-		filtering = NULL;
-	} else if (!filtering_ptr_externally_managed) {
-		/* If filtering_ptr_externally_managed was TRUE, it
-		 * would mean that some function higher in the stack is
-		 * interested in the data "filtering" is pointing at, so
-		 * we would not free it. That function has to free it itself.
-		 * At the time of writing this, the only function that
-		 * does this is matcher_parser_get_filtering(). */
-		filteringprop_free(filtering);
-		filtering = NULL;
-	}
 }
 ;
 
@@ -565,8 +488,6 @@ filtering_action_b filtering_action_list
 filtering_action_b:
 filtering_action
 {
-        action_list = g_slist_append(action_list, action);
-        action = NULL;
 }
 ;
 
@@ -1265,7 +1186,6 @@ MATCHER_EXECUTE MATCHER_STRING
 
 	action_type = MATCHACTION_EXECUTE;
 	cmd = $2;
-	action = filteringaction_new(action_type, 0, cmd, 0, 0, NULL);
 }
 | MATCHER_MOVE MATCHER_STRING
 {
@@ -1274,7 +1194,6 @@ MATCHER_EXECUTE MATCHER_STRING
 
 	action_type = MATCHACTION_MOVE;
 	destination = $2;
-	action = filteringaction_new(action_type, 0, destination, 0, 0, NULL);
 }
 | MATCHER_SET_TAG MATCHER_STRING
 {
@@ -1283,7 +1202,6 @@ MATCHER_EXECUTE MATCHER_STRING
 
 	action_type = MATCHACTION_SET_TAG;
 	destination = $2;
-	action = filteringaction_new(action_type, 0, destination, 0, 0, NULL);
 }
 | MATCHER_UNSET_TAG MATCHER_STRING
 {
@@ -1292,14 +1210,12 @@ MATCHER_EXECUTE MATCHER_STRING
 
 	action_type = MATCHACTION_UNSET_TAG;
 	destination = $2;
-	action = filteringaction_new(action_type, 0, destination, 0, 0, NULL);
 }
 | MATCHER_CLEAR_TAGS
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_CLEAR_TAGS;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_COPY MATCHER_STRING
 {
@@ -1308,70 +1224,60 @@ MATCHER_EXECUTE MATCHER_STRING
 
 	action_type = MATCHACTION_COPY;
 	destination = $2;
-	action = filteringaction_new(action_type, 0, destination, 0, 0, NULL);
 }
 | MATCHER_DELETE
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_DELETE;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_MARK
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_MARK;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_UNMARK
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_UNMARK;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_LOCK
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_LOCK;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_UNLOCK
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_UNLOCK;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_MARK_AS_READ
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_MARK_AS_READ;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_MARK_AS_UNREAD
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_MARK_AS_UNREAD;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_MARK_AS_SPAM
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_MARK_AS_SPAM;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_MARK_AS_HAM
 {
 	gint action_type = 0;
 
 	action_type = MATCHACTION_MARK_AS_HAM;
-	action = filteringaction_new(action_type, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_FORWARD MATCHER_INTEGER MATCHER_STRING
 {
@@ -1382,8 +1288,6 @@ MATCHER_EXECUTE MATCHER_STRING
 	action_type = MATCHACTION_FORWARD;
 	account_id = strtol($2, NULL, 10);
 	destination = $3;
-	action = filteringaction_new(action_type,
-            account_id, destination, 0, 0, NULL);
 }
 | MATCHER_FORWARD_AS_ATTACHMENT MATCHER_INTEGER MATCHER_STRING
 {
@@ -1394,8 +1298,6 @@ MATCHER_EXECUTE MATCHER_STRING
 	action_type = MATCHACTION_FORWARD_AS_ATTACHMENT;
 	account_id = strtol($2, NULL, 10);
 	destination = $3;
-	action = filteringaction_new(action_type,
-            account_id, destination, 0, 0, NULL);
 }
 | MATCHER_REDIRECT MATCHER_INTEGER MATCHER_STRING
 {
@@ -1406,8 +1308,6 @@ MATCHER_EXECUTE MATCHER_STRING
 	action_type = MATCHACTION_REDIRECT;
 	account_id = strtol($2, NULL, 10);
 	destination = $3;
-	action = filteringaction_new(action_type,
-            account_id, destination, 0, 0, NULL);
 }
 | MATCHER_COLOR MATCHER_INTEGER
 {
@@ -1416,15 +1316,12 @@ MATCHER_EXECUTE MATCHER_STRING
 
 	action_type = MATCHACTION_COLOR;
 	color = strtol($2, NULL, 10);
-	action = filteringaction_new(action_type, 0, NULL, color, 0, NULL);
 }
 | MATCHER_CHANGE_SCORE MATCHER_INTEGER
 {
         gint score = 0;
 
         score = strtol($2, NULL, 10);
-	action = filteringaction_new(MATCHACTION_CHANGE_SCORE, 0,
-				     NULL, 0, score, NULL);
 }
 /* backward compatibility */
 | MATCHER_SCORE MATCHER_INTEGER
@@ -1432,28 +1329,21 @@ MATCHER_EXECUTE MATCHER_STRING
         gint score = 0;
 
         score = strtol($2, NULL, 10);
-	action = filteringaction_new(MATCHACTION_CHANGE_SCORE, 0,
-				     NULL, 0, score, NULL);
 }
 | MATCHER_SET_SCORE MATCHER_INTEGER
 {
         gint score = 0;
 
         score = strtol($2, NULL, 10);
-	action = filteringaction_new(MATCHACTION_SET_SCORE, 0,
-				     NULL, 0, score, NULL);
 }
 | MATCHER_HIDE
 {
-	action = filteringaction_new(MATCHACTION_HIDE, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_IGNORE
 {
-	action = filteringaction_new(MATCHACTION_IGNORE, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_WATCH
 {
-	action = filteringaction_new(MATCHACTION_WATCH, 0, NULL, 0, 0, NULL);
 }
 | MATCHER_ADD_TO_ADDRESSBOOK MATCHER_STRING
 {
@@ -1465,11 +1355,9 @@ MATCHER_EXECUTE MATCHER_STRING
 
 	action_type = MATCHACTION_ADD_TO_ADDRESSBOOK;
 	addressbook = $2;
-	action = filteringaction_new(action_type, 0, addressbook, 0, 0, header);
 	g_free(header);
 }
 | MATCHER_STOP
 {
-	action = filteringaction_new(MATCHACTION_STOP, 0, NULL, 0, 0, NULL);
 }
 ;

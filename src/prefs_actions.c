@@ -45,7 +45,6 @@
 #include "description_window.h"
 #include "manual.h"
 #include "menu.h"
-#include "filtering.h"
 #include "prefs_filtering_action.h"
 #include "matcher_parser.h"
 #include "prefs_toolbar.h"
@@ -127,8 +126,6 @@ static void prefs_actions_select_row(GtkTreeView *list_view, GtkTreePath *path);
 static void prefs_action_filter_radiobtn_cb(GtkWidget *widget, gpointer data);
 static void prefs_action_shell_radiobtn_cb(GtkWidget *widget, gpointer data);
 static void prefs_action_filterbtn_cb(GtkWidget *widget, gpointer data);
-static void prefs_action_define_filter_done(GSList * action_list);
-
 
 void prefs_actions_open(MainWindow *mainwin)
 {
@@ -286,21 +283,6 @@ static void prefs_actions_create(MainWindow *mainwin)
 
 	g_signal_connect(G_OBJECT(shell_radiobtn), "clicked",
 			 G_CALLBACK(prefs_action_shell_radiobtn_cb), NULL);
-
-	filter_radiobtn =
-		gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(shell_radiobtn),
-							    _("Filter action"));
-	gtk_box_pack_start(GTK_BOX(filter_hbox), filter_radiobtn, FALSE, FALSE, 0);
-	gtk_widget_show(filter_radiobtn);
-	g_signal_connect(G_OBJECT(filter_radiobtn), "clicked",
-			 G_CALLBACK(prefs_action_filter_radiobtn_cb), NULL);
-
-	filter_btn = gtk_button_new_with_label(_("Edit filter action"));
-	gtk_box_pack_start(GTK_BOX(filter_hbox), filter_btn, FALSE, FALSE, 0);
-	gtk_widget_set_sensitive(filter_btn, FALSE);
-	g_signal_connect(G_OBJECT(filter_btn), "clicked",
-			 G_CALLBACK(prefs_action_filterbtn_cb), NULL);
-	gtk_widget_show(filter_btn);
 
 	/* register / substitute / delete */
 
@@ -1303,7 +1285,6 @@ static void prefs_action_shell_radiobtn_cb(GtkWidget *widget, gpointer data)
 static void prefs_action_filterbtn_cb(GtkWidget *widget, gpointer data)
 {
 	gchar *action_str, **tokens;
-	GSList *action_list = NULL, *cur;
 
 	action_str = gtk_editable_get_chars(GTK_EDITABLE(actions.cmd_entry), 0, -1);
 	if(modified &&
@@ -1316,74 +1297,12 @@ static void prefs_action_filterbtn_cb(GtkWidget *widget, gpointer data)
 		return;
 	}
 	tokens = g_strsplit_set(action_str, "{}", 5);
-
-	if (tokens[0] && tokens[1] && *tokens[1] != '\0') {
-		action_list = matcher_parser_get_action_list(tokens[1]);
-		if (action_list == NULL)
-			alertpanel_error(_("Action string is not valid."));
-	}
-
-	prefs_filtering_action_open(action_list, prefs_action_define_filter_done);
-
-	if (action_list != NULL) {
-		for(cur = action_list ; cur != NULL ; cur = cur->next)
-			filteringaction_free(cur->data);
-	}
-
 	g_free(action_str);
 	g_strfreev(tokens);
 }
 
-static void prefs_action_define_filter_done(GSList * action_list)
-{
-	gchar *str;
-
-	if (action_list == NULL)
-		return;
-
-	action_list = filtering_action_list_sort(action_list);
-	str = filteringaction_list_to_string(action_list);
-
-	if (str != NULL) {
-		gchar *cmd;
-		cmd = g_strdup_printf("%%as{%s}",str);
-		g_free(str);
-		gtk_entry_set_text(GTK_ENTRY(actions.cmd_entry), cmd);
-		g_free(cmd);
-		modified = TRUE;
-	}
-}
-
 void prefs_actions_rename_path(const gchar *old_path, const gchar *new_path)
-{
-	gchar **tokens, *action_str;
-	GSList *action, *action_list;
-
-	for (action = prefs_common.actions_list; action != NULL;
-			action = action->next) {
-		action_str = (gchar *)action->data;
-		tokens = g_strsplit_set(action_str, "{}", 5);
-
-		if (tokens[0] && tokens[1] && *tokens[1] != '\0')
-			action_list = matcher_parser_get_action_list(tokens[1]);
-		else
-			action_list = NULL;
-
-		if (action_list &&
-		    filtering_action_list_rename_path(action_list,
-						old_path, new_path)) {
-			gchar *str = filteringaction_list_to_string(action_list);
-			g_free(action->data);
-			action->data = g_strconcat(tokens[0], "{",
-				str ? str : "", "}", NULL);
-			if (str)
-				g_free(str);
-		}
-
-		g_strfreev(tokens);
-	}
-	prefs_actions_write_config();
-}
+{ }
 
 gint prefs_actions_find_by_name(const gchar *name)
 {

@@ -69,7 +69,6 @@ claws_mail_SOURCES = \
 	edittags.c \
 	entity.c \
 	export.c \
-	filtering.c \
 	folder.c \
 	folder_item_prefs.c \
 	foldersel.c \
@@ -110,8 +109,6 @@ claws_mail_SOURCES = \
 	prefs_customheader.c \
 	prefs_display_header.c \
 	prefs_ext_prog.c \
-	prefs_filtering_action.c \
-	prefs_filtering.c \
 	prefs_folder_item.c \
 	prefs_fonts.c \
 	prefs_gtk.c \
@@ -176,7 +173,6 @@ claws_mailinclude_HEADERS = \
 	edittags.h \
 	entity.h \
 	export.h \
-	filtering.h \
 	folder.h \
 	folder_item_prefs.h \
 	foldersel.h \
@@ -219,8 +215,6 @@ claws_mailinclude_HEADERS = \
 	prefs_customheader.h \
 	prefs_display_header.h \
 	prefs_ext_prog.h \
-	prefs_filtering_action.h \
-	prefs_filtering.h \
 	prefs_folder_item.h \
 	prefs_fonts.h \
 	prefs_gtk.h \

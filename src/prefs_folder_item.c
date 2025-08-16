@@ -42,7 +42,6 @@
 #include "addr_compl.h"
 #include "prefs_common.h"
 #include "gtkutils.h"
-#include "filtering.h"
 #include "folder_item_prefs.h"
 #include "string_match.h"
 #include "quote_fmt.h"

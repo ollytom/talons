@@ -55,7 +55,6 @@
 #include "send_message.h"
 #include "stock_pixmap.h"
 #include "hooks.h"
-#include "filtering.h"
 #include "partial_download.h"
 #include "inc.h"
 #include "log.h"
@@ -162,10 +161,6 @@ static void addressbook_open_cb		(GtkAction	*action,
 					 gpointer	 data);
 static void add_address_cb		(GtkAction	*action,
 					 gpointer	 data);
-static void create_filter_cb		(GtkAction	*action,
-					 gpointer	 data);
-static void create_processing_cb	(GtkAction	*action,
-					 gpointer	 data);
 
 static void about_cb			(GtkAction	*action,
 					 gpointer	 data);
@@ -183,7 +178,6 @@ static void goto_prev_part_cb(GtkAction *action, gpointer data);
 
 static void messageview_nothing_cb	   (GtkAction *action, gpointer data)
 {
-
 }
 
 static GList *msgview_list = NULL;
@@ -291,21 +285,6 @@ static GtkActionEntry msgview_entries[] =
 	{"Tools/AddressBook",                        NULL, N_("_Address book"), "<control><shift>A", NULL, G_CALLBACK(addressbook_open_cb) },
 	{"Tools/AddSenderToAB",                      NULL, N_("Add sender to address boo_k"), NULL, NULL, G_CALLBACK(add_address_cb) },
 	{"Tools/---",                                NULL, "---", NULL, NULL, NULL },
-
-	{"Tools/CreateFilterRule",                   NULL, N_("_Create filter rule"), NULL, NULL, NULL },
-	{"Tools/CreateFilterRule/Automatically",     NULL, N_("_Automatically"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_AUTO */
-	{"Tools/CreateFilterRule/ByFrom",            NULL, N_("By _From"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_FROM */
-	{"Tools/CreateFilterRule/ByTo",              NULL, N_("By _To"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_TO     */
-	{"Tools/CreateFilterRule/BySubject",         NULL, N_("By _Subject"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_SUBJECT */
-	{"Tools/CreateFilterRule/BySender",          NULL, N_("By S_ender"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_SENDER */
-
-	{"Tools/CreateProcessingRule",               NULL, N_("Create processing rule"), NULL, NULL, NULL },
-	{"Tools/CreateProcessingRule/Automatically", NULL, N_("_Automatically"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	{"Tools/CreateProcessingRule/ByFrom",        NULL, N_("By _From"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	{"Tools/CreateProcessingRule/ByTo",          NULL, N_("By _To"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	{"Tools/CreateProcessingRule/BySubject",     NULL, N_("By _Subject"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	{"Tools/CreateProcessingRule/BySender",      NULL, N_("By S_ender"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/Actions",                            NULL, N_("Actio_ns"), NULL, NULL, NULL },
@@ -606,19 +585,6 @@ static void messageview_add_toolbar(MessageView *msgview, GtkWidget *window)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "AddSenderToAB", "Tools/AddSenderToAB", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "Separator1", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "CreateFilterRule", "Tools/CreateFilterRule", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateFilterRule", "Automatically", "Tools/CreateFilterRule/Automatically", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateFilterRule", "ByFrom", "Tools/CreateFilterRule/ByFrom", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateFilterRule", "ByTo", "Tools/CreateFilterRule/ByTo", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateFilterRule", "BySubject", "Tools/CreateFilterRule/BySubject", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateFilterRule", "BySender", "Tools/CreateFilterRule/BySender", GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "CreateProcessingRule", "Tools/CreateProcessingRule", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateProcessingRule", "Automatically", "Tools/CreateProcessingRule/Automatically", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateProcessingRule", "ByFrom", "Tools/CreateProcessingRule/ByFrom", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateProcessingRule", "ByTo", "Tools/CreateProcessingRule/ByTo", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySubject", "Tools/CreateProcessingRule/BySubject", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySender", "Tools/CreateProcessingRule/BySender", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "Separator2", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "Actions", "Tools/Actions", GTK_UI_MANAGER_MENU)
@@ -2834,46 +2800,6 @@ static void add_address_cb(GtkAction *action, gpointer data)
 
 	addressbook_add_contact(msginfo->fromname, from, NULL, picture);
 	avatars_avatarrender_free(avatarr);
-}
-
-static void create_filter_cb(GtkAction *gaction, gpointer data)
-{
-	MessageView *messageview = (MessageView *)data;
-	FolderItem * item;
-	gint action = -1;
-	const gchar *a_name = gtk_action_get_name(gaction);
-
-	if (!messageview->msginfo) return;
-
-	DO_ACTION("Tools/CreateFilterRule/Automatically", FILTER_BY_AUTO);
-	DO_ACTION("Tools/CreateFilterRule/ByFrom", FILTER_BY_FROM);
-	DO_ACTION("Tools/CreateFilterRule/ByTo", FILTER_BY_TO);
-	DO_ACTION("Tools/CreateFilterRule/BySubject", FILTER_BY_SUBJECT);
-	DO_ACTION("Tools/CreateFilterRule/BySender", FILTER_BY_SENDER);
-
-	item = messageview->msginfo->folder;
-	summary_msginfo_filter_open(item,  messageview->msginfo,
-				    (PrefsFilterType)action, 0);
-}
-
-static void create_processing_cb(GtkAction *gaction, gpointer data)
-{
-	MessageView *messageview = (MessageView *)data;
-	FolderItem * item;
-	gint action = -1;
-	const gchar *a_name = gtk_action_get_name(gaction);
-
-	if (!messageview->msginfo) return;
-
-	DO_ACTION("Tools/CreateProcessingRule/Automatically", FILTER_BY_AUTO);
-	DO_ACTION("Tools/CreateProcessingRule/ByFrom", FILTER_BY_FROM);
-	DO_ACTION("Tools/CreateProcessingRule/ByTo", FILTER_BY_TO);
-	DO_ACTION("Tools/CreateProcessingRule/BySubject", FILTER_BY_SUBJECT);
-	DO_ACTION("Tools/CreateProcessingRule/BySender", FILTER_BY_SENDER);
-
-	item = messageview->msginfo->folder;
-	summary_msginfo_filter_open(item,  messageview->msginfo,
-				    (PrefsFilterType)action, 1);
 }
 
 static void about_cb(GtkAction *gaction, gpointer data)

@@ -33,8 +33,6 @@
 #include "send_message.h"
 #include "procmime.h"
 #include "statusbar.h"
-#include "prefs_filtering.h"
-#include "filtering.h"
 #include "folder.h"
 #include "foldersel.h"
 #include "prefs_common.h"
@@ -534,149 +532,6 @@ gboolean procmsg_msg_exist(MsgInfo *msginfo)
 	ret = !folder_item_is_msg_changed(msginfo->folder, msginfo);
 
 	return ret;
-}
-
-void procmsg_get_filter_keyword(MsgInfo *msginfo, gchar **header, gchar **key,
-				PrefsFilterType type)
-{
-	static HeaderEntry hentry[] = {{"X-BeenThere:",    NULL, TRUE},
-				       {"X-ML-Name:",      NULL, TRUE},
-				       {"X-List:",         NULL, TRUE},
-				       {"X-Mailing-list:", NULL, TRUE},
-				       {"List-Id:",        NULL, TRUE},
-				       {"X-Sequence:",	   NULL, TRUE},
-				       {"Sender:",	   NULL, TRUE},
-				       {"List-Post:",	   NULL, TRUE},
-				       {NULL,		   NULL, FALSE}};
-	enum
-	{
-		H_X_BEENTHERE	 = 0,
-		H_X_ML_NAME      = 1,
-		H_X_LIST         = 2,
-		H_X_MAILING_LIST = 3,
-		H_LIST_ID	 = 4,
-		H_X_SEQUENCE	 = 5,
-		H_SENDER	 = 6,
-		H_LIST_POST	 = 7
-	};
-
-	FILE *fp;
-
-	cm_return_if_fail(msginfo != NULL);
-	cm_return_if_fail(header != NULL);
-	cm_return_if_fail(key != NULL);
-
-	*header = NULL;
-	*key = NULL;
-
-	switch (type) {
-	case FILTER_BY_NONE:
-		return;
-	case FILTER_BY_AUTO:
-		if ((fp = procmsg_open_message(msginfo, FALSE)) == NULL)
-			return;
-		procheader_get_header_fields(fp, hentry);
-		fclose(fp);
-
-#define SET_FILTER_KEY(hstr, idx)	\
-{					\
-	*header = g_strdup(hstr);	\
-	*key = hentry[idx].body;	\
-	hentry[idx].body = NULL;	\
-}
-
-		if (hentry[H_LIST_ID].body != NULL) {
-			SET_FILTER_KEY("header \"List-Id\"", H_LIST_ID);
-			extract_list_id_str(*key);
-		} else if (hentry[H_X_BEENTHERE].body != NULL) {
-			SET_FILTER_KEY("header \"X-BeenThere\"", H_X_BEENTHERE);
-		} else if (hentry[H_X_ML_NAME].body != NULL) {
-			SET_FILTER_KEY("header \"X-ML-Name\"", H_X_ML_NAME);
-		} else if (hentry[H_X_LIST].body != NULL) {
-			SET_FILTER_KEY("header \"X-List\"", H_X_LIST);
-		} else if (hentry[H_X_MAILING_LIST].body != NULL) {
-			SET_FILTER_KEY("header \"X-Mailing-List\"", H_X_MAILING_LIST);
-		} else  if (hentry[H_X_SEQUENCE].body != NULL) {
-			gchar *p;
-
-			SET_FILTER_KEY("X-Sequence", H_X_SEQUENCE);
-			p = *key;
-			while (*p != '\0') {
-				while (*p != '\0' && !g_ascii_isspace(*p)) p++;
-				while (g_ascii_isspace(*p)) p++;
-				if (g_ascii_isdigit(*p)) {
-					*p = '\0';
-					break;
-				}
-			}
-			g_strstrip(*key);
-		} else if (hentry[H_SENDER].body != NULL) {
-			SET_FILTER_KEY("header \"Sender\"", H_SENDER);
-		} else if (hentry[H_LIST_POST].body != NULL) {
-			SET_FILTER_KEY("header \"List-Post\"", H_LIST_POST);
-		} else if (msginfo->to) {
-			*header = g_strdup("to");
-			*key = g_strdup(msginfo->to);
-		} else if (msginfo->subject) {
-			*header = g_strdup("subject");
-			*key = g_strdup(msginfo->subject);
-		}
-
-		g_free(hentry[H_X_BEENTHERE].body);
-		hentry[H_X_BEENTHERE].body = NULL;
-		g_free(hentry[H_X_ML_NAME].body);
-		hentry[H_X_ML_NAME].body = NULL;
-		g_free(hentry[H_X_LIST].body);
-		hentry[H_X_LIST].body = NULL;
-		g_free(hentry[H_X_MAILING_LIST].body);
-		hentry[H_X_MAILING_LIST].body = NULL;
-		g_free(hentry[H_LIST_ID].body);
-		hentry[H_LIST_ID].body = NULL;
-		g_free(hentry[H_SENDER].body);
-		hentry[H_SENDER].body = NULL;
-		g_free(hentry[H_LIST_POST].body);
-		hentry[H_LIST_POST].body = NULL;
-
-		break;
-	case FILTER_BY_FROM:
-		*header = g_strdup("from");
-		*key = g_strdup(msginfo->from);
-		break;
-	case FILTER_BY_TO:
-		*header = g_strdup("to");
-		*key = g_strdup(msginfo->to);
-		break;
-	case FILTER_BY_SUBJECT:
-		*header = g_strdup("subject");
-		*key = g_strdup(msginfo->subject);
-		break;
-	case FILTER_BY_SENDER:
-		if ((fp = procmsg_open_message(msginfo, FALSE)) == NULL)
-			return;
-		procheader_get_header_fields(fp, hentry);
-		fclose(fp);
-
-		if (hentry[H_SENDER].body != NULL)
-			SET_FILTER_KEY("header \"Sender\"", H_SENDER);
-
-		g_free(hentry[H_X_BEENTHERE].body);
-		hentry[H_X_BEENTHERE].body = NULL;
-		g_free(hentry[H_X_ML_NAME].body);
-		hentry[H_X_ML_NAME].body = NULL;
-		g_free(hentry[H_X_LIST].body);
-		hentry[H_X_LIST].body = NULL;
-		g_free(hentry[H_X_MAILING_LIST].body);
-		hentry[H_X_MAILING_LIST].body = NULL;
-		g_free(hentry[H_LIST_ID].body);
-		hentry[H_LIST_ID].body = NULL;
-		g_free(hentry[H_SENDER].body);
-		hentry[H_SENDER].body = NULL;
-
-#undef SET_FILTER_KEY
-		break;
-	default:
-		break;
-	}
 }
 
 static void procmsg_empty_trash(FolderItem *trash)
@@ -2179,37 +2034,6 @@ void procmsg_msginfo_set_to_folder(MsgInfo *msginfo, FolderItem *to_folder)
 	}
 }
 
-/**
- * Apply filtering actions to the msginfo
- *
- * \param msginfo The MsgInfo describing the message that should be filtered
- * \return TRUE if the message was moved and MsgInfo is now invalid,
- *         FALSE otherwise
- */
-static gboolean procmsg_msginfo_filter(MsgInfo *msginfo, PrefsAccount* ac_prefs)
-{
-	MailFilteringData mail_filtering_data;
-
-	mail_filtering_data.msginfo = msginfo;
-	mail_filtering_data.msglist = NULL;
-	mail_filtering_data.filtered = NULL;
-	mail_filtering_data.unfiltered = NULL;
-	mail_filtering_data.account = ac_prefs;
-
-	if (!ac_prefs || ac_prefs->filterhook_on_recv)
-		if (hooks_invoke(MAIL_FILTERING_HOOKLIST, &mail_filtering_data))
-		return TRUE;
-
-	/* filter if enabled in prefs or move to inbox if not */
-	if((filtering_rules != NULL) &&
-		filter_message_by_msginfo(filtering_rules, msginfo, ac_prefs,
-				FILTERING_INCORPORATION, NULL)) {
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
 void procmsg_msglist_filter(GSList *list, PrefsAccount *ac,
 			    GSList **filtered, GSList **unfiltered,
 			    gboolean do_filter)
@@ -2273,10 +2097,7 @@ void procmsg_msglist_filter(GSList *list, PrefsAccount *ac,
 
 	for (cur = to_do; cur; cur = cur->next) {
 		MsgInfo *info = (MsgInfo *)cur->data;
-		if (procmsg_msginfo_filter(info, ac))
-			*filtered = g_slist_prepend(*filtered, info);
-		else
-			*unfiltered = g_slist_prepend(*unfiltered, info);
+		*unfiltered = g_slist_prepend(*unfiltered, info);
 		statusbar_progress_all(curnum++, total, prefs_common.statusbar_update_step);
 	}
 

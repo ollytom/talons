@@ -3608,8 +3608,6 @@ static gint prefs_basic_apply(void)
 		new_id = g_strdup_printf("#%s/%s",
 				protocol == A_IMAP4 ? "imap":"news",
 				tmp_ac_prefs.account_name);
-		if (old_id != NULL && new_id != NULL)
-			prefs_filtering_rename_path(old_id, new_id);
 		if (old_id)
 			g_free(old_id);
 		if (new_id)

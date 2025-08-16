@@ -50,7 +50,6 @@
 #include "customheader.h"
 #include "remotefolder.h"
 #include "manual.h"
-#include "filtering.h"
 #include "prefs_actions.h"
 #include "hooks.h"
 #include "passwordstore.h"
@@ -496,7 +495,6 @@ void account_open(PrefsAccount *ac_prefs, gboolean called_from_acc_list)
 			new_prefix = folder_get_identifier(FOLDER(ac_prefs->folder));
 
 			account_rename_path(old_prefix, new_prefix);
-			prefs_filtering_rename_path(old_prefix, new_prefix);
 			prefs_actions_rename_path(old_prefix, new_prefix);
 
 			g_free(old_prefix);
@@ -1123,7 +1121,6 @@ static void account_delete(GtkWidget *widget, gpointer data)
 	gchar buf[BUFFSIZE];
 	GList *list;
 	Folder *folder;
-	GSList *cur;
 
  	ac_prefs = account_list_view_get_selected_account(edit_account.list_view);
  	if (ac_prefs == NULL)
@@ -1169,22 +1166,6 @@ static void account_delete(GtkWidget *widget, gpointer data)
 	gchar *uid = g_strdup_printf("%d", ac_prefs->account_id);
 	passwd_store_delete_block(PWS_ACCOUNT, uid);
 	g_free(uid);
-
-	debug_print("Removing filter rules relative to this account...\n");
-	for(cur = filtering_rules ; cur != NULL ;) {
-		FilteringProp * prop = (FilteringProp *) cur->data;
-
-		if (prop && (prop->account_id == ac_prefs->account_id)) {
-			/* get next item before we kill the current one */
-			cur = g_slist_next(cur);
-
-			/* unallocate filteringprop and unchain it from the list */
-			filteringprop_free(prop);
-			filtering_rules = g_slist_remove(filtering_rules, prop);
-		} else {
-			cur = g_slist_next(cur);
-		}
-	}
 
 	debug_print("Removing cache directory of this account...\n");
 	account_empty_cache(ac_prefs);

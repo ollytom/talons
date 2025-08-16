@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __FOLDER_H__
@@ -204,7 +204,7 @@ struct _FolderClass
 	/**
 	 * Klass-specific prefs pages
 	 */
-	
+
 	GSList *prefs_pages;
 
 	/* virtual functions */
@@ -215,7 +215,7 @@ struct _FolderClass
 	 *
 	 * \param name The name of the new Folder
 	 * \param path The path of the new Folder
-	 * \return The new \c Folder, or \c NULL when creating the \c Folder 
+	 * \return The new \c Folder, or \c NULL when creating the \c Folder
 	 *         failed
 	 */
 	Folder 		*(*new_folder)		(const gchar	*name,
@@ -310,9 +310,9 @@ struct _FolderClass
 	 * Get an \c XMLTag for the attributes of the \c FolderItem If \c NULL
 	 * the default implementation for the basic \c FolderClass will be used,
 	 * so it must not be \c NULL if one of the parent \c FolderClasses has
-	 * it's own implementation for \c item_get_xml. In that case the parent 
+	 * it's own implementation for \c item_get_xml. In that case the parent
 	 * FolderClass' \c item_get_xml function can be used or the \c XMLTag
-	 * has to be fetched from the parent's \c item_get_xml function and 
+	 * has to be fetched from the parent's \c item_get_xml function and
 	 * then the \c FolderClass specific attributes can be added to it.
 	 *
 	 * \param folder The \c Folder of the \c FolderItem
@@ -371,7 +371,7 @@ struct _FolderClass
 	/**
 	 * Close a \c FolderItem. Called when the user deselects a
 	 * \c FolderItem.
-	 * 
+	 *
 	 * \attention In Claws Mail, operations can be done any time on any
 	 *            folder and you should not expect that all
 	 *            \c FolderItems get closed after operations
@@ -432,7 +432,7 @@ struct _FolderClass
 	 * \param folder The \c Folder containing the message
 	 * \param item The \c FolderItem containing the message
 	 * \param num The message number of the message
-	 * \return A pointer to a \c MsgInfo decribing the message or \c 
+	 * \return A pointer to a \c MsgInfo decribing the message or \c
 	 *         NULL in case of an error
 	 */
 	MsgInfo 	*(*get_msginfo)		(Folder		*folder,
@@ -658,35 +658,35 @@ struct _FolderClass
 						 FolderItem	*item,
 						 MsgInfoList	*msglist,
 						 GHashTable	*msgflags);
-	
+
 	/* Sets batch mode for a FolderItem. It means that numerous flags updates
 	 * could follow, and the FolderClass implementation can cache them in order
 	 * to process them later when set_false will be called again with the
-	 * batch parameter set to FALSE. 
+	 * batch parameter set to FALSE.
 	 */
 	void		(*set_batch)		(Folder		*folder,
 						 FolderItem	*item,
 						 gboolean	 batch);
 	/* Called when switching offline or asking for synchronisation. the imple
 	 * mentation should do what's necessary to be able to read mails present
-	 * in the FolderItem at this time with no network connectivity. 
+	 * in the FolderItem at this time with no network connectivity.
 	 * Days: max number of days of mail to fetch.
 	 */
 	void		(*synchronise)		(FolderItem	*item,
 						 gint		 days);
-	
+
 	/* Passed from claws-mail --subscribe scheme://uri. Implementations
 	 * should check if they handle this type of URI, and return TRUE in this
 	 * case after having subscribed it.
 	 */
 	gboolean	(*subscribe)		(Folder 	*folder,
 						 const gchar	*uri);
-	
+
 	/* Gets the preferred sort key and type for a folderclass. */
 	void		(*get_sort_type)	(Folder		*folder,
 						 FolderSortKey	*sort_key,
 						 FolderSortType	*sort_type);
-	
+
 	/* Copies internal FolderItem data from one folderItem to another. Used
 	 * when moving folders (this move is in reality a folder creation, content
 	 * move, folder delettion).
@@ -769,13 +769,13 @@ struct _FolderItem
 	PrefsAccount *account;
 
 	gboolean apply_sub;
-	
+
 	GSList *mark_queue;
 
 	gpointer data;
 
 	struct _FolderItemPrefs * prefs;
-	
+
 	/* for faster search of special parents */
 	SpecialFolderItemType parent_stype;
 	gboolean processing_pending;
@@ -863,7 +863,7 @@ gint   folder_item_rename	(FolderItem *item, gchar *newname);
 void   folder_update_op_count		(void);
 void   folder_func_to_all_folders	(FolderItemFunc function,
 					 gpointer data);
-void folder_count_total_msgs(guint *new_msgs, guint *unread_msgs, 
+void folder_count_total_msgs(guint *new_msgs, guint *unread_msgs,
 			     guint *unreadmarked_msgs, guint *marked_msgs,
 			     guint *total_msgs, guint *replied_msgs,
 			     guint *forwarded_msgs, guint *locked_msgs,
@@ -908,7 +908,7 @@ gchar *folder_item_get_path		(FolderItem	*item);
 gint   folder_item_open			(FolderItem	*item);
 gint   folder_item_close		(FolderItem	*item);
 gint   folder_item_scan			(FolderItem	*item);
-gint   folder_item_scan_full		(FolderItem 	*item, 
+gint   folder_item_scan_full		(FolderItem 	*item,
 					 gboolean 	 filtering);
 MsgInfo *folder_item_get_msginfo	(FolderItem 	*item,
 					 gint		 num);
@@ -921,7 +921,7 @@ MsgNumberList *folder_item_get_number_list(FolderItem *item);
 gchar *folder_item_fetch_msg		(FolderItem	*item,
 					 gint		 num);
 gchar *folder_item_fetch_msg_full	(FolderItem	*item,
-					 gint		 num, 
+					 gint		 num,
 					 gboolean 	 get_headers,
 					 gboolean	 get_body);
 gint   folder_item_add_msg		(FolderItem	*dest,
@@ -965,8 +965,6 @@ gboolean folder_item_is_msg_changed	(FolderItem	*item,
 void folder_clean_cache_memory		(FolderItem *protected_item);
 void folder_clean_cache_memory_force	(void);
 void folder_item_write_cache		(FolderItem *item);
-
-void folder_item_apply_processing	(FolderItem *item);
 
 void folder_item_update			(FolderItem *item,
 					 FolderItemUpdateFlags update_flags);

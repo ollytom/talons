@@ -50,7 +50,6 @@
 #include "password.h"
 #include "prefs_common.h"
 #include "prefs_actions.h"
-#include "prefs_filtering.h"
 #include "prefs_account.h"
 #include "prefs_summary_column.h"
 #include "prefs_folder_column.h"
@@ -75,7 +74,6 @@
 #include "hooks.h"
 #include "progressindicator.h"
 #include "localfolder.h"
-#include "filtering.h"
 #include "folderutils.h"
 #include "foldersort.h"
 #include "icon_legend.h"
@@ -165,8 +163,6 @@ static void set_layout_cb	 (GtkAction *action, GtkRadioAction *current, gpointer
 static void addressbook_open_cb	(GtkAction	*action,
 				  gpointer	 data);
 static void log_window_show_cb	(GtkAction	*action,
-				  gpointer	 data);
-static void filtering_debug_window_show_cb	(GtkAction	*action,
 				  gpointer	 data);
 
 static void inc_cancel_cb		(GtkAction	*action,
@@ -270,12 +266,6 @@ static void delete_duplicated_cb (GtkAction	*action,
 				  gpointer	 data);
 static void delete_duplicated_all_cb (GtkAction	*action,
 				  gpointer	 data);
-static void filter_cb		 (GtkAction	*action,
-				  gpointer	 data);
-static void filter_list_cb	 (GtkAction	*action,
-				  gpointer	 data);
-static void process_cb		 (GtkAction	*action,
-				  gpointer	 data);
 static void execute_summary_cb	 (GtkAction	*action,
 				  gpointer	 data);
 static void expunge_summary_cb	 (GtkAction	*action,
@@ -327,11 +317,6 @@ static void trash_thread_cb	 (GtkAction	*action,
 static void delete_thread_cb	 (GtkAction	*action,
 				  gpointer	 data);
 
-static void create_filter_cb	 (GtkAction	*action,
-				  gpointer	 data);
-static void create_processing_cb (GtkAction	*action,
-				  gpointer	 data);
-
 static void prefs_template_open_cb	(GtkAction	*action,
 				  gpointer	 data);
 static void prefs_actions_open_cb	(GtkAction	*action,
@@ -339,14 +324,6 @@ static void prefs_actions_open_cb	(GtkAction	*action,
 static void prefs_account_open_cb	(GtkAction	*action,
 				  gpointer	 data);
 
-static void prefs_pre_processing_open_cb  (GtkAction	*action,
-				  gpointer	 data);
-
-static void prefs_post_processing_open_cb (GtkAction	*action,
-				  gpointer	 data);
-
-static void prefs_filtering_open_cb 	(GtkAction	*action,
-				  gpointer	 data);
 #ifdef USE_GNUTLS
 static void ssl_manager_open_cb 	(GtkAction	*action,
 				  gpointer	 data);
@@ -680,24 +657,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Tools/CollectAddresses/FromSelected",      NULL, N_("From selected _messages..."), NULL, NULL, G_CALLBACK(addr_harvest_msg_cb) },
 	{"Tools/---",                                NULL, "---", NULL, NULL, NULL },
 
-	{"Tools/FilterFolder",                       NULL, N_("_Filter all messages in folder"), NULL, NULL, G_CALLBACK(filter_cb) },
-	{"Tools/FilterSelected",                     NULL, N_("Filter _selected messages"), NULL, NULL, G_CALLBACK(filter_list_cb) },
-	{"Tools/RunProcessing",                      NULL, N_("Run folder pr_ocessing rules"), NULL, NULL, G_CALLBACK(process_cb) },
-
-	{"Tools/CreateFilterRule",                   NULL, N_("_Create filter rule"), NULL, NULL, NULL },
-	{"Tools/CreateFilterRule/Automatically",     NULL, N_("_Automatically"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_AUTO */
-	{"Tools/CreateFilterRule/ByFrom",            NULL, N_("By _From"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_FROM */
-	{"Tools/CreateFilterRule/ByTo",              NULL, N_("By _To"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_TO     */
-	{"Tools/CreateFilterRule/BySubject",         NULL, N_("By _Subject"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_SUBJECT */
-	{"Tools/CreateFilterRule/BySender",          NULL, N_("By S_ender"), NULL, NULL, G_CALLBACK(create_filter_cb) }, /* FILTER_BY_SENDER */
-
-	{"Tools/CreateProcessingRule",               NULL, N_("Create processing rule"), NULL, NULL, NULL },
-	{"Tools/CreateProcessingRule/Automatically", NULL, N_("_Automatically"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	{"Tools/CreateProcessingRule/ByFrom",        NULL, N_("By _From"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	{"Tools/CreateProcessingRule/ByTo",          NULL, N_("By _To"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	{"Tools/CreateProcessingRule/BySubject",     NULL, N_("By _Subject"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-	{"Tools/CreateProcessingRule/BySender",      NULL, N_("By S_ender"), NULL, NULL, G_CALLBACK(create_processing_cb) },
-
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/Actions",                            NULL, N_("Actio_ns"), NULL, NULL, NULL },
 	{"Tools/Actions/PlaceHolder",                NULL, "Placeholder", NULL, NULL, G_CALLBACK(mainwindow_nothing_cb) },
@@ -716,7 +675,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Tools/TLSCertificates",                    NULL, N_("TLS cer_tificates"), NULL, NULL, G_CALLBACK(ssl_manager_open_cb) },
 #endif
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
-	{"Tools/FilteringLog",                       NULL, N_("Filtering Lo_g"), NULL, NULL, G_CALLBACK(filtering_debug_window_show_cb) },
 	{"Tools/NetworkLog",                         NULL, N_("Network _Log"), "<shift><control>L", NULL, G_CALLBACK(log_window_show_cb) },
 
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
@@ -732,9 +690,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Configuration/---",                        NULL, "---", NULL, NULL, NULL },
 
 	{"Configuration/Preferences",                NULL, N_("P_references..."), NULL, NULL, G_CALLBACK(prefs_open_cb) },
-	{"Configuration/PreProcessing",              NULL, N_("Pre-pr_ocessing..."), NULL, NULL, G_CALLBACK(prefs_pre_processing_open_cb) },
-	{"Configuration/PostProcessing",             NULL, N_("Post-pro_cessing..."), NULL, NULL, G_CALLBACK(prefs_post_processing_open_cb) },
-	{"Configuration/Filtering",                  NULL, N_("_Filtering..."), NULL, NULL, G_CALLBACK(prefs_filtering_open_cb) },
 	{"Configuration/Templates",                  NULL, N_("_Templates..."), NULL, NULL, G_CALLBACK(prefs_template_open_cb) },
 	{"Configuration/Actions",                    NULL, N_("_Actions..."), NULL, NULL, G_CALLBACK(prefs_actions_open_cb) },
 
@@ -1342,28 +1297,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CollectAddresses", "FromSelected", "Tools/CollectAddresses/FromSelected", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator1", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "FilterFolder", "Tools/FilterFolder", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "FilterSelected", "Tools/FilterSelected", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "RunProcessing", "Tools/RunProcessing", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "CreateFilterRule", "Tools/CreateFilterRule", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateFilterRule", "Automatically", "Tools/CreateFilterRule/Automatically", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateFilterRule", "ByFrom", "Tools/CreateFilterRule/ByFrom", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateFilterRule", "ByTo", "Tools/CreateFilterRule/ByTo", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateFilterRule", "BySubject", "Tools/CreateFilterRule/BySubject", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateFilterRule", "BySender", "Tools/CreateFilterRule/BySender", GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "CreateProcessingRule", "Tools/CreateProcessingRule", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateProcessingRule", "Automatically", "Tools/CreateProcessingRule/Automatically", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateProcessingRule", "ByFrom", "Tools/CreateProcessingRule/ByFrom", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateProcessingRule", "ByTo", "Tools/CreateProcessingRule/ByTo", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySubject", "Tools/CreateProcessingRule/BySubject", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CreateProcessingRule", "BySender", "Tools/CreateProcessingRule/BySender", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator2", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
-
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Actions", "Tools/Actions", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/Actions", "PlaceHolder", "Tools/Actions/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator4", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
-
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "CheckNewMessages", "Tools/CheckNewMessages", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "DeleteDuplicates", "Tools/DeleteDuplicates", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/DeleteDuplicates", "SelFolder", "Tools/DeleteDuplicates/SelFolder", GTK_UI_MANAGER_MENUITEM)
@@ -1377,7 +1310,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "TLSCertificates", "Tools/TLSCertificates", GTK_UI_MANAGER_MENUITEM)
 #endif
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator7", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "FilteringLog", "Tools/FilteringLog", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "NetworkLog", "Tools/NetworkLog", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator8", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "ForgetSessionPasswords", "Tools/ForgetSessionPasswords", GTK_UI_MANAGER_MENUITEM)
@@ -1393,9 +1325,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Separator1", "Configuration/---", GTK_UI_MANAGER_SEPARATOR)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Preferences", "Configuration/Preferences", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "PreProcessing", "Configuration/PreProcessing", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "PostProcessing", "Configuration/PostProcessing", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Filtering", "Configuration/Filtering", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Templates", "Configuration/Templates", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Actions", "Configuration/Actions", GTK_UI_MANAGER_MENUITEM)
 
@@ -1523,28 +1452,9 @@ MainWindow *main_window_create()
 	set_log_prefs(LOG_PROTOCOL,
 			&prefs_common.logwin_width,
 			&prefs_common.logwin_height);
-	set_log_title(LOG_DEBUG_FILTERING, _("Filtering/Processing debug log"));
-	set_log_prefs(LOG_DEBUG_FILTERING,
-			&prefs_common.filtering_debugwin_width,
-			&prefs_common.filtering_debugwin_height);
 
-	/* setup log windows */
 	mainwin->logwin = log_window_create(LOG_PROTOCOL);
 	log_window_init(mainwin->logwin);
-
-	mainwin->filtering_debugwin = log_window_create(LOG_DEBUG_FILTERING);
-	log_window_set_clipping(mainwin->logwin,
-				prefs_common.cliplog,
-				prefs_common.loglength);
-
-	log_window_init(mainwin->filtering_debugwin);
-	log_window_set_clipping(mainwin->filtering_debugwin,
-				prefs_common.filtering_debug_cliplog,
-				prefs_common.filtering_debug_loglength);
-	if (prefs_common.enable_filtering_debug)
-		log_message(LOG_DEBUG_FILTERING, _("filtering log enabled\n"));
-	else
-		log_message(LOG_DEBUG_FILTERING, _("filtering log disabled\n"));
 
 	folderview->mainwin      = mainwin;
 	folderview->summaryview  = summaryview;
@@ -2627,12 +2537,7 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	SET_SENSITIVE("Menu/Tools/CollectAddresses", M_FOLDER_SELECTED);
 	SET_SENSITIVE("Menu/Tools/CollectAddresses/FromFolder", M_FOLDER_SELECTED);
 	SET_SENSITIVE("Menu/Tools/CollectAddresses/FromSelected", M_TARGET_EXIST);
-	SET_SENSITIVE("Menu/Tools/FilterFolder", M_MSG_EXIST, M_EXEC);
-	SET_SENSITIVE("Menu/Tools/FilterSelected", M_TARGET_EXIST, M_EXEC);
-	SET_SENSITIVE("Menu/Tools/RunProcessing", M_HAVE_PROCESSING);
-	SET_SENSITIVE("Menu/Tools/CreateFilterRule", M_SINGLE_TARGET_EXIST, M_UNLOCKED);
-	SET_SENSITIVE("Menu/Tools/CreateProcessingRule", M_SINGLE_TARGET_EXIST, M_UNLOCKED);
-	SET_SENSITIVE("Menu/Tools/Actions", M_TARGET_EXIST, M_ACTIONS_EXIST);
+
 	SET_SENSITIVE("Menu/Tools/Execute", M_DELAY_EXEC);
 	SET_SENSITIVE("Menu/Tools/Expunge", M_DELETED_EXISTS);
 	SET_SENSITIVE("Menu/Tools/ForgetSessionPasswords", M_SESSION_PASSWORDS);
@@ -3671,12 +3576,6 @@ static void log_window_show_cb(GtkAction *action, gpointer data)
 	log_window_show(mainwin->logwin);
 }
 
-static void filtering_debug_window_show_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	log_window_show(mainwin->filtering_debugwin);
-}
-
 static void inc_cancel_cb(GtkAction *action, gpointer data)
 {
 	inc_cancel_all();
@@ -4117,29 +4016,6 @@ static void delete_duplicated_all_cb(GtkAction *action, gpointer mw)
 	mainwindow_delete_duplicated_all(mainwin);
 }
 
-static void filter_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	summary_filter(mainwin->summaryview, FALSE);
-}
-
-static void filter_list_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	summary_filter(mainwin->summaryview, TRUE);
-}
-
-static void process_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	FolderItem *item = mainwin->summaryview->folder_item;
-	cm_return_if_fail(item != NULL);
-
-	item->processing_pending = TRUE;
-	folder_item_apply_processing(item);
-	item->processing_pending = FALSE;
-}
-
 static void execute_summary_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
@@ -4314,58 +4190,6 @@ static void delete_thread_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 	summary_select_thread(mainwin->summaryview, TRUE, FALSE);
-}
-
-static void create_filter_cb(GtkAction *gaction, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	const gchar *a_name = gtk_action_get_name(gaction);
-	gint action = -1;
-
-	DO_ACTION("Tools/CreateFilterRule/Automatically", FILTER_BY_AUTO);
-	DO_ACTION("Tools/CreateFilterRule/ByFrom", FILTER_BY_FROM);
-	DO_ACTION("Tools/CreateFilterRule/ByTo", FILTER_BY_TO);
-	DO_ACTION("Tools/CreateFilterRule/BySubject", FILTER_BY_SUBJECT);
-	DO_ACTION("Tools/CreateFilterRule/BySender", FILTER_BY_SENDER);
-	summary_filter_open(mainwin->summaryview, (PrefsFilterType)action, 0);
-}
-
-static void create_processing_cb(GtkAction *gaction, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	const gchar *a_name = gtk_action_get_name(gaction);
-	gint action = -1;
-
-	DO_ACTION("Tools/CreateProcessingRule/Automatically", FILTER_BY_AUTO);
-	DO_ACTION("Tools/CreateProcessingRule/ByFrom", FILTER_BY_FROM);
-	DO_ACTION("Tools/CreateProcessingRule/ByTo", FILTER_BY_TO);
-	DO_ACTION("Tools/CreateProcessingRule/BySubject", FILTER_BY_SUBJECT);
-	DO_ACTION("Tools/CreateProcessingRule/BySender", FILTER_BY_SENDER);
-	summary_filter_open(mainwin->summaryview, (PrefsFilterType)action, 1);
-}
-
-static void prefs_pre_processing_open_cb(GtkAction *action, gpointer data)
-{
-	prefs_filtering_open(&pre_global_processing,
-			     _("Processing rules to apply before folder rules"),
-			     MANUAL_ANCHOR_PROCESSING,
-			     NULL, NULL, FALSE);
-}
-
-static void prefs_post_processing_open_cb(GtkAction *action, gpointer data)
-{
-	prefs_filtering_open(&post_global_processing,
-			     _("Processing rules to apply after folder rules"),
-			     MANUAL_ANCHOR_PROCESSING,
-			     NULL, NULL, FALSE);
-}
-
-static void prefs_filtering_open_cb(GtkAction *action, gpointer data)
-{
-	prefs_filtering_open(&filtering_rules,
-			     _("Filtering configuration"),
-			     MANUAL_ANCHOR_FILTERING,
-			     NULL, NULL, TRUE);
 }
 
 static void prefs_template_open_cb(GtkAction *action, gpointer data)

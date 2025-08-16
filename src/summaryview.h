@@ -68,7 +68,6 @@ typedef enum
 #include "compose.h"
 #include "folder.h"
 #include "gtksctree.h"
-#include "prefs_filtering.h"
 #include "quicksearch.h"
 
 extern GtkTargetEntry summary_drag_types[3];
@@ -221,14 +220,6 @@ void summary_expand_threads	  (SummaryView		*summaryview);
 void summary_collapse_threads	  (SummaryView		*summaryview);
 void summary_toggle_ignore_thread (SummaryView		*summaryview);
 void summary_toggle_watch_thread  (SummaryView		*summaryview);
-
-void summary_filter		  (SummaryView		*summaryview,
-				   gboolean		 selected_only);
-void summary_filter_open          (SummaryView *summaryview,
-				   PrefsFilterType type,
-				   gint processing_rule);
-void summary_msginfo_filter_open  (FolderItem * item, MsgInfo *msginfo,
-				   PrefsFilterType type, gint processing_rule);
 
 void summary_sort		  (SummaryView		*summaryview,
 				   FolderSortKey	 sort_key,

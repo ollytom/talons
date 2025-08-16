@@ -42,7 +42,6 @@
 #include "prefs_account.h"
 #include "account.h"
 #include "utils.h"
-#include "filtering.h"
 #include "alertpanel.h"
 #include "statusbar.h"
 #include "file-utils.h"
@@ -71,9 +70,8 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 	gchar *tmp_file;
 	gint msgs = 0;
 	gint lines;
-	MsgInfo *msginfo;
 	gboolean more;
-	GSList *to_filter = NULL, *filtered = NULL, *unfiltered = NULL, *cur, *to_add = NULL;
+	GSList *to_add = NULL;
 	gboolean printed = FALSE;
 	FolderItem *dropfolder;
 	GStatBuf src_stat;
@@ -114,15 +112,11 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 
 	folder_item_update_freeze();
 
-	if (apply_filter)
-		dropfolder = folder_get_default_processing(account->account_id);
-	else
-		dropfolder = dest;
+	dropfolder = dest;
 
 	do {
 		FILE *tmp_fp;
 		gint empty_lines;
-		gint msgnum;
 
 		if (msgs%10 == 0) {
 			long cur_offset_mb = ftell(mbox_fp) / (1024 * 1024);
@@ -228,28 +222,18 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 			return -1;
 		}
 
-		if (apply_filter) {
-			if ((msgnum = folder_item_add_msg(dropfolder, tmp_file, NULL, TRUE)) < 0) {
-				fclose(mbox_fp);
-				unlink(tmp_file);
-				g_free(tmp_file);
-				return -1;
-			}
-			msginfo = folder_item_get_msginfo(dropfolder, msgnum);
-			to_filter = g_slist_prepend(to_filter, msginfo);
-		} else {
-			MsgFileInfo *finfo = g_new0(MsgFileInfo, 1);
-			finfo->file = tmp_file;
 
-			to_add = g_slist_prepend(to_add, finfo);
-			tmp_file = get_tmp_file();
+		MsgFileInfo *finfo = g_new0(MsgFileInfo, 1);
+		finfo->file = tmp_file;
 
-			/* flush every 500 */
-			if (msgs > 0 && msgs % 500 == 0) {
-				folder_item_add_msgs(dropfolder, to_add, TRUE);
-				procmsg_message_file_list_free(to_add);
-				to_add = NULL;
-			}
+		to_add = g_slist_prepend(to_add, finfo);
+		tmp_file = get_tmp_file();
+
+		/* flush every 500 */
+		if (msgs > 0 && msgs % 500 == 0) {
+			folder_item_add_msgs(dropfolder, to_add, TRUE);
+			procmsg_message_file_list_free(to_add);
+			to_add = NULL;
 		}
 		msgs++;
 	} while (more);
@@ -259,32 +243,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
 		statusbar_progress_all(0, 0, 0);
 	}
 
-	if (apply_filter) {
-
-		folder_item_set_batch(dropfolder, FALSE);
-		procmsg_msglist_filter(to_filter, account,
-				&filtered, &unfiltered, TRUE);
-		folder_item_set_batch(dropfolder, TRUE);
-
-		filtering_move_and_copy_msgs(to_filter);
-		for (cur = filtered; cur; cur = g_slist_next(cur)) {
-			MsgInfo *info = (MsgInfo *)cur->data;
-			procmsg_msginfo_free(&info);
-		}
-
-		unfiltered = g_slist_reverse(unfiltered);
-		if (unfiltered) {
-			folder_item_move_msgs(dest, unfiltered);
-			for (cur = unfiltered; cur; cur = g_slist_next(cur)) {
-				MsgInfo *info = (MsgInfo *)cur->data;
-				procmsg_msginfo_free(&info);
-			}
-		}
-
-		g_slist_free(unfiltered);
-		g_slist_free(filtered);
-		g_slist_free(to_filter);
-	} else if (to_add) {
+	if (to_add) {
 		folder_item_add_msgs(dropfolder, to_add, TRUE);
 		procmsg_message_file_list_free(to_add);
 		to_add = NULL;

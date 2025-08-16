@@ -44,7 +44,6 @@
 #include "prefs_common.h"
 #include "prefs_summary_column.h"
 #include "prefs_summary_open.h"
-#include "prefs_filtering.h"
 #include "account.h"
 #include "compose.h"
 #include "file-utils.h"
@@ -61,7 +60,6 @@
 #include "addressbook.h"
 #include "addr_compl.h"
 #include "folder_item_prefs.h"
-#include "filtering.h"
 #include "string_match.h"
 #include "toolbar.h"
 #include "news.h"
@@ -213,9 +211,6 @@ static void summary_unthread_for_exec_func	(GtkCMCTree	*ctree,
 
 void summary_simplify_subject(SummaryView *summaryview, gchar * rexp,
 			      GSList * mlist);
-
-static void summary_filter_func		(MsgInfo		*msginfo,
-					 PrefsAccount		*ac_prefs);
 
 static GtkWidget *summary_ctree_create	(SummaryView	*summaryview);
 
@@ -392,10 +387,6 @@ static GtkActionEntry summary_popup_entries[] =
 	{"SummaryViewPopup/ForwardAtt",           NULL, N_("For_ward as attachment"), NULL, NULL, G_CALLBACK(summary_reply_cb) }, /* COMPOSE_FORWARD_AS_ATTACH */
 	{"SummaryViewPopup/Redirect",             NULL, N_("R_edirect"), NULL, NULL, G_CALLBACK(summary_reply_cb) }, /* COMPOSE_REDIRECT */
 	{"SummaryViewPopup/Marks",                NULL, N_("_Marks"), NULL, NULL, NULL },
-	{"SummaryViewPopup/ColorLabel",           NULL, N_("Color la_bel"), NULL, NULL, NULL },
-	{"SummaryViewPopup/Tags",                 NULL, N_("Ta_gs"), NULL, NULL, NULL },
-	{"SummaryViewPopup/CreateFilterRule",     NULL, N_("Create _filter rule"), NULL, NULL, NULL },
-	{"SummaryViewPopup/CreateProcessingRule", NULL, N_("Create processing rule"), NULL, NULL, NULL },
 	{"SummaryViewPopup/View",                 NULL, N_("_View"), NULL, NULL, NULL },
 };
 
@@ -655,13 +646,9 @@ SummaryView *summary_create(MainWindow *mainwin)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Delete", "Message/Delete", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Separator3", "Message/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Marks", "SummaryViewPopup/Marks", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "ColorLabel", "SummaryViewPopup/ColorLabel", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Tags", "SummaryViewPopup/Tags", GTK_UI_MANAGER_MENU)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Separator4", "Message/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "AddSenderToAB", "Tools/AddSenderToAB", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "CreateFilterRule", "SummaryViewPopup/CreateFilterRule", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "CreateProcessingRule", "SummaryViewPopup/CreateProcessingRule", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Separator5", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "View", "SummaryViewPopup/View", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "SaveAs", "File/SaveAs", GTK_UI_MANAGER_MENUITEM)
@@ -692,21 +679,6 @@ SummaryView *summary_create(MainWindow *mainwin)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "Separator5", "Message/Marks/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "Lock", "Message/Marks/Lock", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "Unlock", "Message/Marks/Unlock", GTK_UI_MANAGER_MENUITEM)
-
-	/* submenus - tags are dynamic */
-	/* submenus - createfilterrule */
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateFilterRule", "Automatically", "Tools/CreateFilterRule/Automatically", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateFilterRule", "ByFrom", "Tools/CreateFilterRule/ByFrom", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateFilterRule", "ByTo", "Tools/CreateFilterRule/ByTo", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateFilterRule", "BySubject", "Tools/CreateFilterRule/BySubject", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateFilterRule", "BySender", "Tools/CreateFilterRule/BySender", GTK_UI_MANAGER_MENUITEM)
-
-	/* submenus - createprocessingrule */
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "Automatically", "Tools/CreateProcessingRule/Automatically", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "ByFrom", "Tools/CreateProcessingRule/ByFrom", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "ByTo", "Tools/CreateProcessingRule/ByTo", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "BySubject", "Tools/CreateProcessingRule/BySubject", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/CreateProcessingRule", "BySender", "Tools/CreateProcessingRule/BySender", GTK_UI_MANAGER_MENUITEM)
 
 	/* submenus - view */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/View", "OpenNewWindow", "View/OpenNewWindow", GTK_UI_MANAGER_MENUITEM)
@@ -1750,12 +1722,6 @@ void summary_set_menu_sensitive(SummaryView *summaryview)
 	SET_SENSITIVE("Menus/SummaryViewPopup/Marks/Unlock", M_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Marks/MarkSpam", M_TARGET_EXIST, M_CAN_LEARN_SPAM);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Marks/MarkHam", M_TARGET_EXIST, M_CAN_LEARN_SPAM);
-	SET_SENSITIVE("Menus/SummaryViewPopup/ColorLabel", M_TARGET_EXIST);
-	SET_SENSITIVE("Menus/SummaryViewPopup/Tags", M_TARGET_EXIST);
-
-	SET_SENSITIVE("Menus/SummaryViewPopup/AddSenderToAB", M_SINGLE_TARGET_EXIST);
-	SET_SENSITIVE("Menus/SummaryViewPopup/CreateFilterRule", M_SINGLE_TARGET_EXIST, M_UNLOCKED);
-	SET_SENSITIVE("Menus/SummaryViewPopup/CreateProcessingRule", M_SINGLE_TARGET_EXIST, M_UNLOCKED);
 
 	SET_SENSITIVE("Menus/SummaryViewPopup/View", M_SINGLE_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/View/OpenNewWindow", M_SINGLE_TARGET_EXIST);
@@ -5575,205 +5541,6 @@ void summary_collapse_threads(SummaryView *summaryview)
 static void account_rules_radio_button_toggled_cb(GtkToggleButton *btn, gpointer data)
 {
 	prefs_common.apply_per_account_filtering_rules = GPOINTER_TO_INT(data);
-}
-
-static gboolean summary_filter_get_mode(void)
-/* ask what to do w/ them: skip them, apply them regardless to the account,
-   use the current account */
-{
-	/* TODO: eventually also propose to use the current folder's default account,
-	   if it is set */
-	/* TODO: eventually allow to select the account to use from a optmenu */
-
-	GtkWidget *vbox;
-	GtkWidget *account_rules_skip;
-	GtkWidget *account_rules_force;
-	GtkWidget *account_rules_user_current;
-	AlertValue val;
-
-	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-	account_rules_skip = gtk_radio_button_new_with_label
-							(NULL, _("Skip these rules"));
-	account_rules_force = gtk_radio_button_new_with_label_from_widget
-							(GTK_RADIO_BUTTON(account_rules_skip),
-							_("Apply these rules regardless of the account they belong to"));
-	account_rules_user_current = gtk_radio_button_new_with_label_from_widget
-							(GTK_RADIO_BUTTON(account_rules_skip),
-							_("Apply these rules if they apply to the current account"));
-	gtk_box_pack_start (GTK_BOX (vbox), account_rules_skip, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), account_rules_force, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), account_rules_user_current, FALSE, FALSE, 0);
-	g_signal_connect(G_OBJECT(account_rules_skip), "toggled",
-			G_CALLBACK(account_rules_radio_button_toggled_cb),
-			GINT_TO_POINTER(FILTERING_ACCOUNT_RULES_SKIP));
-	g_signal_connect(G_OBJECT(account_rules_force), "toggled",
-			G_CALLBACK(account_rules_radio_button_toggled_cb),
-			GINT_TO_POINTER(FILTERING_ACCOUNT_RULES_FORCE));
-	g_signal_connect(G_OBJECT(account_rules_user_current), "toggled",
-			G_CALLBACK(account_rules_radio_button_toggled_cb),
-			GINT_TO_POINTER(FILTERING_ACCOUNT_RULES_USE_CURRENT));
-	switch (prefs_common.apply_per_account_filtering_rules) {
-	case FILTERING_ACCOUNT_RULES_SKIP:
-		gtk_toggle_button_set_active(
-				GTK_TOGGLE_BUTTON(account_rules_skip), TRUE);
-		break;
-	case FILTERING_ACCOUNT_RULES_FORCE:
-		gtk_toggle_button_set_active(
-				GTK_TOGGLE_BUTTON(account_rules_force), TRUE);
-		break;
-	case FILTERING_ACCOUNT_RULES_USE_CURRENT:
-		gtk_toggle_button_set_active(
-				GTK_TOGGLE_BUTTON(account_rules_user_current), TRUE);
-		break;
-	}
-
-	val = alertpanel_with_widget(
-			_("Filtering"),
-			_("There are some filtering rules that belong to an account.\n"
-			  "Please choose what to do with these rules:"),
-			NULL, _("_Cancel"), NULL, _("_Filter"), NULL, NULL,
-			ALERTFOCUS_SECOND, TRUE, vbox);
-
-	if ((val & ~G_ALERTDISABLE) != G_ALERTALTERNATE) {
-		return FALSE;
-	} else if (val & G_ALERTDISABLE)
-		prefs_common.ask_apply_per_account_filtering_rules = FALSE;
-
-	return TRUE;
-}
-
-void summary_filter(SummaryView *summaryview, gboolean selected_only)
-{
-	GSList *mlist = NULL, *cur_list;
-	PrefsAccount *ac_prefs = NULL;
-	summary_lock(summaryview);
-
-	/* are there any per-account filtering rules? */
-	if (prefs_common.ask_apply_per_account_filtering_rules == TRUE &&
-		filtering_peek_per_account_rules(filtering_rules)) {
-
-		if (summary_filter_get_mode() == FALSE) {
-			summary_unlock(summaryview);
-			return;
-		}
-	}
-
-	folder_item_update_freeze();
-
-	debug_print("filtering...\n");
-	STATUSBAR_PUSH(summaryview->mainwin, _("Filtering..."));
-	main_window_cursor_wait(summaryview->mainwin);
-
-	summary_freeze(summaryview);
-
-	if (selected_only) {
-		GList *cur;
-
-		for (cur = GTK_CMCLIST(summaryview->ctree)->selection;
-	     	     cur != NULL && cur->data != NULL; cur = cur->next) {
-			mlist = g_slist_prepend(mlist,
-				 procmsg_msginfo_new_ref(
-				  GTKUT_CTREE_NODE_GET_ROW_DATA(cur->data)));
-		}
-		mlist = g_slist_reverse(mlist);
-	} else {
-		mlist = folder_item_get_msg_list(summaryview->folder_item);
-	}
-
-	ac_prefs = ((summaryview->folder_item->folder != NULL) &&
-			(summaryview->folder_item->folder->account != NULL))
-		? summaryview->folder_item->folder->account : NULL;
-
-	folder_item_set_batch(summaryview->folder_item, TRUE);
-	for (cur_list = mlist; cur_list; cur_list = cur_list->next) {
-		summary_filter_func((MsgInfo *)cur_list->data, ac_prefs);
-	}
-	folder_item_set_batch(summaryview->folder_item, FALSE);
-
-	filtering_move_and_copy_msgs(mlist);
-
-	for (cur_list = mlist; cur_list; cur_list = cur_list->next) {
-		procmsg_msginfo_free((MsgInfo **)&(cur_list->data));
-	}
-	g_slist_free(mlist);
-
-	summary_thaw(summaryview);
-
-	folder_item_update_thaw();
-	debug_print("filtering done.\n");
-	STATUSBAR_POP(summaryview->mainwin);
-	main_window_cursor_normal(summaryview->mainwin);
-
-	summary_unlock(summaryview);
-
-	/*
-	 * CLAWS: summary_show() only valid after having a lock. ideally
-	 * we want the lock to be context aware...
-	 */
-	summary_show(summaryview, summaryview->folder_item, TRUE);
-}
-
-static void summary_filter_func(MsgInfo *msginfo, PrefsAccount *ac_prefs)
-{
-	MailFilteringData mail_filtering_data;
-
-	mail_filtering_data.msginfo = msginfo;
-	mail_filtering_data.msglist = NULL;
-	mail_filtering_data.filtered = NULL;
-	mail_filtering_data.unfiltered = NULL;
-	if (hooks_invoke(MAIL_MANUAL_FILTERING_HOOKLIST, &mail_filtering_data))
-		return;
-
-	filter_message_by_msginfo(filtering_rules, msginfo, ac_prefs,
-			FILTERING_MANUALLY, NULL);
-}
-
-void summary_msginfo_filter_open(FolderItem * item, MsgInfo *msginfo,
-				 PrefsFilterType type, gint processing_rule)
-{
-	gchar *header = NULL;
-	gchar *key = NULL;
-
-	procmsg_get_filter_keyword(msginfo, &header, &key, type);
-
-	if (processing_rule) {
-		if (item == NULL)
-			prefs_filtering_open(&pre_global_processing,
-					     _("Processing rules to apply before folder rules"),
-					     MANUAL_ANCHOR_PROCESSING,
-					     header, key, FALSE);
-		else
-			prefs_filtering_open(&item->prefs->processing,
-					     _("Processing configuration"),
-					     MANUAL_ANCHOR_PROCESSING,
-					     header, key, FALSE);
-	}
-	else {
-		prefs_filtering_open(&filtering_rules,
-				_("Filtering configuration"),
-				MANUAL_ANCHOR_FILTERING,
-				header, key, TRUE);
-	}
-
-	g_free(header);
-	g_free(key);
-}
-
-void summary_filter_open(SummaryView *summaryview, PrefsFilterType type,
-			 gint processing_rule)
-{
-	MsgInfo *msginfo;
-	FolderItem * item;
-
-	if (!summaryview->selected) return;
-
-	msginfo = gtk_cmctree_node_get_row_data(GTK_CMCTREE(summaryview->ctree),
-					      summaryview->selected);
-	if (!msginfo) return;
-
-	item = summaryview->folder_item;
-	summary_msginfo_filter_open(item, msginfo, type, processing_rule);
 }
 
 void summaryview_destroy(SummaryView *summaryview)

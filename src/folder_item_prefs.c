@@ -29,7 +29,6 @@
 #include "folder.h"
 #include "utils.h"
 #include "prefs_gtk.h"
-#include "filtering.h"
 #include "folder_item_prefs.h"
 #include "prefs_migration.h"
 
@@ -294,13 +293,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 
 	prefs_matcher_read_config();
 
-	for (tmp = src->prefs->processing; tmp != NULL && tmp->data != NULL;) {
-		FilteringProp *prop = (FilteringProp *)tmp->data;
-
-		tmp_prop_list = g_slist_append(tmp_prop_list,
-					   filteringprop_copy(prop));
-		tmp = tmp->next;
-	}
 	tmp_prefs.processing			= tmp_prop_list;
 
 	tmp_prefs.request_return_receipt	= src->prefs->request_return_receipt;

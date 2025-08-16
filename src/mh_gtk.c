@@ -228,7 +228,6 @@ static void delete_folder_cb(GtkAction *action, gpointer data)
 
 	folder_write_list();
 
-	prefs_filtering_delete_path(old_id);
 	g_free(old_id);
 
 }
@@ -285,7 +284,6 @@ static void rename_folder_cb(GtkAction *action, gpointer data)
 	}
 
 	new_id = folder_item_get_identifier(item);
-	prefs_filtering_rename_path(old_id, new_id);
 	account_rename_path(old_id, new_id);
 	prefs_actions_rename_path(old_id, new_id);
 	g_free(old_id);

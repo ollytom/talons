@@ -42,7 +42,6 @@
 #include "gtkutils.h"
 #include "prefs_common.h"
 #include "prefs_account.h"
-#include "prefs_filtering.h"
 #include "prefs_folder_item.h"
 #include "account.h"
 #include "folder.h"
@@ -53,7 +52,6 @@
 #include "folderutils.h"
 #include "partial_download.h"
 #include "prefs_folder_column.h"
-#include "filtering.h"
 #include "quicksearch.h"
 #include "manual.h"
 #include "log.h"
@@ -2579,9 +2577,6 @@ void folderview_run_processing(FolderItem *item)
 {
 	cm_return_if_fail(item != NULL);
 	cm_return_if_fail(item->folder != NULL);
-
-	item->processing_pending = TRUE;
-	folder_item_apply_processing(item);
 	item->processing_pending = FALSE;
 }
 
@@ -2728,23 +2723,8 @@ static gint folderview_clist_compare(GtkCMCList *clist,
 
 static void folderview_processing_cb(GtkAction *action, gpointer data)
 {
-	FolderView *folderview = (FolderView *)data;
-	FolderItem *item;
-	gchar *id, *title;
-
-	if (!folderview->selected) return;
-
-	item = folderview_get_selected_item(folderview);
-	cm_return_if_fail(item != NULL);
-	cm_return_if_fail(item->folder != NULL);
-
-	id = folder_item_get_identifier(item);
-	title = g_strdup_printf (_("Processing configuration for folder %s"), id);
-	g_free (id);
-
-	prefs_filtering_open(&item->prefs->processing, title,
-			MANUAL_ANCHOR_PROCESSING, NULL, NULL, FALSE);
-	g_free (title);
+	fprintf(stderr, "delete folderview_processing_cb\n");
+	return;
 }
 
 void folderview_set_target_folder_color(GdkRGBA color_op)
