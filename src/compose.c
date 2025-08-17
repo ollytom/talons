@@ -653,16 +653,6 @@ static GtkActionEntry compose_entries[] =
 #define ENC_ACTION(cs_char,c_char,string) \
 	{"Options/Encoding/" cs_char, NULL, N_(string), NULL, NULL, c_char }
 
-	{"Options/Encoding/Western",      NULL, N_("Western European"), NULL, NULL, NULL },
-	{"Options/Encoding/Baltic",       NULL, N_("Baltic"), NULL, NULL, NULL },
-	{"Options/Encoding/Hebrew",       NULL, N_("Hebrew"), NULL, NULL, NULL },
-	{"Options/Encoding/Arabic",       NULL, N_("Arabic"), NULL, NULL, NULL },
-	{"Options/Encoding/Cyrillic",     NULL, N_("Cyrillic"), NULL, NULL, NULL },
-	{"Options/Encoding/Japanese",     NULL, N_("Japanese"), NULL, NULL, NULL },
-	{"Options/Encoding/Chinese",      NULL, N_("Chinese"), NULL, NULL, NULL },
-	{"Options/Encoding/Korean",       NULL, N_("Korean"), NULL, NULL, NULL },
-	{"Options/Encoding/Thai",         NULL, N_("Thai"), NULL, NULL, NULL },
-
 /* Tools menu */
 	{"Tools/AddressBook",             NULL, N_("_Address book"), "<shift><control>A", NULL, G_CALLBACK(compose_address_cb) },
 
@@ -5598,45 +5588,7 @@ static gint compose_write_to_file(Compose *compose, FILE *fp, gint action, gbool
 	gtk_text_buffer_get_start_iter(buffer, &start);
 	chars = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
-	out_codeset = conv_get_charset_str(compose->out_encoding);
-
-	if (!out_codeset && is_ascii_str(chars)) {
-		out_codeset = CS_US_ASCII;
-	} else if (prefs_common.outgoing_fallback_to_ascii &&
-		   is_ascii_str(chars)) {
-		out_codeset = CS_US_ASCII;
-		encoding = ENC_7BIT;
-	}
-
-	if (!out_codeset) {
-		gchar *test_conv_global_out = NULL;
-		gchar *test_conv_reply = NULL;
-
-		/* automatic mode. be automatic. */
-		codeconv_set_strict(TRUE);
-
-		out_codeset = conv_get_outgoing_charset_str();
-		if (out_codeset) {
-			debug_print("trying to convert to %s\n", out_codeset);
-			test_conv_global_out = conv_codeset_strdup(chars, src_codeset, out_codeset);
-		}
-
-		if (!test_conv_global_out && compose->orig_charset
-		&&  strcmp(compose->orig_charset, CS_US_ASCII)) {
-			out_codeset = compose->orig_charset;
-			debug_print("failure; trying to convert to %s\n", out_codeset);
-			test_conv_reply = conv_codeset_strdup(chars, src_codeset, out_codeset);
-		}
-
-		if (!test_conv_global_out && !test_conv_reply) {
-			/* we're lost */
-			out_codeset = CS_INTERNAL;
-			debug_print("failure; finally using %s\n", out_codeset);
-		}
-		g_free(test_conv_global_out);
-		g_free(test_conv_reply);
-		codeconv_set_strict(FALSE);
-	}
+	out_codeset = CS_UTF_8;
 
 	if (encoding == ENC_UNKNOWN) {
 		if (prefs_common.encoding_method == CTE_BASE64)
@@ -7698,59 +7650,6 @@ static Compose *compose_create(PrefsAccount *account,
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Separator1", "Options/Encoding/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", CS_US_ASCII, "Options/Encoding/"CS_US_ASCII, GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", CS_UTF_8, "Options/Encoding/"CS_UTF_8, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Separator2", "Options/Encoding/---", GTK_UI_MANAGER_SEPARATOR)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Western", "Options/Encoding/Western", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Western", CS_ISO_8859_1, "Options/Encoding/Western/"CS_ISO_8859_1, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Western", CS_ISO_8859_15, "Options/Encoding/Western/"CS_ISO_8859_15, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Western", CS_WINDOWS_1252, "Options/Encoding/Western/"CS_WINDOWS_1252, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", CS_ISO_8859_2, "Options/Encoding/"CS_ISO_8859_2, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Baltic", "Options/Encoding/Baltic", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Baltic", CS_ISO_8859_13, "Options/Encoding/Baltic/"CS_ISO_8859_13, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Baltic", CS_ISO_8859_4, "Options/Encoding/Baltic/"CS_ISO_8859_4, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", CS_ISO_8859_7, "Options/Encoding/"CS_ISO_8859_7, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Hebrew", "Options/Encoding/Hebrew", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Hebrew", CS_ISO_8859_8, "Options/Encoding/Hebrew/"CS_ISO_8859_8, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Hebrew", CS_WINDOWS_1255, "Options/Encoding/Hebrew/"CS_WINDOWS_1255, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Arabic", "Options/Encoding/Arabic", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Arabic", CS_ISO_8859_6, "Options/Encoding/Arabic/"CS_ISO_8859_6, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Arabic", CS_WINDOWS_1256, "Options/Encoding/Arabic/"CS_WINDOWS_1256, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", CS_ISO_8859_9, "Options/Encoding/"CS_ISO_8859_9, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Cyrillic", "Options/Encoding/Cyrillic", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Cyrillic", CS_ISO_8859_5, "Options/Encoding/Cyrillic/"CS_ISO_8859_5, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Cyrillic", CS_KOI8_R, "Options/Encoding/Cyrillic/"CS_KOI8_R, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Cyrillic", CS_MACCYR, "Options/Encoding/Cyrillic/"CS_MACCYR, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Cyrillic", CS_KOI8_U, "Options/Encoding/Cyrillic/"CS_KOI8_U, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Cyrillic", CS_WINDOWS_1251, "Options/Encoding/Cyrillic/"CS_WINDOWS_1251, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Japanese", "Options/Encoding/Japanese", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Japanese", CS_ISO_2022_JP, "Options/Encoding/Japanese/"CS_ISO_2022_JP, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Japanese", CS_ISO_2022_JP_2, "Options/Encoding/Japanese/"CS_ISO_2022_JP_2, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Japanese", CS_EUC_JP, "Options/Encoding/Japanese/"CS_EUC_JP, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Japanese", CS_SHIFT_JIS, "Options/Encoding/Japanese/"CS_SHIFT_JIS, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Chinese", "Options/Encoding/Chinese", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Chinese", CS_GB18030, "Options/Encoding/Chinese/"CS_GB18030, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Chinese", CS_GB2312, "Options/Encoding/Chinese/"CS_GB2312, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Chinese", CS_GBK, "Options/Encoding/Chinese/"CS_GBK, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Chinese", CS_BIG5, "Options/Encoding/Chinese/"CS_BIG5, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Chinese", CS_EUC_TW, "Options/Encoding/Chinese/"CS_EUC_TW, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Korean", "Options/Encoding/Korean", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Korean", CS_EUC_KR, "Options/Encoding/Korean/"CS_EUC_KR, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Korean", CS_ISO_2022_KR, "Options/Encoding/Korean/"CS_ISO_2022_KR, GTK_UI_MANAGER_MENUITEM)
-
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", "Thai", "Options/Encoding/Thai", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Thai", CS_TIS_620, "Options/Encoding/Thai/"CS_TIS_620, GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding/Thai", CS_WINDOWS_874, "Options/Encoding/Thai/"CS_WINDOWS_874, GTK_UI_MANAGER_MENUITEM)
-/* phew. */
 
 /* Tools menu */
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools", "AddressBook", "Tools/AddressBook", GTK_UI_MANAGER_MENUITEM)

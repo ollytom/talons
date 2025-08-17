@@ -129,7 +129,7 @@ static PrefParam param[] = {
 	{"sendwin_height", "-1", &prefs_common.sendwin_height, P_INT,
 	 NULL, NULL, NULL},
 
-	{"outgoing_charset", CS_AUTO, &prefs_common.outgoing_charset, P_STRING,
+	{"outgoing_charset", CS_UTF_8, &prefs_common.outgoing_charset, P_STRING,
 	 NULL, NULL, NULL},
 	{"encoding_method", "0", &prefs_common.encoding_method, P_ENUM,
 	 NULL, NULL, NULL},

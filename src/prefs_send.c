@@ -54,84 +54,13 @@ typedef struct _SendPage
 	GtkWidget *checkbtn_warn_empty_subj;
 	GtkWidget *checkbtn_warn_multiple_recipients;
 	GtkWidget *spinbtn_warn_multiple_recipients;
-	GtkWidget *combobox_charset;
 	GtkWidget *combobox_encoding_method;
 } SendPage;
-
-static gchar * prefs_common_charset_set_data_from_optmenu(GtkWidget *widget)
-{
-	GtkTreeModel *model;
-	GtkTreeIter iter;
-	gchar *data = NULL;
-
-	cm_return_val_if_fail(widget != NULL, NULL);
-
-	cm_return_val_if_fail(gtk_combo_box_get_active_iter(
-				GTK_COMBO_BOX(widget), &iter), NULL);
-
-	model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
-
-	gtk_tree_model_get(model, &iter, COMBOBOX_DATA, &data, -1);
-
-	return data;
-}
 
 typedef struct _combobox_sel_by_data_ctx {
 	GtkComboBox *combobox;
 	gchar *data;
 } ComboboxSelCtx;
-
-static gboolean _select_by_data_func(GtkTreeModel *model, GtkTreePath *path,
-		GtkTreeIter *iter, ComboboxSelCtx *ctx)
-{
-	GtkComboBox *combobox = ctx->combobox;
-	gchar *data = ctx->data;
-	gchar *curdata;
-
-	gtk_tree_model_get(GTK_TREE_MODEL(model), iter, COMBOBOX_DATA, &curdata, -1);
-	if ( data != NULL && curdata != NULL && !strcmp(data, curdata) ) {
-		gtk_combo_box_set_active_iter(combobox, iter);
-		g_free(curdata);
-		return TRUE;
-	}
-
-	g_free(curdata);
-	return FALSE;
-}
-
-static void prefs_common_charset_set_optmenu(GtkWidget *widget, gchar *data)
-{
-	GtkComboBox *combobox = GTK_COMBO_BOX(widget);
-	GtkTreeModel *model;
-	ComboboxSelCtx *ctx = NULL;
-	cm_return_if_fail(combobox != NULL);
-
-	model = gtk_combo_box_get_model(combobox);
-
-	ctx = g_new(ComboboxSelCtx,
-			sizeof(ComboboxSelCtx));
-	ctx->combobox = combobox;
-	ctx->data = data;
-
-	gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)_select_by_data_func, ctx);
-	g_free(ctx);
-}
-
-static gboolean _combobox_separator_func(GtkTreeModel *model,
-		GtkTreeIter *iter, gpointer data)
-{
-	gchar *txt = NULL;
-
-	cm_return_val_if_fail(model != NULL, FALSE);
-
-	gtk_tree_model_get(model, iter, COMBOBOX_TEXT, &txt, -1);
-
-	if( txt == NULL )
-		return TRUE;
-
-	g_free(txt);
-	return FALSE;
-}
 
 static void checkbtn_warn_multiple_recipients_toggled(GtkToggleButton *button,
 		gpointer user_data)
@@ -149,11 +78,8 @@ static void prefs_send_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *frame;
 	GtkWidget *vbox1, *vbox2, *hbox1;
 	GtkWidget *checkbtn_savemsg;
-	GtkWidget *label_outcharset;
-	GtkWidget *combobox_charset;
 	GtkListStore *optmenu;
 	GtkTreeIter iter;
-	GtkCellRenderer *rend;
 	GtkWidget *combobox_encoding;
 	GtkWidget *label_encoding;
 	GtkWidget *checkbtn_senddialog;
@@ -221,94 +147,6 @@ static void prefs_send_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 8);
 	gtk_container_add(GTK_CONTAINER(frame), vbox2);
 
-	/* populate table within encoding sub-frame */
-	label_outcharset = gtk_label_new (_("Outgoing encoding"));
-	gtk_widget_show (label_outcharset);
-	gtk_label_set_justify(GTK_LABEL(label_outcharset), GTK_JUSTIFY_RIGHT);
-	gtk_label_set_xalign(GTK_LABEL(label_outcharset), 1.0);
-	gtk_grid_attach(GTK_GRID(table), label_outcharset, 0, 1, 1, 1);
-
-	optmenu = gtk_list_store_new(2,
-			G_TYPE_STRING,		/* Menu label */
-			G_TYPE_STRING);		/* Actual charset data string */
-
-	combobox_charset = gtk_combo_box_new_with_model(
-			GTK_TREE_MODEL(optmenu));
-	rend = gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combobox_charset), rend, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combobox_charset), rend,
-			"text", COMBOBOX_TEXT,
-			NULL);
-
-	gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(combobox_charset),
-			(GtkTreeViewRowSeparatorFunc)_combobox_separator_func, NULL, NULL);
-
-	gtk_widget_show (combobox_charset);
-	CLAWS_SET_TIP(combobox_charset,
-			     _("If 'Automatic' is selected, the optimal encoding"
-		   	       " for the current locale will be used"));
-	gtk_grid_attach(GTK_GRID(table), combobox_charset, 1, 1, 1, 1);
-
-#define SET_MENUITEM(str, data) \
-{ \
-	gtk_list_store_append(optmenu, &iter); \
-	gtk_list_store_set(optmenu, &iter, \
-			COMBOBOX_TEXT, str, \
-			COMBOBOX_DATA, data, \
-			-1); \
-}
-
-	SET_MENUITEM(_("Automatic"),			 CS_AUTO);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("7bit ASCII (US-ASCII)"),	 CS_US_ASCII);
-	SET_MENUITEM(_("Unicode (UTF-8)"),		 CS_UTF_8);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Western European (ISO-8859-1)"),  CS_ISO_8859_1);
-	SET_MENUITEM(_("Western European (ISO-8859-15)"), CS_ISO_8859_15);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Central European (ISO-8859-2)"), CS_ISO_8859_2);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Baltic (ISO-8859-13)"),		 CS_ISO_8859_13);
-	SET_MENUITEM(_("Baltic (ISO-8859-4)"),		 CS_ISO_8859_4);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Greek (ISO-8859-7)"),		 CS_ISO_8859_7);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Hebrew (ISO-8859-8)"),		 CS_ISO_8859_8);
-	SET_MENUITEM(_("Hebrew (Windows-1255)"),	 CS_WINDOWS_1255);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Arabic (ISO-8859-6)"),		 CS_ISO_8859_6);
-	SET_MENUITEM(_("Arabic (Windows-1256)"),	 CS_WINDOWS_1256);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Turkish (ISO-8859-9)"),		 CS_ISO_8859_9);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Cyrillic (ISO-8859-5)"),	 CS_ISO_8859_5);
-	SET_MENUITEM(_("Cyrillic (KOI8-R)"),		 CS_KOI8_R);
-	SET_MENUITEM(_("Cyrillic (X-MAC-CYRILLIC)"),		 CS_MACCYR);
-	SET_MENUITEM(_("Cyrillic (KOI8-U)"),		 CS_KOI8_U);
-	SET_MENUITEM(_("Cyrillic (Windows-1251)"),	 CS_WINDOWS_1251);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Japanese (ISO-2022-JP)"),	 CS_ISO_2022_JP);
-#if 0
-	SET_MENUITEM(_("Japanese (EUC-JP)"),		 CS_EUC_JP);
-	SET_MENUITEM(_("Japanese (Shift_JIS)"),		 CS_SHIFT_JIS);
-#endif /* 0 */
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Simplified Chinese (GB18030)"),	 CS_GB18030);
-	SET_MENUITEM(_("Simplified Chinese (GB2312)"),	 CS_GB2312);
-	SET_MENUITEM(_("Simplified Chinese (GBK)"),	 CS_GBK);
-	SET_MENUITEM(_("Traditional Chinese (Big5)"),	 CS_BIG5);
-#if 0
-	SET_MENUITEM(_("Traditional Chinese (EUC-TW)"),  CS_EUC_TW);
-	SET_MENUITEM(_("Chinese (ISO-2022-CN)"),	 CS_ISO_2022_CN);
-#endif /* 0 */
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Korean (EUC-KR)"),		 CS_EUC_KR);
-	SET_MENUITEM(NULL, NULL);
-	SET_MENUITEM(_("Thai (TIS-620)"),		 CS_TIS_620);
-	SET_MENUITEM(_("Thai (Windows-874)"),		 CS_WINDOWS_874);
-
-#undef SET_MENUITEM
-
 	label_encoding = gtk_label_new (_("Transfer encoding"));
 	gtk_widget_show (label_encoding);
 	gtk_label_set_justify(GTK_LABEL(label_encoding), GTK_JUSTIFY_RIGHT);
@@ -349,8 +187,6 @@ static void prefs_send_create_widget(PrefsPage *_page, GtkWindow *window,
 	else
 		gtk_widget_set_sensitive(spinbtn_warn_multiple_recipients, FALSE);
 
-	prefs_common_charset_set_optmenu(combobox_charset,
-		prefs_common.outgoing_charset);
 	combobox_select_by_data(GTK_COMBO_BOX(combobox_encoding),
 		prefs_common.encoding_method);
 
@@ -363,7 +199,6 @@ static void prefs_send_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_send->checkbtn_warn_empty_subj = checkbtn_warn_empty_subj;
 	prefs_send->checkbtn_warn_multiple_recipients = checkbtn_warn_multiple_recipients;
 	prefs_send->spinbtn_warn_multiple_recipients = spinbtn_warn_multiple_recipients;
-	prefs_send->combobox_charset = combobox_charset;
 	prefs_send->combobox_encoding_method = combobox_encoding;
 
 	prefs_send->page.widget = vbox1;
@@ -390,11 +225,7 @@ static void prefs_send_save(PrefsPage *_page)
 	else
 		prefs_common.warn_sending_many_recipients_num = 0;
 
-	g_free(prefs_common.outgoing_charset);
-	prefs_common.outgoing_charset = prefs_common_charset_set_data_from_optmenu(
-		page->combobox_charset);
-	prefs_common.encoding_method =
-		combobox_get_active_data(GTK_COMBO_BOX(page->combobox_encoding_method));
+	prefs_common.encoding_method = combobox_get_active_data(GTK_COMBO_BOX(page->combobox_encoding_method));
 }
 
 static void prefs_send_destroy_widget(PrefsPage *_page)
