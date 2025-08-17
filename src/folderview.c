@@ -184,8 +184,6 @@ static void folderview_send_queue_cb	(GtkAction 	*action,
 
 static void folderview_search_cb	(GtkAction 	*action,
 					 gpointer	 data);
-static void folderview_run_processing_cb(GtkAction 	*action,
-					 gpointer	 data);
 static void folderview_startup_folder_cb(GtkAction	*action,
 					 gpointer	 data);
 
@@ -228,7 +226,6 @@ static gboolean folderview_update_folder	 (gpointer 	    source,
 					  gpointer 	    userdata);
 static gboolean folderview_update_item_claws	 (gpointer 	    source,
 					  gpointer	    data);
-static void folderview_processing_cb(GtkAction *action, gpointer data);
 static void folderview_set_sens_and_popup_menu(FolderView *folderview, gint row,
 				GdkEventButton *event);
 static void folderview_header_set_displayed_columns_cb(GtkAction *gaction,
@@ -247,11 +244,9 @@ static GtkActionEntry folderview_common_popup_entries[] =
 	{"FolderViewPopup/MarkAllReadRec",   NULL, N_("Mark all read recursi_vely"), NULL, NULL, G_CALLBACK(mark_all_read_recursive_cb) },
 	{"FolderViewPopup/MarkAllUnreadRec", NULL, N_("Mark all unread recursi_vely"), NULL, NULL, G_CALLBACK(mark_all_unread_recursive_cb) },
 	{"FolderViewPopup/---",              NULL, "---", NULL, NULL , NULL},
-	{"FolderViewPopup/RunProcessing",    NULL, N_("R_un processing rules"), NULL, NULL, G_CALLBACK(folderview_run_processing_cb) },
 	{"FolderViewPopup/SearchFolder",     NULL, N_("_Search folder..."), NULL, NULL, G_CALLBACK(folderview_search_cb) },
 	{"FolderViewPopup/OpenFolder",       NULL, N_("Open on start-up"), NULL, NULL, G_CALLBACK(folderview_startup_folder_cb) },
 	{"FolderViewPopup/Properties",       NULL, N_("_Properties..."), NULL, NULL, G_CALLBACK(folderview_property_cb) },
-	{"FolderViewPopup/Processing",       NULL, N_("Process_ing..."), NULL, NULL, G_CALLBACK(folderview_processing_cb) },
 	{"FolderViewPopup/EmptyTrash",       NULL, N_("Empty _trash..."), NULL, NULL, G_CALLBACK(folderview_empty_trash_cb) },
 	{"FolderViewPopup/SendQueue",        NULL, N_("Send _queue..."), NULL, NULL, G_CALLBACK(folderview_send_queue_cb) },
 
@@ -884,8 +879,6 @@ static void mark_all_read_unread_handler(GtkAction *action, gpointer data,
 		if (recursive)
 			folderutils_mark_all_read_recursive(item, TRUE);
 		else {
-			if (prefs_common.run_processingrules_before_mark_all)
-				folderview_run_processing(item);
 			folderutils_mark_all_read(item, TRUE);
 		}
 	} else {
@@ -893,8 +886,6 @@ static void mark_all_read_unread_handler(GtkAction *action, gpointer data,
 			folderutils_mark_all_read_recursive(item, FALSE);
 		else {
 			folderutils_mark_all_read(item, FALSE);
-			if (prefs_common.run_processingrules_before_mark_all)
-				folderview_run_processing(item);
 		}
 	}
 	if (folderview->summaryview->folder_item != item && !recursive)
@@ -1162,11 +1153,6 @@ gint folderview_check_new(Folder *folder)
 			if (folder && folder != item->folder) continue;
 			if (!folder && !FOLDER_IS_LOCAL(item->folder)) continue;
 			if (!item->prefs->newmailcheck) continue;
-			if (item->processing_pending == TRUE) {
-				debug_print("skipping %s, processing pending\n",
-					item->path ? item->path : item->name);
-				continue;
-			}
 			if (item->scanning != ITEM_NOT_SCANNING) {
 				debug_print("skipping %s, scanning\n",
 					item->path ? item->path : item->name);
@@ -1187,8 +1173,7 @@ gint folderview_check_new(Folder *folder)
 			if (item->folder->klass->scan_required &&
 			    (item->folder->klass->scan_required(item->folder, item) ||
 			     item->folder->inbox == item ||
-			     item->opened == TRUE ||
-			     item->processing_pending == TRUE)) {
+			     item->opened == TRUE )) {
 				if (folder_item_scan(item) < 0) {
 					if (folder) {
 						if (FOLDER_TYPE(item->folder) == F_NEWS || FOLDER_IS_LOCAL(folder)) {
@@ -1938,11 +1923,9 @@ static void folderview_set_sens_and_popup_menu(FolderView *folderview, gint row,
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "MarkAllReadRec", "FolderViewPopup/MarkAllReadRec", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "MarkAllUnreadRec", "FolderViewPopup/MarkAllUnreadRec", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "Separator1", "FolderViewPopup/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "RunProcessing", "FolderViewPopup/RunProcessing", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "SearchFolder", "FolderViewPopup/SearchFolder", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "OpenFolder", "FolderViewPopup/OpenFolder", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "Properties", "FolderViewPopup/Properties", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "Processing", "FolderViewPopup/Processing", GTK_UI_MANAGER_MENUITEM)
 
 	if (fpopup->set_sensitivity != NULL)
 		fpopup->set_sensitivity(ui_manager, item);
@@ -1975,11 +1958,6 @@ static void folderview_set_sens_and_popup_menu(FolderView *folderview, gint row,
 	SET_SENS("FolderViewPopup/SearchFolder", item->total_msgs > 0 &&
 		 folderview->selected == folderview->opened);
 	SET_SENS("FolderViewPopup/Properties", TRUE);
-
-	SET_SENS("FolderViewPopup/RunProcessing", item->prefs->processing &&
-		 item->total_msgs >= 1 && !item->processing_pending);
-	SET_SENS("FolderViewPopup/Processing", item->node->parent != NULL &&
-		!item->no_select && !item->processing_pending);
 
 	if (item->node->parent != NULL) {
 		gchar *id = folder_item_get_identifier(item);
@@ -2561,25 +2539,6 @@ static void folderview_startup_folder_cb(GtkAction *action, gpointer data)
 	prefs_common.goto_folder_on_startup = prefs_common.startup_folder? TRUE : FALSE;
 }
 
-static void folderview_run_processing_cb(GtkAction *action, gpointer data)
-{
-	FolderView *folderview = (FolderView *)data;
-	FolderItem *item;
-
-	if (!folderview->selected) return;
-
-	item = folderview_get_selected_item(folderview);
-
-	folderview_run_processing(item);
-}
-
-void folderview_run_processing(FolderItem *item)
-{
-	cm_return_if_fail(item != NULL);
-	cm_return_if_fail(item->folder != NULL);
-	item->processing_pending = FALSE;
-}
-
 static void folderview_property_cb(GtkAction *action, gpointer data)
 {
 	FolderView *folderview = (FolderView *)data;
@@ -2719,12 +2678,6 @@ static gint folderview_clist_compare(GtkCMCList *clist,
 		return -1;
 
 	return g_utf8_collate(item1->name, item2->name);
-}
-
-static void folderview_processing_cb(GtkAction *action, gpointer data)
-{
-	fprintf(stderr, "delete folderview_processing_cb\n");
-	return;
 }
 
 void folderview_set_target_folder_color(GdkRGBA color_op)

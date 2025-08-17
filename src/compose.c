@@ -82,7 +82,6 @@
 #include "codeconv.h"
 #include "utils.h"
 #include "gtkutils.h"
-#include "gtkshruler.h"
 #include "socket.h"
 #include "alertpanel.h"
 #include "manage_window.h"
@@ -370,9 +369,6 @@ static void compose_add_field_list	( Compose *compose,
 static void compose_notebook_size_alloc (GtkNotebook *notebook,
 					 GtkAllocation *allocation,
 					 GtkPaned *paned);
-static gboolean compose_edit_size_alloc (GtkEditable	*widget,
-					 GtkAllocation	*allocation,
-					 GtkSHRuler	*shruler);
 static void account_activated		(GtkComboBox *optmenu,
 					 gpointer	 data);
 static void attach_selected		(GtkTreeView	*tree_view,
@@ -458,8 +454,6 @@ static void compose_toggle_autowrap_cb	(GtkToggleAction *action,
 static void compose_toggle_autoindent_cb(GtkToggleAction *action,
 					 gpointer	 data);
 
-static void compose_toggle_ruler_cb	(GtkToggleAction *action,
-					 gpointer	 data);
 static void compose_toggle_sign_cb	(GtkToggleAction *action,
 					 gpointer	 data);
 static void compose_toggle_encrypt_cb	(GtkToggleAction *action,
@@ -685,7 +679,6 @@ static GtkToggleActionEntry compose_toggle_entries[] =
 	{"Options/Sign",             NULL, N_("Si_gn"), NULL, NULL, G_CALLBACK(compose_toggle_sign_cb), FALSE }, /* Toggle */
 	{"Options/Encrypt",          NULL, N_("_Encrypt"), NULL, NULL, G_CALLBACK(compose_toggle_encrypt_cb), FALSE }, /* Toggle */
 	{"Options/RemoveReferences", NULL, N_("Remo_ve references"), NULL, NULL, G_CALLBACK(compose_toggle_remove_refs_cb), FALSE }, /* Toggle */
-	{"Tools/ShowRuler",          NULL, N_("Show _ruler"), NULL, NULL, G_CALLBACK(compose_toggle_ruler_cb), FALSE }, /* Toggle */
 };
 
 static GtkRadioActionEntry compose_radio_rm_entries[] =
@@ -2494,7 +2487,6 @@ Compose *compose_redirect(PrefsAccount *account, MsgInfo *msginfo,
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Message/ReplaceSig", FALSE);
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Edit", FALSE);
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options", FALSE);
-	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Tools/ShowRuler", FALSE);
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Tools/Actions", FALSE);
 
 	if (compose->toolbar->sendl_btn)
@@ -7526,8 +7518,6 @@ static Compose *compose_create(PrefsAccount *account,
 	GtkWidget *paned;
 
 	GtkWidget *edit_vbox;
-	GtkWidget *ruler_hbox;
-	GtkWidget *ruler;
 	GtkWidget *scrolledwin;
 	GtkWidget *text;
 	GtkTextBuffer *buffer;
@@ -7763,7 +7753,6 @@ static Compose *compose_create(PrefsAccount *account,
 /* phew. */
 
 /* Tools menu */
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools", "ShowRuler", "Tools/ShowRuler", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools", "AddressBook", "Tools/AddressBook", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools", "Template", "Tools/Template", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools/Template", "PlaceHolder", "Tools/Template/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
@@ -7849,15 +7838,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	gtk_box_pack_start(GTK_BOX(edit_vbox), subject_hbox, FALSE, FALSE, 0);
 
-	/* ruler */
-	ruler_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_start(GTK_BOX(edit_vbox), ruler_hbox, FALSE, FALSE, 0);
-
-	ruler = gtk_shruler_new(GTK_ORIENTATION_HORIZONTAL);
-	gtk_shruler_set_range(GTK_SHRULER(ruler), 0.0, 100.0, 1.0);
-	gtk_box_pack_start(GTK_BOX(ruler_hbox), ruler, TRUE, TRUE,
-			   BORDER_WIDTH);
-
 	/* text widget */
 	scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwin),
@@ -7879,9 +7859,6 @@ static Compose *compose_create(PrefsAccount *account,
 	gtk_text_buffer_add_selection_clipboard(buffer, clipboard);
 
 	gtk_container_add(GTK_CONTAINER(scrolledwin), text);
-	g_signal_connect_after(G_OBJECT(text), "size_allocate",
-			       G_CALLBACK(compose_edit_size_alloc),
-			       ruler);
 	g_signal_connect(G_OBJECT(buffer), "changed",
 			 G_CALLBACK(compose_changed_cb), compose);
 	g_signal_connect(G_OBJECT(text), "grab_focus",
@@ -7971,8 +7948,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	compose->notebook      = notebook;
 	compose->edit_vbox     = edit_vbox;
-	compose->ruler_hbox    = ruler_hbox;
-	compose->ruler         = ruler;
 	compose->scrolledwin   = scrolledwin;
 	compose->text	       = text;
 
@@ -8096,11 +8071,6 @@ static Compose *compose_create(PrefsAccount *account,
 	}
 
 	compose_list = g_list_append(compose_list, compose);
-
-	if (!prefs_common.show_ruler)
-		gtk_widget_hide(ruler_hbox);
-
-	cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Tools/ShowRuler", prefs_common.show_ruler);
 
 	compose_set_out_encoding(compose);
 
@@ -9521,7 +9491,6 @@ static char *ext_editor_menu_entries[] = {
 #if USE_ENCHANT
 	"Menu/Spelling",
 #endif
-	"Menu/Tools/ShowRuler",
 	"Menu/Tools/Actions",
 	NULL
 };
@@ -9542,8 +9511,6 @@ static void compose_set_ext_editor_sensitive(Compose *compose,
 			if (compose->exteditor_socket)
 				gtk_widget_hide(compose->exteditor_socket);
 			gtk_widget_show(compose->scrolledwin);
-			if (prefs_common.show_ruler)
-				gtk_widget_show(compose->ruler_hbox);
 			/* Fix the focus, as it doesn't go anywhere when the
 			 * socket is hidden or destroyed */
 			gtk_widget_child_focus(compose->window, GTK_DIR_TAB_BACKWARD);
@@ -9554,7 +9521,6 @@ static void compose_set_ext_editor_sensitive(Compose *compose,
 			if (gtk_widget_is_focus(compose->text))
 				gtk_widget_child_focus(compose->window, GTK_DIR_TAB_BACKWARD);
 			gtk_widget_hide(compose->scrolledwin);
-			gtk_widget_hide(compose->ruler_hbox);
 			gtk_widget_show(compose->exteditor_socket);
 		}
 	} else {
@@ -9660,31 +9626,6 @@ static void compose_notebook_size_alloc(GtkNotebook *notebook,
 					GtkPaned *paned)
 {
 	prefs_common.compose_notebook_height = gtk_paned_get_position(paned);
-}
-
-/* compose_edit_size_alloc() - called when resized. don't know whether Gtk
- * includes "non-client" (windows-izm) in calculation, so this calculation
- * may not be accurate.
- */
-static gboolean compose_edit_size_alloc(GtkEditable *widget,
-					GtkAllocation *allocation,
-					GtkSHRuler *shruler)
-{
-	if (prefs_common.show_ruler) {
-		gint char_width = 0, char_height = 0;
-		gint line_width_in_chars;
-
-		gtkut_get_font_size(GTK_WIDGET(widget),
-				    &char_width, &char_height);
-		line_width_in_chars =
-			(allocation->width - allocation->x) / char_width;
-
-		/* got the maximum */
-		gtk_shruler_set_range(GTK_SHRULER(shruler),
-				    0.0, line_width_in_chars, 0);
-	}
-
-	return TRUE;
 }
 
 typedef struct {
@@ -11250,20 +11191,6 @@ static void compose_apply_folder_privacy_settings(Compose *compose, FolderItem *
 			compose_use_encryption(compose,
 				(folder_item->prefs->always_encrypt == SIGN_OR_ENCRYPT_ALWAYS) ? TRUE : FALSE);
 		}
-	}
-}
-
-static void compose_toggle_ruler_cb(GtkToggleAction *action, gpointer data)
-{
-	Compose *compose = (Compose *)data;
-
-	if (gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action))) {
-		gtk_widget_show(compose->ruler_hbox);
-		prefs_common.show_ruler = TRUE;
-	} else {
-		gtk_widget_hide(compose->ruler_hbox);
-		gtk_widget_queue_resize(compose->edit_vbox);
-		prefs_common.show_ruler = FALSE;
 	}
 }
 

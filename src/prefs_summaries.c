@@ -73,7 +73,6 @@ typedef struct _SummariesPage
 	GtkWidget *spinbtn_mark_as_read_delay;
 	GtkWidget *checkbtn_immedexec;
 	GtkWidget *checkbtn_ask_mark_all_read;
-	GtkWidget *checkbtn_run_processingrules_mark_all_read;
   	GtkWidget *optmenu_sort_key;
   	GtkWidget *optmenu_sort_type;
 	GtkWidget *optmenu_summaryfromshow;
@@ -388,7 +387,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkAdjustment *spinbtn_mark_as_read_delay_adj;
 	GtkWidget *checkbtn_immedexec;
 	GtkWidget *checkbtn_ask_mark_all_read;
-	GtkWidget *checkbtn_run_processingrules_mark_all_read;
 	GtkWidget *label, *label_fill;
 	GtkListStore *menu;
 	GtkTreeIter iter;
@@ -476,10 +474,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			 G_CALLBACK(startup_folder_toggled), checkbtn_reopen_last_folder);
 	g_signal_connect(G_OBJECT(startup_folder_select), "clicked",
 			 G_CALLBACK(foldersel_cb), startup_folder_entry);
-
-	PACK_CHECK_BUTTON
-		(vbox1, checkbtn_run_processingrules_mark_all_read,
-		 _("Run processing rules before marking all messages in a folder as read or unread"));
 
 	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox1);
@@ -754,7 +748,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_summaries->spinbtn_mark_as_read_delay = spinbtn_mark_as_read_delay;
 	prefs_summaries->checkbtn_immedexec = checkbtn_immedexec;
 	prefs_summaries->checkbtn_ask_mark_all_read = checkbtn_ask_mark_all_read;
-	prefs_summaries->checkbtn_run_processingrules_mark_all_read = checkbtn_run_processingrules_mark_all_read;
 	prefs_summaries->optmenu_sort_key = optmenu_sort_key;
 	prefs_summaries->optmenu_sort_type = optmenu_sort_type;
 	prefs_summaries->optmenu_nextunreadmsgdialog = optmenu_nextunreadmsgdialog;
@@ -817,8 +810,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			prefs_common.immediate_exec);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_ask_mark_all_read),
 			prefs_common.ask_mark_all_read);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_run_processingrules_mark_all_read),
-			prefs_common.run_processingrules_before_mark_all);
 
 	combobox_select_by_data(GTK_COMBO_BOX(optmenu_sort_key),
 			prefs_common.default_sort_key);
@@ -895,8 +886,6 @@ static void prefs_summaries_save(PrefsPage *_page)
 		GTK_TOGGLE_BUTTON(page->checkbtn_immedexec));
 	prefs_common.ask_mark_all_read = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_ask_mark_all_read));
-	prefs_common.run_processingrules_before_mark_all = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_run_processingrules_mark_all_read));
 	prefs_common.mark_as_read_delay = gtk_spin_button_get_value_as_int(
 			GTK_SPIN_BUTTON(page->spinbtn_mark_as_read_delay));
 	prefs_common.summary_col_lock = gtk_toggle_button_get_active(

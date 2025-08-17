@@ -192,7 +192,6 @@ struct _PrefsCommon
 	gboolean default_reply_list;
 	gboolean forward_account_autosel;
 	gboolean reedit_account_autosel;
-	gboolean show_ruler;
 	gboolean autosave;
 	gint autosave_length;
 	gboolean autosave_encrypted;
@@ -413,9 +412,6 @@ struct _PrefsCommon
 
 	int hover_timeout; /* msecs mouse hover timeout */
 	gboolean ask_mark_all_read;
-	gboolean run_processingrules_before_mark_all;
-	gboolean ask_apply_per_account_filtering_rules;
-	gint apply_per_account_filtering_rules;
 
 	/* Other */
 	gchar *uri_cmd;

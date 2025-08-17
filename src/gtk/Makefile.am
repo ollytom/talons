@@ -21,7 +21,6 @@ libclawsgtk_la_SOURCES = \
 	gtkcmclist.c \
 	gtksctree.c \
 	gtkunit.c \
-	gtkshruler.c \
 	gtkutils.c \
 	gtkvscrollbutton.c \
 	icon_legend.c \
@@ -62,8 +61,7 @@ clawsgtkinclude_HEADERS = \
 	claws-marshal.h \
 	gtkcmctree.h \
 	gtkcmclist.h \
-	gtksctree.h \
-	gtkshruler.h
+	gtksctree.h
 
 AM_CPPFLAGS = \
 	-I$(srcdir)/../common \

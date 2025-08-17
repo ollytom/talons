@@ -228,9 +228,6 @@ static PrefParam param[] = {
 	{"default_reply_list", "TRUE", &prefs_common.default_reply_list, P_BOOL,
 	 NULL, NULL, NULL},
 
-	{"show_ruler", "TRUE", &prefs_common.show_ruler, P_BOOL,
-	 NULL, NULL, NULL},
-
 	{"reply_quote_format", N_("On %d\\n%f wrote:\\n\\n%q\\n%X"),
 	 &prefs_common.quotefmt, P_STRING, NULL, NULL, NULL},
 
@@ -667,14 +664,7 @@ static PrefParam param[] = {
 	 &prefs_common.pixmap_theme_path, P_STRING,
 	 NULL, NULL, NULL},
 
-	{"run_processingrules_before_mark_all", "FALSE", &prefs_common.run_processingrules_before_mark_all, P_BOOL,
-	 NULL, NULL, NULL},
 	{"ask_mark_all_read", "TRUE", &prefs_common.ask_mark_all_read, P_BOOL,
-	 NULL, NULL, NULL},
-
-	{"ask_apply_per_account_filtering_rules", "TRUE", &prefs_common.ask_apply_per_account_filtering_rules, P_BOOL,
-	 NULL, NULL, NULL},
-	{"apply_per_account_filtering_rules", "0", &prefs_common.apply_per_account_filtering_rules, P_ENUM,
 	 NULL, NULL, NULL},
 
 	/* Addressbook */

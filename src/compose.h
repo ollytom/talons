@@ -143,8 +143,6 @@ struct _Compose
 
 	/* Textedit */
 	GtkWidget *edit_vbox;
-	GtkWidget *ruler_hbox;
-	GtkWidget *ruler;
 	GtkWidget *scrolledwin;
 	GtkWidget *text;
 	GtkWidget *from_name;

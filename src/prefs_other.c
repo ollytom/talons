@@ -60,7 +60,6 @@ typedef struct _OtherPage
 	GtkWidget *checkbtn_warnqueued;
 	GtkWidget *spinbtn_iotimeout;
 	GtkWidget *checkbtn_gtk_enable_accels;
-	GtkWidget *checkbtn_askonfilter;
 	GtkWidget *checkbtn_real_time_sync;
 	GtkWidget *entry_attach_save_chmod;
 	GtkWidget *checkbtn_transhdr;
@@ -355,7 +354,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *vbox2;
 	GtkWidget *checkbtn_transhdr;
 	GtkWidget *checkbtn_askonclean;
-	GtkWidget *checkbtn_askonfilter;
 	GtkWidget *checkbtn_real_time_sync;
 	GtkWidget *label_attach_save_chmod;
 	GtkWidget *entry_attach_save_chmod;
@@ -441,9 +439,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 			     "will be translated into your language"));
 	PACK_CHECK_BUTTON (vbox2, checkbtn_askonclean,
 			   _("Ask before emptying trash"));
-	PACK_CHECK_BUTTON (vbox2, checkbtn_askonfilter,
-			   _("Ask about account specific filtering rules when "
-			     "filtering manually"));
 	PACK_CHECK_BUTTON (vbox2, checkbtn_real_time_sync,
 				   _("Synchronise offline folders as soon as possible"));
 
@@ -491,8 +486,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_transhdr),
 		prefs_common.trans_hdr);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_askonfilter),
-		prefs_common.ask_apply_per_account_filtering_rules);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_real_time_sync),
 		prefs_common.real_time_sync);
 
@@ -506,7 +499,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_other->spinbtn_iotimeout = spinbtn_iotimeout;
 	prefs_other->checkbtn_transhdr = checkbtn_transhdr;
 	prefs_other->checkbtn_gtk_enable_accels = checkbtn_gtk_enable_accels;
-	prefs_other->checkbtn_askonfilter = checkbtn_askonfilter;
 	prefs_other->checkbtn_real_time_sync = checkbtn_real_time_sync;
 	prefs_other->entry_attach_save_chmod = entry_attach_save_chmod;
 	prefs_other->page.widget = vbox1;
@@ -537,9 +529,6 @@ static void prefs_other_save(PrefsPage *_page)
 #endif
 	prefs_common.trans_hdr = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_transhdr));
-	prefs_common.ask_apply_per_account_filtering_rules =
-		gtk_toggle_button_get_active(
-			GTK_TOGGLE_BUTTON(page->checkbtn_askonfilter));
 	prefs_common.real_time_sync =
 		gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_real_time_sync));
