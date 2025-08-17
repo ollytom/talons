@@ -122,10 +122,7 @@ gchar *input_dialog_with_invisible(const gchar *title, const gchar *message,
 	is_pass = TRUE;
 	gtk_entry_set_visibility(GTK_ENTRY(entry), FALSE);
 
-	if (prefs_common.passphrase_dialog_msg_title_switch)
-		return input_dialog_open(message, title, NULL, default_string, FALSE, NULL);
-	else
-		return input_dialog_open(title, message, NULL, default_string, FALSE, NULL);
+	return input_dialog_open(title, message, NULL, default_string, FALSE, NULL);
 }
 
 gchar *input_dialog_with_invisible_checkbtn(const gchar *title, const gchar *message,
@@ -155,14 +152,9 @@ gchar *input_dialog_with_invisible_checkbtn(const gchar *title, const gchar *mes
 	is_pass = TRUE;
 	gtk_entry_set_visibility(GTK_ENTRY(entry), FALSE);
 
-	if (prefs_common.passphrase_dialog_msg_title_switch)
-		return input_dialog_open(message, title, checkbtn_label,
-					 default_string, (checkbtn_state? *checkbtn_state:FALSE),
-					 checkbtn_state);
-	else
-		return input_dialog_open(title, message, checkbtn_label,
-					 default_string, (checkbtn_state? *checkbtn_state:FALSE),
-					 checkbtn_state);
+	return input_dialog_open(title, message, checkbtn_label,
+				 default_string, (checkbtn_state? *checkbtn_state:FALSE),
+				 checkbtn_state);
 }
 
 gchar *input_dialog_combo(const gchar *title, const gchar *message,

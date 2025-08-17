@@ -21,28 +21,6 @@
 
 #include <glib.h>
 
-/* Returns a pointer to primary passphrase, asking the user
- * if necessary. Do not free the return value. */
-const gchar *primary_passphrase();
-
-/* Returns TRUE if there is a primary passphrase set in preferences. */
-gboolean primary_passphrase_is_set();
-/* Returns TRUE if input contains correct primary passphrase, as set
- * in preferences. */
-gboolean primary_passphrase_is_correct(const gchar *input);
-/* Returns TRUE if primary passphrase is entered (unlocked). */
-gboolean primary_passphrase_is_entered();
-/* Removes (locks) primary passphrase, if it was entered previously
- * in current session. */
-void primary_passphrase_forget();
-
-/* Changes primary passphrase. Also triggers reencryption of all stored
- * passwords using the new primary passphrase.
- * oldp - old primary passphrase; if NULL, it will be retrieved using
- *        primary_passphrase()
- * newp - new primary passphrase */
-void primary_passphrase_change(const gchar *oldp, const gchar *newp);
-
 gchar *password_encrypt_gnutls(const gchar *password,
 		const gchar *encryption_passphrase);
 gchar *password_decrypt_gnutls(const gchar *password,

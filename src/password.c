@@ -40,8 +40,6 @@
 #include "passwordstore.h"
 #include "prefs_common.h"
 
-static gchar *_primary_passphrase = NULL;
-
 /* Length of stored key derivation, before base64. */
 #define KD_LENGTH 64
 
@@ -95,181 +93,6 @@ static guchar *_make_key_deriv(const gchar *passphrase, guint rounds,
 
 	g_free(kd);
 	return NULL;
-}
-
-const gchar *primary_passphrase()
-{
-	gchar *input;
-	gboolean end = FALSE;
-
-	if (!prefs_common_get_prefs()->use_primary_passphrase) {
-		return PASSCRYPT_KEY;
-	}
-
-	if (_primary_passphrase != NULL) {
-		debug_print("Primary passphrase is in memory, offering it.\n");
-		return _primary_passphrase;
-	}
-
-	while (!end) {
-		input = input_dialog_with_invisible(_("Input primary passphrase"),
-				_("Input primary passphrase"), NULL);
-
-		if (input == NULL) {
-			debug_print("Cancel pressed at primary passphrase dialog.\n");
-			break;
-		}
-
-		if (primary_passphrase_is_correct(input)) {
-			debug_print("Entered primary passphrase seems to be correct, remembering it.\n");
-			_primary_passphrase = input;
-			end = TRUE;
-		} else {
-			alertpanel_error(_("Incorrect primary passphrase."));
-		}
-	}
-
-	return _primary_passphrase;
-}
-
-gboolean primary_passphrase_is_set()
-{
-	if (prefs_common_get_prefs()->primary_passphrase == NULL
-			|| strlen(prefs_common_get_prefs()->primary_passphrase) == 0)
-		return FALSE;
-
-	return TRUE;
-}
-
-gboolean primary_passphrase_is_correct(const gchar *input)
-{
-	guchar *kd, *input_kd;
-	gchar **tokens;
-	gchar *stored_kd = prefs_common_get_prefs()->primary_passphrase;
-	gsize kd_len;
-	guint rounds = 0;
-	gint ret;
-
-	g_return_val_if_fail(stored_kd != NULL && strlen(stored_kd) > 0, FALSE);
-	g_return_val_if_fail(input != NULL, FALSE);
-
-	tokens = g_strsplit_set(stored_kd, "{}", 3);
-	if (tokens[0] == NULL ||
-			strlen(tokens[0]) != 0 || /* nothing before { */
-			tokens[1] == NULL ||
-			strncmp(tokens[1], "PBKDF2-HMAC-SHA1,", 17) || /* correct tag */
-			strlen(tokens[1]) <= 17 || /* something after , */
-			(rounds = atoi(tokens[1] + 17)) <= 0 || /* valid rounds # */
-			tokens[2] == NULL ||
-			strlen(tokens[2]) == 0) { /* string continues after } */
-		debug_print("Mangled primary_passphrase format in config, can not use it.\n");
-		g_strfreev(tokens);
-		return FALSE;
-	}
-
-	stored_kd = tokens[2];
-	kd = g_base64_decode(stored_kd, &kd_len); /* should be 64 */
-	g_strfreev(tokens);
-
-	if (kd_len != KD_LENGTH) {
-		debug_print("primary_passphrase is %"G_GSIZE_FORMAT" bytes long, should be %d.\n",
-				kd_len, KD_LENGTH);
-		g_free(kd);
-		return FALSE;
-	}
-
-	input_kd = _make_key_deriv(input, rounds, KD_LENGTH);
-	ret = memcmp(kd, input_kd, kd_len);
-
-	g_free(input_kd);
-	g_free(kd);
-
-	if (ret == 0)
-		return TRUE;
-
-	return FALSE;
-}
-
-gboolean primary_passphrase_is_entered()
-{
-	return (_primary_passphrase == NULL) ? FALSE : TRUE;
-}
-
-void primary_passphrase_forget()
-{
-	/* If primary passphrase is currently in memory (entered by user),
-	 * get rid of it. User will have to enter the new one again. */
-	if (_primary_passphrase != NULL) {
-		memset(_primary_passphrase, 0, strlen(_primary_passphrase));
-		g_free(_primary_passphrase);
-		_primary_passphrase = NULL;
-	}
-}
-
-void primary_passphrase_change(const gchar *oldp, const gchar *newp)
-{
-	guchar *kd;
-	gchar *base64_kd;
-	guint rounds = prefs_common_get_prefs()->primary_passphrase_pbkdf2_rounds;
-
-	g_return_if_fail(rounds > 0);
-
-	if (oldp == NULL) {
-		/* If oldp is NULL, make sure the user has to enter the
-		 * current primary passphrase before being able to change it. */
-		primary_passphrase_forget();
-		oldp = primary_passphrase();
-	}
-	g_return_if_fail(oldp != NULL);
-
-	/* Update primary passphrase hash in prefs */
-	if (prefs_common_get_prefs()->primary_passphrase != NULL)
-		g_free(prefs_common_get_prefs()->primary_passphrase);
-
-	if (newp != NULL) {
-		debug_print("Storing key derivation of new primary passphrase\n");
-		kd = _make_key_deriv(newp, rounds, KD_LENGTH);
-		base64_kd = g_base64_encode(kd, 64);
-		prefs_common_get_prefs()->primary_passphrase =
-			g_strdup_printf("{PBKDF2-HMAC-SHA1,%d}%s", rounds, base64_kd);
-		g_free(kd);
-		g_free(base64_kd);
-	} else {
-		debug_print("Setting primary_passphrase to NULL\n");
-		prefs_common_get_prefs()->primary_passphrase = NULL;
-	}
-
-	/* Now go over all accounts, reencrypting their passwords using
-	 * the new primary passphrase. */
-
-	if (oldp == NULL)
-		oldp = PASSCRYPT_KEY;
-	if (newp == NULL)
-		newp = PASSCRYPT_KEY;
-
-	debug_print("Reencrypting all account passwords...\n");
-	passwd_store_reencrypt_all(oldp, newp);
-
-	primary_passphrase_forget();
-}
-
-/* Decryption is still needed for supporting migration of old
- * configurations to newer encryption mechanisms. */
-gchar *password_decrypt_old(const gchar *password)
-{
-	if (!password || strlen(password) == 0) {
-		return NULL;
-	}
-
-	if (*password != '!' || strlen(password) < 2) {
-		return NULL;
-	}
-
-	gsize len;
-	gchar *decrypted = g_base64_decode(password + 1, &len);
-
-	passcrypt_decrypt(decrypted, len);
-	return decrypted;
 }
 
 #define BUFSIZE 128
@@ -528,7 +351,7 @@ gchar *password_encrypt(const gchar *password,
 	}
 
 	if (encryption_passphrase == NULL)
-		encryption_passphrase = primary_passphrase();
+		encryption_passphrase = PASSCRYPT_KEY;
 
 	return password_encrypt_real(password, encryption_passphrase);
 }
@@ -540,16 +363,9 @@ gchar *password_decrypt(const gchar *password,
 		return NULL;
 	}
 
-	/* First, check if the password was possibly decrypted using old,
-	 * obsolete method */
-	if (*password == '!') {
-		debug_print("Trying to decrypt password using the old method...\n");
-		return password_decrypt_old(password);
-	}
-
 	/* Try available crypto backend */
 	if (decryption_passphrase == NULL)
-		decryption_passphrase = primary_passphrase();
+		decryption_passphrase = PASSCRYPT_KEY;
 
 	if (*password == '{') {
 		debug_print("Trying to decrypt password...\n");

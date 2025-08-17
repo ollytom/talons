@@ -567,7 +567,6 @@ struct _PrefsCommon
 	gchar *primary_passphrase_salt;
 	guint primary_passphrase_pbkdf2_rounds;
 
-	gboolean passphrase_dialog_msg_title_switch;
 	gboolean mainwin_toolbar_always_enable_actions;
 
 	/* Proxy */

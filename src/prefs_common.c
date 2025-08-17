@@ -1022,7 +1022,6 @@ static PrefParam param[] = {
 	{"address_search_wildcard", "TRUE", &prefs_common.address_search_wildcard, P_BOOL,
 	 NULL, NULL, NULL},
 	{"enable_avatars", "3", &prefs_common.enable_avatars, P_INT, NULL, NULL, NULL},
-	{"use_master_passphrase", FALSE, &prefs_common.use_primary_passphrase, P_BOOL, NULL, NULL, NULL },
 	{"master_passphrase", "", &prefs_common.primary_passphrase, P_STRING, NULL, NULL, NULL },
 	{"master_passphrase_salt", "", &prefs_common.primary_passphrase_salt, P_STRING, NULL, NULL, NULL },
 	{"master_passphrase_pbkdf2_rounds", "50000", &prefs_common.primary_passphrase_pbkdf2_rounds, P_INT, NULL, NULL, NULL},
@@ -1037,9 +1036,6 @@ static PrefParam param[] = {
 
 	{"qs_press_timeout", "500", &prefs_common.qs_press_timeout, P_INT,
 	 NULL, NULL, NULL},
-
-	{"passphrase_dialog_msg_title_switch", "FALSE", &prefs_common.passphrase_dialog_msg_title_switch,
-	 P_BOOL, NULL, NULL, NULL},
 
 	{"mainwin_toolbar_always_enable_actions", "FALSE", &prefs_common.mainwin_toolbar_always_enable_actions, P_BOOL,
 	 NULL, NULL, NULL},

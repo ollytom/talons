@@ -37,8 +37,6 @@
 #include "gtk/gtkutils.h"
 #include "gtk/prefswindow.h"
 #include "combobox.h"
-#include "password.h"
-#include "password_gtk.h"
 
 #include "manage_window.h"
 #ifdef HAVE_LIBETPAN
@@ -66,10 +64,7 @@ typedef struct _OtherPage
 	GtkWidget *checkbtn_real_time_sync;
 	GtkWidget *entry_attach_save_chmod;
 	GtkWidget *checkbtn_transhdr;
-	GtkWidget *checkbtn_use_passphrase;
 } OtherPage;
-
-static void prefs_change_primary_passphrase(GtkButton *button, gpointer data);
 
 struct KeyBind {
 	const gchar *accel_path;
@@ -365,11 +360,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *label_attach_save_chmod;
 	GtkWidget *entry_attach_save_chmod;
 
-	GtkWidget *vbox_passphrase;
-	GtkWidget *frame_passphrase;
-	GtkWidget *checkbtn_use_passphrase;
-	GtkWidget *button_change_passphrase;
-
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox1);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
@@ -482,28 +472,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 		g_free(buf);
 	}
 
-	vbox_passphrase = gtkut_get_options_frame(vbox1, &frame_passphrase, _("Primary passphrase"));
-
-	PACK_CHECK_BUTTON(vbox_passphrase, checkbtn_use_passphrase,
-			_("Use a primary passphrase"));
-
-	CLAWS_SET_TIP(checkbtn_use_passphrase,
-			_("If checked, your saved account passwords will be protected "
-				"by a primary passphrase. If no primary passphrase is set, "
-				"you will be prompted to set one"));
-
-	button_change_passphrase = gtk_button_new_with_label(
-			_("Change primary passphrase"));
-	gtk_widget_show (button_change_passphrase);
-	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox1);
-	gtk_box_pack_start (GTK_BOX (vbox_passphrase), hbox1, FALSE, FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (hbox1), button_change_passphrase,
-			FALSE, FALSE, 0);
-	SET_TOGGLE_SENSITIVITY (checkbtn_use_passphrase, button_change_passphrase);
-	g_signal_connect (G_OBJECT (button_change_passphrase), "clicked",
-			  G_CALLBACK (prefs_change_primary_passphrase), NULL);
-
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_addaddrbyclick),
 		prefs_common.add_address_by_click);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_confonexit),
@@ -528,11 +496,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_real_time_sync),
 		prefs_common.real_time_sync);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_use_passphrase),
-		prefs_common.use_primary_passphrase);
-	gtk_widget_set_sensitive(button_change_passphrase,
-			prefs_common.use_primary_passphrase);
-
 	prefs_other->keys_preset_hbox = keys_preset_hbox;
 	prefs_other->keys_preset_combo = keys_preset_combo;
 	prefs_other->checkbtn_addaddrbyclick = checkbtn_addaddrbyclick;
@@ -546,7 +509,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_other->checkbtn_askonfilter = checkbtn_askonfilter;
 	prefs_other->checkbtn_real_time_sync = checkbtn_real_time_sync;
 	prefs_other->entry_attach_save_chmod = entry_attach_save_chmod;
-	prefs_other->checkbtn_use_passphrase = checkbtn_use_passphrase;
 	prefs_other->page.widget = vbox1;
 }
 
@@ -587,40 +549,6 @@ static void prefs_other_save(PrefsPage *_page)
 	g_free(buf);
 
 	prefs_keybind_preset_changed(GTK_COMBO_BOX(page->keys_preset_combo));
-
-	/* If we're disabling use of primary passphrase, we need to reencrypt
-	 * all account passwords with hardcoded key. */
-	if (!gtk_toggle_button_get_active(
-			GTK_TOGGLE_BUTTON(page->checkbtn_use_passphrase))
-			&& primary_passphrase_is_set()) {
-		primary_passphrase_change(NULL, NULL);
-
-		/* In case user did not finish the passphrase change process
-		 * (e.g. did not enter a correct current primary passphrase),
-		 * we need to enable the "use primary passphrase" checkbox again,
-		 * since the old primary passphrase is still valid. */
-		if (primary_passphrase_is_set()) {
-			gtk_toggle_button_set_active(
-				GTK_TOGGLE_BUTTON(page->checkbtn_use_passphrase), TRUE);
-		}
-	}
-
-	if (gtk_toggle_button_get_active(
-			GTK_TOGGLE_BUTTON(page->checkbtn_use_passphrase))
-			&& !primary_passphrase_is_set()) {
-		primary_passphrase_change_dialog();
-
-		/* In case user cancelled the passphrase change dialog, we need
-		 * to disable the "use primary passphrase" checkbox. */
-		if (!primary_passphrase_is_set()) {
-			gtk_toggle_button_set_active(
-				GTK_TOGGLE_BUTTON(page->checkbtn_use_passphrase), FALSE);
-		}
-	}
-
-	prefs_common.use_primary_passphrase =
-		gtk_toggle_button_get_active(
-			GTK_TOGGLE_BUTTON(page->checkbtn_use_passphrase));
 
 	gtk_enable_accels = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_gtk_enable_accels));
@@ -680,9 +608,4 @@ void prefs_other_done(void)
 {
 	prefs_gtk_unregister_page((PrefsPage *) prefs_other);
 	g_free(prefs_other);
-}
-
-void prefs_change_primary_passphrase(GtkButton *button, gpointer data)
-{
-	primary_passphrase_change_dialog();
 }

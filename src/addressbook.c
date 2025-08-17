@@ -48,7 +48,6 @@
 #include "codeconv.h"
 #include "about.h"
 #include "addr_compl.h"
-#include "password.h"
 
 #include "mgutils.h"
 #include "addressitem.h"
