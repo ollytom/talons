@@ -1721,7 +1721,6 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 			hooks_invoke(THEME_CHANGED_HOOKLIST, NULL);
 		}
 
-		headerview_set_font(mainwin->messageview->headerview);
 		headerview_set_visibility(mainwin->messageview->headerview,
 					  prefs_common.display_header_pane);
 		textview_reflect_prefs(mainwin->messageview->mimeview->textview);

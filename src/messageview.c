@@ -675,7 +675,6 @@ void messageview_init(MessageView *messageview)
 {
 	headerview_init(messageview->headerview);
 	mimeview_init(messageview->mimeview);
-	/*messageview_set_font(messageview);*/
 
 	noticeview_hide(messageview->noticeview);
 }
