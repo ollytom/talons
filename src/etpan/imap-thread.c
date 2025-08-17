@@ -21,8 +21,6 @@
 #include "claws-features.h"
 #endif
 
-#ifdef HAVE_LIBETPAN
-
 #include <glib.h>
 #include <glib/gi18n.h>
 #include "imap-thread.h"
@@ -3536,21 +3534,3 @@ void imap_threaded_cancel(Folder * folder)
 	if (imap && imap->imap_stream != NULL)
 		mailstream_cancel(imap->imap_stream);
 }
-
-#else
-
-void imap_main_init(void)
-{
-}
-void imap_main_done(gboolean have_connectivity)
-{
-}
-void imap_main_set_timeout(int sec)
-{
-}
-
-void imap_threaded_cancel(Folder * folder);
-{
-}
-
-#endif

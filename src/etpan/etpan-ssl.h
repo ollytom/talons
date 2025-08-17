@@ -26,7 +26,6 @@
 #endif
 
 #ifdef USE_GNUTLS
-#ifdef HAVE_LIBETPAN
 
 #include <libetpan/libetpan.h>
 
@@ -34,6 +33,5 @@ gboolean etpan_certificate_check(mailstream *imap_stream, const char *host, gint
 void etpan_connect_ssl_context_cb(struct mailstream_ssl_context * ssl_context, void * data);
 
 #endif /* USE_GNUTLS */
-#endif /* HAVE_LIBETPAN */
 
 #endif /* __ETPAN_SSL_H__ */

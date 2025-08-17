@@ -39,9 +39,7 @@
 #include "combobox.h"
 
 #include "manage_window.h"
-#ifdef HAVE_LIBETPAN
 #include "imap-thread.h"
-#endif
 
 #include "file-utils.h"
 
@@ -524,9 +522,7 @@ static void prefs_other_save(PrefsPage *_page)
 	prefs_common.io_timeout_secs = gtk_spin_button_get_value_as_int(
 		GTK_SPIN_BUTTON(page->spinbtn_iotimeout));
 	sock_set_io_timeout(prefs_common.io_timeout_secs);
-#ifdef HAVE_LIBETPAN
 	imap_main_set_timeout(prefs_common.io_timeout_secs);
-#endif
 	prefs_common.trans_hdr = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_transhdr));
 	prefs_common.real_time_sync =

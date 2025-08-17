@@ -4942,15 +4942,6 @@ static void prefs_account_protocol_set_optmenu(PrefParam *pparam)
 		g_free(label);
 		gtk_widget_hide(optmenu);
 		gtk_widget_show(optlabel);
-#ifndef HAVE_LIBETPAN
-		if (protocol == A_IMAP4 || protocol == A_NNTP) {
-			gtk_widget_show(protocol_optmenu->no_imap_warn_icon);
-			gtk_widget_show(protocol_optmenu->no_imap_warn_label);
-		} else {
-			gtk_widget_hide(protocol_optmenu->no_imap_warn_icon);
-			gtk_widget_hide(protocol_optmenu->no_imap_warn_label);
-		}
-#endif
 		if (protocol == A_IMAP4) {
 			if (new_account)
 				gtk_toggle_button_set_active(
@@ -5306,13 +5297,8 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 
 	switch(protocol) {
 	case A_NNTP:
-#ifndef HAVE_LIBETPAN
-		gtk_widget_show(protocol_optmenu->no_imap_warn_icon);
-		gtk_widget_show(protocol_optmenu->no_imap_warn_label);
-#else
 		gtk_widget_hide(protocol_optmenu->no_imap_warn_icon);
 		gtk_widget_hide(protocol_optmenu->no_imap_warn_label);
-#endif
 		gtk_widget_show(send_page.msgid_checkbtn);
 		gtk_widget_show(send_page.xmailer_checkbtn);
 		gtk_widget_show(basic_page.nntpserv_label);
@@ -5471,10 +5457,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(receive_page.imap_batch_size_spinbtn);
 		break;
 	case A_IMAP4:
-#ifndef HAVE_LIBETPAN
-		gtk_widget_show(protocol_optmenu->no_imap_warn_icon);
-		gtk_widget_show(protocol_optmenu->no_imap_warn_label);
-#endif
 		if (new_account)
 			gtk_toggle_button_set_active(
 				GTK_TOGGLE_BUTTON(send_page.msgid_checkbtn),

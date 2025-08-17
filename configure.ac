@@ -6,8 +6,8 @@ m4_define([claws_VERSION],
 AC_INIT([claws-mail],
     m4_defn([claws_VERSION]))
 AC_CONFIG_SRCDIR([src/main.c])
-AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([config])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([no-define])
 
@@ -103,30 +103,9 @@ LT_LANG([Windows Resource])
 LT_INIT
 AC_PROG_AWK
 
-dnl AC_PROG_CXX will set CXX=g++ even if it finds no useable C++
-dnl compiler, so we have to check whether the program named by
-dnl CXX exists.
-AC_PROG_CXX
-AC_PATH_PROG(REAL_CXX, $CXX)
-HAVE_CXX=no
-if test -n "$REAL_CXX"; then
-	HAVE_CXX=yes
-fi
-
 AC_SYS_LARGEFILE
 
-dnl Copied from the official gtk+-2 configure.in
-AC_MSG_CHECKING([for host platform])
-case "$host" in
-	*-apple-*)
-		platform_osx=yes
-		LDFLAGS="$LDFLAGS -Wl,-export_dynamic"
-		;;
-	*)
-		platform_osx=no
-		LDFLAGS="$LDFLAGS -Wl,--export-dynamic"
-		;;
-esac
+LDFLAGS="$LDFLAGS -Wl,--export-dynamic"
 
 AC_MSG_CHECKING([for time_t format specifier])
 _gcc_cflags_save=$CFLAGS
@@ -154,16 +133,6 @@ if test $USE_MAINTAINER_MODE = yes; then
 	AM_CFLAGS="$AM_CFLAGS -g"
 fi
 
-case "$target" in
-*-darwin*)
-	AM_CFLAGS="$AM_CFLAGS -fno-common"
-	;;
-*-*-solaris*)
-	AM_CFLAGS="$AM_CFLAGS -std=gnu99"
-	AC_DEFINE([SOLARIS], [], [Target is Solaris])
-	;;
-esac
-
 AC_SUBST(AM_CFLAGS)
 
 dnl Checks for iconv
@@ -180,10 +149,6 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Define text domain.])
 AM_GNU_GETTEXT_VERSION([0.18])
 AM_GNU_GETTEXT([external])
 
-AC_ARG_ENABLE(manual,
-		[  --disable-manual                Do not build user manual],
-		[enable_manual=$enableval], [enable_manual=yes])
-
 AC_ARG_ENABLE(gnutls,
 		[  --disable-gnutls                Do not build GnuTLS support for TLS],
 		    [enable_gnutls=$enableval], [enable_gnutls=yes])
@@ -196,10 +161,6 @@ AC_ARG_ENABLE(enchant,
 		[  --disable-enchant               Do not build Enchant support for spell-checking],
 		[enable_enchant=$enableval], [enable_enchant=yes])
 
-AC_ARG_ENABLE(libetpan,
-		[  --disable-libetpan              Do not build libetpan support for IMAP4/NNTP],
-		[enable_libetpan=$enableval], [enable_libetpan=yes])
-
 AC_ARG_ENABLE(valgrind,
 		[  --disable-valgrind              Do not build valgrind support for debugging],
 		[enable_valgrind=$enableval], [enable_valgrind=yes])
@@ -211,38 +172,6 @@ AC_ARG_ENABLE(tests,
 AC_ARG_ENABLE(more-addressbook-debug,
         [  --enable-more-addressbook-debug Build with additional addressbook debug calls],
         [enable_more_addressbook_debug=$enableval], [enable_more_addressbook_debug=no])
-
-manualdir='${docdir}/manual'
-AC_ARG_WITH(manualdir,
-	[  --with-manualdir=DIR    Manual directory],
-	[manualdir="$withval"])
-AC_SUBST(manualdir)
-
-dnl ******************************
-dnl ** Check for required tools **
-dnl ** to build manuals         **
-dnl ******************************
-
-AC_PATH_PROG(DOCBOOK2HTML, docbook2html)
-AC_PATH_PROG(DOCBOOK2TXT, docbook2txt)
-AC_PATH_PROG(DOCBOOK2PS, docbook2ps)
-AC_PATH_PROG(DOCBOOK2PDF, docbook2pdf)
-
-AM_CONDITIONAL(MANUAL_HTML, test -n "$DOCBOOK2HTML")
-AM_CONDITIONAL(MANUAL_TXT, test -n "$DOCBOOK2TXT")
-AM_CONDITIONAL(MANUAL_PDF, test -n "$DOCBOOK2PDF")
-AM_CONDITIONAL(MANUAL_PS, test -n "$DOCBOOK2PS")
-
-if test x"$enable_manual" = x"yes"; then
-    if test -n "$DOCBOOK2TXT" -o -n "$DOCBOOK2HTML" \
-	-o -n "$DOCBOOK2PS" -o -n "$DOCBOOK2PDF"; then
-	    enable_manual=yes
-	else
-	    enable_manual=no
-    fi
-fi
-
-AM_CONDITIONAL(BUILD_MANUAL, test x"$enable_manual" = xyes)
 
 dnl Set PACKAGE_DATA_DIR in config.h.
 if test "x${datarootdir}" = 'x${prefix}/share'; then
@@ -421,71 +350,13 @@ AC_SUBST(LIBRESOLV)
 
 LIBS="$LIBS $LIBRESOLV"
 
-dnl Libetpan
-AC_MSG_CHECKING([whether to use libetpan])
-if test x"$enable_libetpan" = xyes; then
-    AC_MSG_RESULT(yes)
-
-    libetpan_config=no
-    libetpan_result=no
-    libetpan_versiontype=0
-
-    # since 1.9.4, libetpan uses pkg-config
-    PKG_CHECK_MODULES([LIBETPAN], [libetpan >= 1.9.4],
-    [
-        LIBETPAN_VERSION=`pkg-config --modversion libetpan | $AWK -F. '{printf "%d", ($1 * 10000) + ($2 * 100) + $3}'`
-        libetpan_config=yes
-    ],
-    [
-        # before ws libetpan 1.9.4, libetpan uses its own libetpan-config script
-        AC_PATH_PROG(libetpanconfig, [libetpan-config])
-        if test "x$libetpanconfig" != "x"; then
-            LIBETPAN_CFLAGS="`$libetpanconfig --cflags`"
-            LIBETPAN_LIBS="`$libetpanconfig --libs`"
-            # support libetpan version like x.x and x.x.x
-            libetpan_versiontype=`$libetpanconfig --version | tr -dc . | wc -c`
-            if test $libetpan_versiontype -eq 1; then
-                LIBETPAN_VERSION=`$libetpanconfig --version | $AWK -F. '{printf "%d", ($1 * 100) + $2}'`
-            else
-                LIBETPAN_VERSION=`$libetpanconfig --version | $AWK -F. '{printf "%d", ($1 * 10000) + ($2 * 100) + $3}'`
-            fi
-            libetpan_config=yes
-        fi
-    ])
-    if test "x$libetpan_config" = "xyes"; then
-        libetpan_save_CPPFLAGS=$CPPFLAGS
-        CPPFLAGS="$CPPFLAGS $LIBETPAN_CFLAGS"
-        AC_CHECK_HEADER(libetpan/libetpan.h, [libetpan_result=yes])
-        if test "x$libetpan_result" = "xyes"; then
-            AC_MSG_CHECKING([whether libetpan-config hints compiles and links fine])
-            libetpan_save_LIBS=$LIBS
-            LIBS="$LIBS $LIBETPAN_LIBS"
-            AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <libetpan/dbstorage.h>]], [[db_mailstorage_init(NULL, NULL);]])],[libetpan_result=yes],[libetpan_result=no])
-            LIBS=$libetpan_save_LIBS
-            AC_MSG_RESULT([$libetpan_result])
-        fi
-        CPPFLAGS=$libetpan_save_CPPFLAGS
-    fi
-    if test "x$libetpan_result" = "xyes"; then
-        if test $libetpan_versiontype -eq 1; then
-            if test "$LIBETPAN_VERSION" -lt "57"; then
-                AC_MSG_RESULT([*** Claws Mail requires libetpan 0.57 or newer. See http://www.etpan.org/])
-                AC_MSG_RESULT([*** You can use --disable-libetpan if you don't need IMAP4 and/or NNTP support.])
-                AC_MSG_ERROR([libetpan 0.57 not found])
-            fi
-        fi
-        AC_SUBST(LIBETPAN_CFLAGS)
-        AC_SUBST(LIBETPAN_LIBS)
-        AC_DEFINE(HAVE_LIBETPAN, 1, Define if you want IMAP and/or NNTP support.)
-    else
-        AC_MSG_RESULT([*** Claws Mail requires libetpan 0.57 or newer. See http://www.etpan.org/ ])
-        AC_MSG_RESULT([*** You can use --disable-libetpan if you don't need IMAP4 and/or NNTP support.])
-        AC_MSG_ERROR([libetpan 0.57 not found])
-    fi
-else
-    AC_MSG_RESULT(no)
-fi
-AM_CONDITIONAL(CLAWS_LIBETPAN, test "x$libetpan_result" = "xyes")
+PKG_CHECK_MODULES([LIBETPAN], [libetpan >= 1.9.4])
+LIBETPAN_LIBS=`pkg-config --libs libetpan`
+AC_SUBST(LIBETPAN_LIBS)
+LIBS="$LIBS $LIBETPAN_LIBS"
+LIBETPAN_CFLAGS=`pkg-config --cflags libetpan`
+AC_SUBST(LIBETPAN_CFLAGS)
+CPPFLAGS="$CPPFLAGS $LIBETPAN_CFLAGS"
 
 AC_MSG_CHECKING([whether to use valgrind])
 if test x$enable_valgrind = xyes; then
@@ -523,7 +394,6 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-dnl expat **********************************************************************
 PKG_CHECK_MODULES(EXPAT, expat, HAVE_EXPAT=yes, HAVE_EXPAT=no)
 
 if test x"$HAVE_EXPAT" = xno; then
@@ -539,30 +409,13 @@ fi
 AC_SUBST(EXPAT_CFLAGS)
 AC_SUBST(EXPAT_LIBS)
 
-dnl cairo **********************************************************************
 PKG_CHECK_MODULES(CAIRO, cairo >= 1.12.0, HAVE_CAIRO=yes, HAVE_CAIRO=no)
 AC_SUBST(CAIRO_CFLAGS)
 AC_SUBST(CAIRO_LIBS)
 
-dnl fontconfig *****************************************************************
 PKG_CHECK_MODULES(FONTCONFIG, fontconfig, HAVE_FONTCONFIG=yes, HAVE_FONTCONFIG=no)
 AC_SUBST(FONTCONFIG_CFLAGS)
 AC_SUBST(FONTCONFIG_LIBS)
-
-dnl Gpgme **********************************************************************
-PKG_CHECK_MODULES(GPGME, [gpgme >= 1.1.1], HAVE_GPGME_PKGCONFIG=yes, HAVE_GPGME_PKGCONFIG=no)
-if test x"$HAVE_GPGME_PKGCONFIG" = xyes; then
-    PKG_CHECK_MODULES(LIBGPG_ERROR, [gpg-error])
-else
-    AM_PATH_GPGME(1.1.1, HAVE_GPGME_CONFIG=yes, HAVE_GPGME_CONFIG=no)
-fi
-
-if test x"$HAVE_GPGME_PKGCONFIG" = xyes -o x"$HAVE_GPGME_CONFIG" = xyes; then
-	AC_DEFINE(USE_GPGME, 1, Define if you use GPGME to support OpenPGP.)
-	HAVE_GPGME=yes
-else
-	HAVE_GPGME=no
-fi
 
 AC_CONFIG_FILES([
 Makefile
@@ -575,26 +428,16 @@ src/common/tests/Makefile
 src/gtk/Makefile
 src/etpan/Makefile
 src/tests/Makefile
-doc/Makefile
-doc/man/Makefile
-tools/Makefile
-config/Makefile
-manual/Makefile
 claws-mail.pc
 ])
 AC_OUTPUT
 
-dnl Output the configuration summary
-echo ""
 echo "$PACKAGE $VERSION"
 echo ""
 echo "gnuTLS               : $enable_gnutls"
 echo "OAuth2               : $enable_oauth2"
 echo "iconv                : $am_cv_func_iconv"
 echo "enchant              : $enable_enchant"
-echo "IMAP4 (libetpan)     : $enable_libetpan"
-echo "NNTP (libetpan)      : $enable_libetpan"
-echo "Manual               : $enable_manual"
 echo "Unit tests           : $enable_tests"
 echo "Valgrind support     : $enable_valgrind"
 

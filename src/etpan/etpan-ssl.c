@@ -24,7 +24,6 @@
 #endif
 
 #ifdef USE_GNUTLS
-#ifdef HAVE_LIBETPAN
 #include <libetpan/libetpan.h>
 #include <libetpan/libetpan_version.h>
 #include <gnutls/gnutls.h>
@@ -191,4 +190,3 @@ void etpan_connect_ssl_context_cb(struct mailstream_ssl_context * ssl_context, v
 }
 
 #endif /* USE_GNUTLS */
-#endif /* HAVE_LIBETPAN */

@@ -109,10 +109,8 @@
 #include "oauth2.h"
 #endif
 
-#ifdef HAVE_LIBETPAN
 #include "imap-thread.h"
 #include "nntp-thread.h"
-#endif
 #include "stock_pixmap.h"
 #ifdef USE_GNUTLS
 #  include "ssl.h"
@@ -396,12 +394,10 @@ static void main_dump_features_list(gboolean show_debug_only)
 	else
 		g_print(" iconv\n");
 #endif
-#if HAVE_LIBETPAN
 	if (show_debug_only)
 		debug_print(" libetpan %d.%d\n", LIBETPAN_VERSION_MAJOR, LIBETPAN_VERSION_MINOR);
 	else
 		g_print(" libetpan %d.%d\n", LIBETPAN_VERSION_MAJOR, LIBETPAN_VERSION_MINOR);
-#endif
 }
 
 int main(int argc, char *argv[])
@@ -576,11 +572,9 @@ int main(int argc, char *argv[])
 		exit(201);
 	}
 
-#ifdef HAVE_LIBETPAN
 	imap_main_init(prefs_common.skip_ssl_cert_check);
 	imap_main_set_timeout(prefs_common.io_timeout_secs);
 	nntp_main_init(prefs_common.skip_ssl_cert_check);
-#endif
 	/* If we can't read a folder list or don't have accounts,
 	 * it means the configuration's not done. Either this is
 	 * a brand new install, a failed/refused migration,
@@ -822,10 +816,8 @@ static void exit_claws(MainWindow *mainwin)
 	close_log_file(LOG_PROTOCOL);
 	close_log_file(LOG_DEBUG_FILTERING);
 
-#ifdef HAVE_LIBETPAN
 	imap_main_done(TRUE);
 	nntp_main_done(TRUE);
-#endif
 
 	lock_socket_remove();
 

@@ -42,9 +42,7 @@
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 #endif
 
-#ifdef HAVE_LIBETPAN
 #include <libetpan/mailstream_ssl.h>
-#endif
 
 #include <pthread.h>
 
@@ -243,9 +241,7 @@ void ssl_init(void)
 #if GNUTLS_VERSION_NUMBER <= 0x020b00
 	gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
 #endif
-#ifdef HAVE_LIBETPAN
 	mailstream_gnutls_init_not_required();
-#endif
 	gnutls_global_init();
 }
 

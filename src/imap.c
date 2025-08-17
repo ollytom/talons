@@ -33,8 +33,6 @@
 #include "xml.h"
 #include "alertpanel.h"
 
-#ifdef HAVE_LIBETPAN
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -333,9 +331,7 @@ static gchar *imap_get_real_path		(IMAPSession	*session,
 						 IMAPFolder	*folder,
 						 const gchar	*path,
 						 gint		*ok);
-#ifdef HAVE_LIBETPAN
 static void imap_synchronise		(FolderItem	*item, gint days);
-#endif
 static gboolean imap_is_busy		(Folder *folder);
 
 static void imap_free_capabilities	(IMAPSession 	*session);
@@ -5882,105 +5878,6 @@ static gboolean imap_is_busy(Folder *folder)
 	return imap_session->busy;
 }
 
-#else /* HAVE_LIBETPAN */
-
-static FolderClass imap_class;
-
-static XMLTag *imap_item_get_xml(Folder *folder, FolderItem *item);
-static void imap_item_set_xml(Folder *folder, FolderItem *item, XMLTag *tag);
-
-static Folder	*imap_folder_new	(const gchar	*name,
-					 const gchar	*path)
-{
-	static gboolean missing_imap_warning = TRUE;
-	if (missing_imap_warning) {
-		missing_imap_warning = FALSE;
-		alertpanel_error(
-			_("You have one or more IMAP accounts "
-			  "defined. However this version of "
-			  "Claws Mail has been built without "
-			  "IMAP support; your IMAP accounts are "
-			  "disabled.\n\n"
-			  "You probably need to "
-			  "install libetpan and recompile "
-			  "Claws Mail."));
-	}
-	return NULL;
-}
-static gint 	imap_create_tree	(Folder 	*folder)
-{
-	return -1;
-}
-static FolderItem *imap_create_folder	(Folder 	*folder,
-				      	 FolderItem 	*parent,
-				      	 const gchar 	*name)
-{
-	return NULL;
-}
-static gint 	imap_rename_folder	(Folder 	*folder,
-			       		 FolderItem 	*item,
-					 const gchar 	*name)
-{
-	return -1;
-}
-
-gchar imap_get_path_separator_for_item(FolderItem *item)
-{
-	return '/';
-}
-
-FolderClass *imap_get_class(void)
-{
-	if (imap_class.idstr == NULL) {
-		imap_class.type = F_IMAP;
-		imap_class.idstr = "imap";
-		imap_class.uistr = "IMAP";
-
-		imap_class.new_folder = imap_folder_new;
-		imap_class.create_tree = imap_create_tree;
-		imap_class.create_folder = imap_create_folder;
-		imap_class.rename_folder = imap_rename_folder;
-
-		imap_class.set_xml = folder_set_xml;
-		imap_class.get_xml = folder_get_xml;
-		imap_class.item_set_xml = imap_item_set_xml;
-		imap_class.item_get_xml = imap_item_get_xml;
-		/* nothing implemented */
-	}
-
-	return &imap_class;
-}
-
-void imap_disconnect_all(gboolean have_connectivity)
-{
-}
-
-gint imap_subscribe(Folder *folder, FolderItem *item, gchar *rpath, gboolean sub)
-{
-	return -1;
-}
-
-GList * imap_scan_subtree(Folder *folder, FolderItem *item, gboolean unsubs_only, gboolean recursive)
-{
-	return NULL;
-}
-
-void imap_cache_msg(FolderItem *item, gint msgnum)
-{
-}
-
-void imap_cancel_all(void)
-{
-}
-
-gboolean imap_cancel_all_enabled(void)
-{
-	return FALSE;
-}
-
-#endif
-
-#ifdef HAVE_LIBETPAN
 static void imap_synchronise(FolderItem *item, gint days)
 {
 	if (IMAP_FOLDER_ITEM(item)->last_sync == IMAP_FOLDER_ITEM(item)->last_change) {
@@ -5991,16 +5888,12 @@ static void imap_synchronise(FolderItem *item, gint days)
 	imap_gtk_synchronise(item, days);
 	IMAP_FOLDER_ITEM(item)->last_sync = IMAP_FOLDER_ITEM(item)->last_change;
 }
-#endif
 
 static void imap_item_set_xml(Folder *folder, FolderItem *item, XMLTag *tag)
 {
-#ifdef HAVE_LIBETPAN
 	GList *cur;
-#endif
 	folder_item_set_xml(folder, item, tag);
 
-#ifdef HAVE_LIBETPAN
 	for (cur = tag->attr; cur != NULL; cur = g_list_next(cur)) {
 		XMLAttr *attr = (XMLAttr *) cur->data;
 
@@ -6014,7 +5907,6 @@ static void imap_item_set_xml(Folder *folder, FolderItem *item, XMLTag *tag)
 	}
 	if (IMAP_FOLDER_ITEM(item)->last_change == 0)
 		IMAP_FOLDER_ITEM(item)->last_change = time(NULL);
-#endif
 }
 
 static XMLTag *imap_item_get_xml(Folder *folder, FolderItem *item)
@@ -6023,15 +5915,12 @@ static XMLTag *imap_item_get_xml(Folder *folder, FolderItem *item)
 
 	tag = folder_item_get_xml(folder, item);
 
-#ifdef HAVE_LIBETPAN
 	xml_tag_add_attr(tag, xml_attr_new_int("uidnext",
 			IMAP_FOLDER_ITEM(item)->uid_next));
 	xml_tag_add_attr(tag, xml_attr_new_time_t("last_sync",
 			IMAP_FOLDER_ITEM(item)->last_sync));
 	xml_tag_add_attr(tag, xml_attr_new_time_t("last_change",
 			IMAP_FOLDER_ITEM(item)->last_change));
-
-#endif
 	return tag;
 }
 

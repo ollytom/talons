@@ -21,8 +21,6 @@
 #include "claws-features.h"
 #endif
 
-#ifdef HAVE_LIBETPAN
-
 #include <glib.h>
 #include <glib/gi18n.h>
 #include "nntp-thread.h"
@@ -1064,21 +1062,3 @@ void nntp_main_set_timeout(int sec)
 	mailstream_network_delay.tv_sec = sec;
 	mailstream_network_delay.tv_usec = 0;
 }
-
-#else
-
-void nntp_main_init(void)
-{
-}
-void nntp_main_done(gboolean have_connectivity)
-{
-}
-void nntp_main_set_timeout(int sec)
-{
-}
-
-void nntp_threaded_cancel(Folder * folder);
-{
-}
-
-#endif

@@ -408,11 +408,7 @@ static GtkWidget *about_create_child_page_features(void)
 	gtk_text_buffer_insert(buffer, &iter,
 		(gchar *)C_("iconv", "allows converting to and from different character sets\n"), -1);
 
-#if HAVE_LIBETPAN
 	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
-#else
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, inactive_pixbuf);
-#endif
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" libetpan "), -1,
 						 "bold", NULL);
 	gtk_text_buffer_insert(buffer, &iter,

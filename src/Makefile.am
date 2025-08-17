@@ -3,19 +3,8 @@
 # terms of the General Public License version 3 (or later).
 # See COPYING file for license details.
 
-if CLAWS_LIBETPAN
-etpan_dir = etpan
-etpan_library = etpan/libclawsetpan.la
-else
-etpan_dir =
-etpan_library =
-endif
 
-SUBDIRS = common gtk $(etpan_dir) fence .
-if BUILD_TESTS
-include $(top_srcdir)/tests.mk
-SUBDIRS += tests
-endif
+SUBDIRS = common gtk etpan fence .
 
 bin_PROGRAMS = claws-mail
 
@@ -469,6 +458,8 @@ claws_mail_LDFLAGS = \
 # The linker flag -Wl... disables "Mandatory enforcement of indirect
 # branch targets" which I think(?) trips up my shit code.
 # https://www.openbsd.org/innovations.html
+
+etpan_library = etpan/libclawsetpan.la
 
 claws_mail_DEPENDENCIES = $(claws_mail_deps) \
 	$(etpan_library) \
