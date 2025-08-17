@@ -64,16 +64,15 @@ struct _MessageView
 
 	/* this message was filtered by an action */
 	gboolean filtered;
-  
+
 	/* From messageview_show */
 	gboolean all_headers;
 
 	gint msginfo_update_callback_id;
 	gboolean updating;
 	gboolean deferred_destroy;
-	
+
 	gboolean show_full_text;
-	gboolean partial_display_shown;
 	gboolean update_needed;
 	GtkUIManager *ui_manager;
 	GList *trail;
@@ -129,9 +128,7 @@ void messageview_print				(MsgInfo	*msginfo,
 						 gint		 sel_end,
 						 gint		 partnum);
 void messageview_list_urls			(MessageView	*msgview);
-void messageview_show_partial_display		(MessageView 	*msgview, 
-						 MsgInfo 	*msginfo,
-						 size_t 	 length);
+
 gboolean messageview_nav_has_prev(MessageView *messageview);
 gboolean messageview_nav_has_next(MessageView *messageview);
 MsgInfo *messageview_nav_get_prev(MessageView *messageview);

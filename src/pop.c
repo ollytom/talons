@@ -33,9 +33,9 @@
 
 #include "pop.h"
 #include "md5.h"
+#include "partial_download.h"
 #include "prefs_account.h"
 #include "utils.h"
-#include "partial_download.h"
 #include "log.h"
 #include "hooks.h"
 #include "file-utils.h"
@@ -320,7 +320,6 @@ static gint pop3_getrange_uidl_recv(Pop3Session *session, const gchar *data,
 	gint buf_len;
 	guint32 num;
 	time_t recv_time;
-	gint partial_recv;
 	const gchar *p = data;
 	const gchar *lastp = data + len;
 	const gchar *newline;
@@ -353,17 +352,6 @@ static gint pop3_getrange_uidl_recv(Pop3Session *session, const gchar *data,
 			debug_print("num %d uidl %s: unknown\n", num, id);
 		}
 
-		partial_recv = (gint)(GPOINTER_TO_INT(g_hash_table_lookup(
-					session->partial_recv_table, id)));
-
-		if (recv_time != RECV_TIME_NONE
-		|| partial_recv != POP3_TOTALLY_RECEIVED) {
-			session->msg[num].received =
-				(partial_recv != POP3_MUST_COMPLETE_RECV);
-			session->msg[num].partial_recv = partial_recv;
-			if (partial_recv == POP3_MUST_COMPLETE_RECV)
-				session->new_msg_exist = TRUE;
-		}
 		if (!session->new_msg_exist &&
 		    (recv_time == RECV_TIME_NONE ||
 		     session->ac_prefs->rmmail)) {
@@ -452,21 +440,8 @@ static gint pop3_retr_recv(Pop3Session *session, const gchar *data, guint len)
 	}
 	g_free(mail_receive_data.data);
 
-	if (session->msg[session->cur_msg].partial_recv
-	    == POP3_MUST_COMPLETE_RECV) {
-		gchar *old_file = partial_get_filename(
-				session->ac_prefs->recv_server,
-				session->ac_prefs->userid,
-				session->msg[session->cur_msg].uidl);
-
-		if (old_file) {
-			partial_delete_old(old_file);
-			g_free(old_file);
-		}
-	}
 	/* drop_ok: 0: success 1: don't receive -1: error */
 	drop_ok = session->drop_message(session, file);
-
 	g_free(file);
 	if (drop_ok < 0) {
 		session->error_val = PS_IOERR;
@@ -915,15 +890,10 @@ static Pop3State pop3_lookup_next(Pop3Session *session)
 	Pop3MsgInfo *msg;
 	PrefsAccount *ac = session->ac_prefs;
 	gint size;
-	gboolean size_limit_over;
 
 	for (;;) {
 		msg = &session->msg[session->cur_msg];
 		size = msg->size;
-		size_limit_over =
-		    (ac->enable_size_limit &&
-		     ac->size_limit > 0 &&
-		     size > ac->size_limit * 1024);
 
 		if (ac->rmmail &&
 		    msg->recv_time != RECV_TIME_NONE &&
@@ -940,20 +910,7 @@ static Pop3State pop3_lookup_next(Pop3Session *session)
 			return POP3_DELETE;
 		}
 
-		if (size_limit_over) {
-			if (!msg->received && msg->partial_recv !=
-			    POP3_MUST_COMPLETE_RECV) {
-				pop3_top_send(session, ac->size_limit);
-				return POP3_TOP;
-			} else if (msg->partial_recv == POP3_MUST_COMPLETE_RECV)
-				break;
-
-			log_message(LOG_PROTOCOL,
-					_("POP: Skipping message %d [%s] (%d bytes)\n"),
-					session->cur_msg, msg->uidl?msg->uidl:" ", size);
-		}
-
-		if (size == 0 || msg->received || size_limit_over) {
+		if (size == 0 || msg->received) {
 			session->cur_total_bytes += size;
 			if (session->cur_msg == session->count) {
 				pop3_logout_send(session);

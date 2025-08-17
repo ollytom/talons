@@ -50,7 +50,6 @@
 #include "statusbar.h"
 #include "hooks.h"
 #include "folderutils.h"
-#include "partial_download.h"
 #include "prefs_folder_column.h"
 #include "quicksearch.h"
 #include "manual.h"
@@ -2454,10 +2453,6 @@ static void folderview_empty_trash_cb(GtkAction *action, gpointer data)
 		MsgInfo * msginfo = (MsgInfo *) cur->data;
 		if (MSG_IS_LOCKED(msginfo->flags))
 			continue;
-		/* is it partially received? (partial_recv isn't cached) */
-		if (msginfo->total_size != 0 &&
-		    msginfo->size != (off_t)msginfo->total_size)
-			partial_mark_for_delete(msginfo);
 	}
 	procmsg_msg_list_free(mlist);
 

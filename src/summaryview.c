@@ -67,7 +67,6 @@
 #include "description_window.h"
 #include "folderutils.h"
 #include "quicksearch.h"
-#include "partial_download.h"
 #include "log.h"
 #include "manual.h"
 #include "manage_window.h"
@@ -4353,9 +4352,6 @@ void summary_delete(SummaryView *summaryview)
 	     cur = cur->next) {
 		GtkCMCTreeNode *row = GTK_CMCTREE_NODE(cur->data);
 		msginfo = gtk_cmctree_node_get_row_data(ctree, row);
-		if (msginfo && msginfo->total_size != 0 &&
-		    msginfo->size != (goffset)msginfo->total_size)
-			partial_mark_for_delete(msginfo);
 	}
 
 	main_window_cursor_wait(summaryview->mainwin);

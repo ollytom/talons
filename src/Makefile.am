@@ -83,7 +83,6 @@ claws_mail_SOURCES = \
 	news.c \
 	noticeview.c \
 	oauth2.c \
-	partial_download.c \
 	password.c \
 	passwordstore.c \
 	pop.c \

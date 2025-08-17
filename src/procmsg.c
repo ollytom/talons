@@ -41,7 +41,6 @@
 #include "news.h"
 #include "hooks.h"
 #include "msgcache.h"
-#include "partial_download.h"
 #include "mainwindow.h"
 #include "summaryview.h"
 #include "log.h"
@@ -552,10 +551,6 @@ static void procmsg_empty_trash(FolderItem *trash)
 				procmsg_msginfo_free(&msginfo);
 				continue;
 			}
-			if (msginfo->total_size != 0 &&
-			    msginfo->size != (off_t)msginfo->total_size)
-				partial_mark_for_delete(msginfo);
-
 			procmsg_msginfo_free(&msginfo);
 		}
 		g_slist_free(mlist);
@@ -1213,8 +1208,7 @@ MsgInfo *procmsg_msginfo_get_full_info_from_file(MsgInfo *msginfo, const gchar *
 			msginfo->extradata->returnreceiptto = g_strdup
 				(full_msginfo->extradata->returnreceiptto);
 		if (!msginfo->extradata->partial_recv && full_msginfo->extradata->partial_recv)
-			msginfo->extradata->partial_recv = g_strdup
-				(full_msginfo->extradata->partial_recv);
+			msginfo->extradata->partial_recv = g_strdup(full_msginfo->extradata->partial_recv);
 		if (!msginfo->extradata->account_server && full_msginfo->extradata->account_server)
 			msginfo->extradata->account_server = g_strdup
 				(full_msginfo->extradata->account_server);

@@ -49,7 +49,6 @@
 #include "log.h"
 #include "folder_item_prefs.h"
 #include "remotefolder.h"
-#include "partial_download.h"
 #include "statusbar.h"
 #include "gtkutils.h"
 #include "compose.h"
@@ -3392,7 +3391,6 @@ static gint do_copy_msgs(FolderItem *dest, GSList *msglist, gboolean remove_sour
 
 		if (msginfo->planned_download != 0) {
 			int old_planned = msginfo->planned_download;
-			partial_unmark(msginfo);
 			/* little hack to reenable after */
 			msginfo->planned_download = old_planned;
 		}
@@ -3526,14 +3524,7 @@ static gint do_copy_msgs(FolderItem *dest, GSList *msglist, gboolean remove_sour
 					}
 				}
 			}
-			if (newmsginfo != NULL
-			 && msginfo->planned_download == POP3_PARTIAL_DLOAD_DELE) {
-				partial_mark_for_delete(newmsginfo);
-			}
-			if (newmsginfo != NULL
-			 && msginfo->planned_download == POP3_PARTIAL_DLOAD_DLOAD) {
-				partial_mark_for_download(newmsginfo);
-			}
+
 			if (!MSG_IS_POSTFILTERED (msginfo->flags)) {
 				procmsg_msginfo_set_flags (   msginfo, MSG_POSTFILTERED, 0);
 				if (newmsginfo) {
@@ -3542,7 +3533,6 @@ static gint do_copy_msgs(FolderItem *dest, GSList *msglist, gboolean remove_sour
 				}
 			}
 			procmsg_msginfo_free(&newmsginfo);
-
 
 			if (num > lastnum)
 				lastnum = num;

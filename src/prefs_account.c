@@ -155,8 +155,6 @@ typedef struct ReceivePage
 	GtkWidget *rmmail_checkbtn;
 	GtkWidget *leave_time_spinbtn;
 	GtkWidget *leave_hour_spinbtn;
-	GtkWidget *size_limit_checkbtn;
-	GtkWidget *size_limit_spinbtn;
 	GtkWidget *inbox_label;
 	GtkWidget *inbox_entry;
 	GtkWidget *inbox_btn;
@@ -539,13 +537,6 @@ static PrefParam receive_param[] = {
 	 prefs_set_data_from_spinbtn, prefs_set_spinbtn},
 	{"message_leave_hour", "0", &tmp_ac_prefs.msg_leave_hour, P_INT,
 	 &receive_page.leave_hour_spinbtn,
-	 prefs_set_data_from_spinbtn, prefs_set_spinbtn},
-
-	{"enable_size_limit", "FALSE", &tmp_ac_prefs.enable_size_limit, P_BOOL,
-	 &receive_page.size_limit_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-	{"size_limit", "1024", &tmp_ac_prefs.size_limit, P_INT,
-	 &receive_page.size_limit_spinbtn,
 	 prefs_set_data_from_spinbtn, prefs_set_spinbtn},
 
 	{"filter_on_receive", "TRUE", &tmp_ac_prefs.filter_on_recv, P_BOOL,
@@ -1504,8 +1495,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 	GtkWidget *leave_time_spinbtn;
 	GtkWidget *leave_hour_label;
 	GtkWidget *leave_hour_spinbtn;
-	GtkWidget *size_limit_checkbtn;
-	GtkWidget *size_limit_spinbtn;
 	GtkWidget *label;
 	GtkWidget *filter_on_recv_checkbtn;
 	GtkWidget *filterhook_on_recv_checkbtn;
@@ -1646,27 +1635,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 	gtk_box_pack_start (GTK_BOX (hbox1), leave_hour_label, FALSE, FALSE, 0);
 
 	SET_TOGGLE_SENSITIVITY (rmmail_checkbtn, hbox1);
-
-	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox1);
-	gtk_box_pack_start (GTK_BOX (vbox2), hbox1, FALSE, FALSE, 0);
-
-	PACK_CHECK_BUTTON (hbox1, size_limit_checkbtn, _("Receive size limit"));
-
-	CLAWS_SET_TIP(size_limit_checkbtn,
-			     _("Messages over this limit will be partially retrieved. "
-		   	       "When selecting them you will be able to download them fully "
-			       "or delete them"));
-
-	size_limit_spinbtn = gtk_spin_button_new_with_range(0, 100000, 1);
-	gtk_widget_show (size_limit_spinbtn);
-	gtk_box_pack_start (GTK_BOX (hbox1), size_limit_spinbtn, FALSE, FALSE, 0);
-
-	label = gtk_label_new (_("KiB"));
-	gtk_widget_show (label);
-	gtk_box_pack_start (GTK_BOX (hbox1), label, FALSE, FALSE, 0);
-
-	SET_TOGGLE_SENSITIVITY (size_limit_checkbtn, size_limit_spinbtn);
 
 	PACK_SPACER(vbox2, vbox3, VSPACING_NARROW_2);
 
@@ -1879,8 +1847,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 	page->rmmail_checkbtn            = rmmail_checkbtn;
 	page->leave_time_spinbtn         = leave_time_spinbtn;
 	page->leave_hour_spinbtn         = leave_hour_spinbtn;
-	page->size_limit_checkbtn        = size_limit_checkbtn;
-	page->size_limit_spinbtn         = size_limit_spinbtn;
 	page->filter_on_recv_checkbtn    = filter_on_recv_checkbtn;
 	page->filterhook_on_recv_checkbtn = filterhook_on_recv_checkbtn;
 	page->inbox_label              = inbox_label;

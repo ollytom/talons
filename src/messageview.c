@@ -55,7 +55,6 @@
 #include "send_message.h"
 #include "stock_pixmap.h"
 #include "hooks.h"
-#include "partial_download.h"
 #include "inc.h"
 #include "log.h"
 #include "privacy.h"
@@ -80,14 +79,6 @@ static gboolean key_pressed		(GtkWidget	*widget,
 					 GdkEventKey	*event,
 					 MessageView	*messageview);
 
-static void partial_recv_show		(NoticeView     *noticeview,
-				         MsgInfo        *msginfo);
-static void partial_recv_dload_clicked 	(NoticeView	*noticeview,
-                                         MsgInfo        *msginfo);
-static void partial_recv_del_clicked 	(NoticeView	*noticeview,
-                                         MsgInfo        *msginfo);
-static void partial_recv_unmark_clicked (NoticeView	*noticeview,
-                                         MsgInfo        *msginfo);
 static void save_as_cb			(GtkAction	*action,
 					 gpointer	 data);
 void messageview_save_as		(MessageView *messageview);
@@ -1072,12 +1063,6 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 
 	main_create_mailing_list_menu(messageview->mainwin, messageview->msginfo);
 
-	if (messageview->msginfo && messageview->msginfo->extradata
-	    && messageview->msginfo->extradata->partial_recv
-	    && !noticeview_is_visible(messageview->noticeview))
-		partial_recv_show(messageview->noticeview,
-				  messageview->msginfo);
-
 	if (find_broken_part(mimeinfo) != NULL) {
 		noticeview_set_icon(messageview->noticeview,
 				    STOCK_PIXMAP_NOTICE_WARN);
@@ -1450,123 +1435,6 @@ static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event,
 	}
 
 	return mimeview_pass_key_press_event(messageview->mimeview, event);
-}
-
-static void messageview_show_partial_display_cb(NoticeView *noticeview, MessageView *messageview)
-{
-	messageview->show_full_text = TRUE;
-	main_window_cursor_wait(mainwindow_get_mainwindow());
-	noticeview_hide(messageview->noticeview);
-	messageview->partial_display_shown = FALSE;
-	GTK_EVENTS_FLUSH();
-	mimeview_handle_cmd(messageview->mimeview, "cm://display_as_text", NULL, NULL);
-	main_window_cursor_normal(mainwindow_get_mainwindow());
-}
-
-void messageview_show_partial_display(MessageView *messageview, MsgInfo *msginfo,
-					     size_t length)
-{
-	gchar *msg = g_strdup_printf(_("Show all %s."), to_human_readable((goffset)length));
-	noticeview_set_icon(messageview->noticeview, STOCK_PIXMAP_NOTICE_WARN);
-	noticeview_set_text(messageview->noticeview, _("Only the first megabyte of text is shown."));
-	noticeview_set_button_text(messageview->noticeview, msg);
-	g_free(msg);
-	noticeview_set_button_press_callback(messageview->noticeview,
-					     G_CALLBACK(messageview_show_partial_display_cb),
-					     (gpointer) messageview);
-	noticeview_show(messageview->noticeview);
-	messageview->partial_display_shown = TRUE;
-}
-
-static void partial_recv_show(NoticeView *noticeview, MsgInfo *msginfo)
-{
-	gchar *text = NULL;
-	gchar *button1 = NULL;
-	gchar *button2 = NULL;
-	void  *button1_cb = NULL;
-	void  *button2_cb = NULL;
-
-	if (!msginfo->extradata)
-		return;
-	if (!partial_msg_in_uidl_list(msginfo)) {
-		text = g_strdup_printf(_("This message has been partially "
-				"retrieved,\nand has been deleted from the "
-				"server."));
-	} else {
-		switch (msginfo->planned_download) {
-		case POP3_PARTIAL_DLOAD_UNKN:
-			text = g_strdup_printf(_("This message has been "
-					"partially retrieved;\nit is %s."),
-					to_human_readable(
-						(goffset)(msginfo->total_size)));
-			button1 = _("Mark for download");
-			button2 = _("Mark for deletion");
-			button1_cb = partial_recv_dload_clicked;
-			button2_cb = partial_recv_del_clicked;
-			break;
-		case POP3_PARTIAL_DLOAD_DLOAD:
-			text = g_strdup_printf(_("This message has been "
-					"partially retrieved;\nit is %s and "
-					"will be downloaded."),
-					to_human_readable(
-						(goffset)(msginfo->total_size)));
-			button1 = _("Unmark");
-			button1_cb = partial_recv_unmark_clicked;
-			button2 = _("Mark for deletion");
-			button2_cb = partial_recv_del_clicked;
-			break;
-		case POP3_PARTIAL_DLOAD_DELE:
-			text = g_strdup_printf(_("This message has been "
-					"partially retrieved;\nit is %s and "
-					"will be deleted."),
-					to_human_readable(
-						(goffset)(msginfo->total_size)));
-			button1 = _("Mark for download");
-			button1_cb = partial_recv_dload_clicked;
-			button2 = _("Unmark");
-			button2_cb = partial_recv_unmark_clicked;
-			break;
-		default:
-			return;
-		}
-	}
-
-	noticeview_set_icon(noticeview, STOCK_PIXMAP_NOTICE_WARN);
-	noticeview_set_text(noticeview, text);
-	g_free(text);
-	noticeview_set_button_text(noticeview, button1);
-	noticeview_set_button_press_callback(noticeview,
-		     G_CALLBACK(button1_cb), (gpointer) msginfo);
-
-	noticeview_set_2ndbutton_text(noticeview, button2);
-	noticeview_set_2ndbutton_press_callback(noticeview,
-		     G_CALLBACK(button2_cb), (gpointer) msginfo);
-
-	noticeview_show(noticeview);
-}
-
-static void partial_recv_dload_clicked(NoticeView *noticeview,
-				       MsgInfo *msginfo)
-{
-	if (partial_mark_for_download(msginfo) == 0) {
-		partial_recv_show(noticeview, msginfo);
-	}
-}
-
-static void partial_recv_del_clicked(NoticeView *noticeview,
-				       MsgInfo *msginfo)
-{
-	if (partial_mark_for_delete(msginfo) == 0) {
-		partial_recv_show(noticeview, msginfo);
-	}
-}
-
-static void partial_recv_unmark_clicked(NoticeView *noticeview,
-				       MsgInfo *msginfo)
-{
-	if (partial_unmark(msginfo) == 0) {
-		partial_recv_show(noticeview, msginfo);
-	}
 }
 
 static void select_account_cb(GtkWidget *w, gpointer data)

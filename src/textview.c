@@ -1062,12 +1062,6 @@ textview_default:
 		}
 	}
 
-	if (continue_write == FALSE) {
-		messageview_show_partial_display(
-			textview->messageview,
-			textview->messageview->msginfo,
-			mimeinfo->length);
-	}
 	GTK_EVENTS_FLUSH();
 }
 

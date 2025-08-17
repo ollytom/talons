@@ -1,6 +1,6 @@
 /*
  * Claws Mail -- a GTK based, lightweight, and fast e-mail client
- * Copyright (C) 1999-2012 Colin Leroy <colin@colino.net> 
+ * Copyright (C) 1999-2012 Colin Leroy <colin@colino.net>
  * and the Claws Mail team
  *
  * This program is free software; you can redistribute it and/or modify
@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 #ifndef __PARTIAL_DOWNLOAD_H__
 #define __PARTIAL_DOWNLOAD_H__
@@ -40,14 +40,5 @@ typedef enum {
 	POP3_PARTIALLY_RECEIVED = 1,
 	POP3_MUST_COMPLETE_RECV = 2
 } PartialDownloadStatus;
-
-gint   partial_msg_in_uidl_list	(MsgInfo	*msginfo);
-int    partial_mark_for_download(MsgInfo	*msginfo);
-int    partial_mark_for_delete	(MsgInfo	*msginfo);
-int    partial_unmark		(MsgInfo	*msginfo);
-gchar *partial_get_filename	(const gchar 	*server,
-				 const gchar	*login, 
-				 const gchar 	*muidl);
-void   partial_delete_old	(const gchar 	*file);
 
 #endif /* __PARTIAL_DOWNLOAD_H__ */
