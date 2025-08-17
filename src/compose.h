@@ -316,7 +316,6 @@ void compose_entry_append		(Compose	  *compose,
 gint compose_send			(Compose	  *compose);
 
 void compose_update_actions_menu	(Compose	*compose);
-void compose_reflect_prefs_all			(void);
 void compose_reflect_prefs_pixmap_theme	(void);
 
 void compose_destroy_all                (void);

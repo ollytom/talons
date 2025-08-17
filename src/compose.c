@@ -214,13 +214,11 @@ static Compose *compose_reply			(MsgInfo	*msginfo,
 static Compose *compose_reply_mode		(ComposeMode 	 mode,
 					 GSList 	*msginfo_list,
 					 gchar 		*body);
-static void compose_template_apply_fields(Compose *compose, Template *tmpl);
 static void compose_update_privacy_systems_menu(Compose	*compose);
 
 static GtkWidget *compose_account_option_menu_create
 						(Compose	*compose);
 static void compose_set_out_encoding		(Compose	*compose);
-static void compose_set_template_menu		(Compose	*compose);
 static void compose_destroy			(Compose	*compose);
 
 static MailField compose_entries_set		(Compose	*compose,
@@ -315,9 +313,6 @@ static void compose_attach_info_free		(AttachInfo	*ainfo);
 static void compose_attach_remove_selected	(GtkAction	*action,
 						 gpointer	 data);
 
-static void compose_template_apply		(Compose	*compose,
-						 Template	*tmpl,
-						 gboolean	 replace);
 static void compose_attach_property		(GtkAction	*action,
 						 gpointer	 data);
 static void compose_attach_property_create	(gboolean	*cancelled);
@@ -404,8 +399,6 @@ static void compose_print_cb		(GtkAction	*action,
 static void compose_set_encoding_cb	(GtkAction	*action, GtkRadioAction *current, gpointer data);
 
 static void compose_address_cb		(GtkAction	*action,
-					 gpointer	 data);
-static void compose_template_activate_cb(GtkWidget	*widget,
 					 gpointer	 data);
 
 static void compose_ext_editor_cb	(GtkAction	*action,
@@ -656,8 +649,6 @@ static GtkActionEntry compose_entries[] =
 /* Tools menu */
 	{"Tools/AddressBook",             NULL, N_("_Address book"), "<shift><control>A", NULL, G_CALLBACK(compose_address_cb) },
 
-	{"Tools/Template",                NULL, N_("_Template"), NULL, NULL, NULL },
-	{"Tools/Template/PlaceHolder",    NULL, "Placeholder", NULL, NULL, G_CALLBACK(compose_nothing_cb) },
 	{"Tools/Actions",                 NULL, N_("Actio_ns"), NULL, NULL, NULL },
 	{"Tools/Actions/PlaceHolder",     NULL, "Placeholder", NULL, NULL, G_CALLBACK(compose_nothing_cb) },
 };
@@ -7478,7 +7469,6 @@ static Compose *compose_create(PrefsAccount *account,
 	UndoMain *undostruct;
 
 	GtkWidget *popupmenu;
-	GtkWidget *tmpl_menu;
 	GtkActionGroup *action_group = NULL;
 
 #if USE_ENCHANT
@@ -7651,10 +7641,7 @@ static Compose *compose_create(PrefsAccount *account,
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", CS_US_ASCII, "Options/Encoding/"CS_US_ASCII, GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/Encoding", CS_UTF_8, "Options/Encoding/"CS_UTF_8, GTK_UI_MANAGER_MENUITEM)
 
-/* Tools menu */
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools", "AddressBook", "Tools/AddressBook", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools", "Template", "Tools/Template", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools/Template", "PlaceHolder", "Tools/Template/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools", "Actions", "Tools/Actions", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Tools/Actions", "PlaceHolder", "Tools/Actions/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
 
@@ -7826,8 +7813,6 @@ static Compose *compose_create(PrefsAccount *account,
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Edit/Redo", FALSE);
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options/RemoveReferences", FALSE);
 
-	tmpl_menu = gtk_ui_manager_get_widget(compose->ui_manager, "/Menu/Tools/Template");
-
 	undostruct = undo_init(text);
 	undo_set_change_state_func(undostruct, &compose_undo_state_changed,
 				   compose);
@@ -7853,8 +7838,6 @@ static Compose *compose_create(PrefsAccount *account,
 	compose->focused_editable = NULL;
 
 	compose->popupmenu    = popupmenu;
-
-	compose->tmpl_menu = tmpl_menu;
 
 	compose->mode = mode;
 	compose->rmode = mode;
@@ -7963,11 +7946,6 @@ static Compose *compose_create(PrefsAccount *account,
 				prefs_common_translated_header_name("Newsgroups:"));
 
 	addressbook_set_target_compose(compose);
-	if (mode != COMPOSE_REDIRECT)
-		compose_set_template_menu(compose);
-	else {
-		cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Tools/Template", FALSE);
-	}
 
 	compose_list = g_list_append(compose_list, compose);
 
@@ -8285,37 +8263,6 @@ static void compose_set_out_encoding(Compose *compose)
 	cm_toggle_menu_set_active_full(compose->ui_manager, (gchar *)branch, TRUE);
 }
 
-static void compose_set_template_menu(Compose *compose)
-{
-	GSList *tmpl_list, *cur;
-	GtkWidget *menu;
-	GtkWidget *item;
-
-	tmpl_list = template_get_config();
-
-	menu = gtk_menu_new();
-
-	gtk_menu_set_accel_group (GTK_MENU (menu),
-		gtk_ui_manager_get_accel_group(compose->ui_manager));
-	for (cur = tmpl_list; cur != NULL; cur = cur->next) {
-		Template *tmpl = (Template *)cur->data;
-		gchar *accel_path = NULL;
-		item = gtk_menu_item_new_with_label(tmpl->name);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-		g_signal_connect(G_OBJECT(item), "activate",
-				 G_CALLBACK(compose_template_activate_cb),
-				 compose);
-		g_object_set_data(G_OBJECT(item), "template", tmpl);
-		gtk_widget_show(item);
-		accel_path = g_strconcat("<ComposeTemplates>" , "/", tmpl->name, NULL);
-		gtk_menu_item_set_accel_path(GTK_MENU_ITEM(item), accel_path);
-		g_free(accel_path);
-	}
-
-	gtk_widget_show(menu);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(compose->tmpl_menu), menu);
-}
-
 void compose_update_actions_menu(Compose *compose)
 {
 	action_update_compose_menu(compose->ui_manager, "/Menu/Tools/Actions", compose);
@@ -8362,17 +8309,6 @@ static void compose_update_privacy_systems_menu(Compose *compose)
 	gtk_widget_show_all(privacy_menuitem);
 }
 
-void compose_reflect_prefs_all(void)
-{
-	GList *cur;
-	Compose *compose;
-
-	for (cur = compose_list; cur != NULL; cur = cur->next) {
-		compose = (Compose *)cur->data;
-		compose_set_template_menu(compose);
-	}
-}
-
 void compose_reflect_prefs_pixmap_theme(void)
 {
 	GList *cur;
@@ -8382,262 +8318,6 @@ void compose_reflect_prefs_pixmap_theme(void)
 		compose = (Compose *)cur->data;
 		toolbar_update(TOOLBAR_COMPOSE, compose);
 	}
-}
-
-static void compose_template_apply(Compose *compose, Template *tmpl,
-				   gboolean replace)
-{
-	GtkTextView *text;
-	GtkTextBuffer *buffer;
-	GtkTextMark *mark;
-	GtkTextIter iter;
-	gchar *parsed_str = NULL;
-	gint cursor_pos = 0;
-	const gchar *err_msg = _("The body of the template has an error at line %d.");
-	if (!tmpl) return;
-
-	/* process the body */
-
-	text = GTK_TEXT_VIEW(compose->text);
-	buffer = gtk_text_view_get_buffer(text);
-
-	if (tmpl->value) {
-		if (compose->replyinfo != NULL) {
-			if (replace)
-				gtk_text_buffer_set_text(buffer, "", -1);
-			mark = gtk_text_buffer_get_insert(buffer);
-			gtk_text_buffer_get_iter_at_mark(buffer, &iter, mark);
-
-			parsed_str = compose_quote_fmt(compose, compose->replyinfo,
-						   tmpl->value, NULL, FALSE, FALSE, err_msg);
-
-		} else if (compose->fwdinfo != NULL) {
-
-			if (replace)
-				gtk_text_buffer_set_text(buffer, "", -1);
-			mark = gtk_text_buffer_get_insert(buffer);
-			gtk_text_buffer_get_iter_at_mark(buffer, &iter, mark);
-
-			parsed_str = compose_quote_fmt(compose, compose->fwdinfo,
-						   tmpl->value, NULL, FALSE, FALSE, err_msg);
-
-		} else {
-			MsgInfo* dummyinfo = compose_msginfo_new_from_compose(compose);
-
-			GtkTextIter start, end;
-			gchar *tmp = NULL;
-
-			gtk_text_buffer_get_start_iter(buffer, &start);
-			gtk_text_buffer_get_iter_at_offset(buffer, &end, -1);
-			tmp = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-
-			/* clear the buffer now */
-			if (replace)
-				gtk_text_buffer_set_text(buffer, "", -1);
-
-			parsed_str = compose_quote_fmt(compose, dummyinfo,
-							   tmpl->value, tmp, FALSE, FALSE, err_msg);
-			procmsg_msginfo_free( &dummyinfo );
-
-			g_free( tmp );
-		}
-	} else {
-		if (replace)
-			gtk_text_buffer_set_text(buffer, "", -1);
-		mark = gtk_text_buffer_get_insert(buffer);
-		gtk_text_buffer_get_iter_at_mark(buffer, &iter, mark);
-	}
-
-	if (replace && parsed_str && compose->account->auto_sig)
-		compose_insert_sig(compose, FALSE);
-
-	if (replace && parsed_str) {
-		gtk_text_buffer_get_start_iter(buffer, &iter);
-		gtk_text_buffer_place_cursor(buffer, &iter);
-	}
-
-	if (parsed_str) {
-		cursor_pos = quote_fmt_get_cursor_pos();
-		compose->set_cursor_pos = cursor_pos;
-		if (cursor_pos == -1)
-			cursor_pos = 0;
-		gtk_text_buffer_get_start_iter(buffer, &iter);
-		gtk_text_buffer_get_iter_at_offset(buffer, &iter, cursor_pos);
-		gtk_text_buffer_place_cursor(buffer, &iter);
-	}
-
-	/* process the other fields */
-
-	compose_attach_from_list(compose, quote_fmt_get_attachments_list(), FALSE);
-	compose_template_apply_fields(compose, tmpl);
-	quote_fmt_reset_vartable();
-	quote_fmtlex_destroy();
-
-	compose_changed_cb(NULL, compose);
-
-#ifdef USE_ENCHANT
-	if (compose->gtkaspell && compose->gtkaspell->check_while_typing)
-	    	gtkaspell_highlight_all(compose->gtkaspell);
-#endif
-}
-
-static void compose_template_apply_fields_error(const gchar *header)
-{
-	gchar *tr;
-	gchar *text;
-
-	tr = g_strdup(C_("'%s' stands for a header name",
-				  "Template '%s' format error."));
-	text = g_strdup_printf(tr, prefs_common_translated_header_name(header));
-	alertpanel_error("%s", text);
-
-	g_free(text);
-	g_free(tr);
-}
-
-static void compose_template_apply_fields(Compose *compose, Template *tmpl)
-{
-	MsgInfo* dummyinfo = NULL;
-	MsgInfo *msginfo = NULL;
-	gchar *buf = NULL;
-
-	if (compose->replyinfo != NULL)
-		msginfo = compose->replyinfo;
-	else if (compose->fwdinfo != NULL)
-		msginfo = compose->fwdinfo;
-	else {
-		dummyinfo = compose_msginfo_new_from_compose(compose);
-		msginfo = dummyinfo;
-	}
-
-	if (tmpl->from && *tmpl->from != '\0') {
-#ifdef USE_ENCHANT
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
-#else
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
-		quote_fmt_scan_string(tmpl->from);
-		quote_fmt_parse();
-
-		buf = quote_fmt_get_buffer();
-		if (buf == NULL) {
-			compose_template_apply_fields_error("From");
-		} else {
-			gtk_entry_set_text(GTK_ENTRY(compose->from_name), buf);
-		}
-
-		quote_fmt_reset_vartable();
-		quote_fmtlex_destroy();
-	}
-
-	if (tmpl->to && *tmpl->to != '\0') {
-#ifdef USE_ENCHANT
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
-#else
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
-		quote_fmt_scan_string(tmpl->to);
-		quote_fmt_parse();
-
-		buf = quote_fmt_get_buffer();
-		if (buf == NULL) {
-			compose_template_apply_fields_error("To");
-		} else {
-			compose_entry_append(compose, buf, COMPOSE_TO, PREF_TEMPLATE);
-		}
-
-		quote_fmt_reset_vartable();
-		quote_fmtlex_destroy();
-	}
-
-	if (tmpl->cc && *tmpl->cc != '\0') {
-#ifdef USE_ENCHANT
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
-#else
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
-		quote_fmt_scan_string(tmpl->cc);
-		quote_fmt_parse();
-
-		buf = quote_fmt_get_buffer();
-		if (buf == NULL) {
-			compose_template_apply_fields_error("Cc");
-		} else {
-			compose_entry_append(compose, buf, COMPOSE_CC, PREF_TEMPLATE);
-		}
-
-		quote_fmt_reset_vartable();
-		quote_fmtlex_destroy();
-	}
-
-	if (tmpl->bcc && *tmpl->bcc != '\0') {
-#ifdef USE_ENCHANT
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
-#else
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
-		quote_fmt_scan_string(tmpl->bcc);
-		quote_fmt_parse();
-
-		buf = quote_fmt_get_buffer();
-		if (buf == NULL) {
-			compose_template_apply_fields_error("Bcc");
-		} else {
-			compose_entry_append(compose, buf, COMPOSE_BCC, PREF_TEMPLATE);
-		}
-
-		quote_fmt_reset_vartable();
-		quote_fmtlex_destroy();
-	}
-
-	if (tmpl->replyto && *tmpl->replyto != '\0') {
-#ifdef USE_ENCHANT
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
-#else
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
-		quote_fmt_scan_string(tmpl->replyto);
-		quote_fmt_parse();
-
-		buf = quote_fmt_get_buffer();
-		if (buf == NULL) {
-			compose_template_apply_fields_error("Reply-To");
-		} else {
-			compose_entry_append(compose, buf, COMPOSE_REPLYTO, PREF_TEMPLATE);
-		}
-
-		quote_fmt_reset_vartable();
-		quote_fmtlex_destroy();
-	}
-
-	/* process the subject */
-	if (tmpl->subject && *tmpl->subject != '\0') {
-#ifdef USE_ENCHANT
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
-#else
-		quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
-		quote_fmt_scan_string(tmpl->subject);
-		quote_fmt_parse();
-
-		buf = quote_fmt_get_buffer();
-		if (buf == NULL) {
-			compose_template_apply_fields_error("Subject");
-		} else {
-			gtk_entry_set_text(GTK_ENTRY(compose->subject_entry), buf);
-		}
-
-		quote_fmt_reset_vartable();
-		quote_fmtlex_destroy();
-	}
-
-	procmsg_msginfo_free( &dummyinfo );
 }
 
 static void compose_destroy(Compose *compose)
@@ -10251,29 +9931,6 @@ static void compose_address_cb(GtkAction *action, gpointer data)
 {
 	Compose *compose = (Compose *)data;
 	addressbook_open(compose);
-}
-
-static void compose_template_activate_cb(GtkWidget *widget, gpointer data)
-{
-	Compose *compose = (Compose *)data;
-	Template *tmpl;
-	gchar *msg;
-	AlertValue val;
-
-	tmpl = g_object_get_data(G_OBJECT(widget), "template");
-	cm_return_if_fail(tmpl != NULL);
-
-	msg = g_strdup_printf(_("Do you want to apply the template '%s'?"),
-			      tmpl->name);
-	val = alertpanel(_("Apply template"), msg,
-			 NULL, _("_Replace"), NULL, _("_Insert"), NULL, _("_Cancel"),
-			 ALERTFOCUS_FIRST);
-	g_free(msg);
-
-	if (val == G_ALERTDEFAULT)
-		compose_template_apply(compose, tmpl, TRUE);
-	else if (val == G_ALERTALTERNATE)
-		compose_template_apply(compose, tmpl, FALSE);
 }
 
 static void compose_ext_editor_cb(GtkAction *action, gpointer data)

@@ -53,7 +53,6 @@
 #include "prefs_account.h"
 #include "prefs_summary_column.h"
 #include "prefs_folder_column.h"
-#include "prefs_template.h"
 #include "action.h"
 #include "account.h"
 #include "addressbook.h"
@@ -317,8 +316,6 @@ static void trash_thread_cb	 (GtkAction	*action,
 static void delete_thread_cb	 (GtkAction	*action,
 				  gpointer	 data);
 
-static void prefs_template_open_cb	(GtkAction	*action,
-				  gpointer	 data);
 static void prefs_actions_open_cb	(GtkAction	*action,
 				  gpointer	 data);
 static void prefs_account_open_cb	(GtkAction	*action,
@@ -687,7 +684,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Configuration/---",                        NULL, "---", NULL, NULL, NULL },
 
 	{"Configuration/Preferences",                NULL, N_("P_references..."), NULL, NULL, G_CALLBACK(prefs_open_cb) },
-	{"Configuration/Templates",                  NULL, N_("_Templates..."), NULL, NULL, G_CALLBACK(prefs_template_open_cb) },
 	{"Configuration/Actions",                    NULL, N_("_Actions..."), NULL, NULL, G_CALLBACK(prefs_actions_open_cb) },
 
 /* Help menu */
@@ -4181,11 +4177,6 @@ static void delete_thread_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 	summary_select_thread(mainwin->summaryview, TRUE, FALSE);
-}
-
-static void prefs_template_open_cb(GtkAction *action, gpointer data)
-{
-	prefs_template_open();
 }
 
 static void prefs_actions_open_cb(GtkAction *action, gpointer data)

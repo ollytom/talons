@@ -1,5 +1,5 @@
 /*
- * Claws Mail templates subsystem 
+ * Claws Mail templates subsystem
  * Copyright (C) 2001 Alexander Barinov
  * Copyright (C) 2001-2018 The Claws Mail team
  *
@@ -15,14 +15,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __PREFS_TEMPLATES_H__
 #define __PREFS_TEMPLATES_H__
 
-void prefs_template_open(void);
-gboolean prefs_template_string_is_valid(gchar *string, gint *line, 
+gboolean prefs_template_string_is_valid(gchar *string, gint *line,
 			gboolean escaped_string, gboolean email);
 
 #endif /* __PREFS_TEMPLATES_H__ */
