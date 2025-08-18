@@ -183,7 +183,6 @@ struct _PrefsCommon
 	gint undolevels;
 	gint linewrap_len;
 	gboolean linewrap_quote;
-	gboolean linewrap_pastes;
 	gboolean primary_paste_unselects;
 	gboolean autowrap;
 	gboolean auto_indent;
