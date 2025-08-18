@@ -34,8 +34,6 @@ struct _HeaderView
 	GtkWidget *from_body_label;
 	GtkWidget *to_header_label;
 	GtkWidget *to_body_label;
-	GtkWidget *ng_header_label;
-	GtkWidget *ng_body_label;
 	GtkWidget *subject_header_label;
 	GtkWidget *subject_body_label;
 
