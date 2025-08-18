@@ -359,8 +359,6 @@ void subst_chars			(gchar 		*str,
 void subst_for_filename			(gchar		*str);
 void subst_for_shellsafe_filename	(gchar		*str);
 gboolean is_ascii_str			(const gchar	*str);
-gint get_quote_level			(const gchar	*str,
-					 const gchar	*quote_chars);
 gint check_line_length			(const gchar	*str,
 					 gint		 max_chars,
 					 gint		*line);

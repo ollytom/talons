@@ -62,6 +62,7 @@
 #include "hooks.h"
 #include "avatars.h"
 #include "file-utils.h"
+#include "fence.h"
 
 static GdkRGBA quote_colors[3] = {
 	{0, 0, 0, 1},
@@ -1423,7 +1424,7 @@ static void textview_write_line(TextView *textview, const gchar *str,
 	if (prefs_common.enable_color
 	    && !textview->is_attachment
 	    && line_has_quote_char(buf, prefs_common.quote_chars)) {
-		real_quotelevel = get_quote_level(buf, prefs_common.quote_chars);
+		real_quotelevel = quote_depth(buf);
 		quotelevel = real_quotelevel;
 		/* set up the correct foreground color */
 		if (quotelevel > 2) {

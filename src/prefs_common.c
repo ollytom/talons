@@ -502,9 +502,9 @@ static PrefParam param[] = {
 
 	{"quote_level1_color", "#0000b3", &prefs_common.color[COL_QUOTE_LEVEL1],
 	 P_COLOR, NULL, NULL, NULL},
-	{"quote_level2_color", "#0000b3", &prefs_common.color[COL_QUOTE_LEVEL2],
+	{"quote_level2_color", "#b35a00", &prefs_common.color[COL_QUOTE_LEVEL2],
 	 P_COLOR, NULL, NULL, NULL},
-	{"quote_level3_color", "#0000b3", &prefs_common.color[COL_QUOTE_LEVEL3],
+	{"quote_level3_color", "#5ab300", &prefs_common.color[COL_QUOTE_LEVEL3],
 	 P_COLOR, NULL, NULL, NULL},
 	{"enable_bgcolor", "FALSE", &prefs_common.enable_bgcolor, P_BOOL,
 	 NULL, NULL, NULL},

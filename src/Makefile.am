@@ -493,8 +493,8 @@ AM_CPPFLAGS = \
 	$(NETTLE_CFLAGS) \
 	$(GPGME_CFLAGS) \
 	$(LIBETPAN_CPPFLAGS) \
-	$(SVG_CFLAGS) \
-	$(VALGRIND_CFLAGS)
+	$(VALGRIND_CFLAGS) \
+	-Ifence/zig-out/include
 
 #no-unused-function because of bison stuff
 matcher_parser_lex.$(OBJEXT) : AM_CFLAGS += -Wno-unused-function

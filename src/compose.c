@@ -101,6 +101,7 @@
 #include "spell_entry.h"
 #include "headers.h"
 #include "file-utils.h"
+#include "fence.h"
 
 enum
 {
@@ -4405,10 +4406,9 @@ static gboolean compose_beautify_paragraph(Compose *compose, GtkTextIter *par_it
 		quote_str = compose_get_quote_str(buffer, &iter, &quote_len);
 
 		if (quote_str) {
-/*			debug_print("compose_beautify_paragraph(): quote_str = '%s'\n", quote_str); */
 			if (startq_offset == -1)
 				startq_offset = gtk_text_iter_get_offset(&iter);
-			quotelevel = get_quote_level(quote_str, prefs_common.quote_chars);
+			quotelevel = quote_depth(quote_str);
 			if (quotelevel > 2) {
 				/* recycle colors */
 				if (prefs_common.recycle_quote_colors)

@@ -956,50 +956,6 @@ static const gchar * line_has_quote_char_last(const gchar * str, const gchar *qu
 	return position;
 }
 
-gint get_quote_level(const gchar *str, const gchar *quote_chars)
-{
-	const gchar *first_pos;
-	const gchar *last_pos;
-	const gchar *p = str;
-	gint quote_level = -1;
-
-	/* speed up line processing by only searching to the last '>' */
-	if ((first_pos = line_has_quote_char(str, quote_chars)) != NULL) {
-		/* skip a line if it contains a '<' before the initial '>' */
-		if (memchr(str, '<', first_pos - str) != NULL)
-			return -1;
-		last_pos = line_has_quote_char_last(first_pos, quote_chars);
-	} else
-		return -1;
-
-	while (p <= last_pos) {
-		while (p < last_pos) {
-			if (g_ascii_isspace(*p))
-				p++;
-			else
-				break;
-		}
-
-		if (strchr(quote_chars, *p))
-			quote_level++;
-		else if (*p != '-' && !g_ascii_isspace(*p) && p <= last_pos) {
-			/* any characters are allowed except '-','<' and space */
-			while (*p != '-' && *p != '<'
-			       && !strchr(quote_chars, *p)
-			       && !g_ascii_isspace(*p)
-			       && p < last_pos)
-				p++;
-			if (strchr(quote_chars, *p))
-				quote_level++;
-			else
-				break;
-		}
-
-		p++;
-	}
-
-	return quote_level;
-}
 
 gint check_line_length(const gchar *str, gint max_chars, gint *line)
 {
