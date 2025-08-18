@@ -61,7 +61,6 @@
 #include "prefs_ext_prog.h"
 #include "prefs_fonts.h"
 #include "prefs_message.h"
-#include "prefs_migration.h"
 #include "prefs_receive.h"
 #include "prefs_quote.h"
 #include "prefs_spelling.h"
@@ -504,11 +503,6 @@ int main(int argc, char *argv[])
 	folder_system_init();
 	prefs_common_read_config();
 
-	if (prefs_update_config_version_common() < 0) {
-		debug_print("Main configuration file version upgrade failed, exiting\n");
-		exit(200);
-	}
-
 	prefs_themes_init();
 	prefs_fonts_init();
 	prefs_ext_prog_init();
@@ -566,11 +560,6 @@ int main(int argc, char *argv[])
 #ifdef USE_OAUTH2
 	account_read_oauth2_all();
 #endif
-
-	if (prefs_update_config_version_accounts() < 0) {
-		debug_print("Accounts configuration file version upgrade failed, exiting\n");
-		exit(201);
-	}
 
 	imap_main_init(prefs_common.skip_ssl_cert_check);
 	imap_main_set_timeout(prefs_common.io_timeout_secs);

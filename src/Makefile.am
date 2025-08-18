@@ -99,7 +99,6 @@ claws_mail_SOURCES = \
 	prefs_logging.c \
 	prefs_matcher.c \
 	prefs_message.c \
-	prefs_migration.c \
 	prefs_other.c \
 	prefs_proxy.c \
 	prefs_quote.c \
@@ -203,7 +202,6 @@ claws_mailinclude_HEADERS = \
 	prefs_logging.h \
 	prefs_matcher.h \
 	prefs_message.h \
-	prefs_migration.h \
 	prefs_other.h \
 	prefs_proxy.h \
 	prefs_quote.h \

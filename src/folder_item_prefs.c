@@ -27,10 +27,10 @@
 
 #include "defs.h"
 #include "folder.h"
+#include "matcher.h"
 #include "utils.h"
 #include "prefs_gtk.h"
 #include "folder_item_prefs.h"
-#include "prefs_migration.h"
 
 FolderItemPrefs tmp_prefs;
 
@@ -148,8 +148,6 @@ void folder_item_prefs_read_config(FolderItem * item)
 	g_free(rcpath);
 
 	*item->prefs = tmp_prefs;
-
-	prefs_update_config_version_folder_item(item);
 }
 
 void folder_item_prefs_save_config(FolderItem * item)
@@ -277,7 +275,7 @@ void folder_item_prefs_free(FolderItemPrefs * prefs)
 
 void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 {
-	GSList *tmp_prop_list = NULL, *tmp;
+	GSList *tmp_prop_list = NULL;
 	folder_item_prefs_read_config(src);
 
 	tmp_prefs.directory			= g_strdup(src->prefs->directory);

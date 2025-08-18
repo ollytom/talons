@@ -34,7 +34,6 @@
 #include "password.h"
 #include "prefs_common.h"
 #include "prefs_gtk.h"
-#include "prefs_migration.h"
 #include "file-utils.h"
 
 static GSList *_password_store;
@@ -561,11 +560,6 @@ int passwd_store_read_config(void)
 		i++;
 	}
 	g_strfreev(lines);
-
-	if (prefs_update_config_version_password_store(config_version) < 0) {
-		debug_print("Password store configuration file version upgrade failed\n");
-		return -2;
-	}
 
 	return g_slist_length(_password_store);
 }
