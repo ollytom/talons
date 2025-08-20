@@ -1209,7 +1209,7 @@ void messageview_destroy(MessageView *messageview)
 		return;
 	}
 
-	headerview_destroy(messageview->headerview);
+	g_free(messageview->headerview);
 	mimeview_destroy(messageview->mimeview);
 	noticeview_destroy(messageview->noticeview);
 

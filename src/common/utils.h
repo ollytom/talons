@@ -483,8 +483,7 @@ void utils_free_regex(void);
 gint subject_get_prefix_length (const gchar *subject);
 
 /* quoting recognition */
-const gchar * line_has_quote_char	(const gchar *str,
-					 const gchar *quote_chars);
+const gchar * line_has_quote_char	(const gchar *str);
 
 gint g_int_compare	(gconstpointer a, gconstpointer b);
 

@@ -2274,7 +2274,6 @@ SensitiveCondMask main_window_get_current_state(MainWindow *mainwin)
 	SummarySelection selection;
 	FolderItem *item = mainwin->summaryview->folder_item;
 	GList *account_list = account_get_list();
-	GSList *tmp;
 
 	selection = summary_get_selection_type(mainwin->summaryview);
 
@@ -3080,7 +3079,7 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 				    prefs_common.mainwin_width,
 				    prefs_common.mainwin_height);
 	}
-	if (!prefs_common.display_header_name)
+	if (!prefs_common.display_header_pane)
 		gtk_widget_hide(mainwin->messageview->headerview->hbox);
 
 	if (mainwin->messageview->visible)

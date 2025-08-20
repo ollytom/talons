@@ -964,22 +964,9 @@ gint check_line_length(const gchar *str, gint max_chars, gint *line)
 	return 0;
 }
 
-const gchar * line_has_quote_char(const gchar * str, const gchar *quote_chars)
+const gchar * line_has_quote_char(const gchar * str)
 {
-	gchar * position = NULL;
-	gchar * tmp_pos = NULL;
-	int i;
-
-	if (str == NULL || quote_chars == NULL)
-		return NULL;
-
-	for (i = 0; i < strlen(quote_chars); i++) {
-		tmp_pos = strchr (str, quote_chars[i]);
-		if(position == NULL
-				|| (tmp_pos != NULL && position >= tmp_pos) )
-			position = tmp_pos;
-	}
-	return position;
+	return strchr(str, '>');
 }
 
 static gchar *strstr_with_skip_quote(const gchar *haystack, const gchar *needle)
