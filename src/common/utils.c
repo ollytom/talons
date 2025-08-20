@@ -938,25 +938,6 @@ gboolean is_ascii_str(const gchar *str)
 	return TRUE;
 }
 
-static const gchar * line_has_quote_char_last(const gchar * str, const gchar *quote_chars)
-{
-	gchar * position = NULL;
-	gchar * tmp_pos = NULL;
-	int i;
-
-	if (str == NULL || quote_chars == NULL)
-		return NULL;
-
-	for (i = 0; i < strlen(quote_chars); i++) {
-		tmp_pos = strrchr (str, quote_chars[i]);
-		if(position == NULL
-				|| (tmp_pos != NULL && position <= tmp_pos) )
-			position = tmp_pos;
-	}
-	return position;
-}
-
-
 gint check_line_length(const gchar *str, gint max_chars, gint *line)
 {
 	const gchar *p = str, *q;
