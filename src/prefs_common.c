@@ -898,9 +898,6 @@ static PrefParam param[] = {
 	{"folderview_vscrollbar_policy", "0",
 	 &prefs_common.folderview_vscrollbar_policy, P_ENUM,
 	 NULL, NULL, NULL},
-	{"textview_cursor_visible", "FALSE",
-	 &prefs_common.textview_cursor_visible, P_BOOL,
-	 NULL, NULL, NULL},
 	{"hover_timeout", "500", &prefs_common.hover_timeout, P_INT,
 	 NULL, NULL, NULL},
 

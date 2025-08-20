@@ -1189,7 +1189,7 @@ static void mh_scan_tree_recursive(FolderItem *item)
 			}
 
 			mh_scan_tree_recursive(new_item);
-		} else if (to_number(dir_name) > 0) n_msg++;
+		}
 
 		g_free(entry);
 		g_free(utf8entry);

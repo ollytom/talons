@@ -1721,8 +1721,11 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 			hooks_invoke(THEME_CHANGED_HOOKLIST, NULL);
 		}
 
-		headerview_set_visibility(mainwin->messageview->headerview,
-					  prefs_common.display_header_pane);
+
+		if (prefs_common.display_header_pane)
+			gtk_widget_show(mainwin->messageview->headerview->hbox);
+		else
+			gtk_widget_hide(mainwin->messageview->headerview->hbox);
 		textview_reflect_prefs(mainwin->messageview->mimeview->textview);
 		folderview_reflect_prefs();
 		summary_reflect_prefs();
@@ -3077,11 +3080,10 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 				    prefs_common.mainwin_width,
 				    prefs_common.mainwin_height);
 	}
-	/* remove headerview if not in prefs */
-	headerview_set_visibility(mainwin->messageview->headerview,
-				  prefs_common.display_header_pane);
+	if (!prefs_common.display_header_name)
+		gtk_widget_hide(mainwin->messageview->headerview->hbox);
 
-	if (messageview_is_visible(mainwin->messageview))
+	if (mainwin->messageview->visible)
 		gtk_image_set_from_icon_name(GTK_IMAGE(mainwin->summaryview->toggle_arrow),
 					      "pan-down-symbolic", GTK_ICON_SIZE_MENU);
 	else

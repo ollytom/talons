@@ -124,7 +124,10 @@ HeaderView *headerview_create(void)
 void headerview_init(HeaderView *headerview)
 {
 	headerview_clear(headerview);
-	headerview_set_visibility(headerview, prefs_common.display_header_pane);
+	if (prefs_common.display_header_pane)
+		gtk_widget_show(headerview->hbox);
+	else
+		gtk_widget_hide(headerview->hbox);
 }
 
 void headerview_show(HeaderView *headerview, MsgInfo *msginfo)
@@ -285,17 +288,4 @@ void headerview_clear(HeaderView *headerview)
 		gtk_widget_hide(headerview->image);
 		gtk_widget_queue_resize(headerview->hbox);
 	}
-}
-
-void headerview_set_visibility(HeaderView *headerview, gboolean visibility)
-{
-	if (visibility)
-		gtk_widget_show(headerview->hbox);
-	else
-		gtk_widget_hide(headerview->hbox);
-}
-
-void headerview_destroy(HeaderView *headerview)
-{
-	g_free(headerview);
 }
