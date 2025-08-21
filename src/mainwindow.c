@@ -1317,7 +1317,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Separator1", "Configuration/---", GTK_UI_MANAGER_SEPARATOR)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Preferences", "Configuration/Preferences", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Templates", "Configuration/Templates", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Actions", "Configuration/Actions", GTK_UI_MANAGER_MENUITEM)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Configuration", "Separator2", "Configuration/---", GTK_UI_MANAGER_SEPARATOR)
