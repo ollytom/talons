@@ -30,7 +30,6 @@
 #include "main.h"
 #include "messageview.h"
 #include "message_search.h"
-#include "headerview.h"
 #include "summaryview.h"
 #include "textview.h"
 #include "mimeview.h"
@@ -335,14 +334,11 @@ MessageView *messageview_create(MainWindow *mainwin)
 {
 	MessageView *messageview;
 	GtkWidget *vbox;
-	HeaderView *headerview;
 	MimeView *mimeview;
 	NoticeView *noticeview;
 
 	debug_print("Creating message view...\n");
 	messageview = g_new0(MessageView, 1);
-
-	headerview = headerview_create();
 
 	noticeview = noticeview_create(mainwin);
 
@@ -353,8 +349,6 @@ MessageView *messageview_create(MainWindow *mainwin)
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_set_name(GTK_WIDGET(vbox), "messageview");
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET_PTR(headerview),
-			   FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET_PTR(noticeview),
 			   FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox),
@@ -364,7 +358,6 @@ MessageView *messageview_create(MainWindow *mainwin)
 	messageview->vbox        = vbox;
 	messageview->new_window  = FALSE;
 	messageview->window      = NULL;
-	messageview->headerview  = headerview;
 	messageview->mimeview    = mimeview;
 	messageview->noticeview = noticeview;
 	messageview->mainwin    = mainwin;
@@ -663,9 +656,7 @@ MessageView *messageview_create_with_new_window(MainWindow *mainwin)
 }
 void messageview_init(MessageView *messageview)
 {
-	headerview_init(messageview->headerview);
 	mimeview_init(messageview->mimeview);
-
 	noticeview_hide(messageview->noticeview);
 }
 
@@ -989,8 +980,6 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 		messageview_set_menu_sensitive(messageview);
 		messageview->msginfo = msginfo;
 	}
-	if (prefs_common.display_header_pane)
-		headerview_show(messageview->headerview, messageview->msginfo);
 
 	messageview_register_nav(messageview);
 	messageview_set_position(messageview, 0);
@@ -1136,7 +1125,6 @@ void messageview_clear(MessageView *messageview)
 	}
 
 	mimeview_clear(messageview->mimeview);
-	headerview_clear(messageview->headerview);
 	noticeview_hide(messageview->noticeview);
 }
 
@@ -1173,7 +1161,6 @@ void messageview_destroy(MessageView *messageview)
 		return;
 	}
 
-	g_free(messageview->headerview);
 	mimeview_destroy(messageview->mimeview);
 	noticeview_destroy(messageview->noticeview);
 

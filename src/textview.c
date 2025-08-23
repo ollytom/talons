@@ -1702,7 +1702,7 @@ static void textview_show_avatar(TextView *textview)
 	gint x, wx, wy;
 	AvatarRender *avatarr;
 
-	if (prefs_common.display_header_pane || !prefs_common.display_xface)
+	if (!prefs_common.display_xface)
 		goto bail;
 
 	avatarr = avatars_avatarrender_new(msginfo);
@@ -1819,8 +1819,7 @@ static void textview_show_contact_pic(TextView *textview)
 	gint w, h;
 	GtkAllocation allocation;
 
-	if (prefs_common.display_header_pane
-		|| !prefs_common.display_xface)
+	if (!prefs_common.display_xface)
 		goto bail;
 
 	if (msginfo->extradata && msginfo->extradata->avatars)

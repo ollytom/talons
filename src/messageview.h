@@ -47,7 +47,6 @@ struct _MessageView
 	Toolbar *toolbar;
 	GtkWidget *menubar;
 
-	HeaderView *headerview;
 	MimeView *mimeview;
 	NoticeView *noticeview;
 	GtkWidget *statusbar;

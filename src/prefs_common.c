@@ -508,8 +508,6 @@ static PrefParam param[] = {
 	{"qs_error_bgcolor", "#ff7070", &prefs_common.color[COL_QS_ERROR_BG],
 	 P_COLOR, NULL, NULL, NULL},
 
-	{"display_header_pane", "FALSE", &prefs_common.display_header_pane,
-	 P_BOOL, NULL, NULL, NULL},
 	{"display_header", "TRUE", &prefs_common.display_header, P_BOOL,
 	 NULL, NULL, NULL},
 	{"display_xface", "TRUE", &prefs_common.display_xface,
@@ -820,11 +818,6 @@ static PrefParam param[] = {
 	{"addressbook_folderselwin_width", "300", &prefs_common.addressbook_folderselwin_width, P_INT,
 	 NULL, NULL, NULL},
 	{"addressbook_folderselwin_height", "-1", &prefs_common.addressbook_folderselwin_height, P_INT,
-	 NULL, NULL, NULL},
-
-	{"aboutwin_width", "450", &prefs_common.aboutwin_width, P_INT,
-	 NULL, NULL, NULL},
-	{"aboutwin_height", "500", &prefs_common.aboutwin_height, P_INT,
 	 NULL, NULL, NULL},
 
 	{"addrgather_width", "450", &prefs_common.addrgather_width, P_INT,

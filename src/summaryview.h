@@ -118,7 +118,6 @@ struct _SummaryView
 
 	MainWindow   *mainwin;
 	FolderView   *folderview;
-	HeaderView   *headerview;
 	MessageView  *messageview;
 	MessageView  *ext_messageview;
 	QuickSearch  *quicksearch;

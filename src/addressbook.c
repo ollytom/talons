@@ -46,7 +46,6 @@
 #include "utils.h"
 #include "gtkutils.h"
 #include "codeconv.h"
-#include "about.h"
 #include "addr_compl.h"
 
 #include "mgutils.h"

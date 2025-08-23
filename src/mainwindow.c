@@ -37,7 +37,6 @@
 #include "messageview.h"
 #include "mimeview.h"
 #include "message_search.h"
-#include "headerview.h"
 #include "menu.h"
 #include "stock_pixmap.h"
 #include "folder.h"
@@ -1719,11 +1718,6 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 			hooks_invoke(THEME_CHANGED_HOOKLIST, NULL);
 		}
 
-
-		if (prefs_common.display_header_pane)
-			gtk_widget_show(mainwin->messageview->headerview->hbox);
-		else
-			gtk_widget_hide(mainwin->messageview->headerview->hbox);
 		textview_reflect_prefs(mainwin->messageview->mimeview->textview);
 		summary_redisplay_msg(mainwin->summaryview);
 		if (prefs_common.layout_mode == SMALL_LAYOUT) {
@@ -3075,8 +3069,6 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 				    prefs_common.mainwin_width,
 				    prefs_common.mainwin_height);
 	}
-	if (!prefs_common.display_header_pane)
-		gtk_widget_hide(mainwin->messageview->headerview->hbox);
 
 	if (mainwin->messageview->visible)
 		gtk_image_set_from_icon_name(GTK_IMAGE(mainwin->summaryview->toggle_arrow),

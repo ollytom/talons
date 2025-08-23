@@ -328,7 +328,6 @@ struct _PrefsCommon
 	gboolean enable_color;
 	gboolean enable_bgcolor;
 	gboolean recycle_quote_colors;
-	gboolean display_header_pane;
 	gboolean display_header;
 	gboolean display_xface;
 	gboolean save_xface;
@@ -482,8 +481,6 @@ struct _PrefsCommon
 	gint addressaddwin_height;
 	gint addressbook_folderselwin_width;
 	gint addressbook_folderselwin_height;
-	gint aboutwin_width;
-	gint aboutwin_height;
 	gint addrgather_width;
 	gint addrgather_height;
 	gint news_subscribe_width;

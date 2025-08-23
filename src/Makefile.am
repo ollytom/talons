@@ -60,7 +60,6 @@ claws_mail_SOURCES = \
 	foldersel.c \
 	folderutils.c \
 	folderview.c \
-	headerview.c \
 	html.c \
 	imap.c \
 	imap_gtk.c \
@@ -158,7 +157,6 @@ claws_mailinclude_HEADERS = \
 	foldersel.h \
 	folderutils.h \
 	folderview.h \
-	headerview.h \
 	html.h \
 	imap.h \
 	imap_gtk.h \

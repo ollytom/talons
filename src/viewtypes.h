@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef VIEWTYPES_H
@@ -25,9 +25,6 @@ typedef struct _SummaryView SummaryView;
 
 struct _FolderView;
 typedef struct _FolderView	FolderView;
-
-struct _HeaderView;
-typedef struct _HeaderView	HeaderView;
 
 struct _MessageView;
 typedef struct _MessageView	MessageView;
