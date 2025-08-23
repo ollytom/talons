@@ -635,38 +635,6 @@ FolderView *folderview_create(MainWindow *mainwin)
 	return folderview;
 }
 
-static void folderview_set_fonts(FolderView *folderview)
-{
-	PangoFontDescription *font_desc;
-	GtkWidget *ctree = folderview->ctree;
-
-	font_desc = pango_font_description_from_string(NORMAL_FONT);
-	if (font_desc) {
-		gtk_widget_override_font(ctree, font_desc);
-		pango_font_description_free(font_desc);
-	}
-
-	if (!bold_style) {
-		bold_style = gtk_style_copy(gtk_widget_get_style(ctree));
-
-		if (prefs_common.derive_from_normal_font || !BOLD_FONT) {
-			font_desc = pango_font_description_from_string(NORMAL_FONT);
-			if (font_desc) {
-				pango_font_description_free(bold_style->font_desc);
-				bold_style->font_desc = font_desc;
-			}
-			pango_font_description_set_weight
-				(bold_style->font_desc, PANGO_WEIGHT_BOLD);
-		} else {
-			font_desc = pango_font_description_from_string(BOLD_FONT);
-			if (font_desc) {
-				pango_font_description_free(bold_style->font_desc);
-				bold_style->font_desc = font_desc;
-			}
-		}
-	}
-}
-
 void folderview_init(FolderView *folderview)
 {
 	stock_pixbuf_gdk(STOCK_PIXMAP_INBOX_CLOSE, &inboxxpm);
@@ -720,8 +688,6 @@ void folderview_init(FolderView *folderview)
 	stock_pixbuf_gdk(STOCK_PIXMAP_DRAFTS_OPEN_MARK, &m_draftsopenxpm);
 	stock_pixbuf_gdk(STOCK_PIXMAP_DIR_SUBS_CLOSE_MARK, &m_foldersubsxpm);
 	stock_pixbuf_gdk(STOCK_PIXMAP_DIR_NOSELECT_CLOSE_MARK, &m_foldernoselectxpm);
-
-	folderview_set_fonts(folderview);
 }
 
 static gboolean folderview_defer_set(gpointer data)
@@ -2684,80 +2650,6 @@ void folderview_set_target_folder_color(GdkRGBA color_op)
 		folderview = (FolderView *)list->data;
 		folderview->color_op = color_op;
 	}
-}
-
-static gchar *last_smallfont = NULL;
-static gchar *last_normalfont = NULL;
-static gchar *last_boldfont = NULL;
-static gboolean last_derive = 0;
-
-void folderview_reinit_fonts(FolderView *folderview)
-{
-	/* force reinit */
-	g_free(last_smallfont);
-	last_smallfont = NULL;
-	g_free(last_normalfont);
-	last_normalfont = NULL;
-	g_free(last_boldfont);
-	last_boldfont = NULL;
-}
-
-void folderview_reflect_prefs(void)
-{
-	gboolean update_font = FALSE;
-	FolderView *folderview = mainwindow_get_mainwindow()->folderview;
-	FolderItem *item = folderview_get_selected_item(folderview);
-	GtkAdjustment *pos = gtk_scrolled_window_get_vadjustment(
-				GTK_SCROLLED_WINDOW(folderview->scrolledwin));
-	gint height = gtk_adjustment_get_value(pos);
-
-	folderview->color_new = prefs_common.color[COL_NEW];
-	folderview->color_op = prefs_common.color[COL_TGT_FOLDER];
-
-	if (!last_smallfont || strcmp(last_smallfont, SMALL_FONT) ||
-			!last_normalfont || strcmp(last_normalfont, NORMAL_FONT) ||
-			!last_boldfont || strcmp(last_boldfont, BOLD_FONT) ||
-			last_derive != prefs_common.derive_from_normal_font)
-		update_font = TRUE;
-
-	if (!update_font)
-		return;
-
-	g_free(last_smallfont);
-	last_smallfont = g_strdup(SMALL_FONT);
-	g_free(last_normalfont);
-	last_normalfont = g_strdup(NORMAL_FONT);
-	g_free(last_boldfont);
-	last_boldfont = g_strdup(BOLD_FONT);
-	last_derive = prefs_common.derive_from_normal_font;
-
-	folderview_set_fonts(folderview);
-
-	gtk_cmclist_freeze(GTK_CMCLIST(folderview->ctree));
-	folderview_column_set_titles(folderview);
-	folderview_set_all();
-
-	g_signal_handlers_block_by_func
-		(G_OBJECT(folderview->ctree),
-		 G_CALLBACK(folderview_selected), folderview);
-
-	if (item) {
-		GtkCMCTreeNode *node = gtk_cmctree_find_by_row_data(
-			GTK_CMCTREE(folderview->ctree), NULL, item);
-
-		folderview_select(folderview, item);
-		folderview->open_folder = FALSE;
-		folderview->selected = node;
-	}
-
-	g_signal_handlers_unblock_by_func
-		(G_OBJECT(folderview->ctree),
-		 G_CALLBACK(folderview_selected), folderview);
-
-	pos = gtk_scrolled_window_get_vadjustment(
-				GTK_SCROLLED_WINDOW(folderview->scrolledwin));
-	gtk_adjustment_set_value(pos, height);
-	gtk_cmclist_thaw(GTK_CMCLIST(folderview->ctree));
 }
 
 static void drag_state_stop(FolderView *folderview)

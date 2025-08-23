@@ -1693,22 +1693,8 @@ static void print_mimeview(MimeView *mimeview, gint sel_start, gint sel_end, gin
 void messageview_print(MsgInfo *msginfo, gboolean all_headers,
 			gint sel_start, gint sel_end, gint partnum)
 {
-	PangoFontDescription *font_desc = NULL;
 	MessageView *tmpview = messageview_create_with_new_window_visible(
 				mainwindow_get_mainwindow(), FALSE);
-
-	if (prefs_common.use_different_print_font) {
-		font_desc = pango_font_description_from_string
-						(prefs_common.printfont);
-	} else {
-		font_desc = pango_font_description_from_string
-						(prefs_common.textfont);
-	}
-	if (font_desc) {
-		gtk_widget_override_font(tmpview->mimeview->textview->text,
-			font_desc);
-		pango_font_description_free(font_desc);
-	}
 
 	tmpview->all_headers = all_headers;
 	if (msginfo && messageview_show(tmpview, msginfo,

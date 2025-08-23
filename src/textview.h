@@ -38,7 +38,7 @@ struct _ClickableText
 
 	guint start;
 	guint end;
-	
+
 	gboolean is_quote;
 	gint quote_level;
 	gboolean q_expanded;
@@ -99,8 +99,6 @@ void textview_show_mime_part	(TextView	*textview,
 				 MimeInfo	*partinfo);
 void textview_clear		(TextView	*textview);
 void textview_destroy		(TextView	*textview);
-void textview_set_font		(TextView	*textview,
-				 const gchar	*codeset);
 void textview_set_text		(TextView	*textview,
 				 const gchar	*text);
 void textview_set_position	(TextView	*textview,
@@ -121,13 +119,13 @@ gboolean textview_search_string_backward	(TextView	*textview,
 void textview_cursor_wait(TextView *textview);
 void textview_cursor_normal(TextView *textview);
 void textview_show_icon(TextView *textview, const gchar *stock_id);
-void textview_get_selection_offsets	(TextView 	*textview, 
-					 gint 		*sel_start, 
+void textview_get_selection_offsets	(TextView 	*textview,
+					 gint 		*sel_start,
 					 gint		*sel_end);
-gboolean textview_uri_security_check	(TextView 	*textview, 
+gboolean textview_uri_security_check	(TextView 	*textview,
 					 ClickableText 	*uri,
 					 gboolean	 copied);
-gchar *textview_get_visible_uri		(TextView 	*textview, 
+gchar *textview_get_visible_uri		(TextView 	*textview,
 					 ClickableText 	*uri);
 
 #define TEXTVIEW_INSERT(str) \

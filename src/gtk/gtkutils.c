@@ -70,25 +70,26 @@ gboolean gtkut_get_font_size(GtkWidget *widget,
 	return TRUE;
 }
 
+PangoFontDescription *default_font()
+{
+	GtkSettings *settings = gtk_settings_get_default();
+	char *name;
+	g_object_get(settings, "gtk-font-name", &name, NULL);
+	PangoFontDescription *font = pango_font_description_from_string(name);
+	free(name);
+	return font;
+}
+
 void gtkut_widget_set_small_font_size(GtkWidget *widget)
 {
-	PangoFontDescription *font_desc;
-	gint size;
-
 	cm_return_if_fail(widget != NULL);
 	cm_return_if_fail(gtk_widget_get_style(widget) != NULL);
 
-	if (prefs_common.derive_from_normal_font || !SMALL_FONT) {
-		font_desc = pango_font_description_from_string(NORMAL_FONT);
-		size = pango_font_description_get_size(font_desc);
-		pango_font_description_set_size(font_desc, size * PANGO_SCALE_SMALL);
-		gtk_widget_override_font(widget, font_desc);
-		pango_font_description_free(font_desc);
-	} else {
-		font_desc = pango_font_description_from_string(SMALL_FONT);
-		gtk_widget_override_font(widget, font_desc);
-		pango_font_description_free(font_desc);
-	}
+	PangoFontDescription *font = default_font();
+	int size = pango_font_description_get_size(font);
+	pango_font_description_set_size(font, size * PANGO_SCALE_SMALL);
+	gtk_widget_override_font(widget, font);
+	pango_font_description_free(font);
 }
 
 void gtkut_stock_button_add_help(GtkWidget *bbox, GtkWidget **help_btn)

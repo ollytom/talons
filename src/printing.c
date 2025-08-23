@@ -838,6 +838,9 @@ static void cb_preview_request_page_setup(GtkPrintOperation *op,
 					GTK_UNIT_INCH);
 }
 
+/* GTK default is always available */
+#define PRINT_FONT "Sans 11"
+
 static void printing_textview_cb_begin_print(GtkPrintOperation *op, GtkPrintContext *context,
 			   gpointer user_data)
 {
@@ -846,7 +849,6 @@ static void printing_textview_cb_begin_print(GtkPrintOperation *op, GtkPrintCont
 	double page_height;
 	GList *page_breaks;
 	PrintData *print_data;
-	PangoFontDescription *desc;
 	int start, ii;
 	PangoLayoutIter *iter;
 	gint header_end_pos;
@@ -867,14 +869,10 @@ static void printing_textview_cb_begin_print(GtkPrintOperation *op, GtkPrintCont
 	if (print_data->layout == NULL)
   		print_data->layout = gtk_print_context_create_pango_layout(context);
 
-	if (prefs_common.use_different_print_font)
-  		desc = pango_font_description_from_string(prefs_common.printfont);
-	else
-		desc = pango_font_description_copy(
-	pango_context_get_font_description(print_data->pango_context));
+	PangoFontDescription *font = pango_font_description_copy(pango_context_get_font_description(print_data->pango_context));
 
-	pango_layout_set_font_description(print_data->layout, desc);
-	pango_font_description_free(desc);
+	pango_layout_set_font_description(print_data->layout, font);
+	pango_font_description_free(font);
 
 	pango_layout_set_width(print_data->layout, width * PANGO_SCALE);
 	pango_layout_set_text(print_data->layout, (char *)print_data->to_print, -1);

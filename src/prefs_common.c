@@ -220,23 +220,6 @@ static PrefParam param[] = {
 	{"quote_chars", ">", &prefs_common.quote_chars, P_STRING,
 	 NULL, NULL, NULL},
 
-	/* Display */
-	{"message_font_gtk2",	"Monospace 9",
-	 &prefs_common.textfont,			P_STRING, NULL, NULL, NULL},
-        {"print_font_gtk2",     "Monospace 9",
-         &prefs_common.printfont,             P_STRING, NULL, NULL, NULL},
-	{"small_font_gtk2",	"Sans 9",
-	  &prefs_common.smallfont,		P_STRING, NULL, NULL, NULL},
-	{"normal_font_gtk2",	"Sans 9",
-	  &prefs_common.normalfont,		P_STRING, NULL, NULL, NULL},
-	{"bold_font_gtk2",	"Sans Bold 9",
-	  &prefs_common.boldfont,		P_STRING, NULL, NULL, NULL},
-
-	{"use_different_print_font", "FALSE", &prefs_common.use_different_print_font, P_BOOL,
-	 NULL, NULL, NULL},
-	{"derive_from_normal_font", "TRUE", &prefs_common.derive_from_normal_font, P_BOOL,
-	 NULL, NULL, NULL},
-
 	/* image viewer */
 	{"display_image", "TRUE", &prefs_common.display_img, P_BOOL,
 	 NULL, NULL, NULL},

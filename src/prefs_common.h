@@ -213,16 +213,6 @@ struct _PrefsCommon
 	gboolean redirect_keep_from;
 	gchar *quote_chars;
 
-	/* fonts */
-	gchar *textfont;
-	gchar *printfont;
-	gchar *boldfont;
-	gchar *normalfont;
-	gchar *smallfont;
-	gchar *titlefont;
-	gboolean use_different_print_font;
-	gboolean derive_from_normal_font;
-
 	/* program colors */
 	GdkRGBA color[COL_LAST_COLOR_INDEX];
 

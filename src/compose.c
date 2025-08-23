@@ -7547,18 +7547,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	gtk_widget_show_all(paned);
 
-
-	if (prefs_common.textfont) {
-		PangoFontDescription *font_desc;
-
-		font_desc = pango_font_description_from_string
-			(prefs_common.textfont);
-		if (font_desc) {
-			gtk_widget_override_font(text, font_desc);
-			pango_font_description_free(font_desc);
-		}
-	}
-
 	gtk_action_group_add_actions(action_group, compose_popup_entries,
 			G_N_ELEMENTS(compose_popup_entries), (gpointer)compose);
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/", "Popup", NULL, GTK_UI_MANAGER_MENUBAR)

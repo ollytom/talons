@@ -148,10 +148,6 @@
    'BadAlloc (insufficient resources for operation)' */
 #define MAX_MENU_LABEL_LENGTH		5453
 
-#define BOLD_FONT prefs_common.boldfont
-#define NORMAL_FONT prefs_common.normalfont
-#define SMALL_FONT	prefs_common.smallfont
-
 #define DEFAULT_PIXMAP_THEME	"INTERNAL_DEFAULT"
 #define PIXMAP_THEME_DIR		"themes"
 

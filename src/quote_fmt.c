@@ -220,16 +220,6 @@ void quotefmt_create_new_msg_fmt_widgets(GtkWindow *parent_window,
 	gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scrolledwin_format), 260);
 
 	text_format = gtk_text_view_new ();
-	if (prefs_common.textfont) {
-		PangoFontDescription *font_desc;
-
-		font_desc = pango_font_description_from_string
-						(prefs_common.textfont);
-		if (font_desc) {
-			gtk_widget_override_font(text_format, font_desc);
-			pango_font_description_free(font_desc);
-		}
-	}
 	gtk_widget_show(text_format);
 	gtk_container_add(GTK_CONTAINER(scrolledwin_format), text_format);
 	gtk_text_view_set_editable (GTK_TEXT_VIEW (text_format), TRUE);
@@ -334,16 +324,6 @@ void quotefmt_create_reply_fmt_widgets(GtkWindow *parent_window,
 	gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scrolledwin_quotefmt), 260);
 
 	text_quotefmt = gtk_text_view_new ();
-	if (prefs_common.textfont) {
-		PangoFontDescription *font_desc;
-
-		font_desc = pango_font_description_from_string
-						(prefs_common.textfont);
-		if (font_desc) {
-			gtk_widget_override_font(text_quotefmt, font_desc);
-			pango_font_description_free(font_desc);
-		}
-	}
 	gtk_widget_show(text_quotefmt);
 	gtk_container_add(GTK_CONTAINER(scrolledwin_quotefmt), text_quotefmt);
 	gtk_text_view_set_editable (GTK_TEXT_VIEW (text_quotefmt), TRUE);
@@ -445,16 +425,6 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 	gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scrolledwin_quotefmt), 260);
 
 	text_fw_quotefmt = gtk_text_view_new ();
-	if (prefs_common.textfont) {
-		PangoFontDescription *font_desc;
-
-		font_desc = pango_font_description_from_string
-						(prefs_common.textfont);
-		if (font_desc) {
-			gtk_widget_override_font(text_fw_quotefmt, font_desc);
-			pango_font_description_free(font_desc);
-		}
-	}
 	gtk_widget_show(text_fw_quotefmt);
 	gtk_container_add(GTK_CONTAINER(scrolledwin_quotefmt),
 			  text_fw_quotefmt);

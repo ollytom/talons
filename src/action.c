@@ -1313,17 +1313,6 @@ static void create_io_dialog(Children *children)
 	gtk_widget_hide(scrolledwin);
 
 	text = gtk_text_view_new();
-
-	if (prefs_common.textfont) {
-		PangoFontDescription *font_desc;
-		font_desc = pango_font_description_from_string
-			(prefs_common.textfont);
-		if (font_desc) {
-			gtk_widget_override_font(text, font_desc);
-			pango_font_description_free(font_desc);
-		}
-	}
-
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(text), FALSE);
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text), GTK_WRAP_WORD);
 	gtk_text_view_set_left_margin(GTK_TEXT_VIEW(text), 6);

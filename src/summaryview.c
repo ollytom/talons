@@ -799,55 +799,6 @@ void summary_relayout(SummaryView *summaryview)
 		quicksearch_hide(summaryview->quicksearch);
 }
 
-static void summary_set_fonts(SummaryView *summaryview)
-{
-	PangoFontDescription *font_desc;
-	gint size;
-
-	font_desc = pango_font_description_from_string(NORMAL_FONT);
-	if (font_desc) {
-		gtk_widget_override_font(summaryview->ctree, font_desc);
-		pango_font_description_free(font_desc);
-	}
-
-	if (!bold_style) {
-		bold_style = gtk_style_copy
-			(gtk_widget_get_style(summaryview->ctree));
-
-		if (prefs_common.derive_from_normal_font || !BOLD_FONT) {
-			font_desc = pango_font_description_from_string(NORMAL_FONT);
-			if (font_desc) {
-				pango_font_description_free(bold_style->font_desc);
-				bold_style->font_desc = font_desc;
-			}
-			pango_font_description_set_weight
-					(bold_style->font_desc, PANGO_WEIGHT_BOLD);
-		} else {
-			font_desc = pango_font_description_from_string(BOLD_FONT);
-			if (font_desc) {
-				pango_font_description_free(bold_style->font_desc);
-				bold_style->font_desc = font_desc;
-			}
-		}
-	}
-
-	if (prefs_common.derive_from_normal_font || !SMALL_FONT) {
-		font_desc = pango_font_description_new();
-		size = pango_font_description_get_size
-			(gtk_widget_get_style(summaryview->ctree)->font_desc);
-		pango_font_description_set_size(font_desc, size * PANGO_SCALE_SMALL);
-	} else {
-		font_desc = pango_font_description_from_string(SMALL_FONT);
-	}
-	if (font_desc) {
-		gtk_widget_override_font(summaryview->statlabel_folder, font_desc);
-		gtk_widget_override_font(summaryview->statlabel_select, font_desc);
-		gtk_widget_override_font(summaryview->statlabel_msgs, font_desc);
-		pango_font_description_free(font_desc);
-	}
-
-}
-
 static void summary_set_folder_pixmap(SummaryView *summaryview, StockPixmap icon)
 {
 	GtkWidget *pixmap;
@@ -893,8 +844,6 @@ void summary_init(SummaryView *summaryview)
 	stock_pixbuf_gdk(STOCK_PIXMAP_SPAM, &spamxpm);
 	stock_pixbuf_gdk(STOCK_PIXMAP_MOVED, &movedxpm);
 	stock_pixbuf_gdk(STOCK_PIXMAP_COPIED, &copiedxpm);
-
-	summary_set_fonts(summaryview);
 
 	summary_set_folder_pixmap(summaryview, STOCK_PIXMAP_DIR_OPEN);
 
@@ -2769,54 +2718,6 @@ static void summary_set_column_titles(SummaryView *summaryview)
 		gtk_widget_show_all(hbox);
 		gtk_cmclist_set_column_widget(clist, pos, hbox);
 	}
-}
-
-void summary_reflect_prefs(void)
-{
-	static gchar *last_smallfont = NULL;
-	static gchar *last_normalfont = NULL;
-	static gchar *last_boldfont = NULL;
-	static gboolean last_derive = 0;
-	gboolean update_font = FALSE;
-	SummaryView *summaryview = NULL;
-
-	if (!mainwindow_get_mainwindow())
-		return;
-	summaryview = mainwindow_get_mainwindow()->summaryview;
-
-	if (!last_smallfont || strcmp(last_smallfont, SMALL_FONT) ||
-			!last_normalfont || strcmp(last_normalfont, NORMAL_FONT) ||
-			!last_boldfont || strcmp(last_boldfont, BOLD_FONT) ||
-			last_derive != prefs_common.derive_from_normal_font)
-		update_font = TRUE;
-
-	g_free(last_smallfont);
-	last_smallfont = g_strdup(SMALL_FONT);
-	g_free(last_normalfont);
-	last_normalfont = g_strdup(NORMAL_FONT);
-	g_free(last_boldfont);
-	last_boldfont = g_strdup(BOLD_FONT);
-	last_derive = prefs_common.derive_from_normal_font;
-
-#define STYLE_FREE(s)			\
-	if (s != NULL) {		\
-		g_object_unref(s);	\
-		s = NULL;		\
-	}
-
-	if (update_font) {
-		STYLE_FREE(bold_style);
-		STYLE_FREE(bold_style);
-		summary_set_fonts(summaryview);
-	}
-
-#undef STYLE_FREE
-
-	summary_set_column_titles(summaryview);
-	summary_relayout(summaryview);
-
-	if (summaryview->folder_item)
-		summary_show(summaryview, summaryview->folder_item, FALSE);
 }
 
 void summary_sort(SummaryView *summaryview,
@@ -5911,7 +5812,6 @@ void summary_set_column_order(SummaryView *summaryview)
 	gtk_widget_destroy(summaryview->ctree);
 
 	summaryview->ctree = ctree = summary_ctree_create(summaryview);
-	summary_set_fonts(summaryview);
 	summary_set_column_titles(summaryview);
 	gtk_scrolled_window_set_hadjustment(GTK_SCROLLED_WINDOW(scrolledwin),
 					    GTK_CMCLIST(ctree)->hadjustment);

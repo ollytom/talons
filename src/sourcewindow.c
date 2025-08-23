@@ -97,11 +97,6 @@ SourceWindow *source_window_create(void)
 	text = gtk_text_view_new();
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text), GTK_WRAP_WORD_CHAR);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(text), FALSE);
-	if (!font_desc && prefs_common.textfont)
-		font_desc = pango_font_description_from_string
-					(prefs_common.textfont);
-	if (font_desc)
-		gtk_widget_override_font(text, font_desc);
 	gtk_container_add(GTK_CONTAINER(scrolledwin), text);
 	gtk_widget_show(text);
 

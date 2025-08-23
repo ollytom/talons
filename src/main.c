@@ -59,7 +59,6 @@
 #include "prefs_account.h"
 #include "prefs_actions.h"
 #include "prefs_ext_prog.h"
-#include "prefs_fonts.h"
 #include "prefs_message.h"
 #include "prefs_receive.h"
 #include "prefs_quote.h"
@@ -404,7 +403,6 @@ int main(int argc, char *argv[])
 	gboolean mainwin_shown = FALSE;
 	gint ret;
 
-
 	sc_starting = TRUE;
 
 	if (!claws_init(&argc, &argv)) {
@@ -497,7 +495,6 @@ int main(int argc, char *argv[])
 	prefs_common_read_config();
 
 	prefs_themes_init();
-	prefs_fonts_init();
 	prefs_ext_prog_init();
 	prefs_wrapping_init();
 	prefs_compose_writing_init();
@@ -807,7 +804,6 @@ static void exit_claws(MainWindow *mainwin)
 
 	addressbook_destroy();
 	prefs_themes_done();
-	prefs_fonts_done();
 	prefs_ext_prog_done();
 	prefs_wrapping_done();
 	prefs_compose_writing_done();

@@ -314,7 +314,6 @@ void summary_set_prefs_from_folderitem
 void summary_save_prefs_to_folderitem
                                   (SummaryView *summaryview, FolderItem *item);
 gint summaryview_export_mbox_list (SummaryView *summaryview);
-void summary_reflect_prefs(void);
 void summaryview_activate_quicksearch(SummaryView *summaryview, gboolean show);
 void summary_set_menu_sensitive	(SummaryView		*summaryview);
 void summary_relayout(SummaryView *summaryview);

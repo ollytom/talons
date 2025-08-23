@@ -1700,7 +1700,6 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 			toolbar_update(TOOLBAR_MAIN, mainwin);
 			messageview_reflect_prefs_pixmap_theme();
 			compose_reflect_prefs_pixmap_theme();
-			folderview_reinit_fonts(mainwin->folderview);
 			folderview_init(mainwin->folderview);
 			summary_reflect_prefs_pixmap_theme(mainwin->summaryview);
 			foldersel_reflect_prefs_pixmap_theme();
@@ -1726,8 +1725,6 @@ static gboolean reflect_prefs_timeout_cb(gpointer data)
 		else
 			gtk_widget_hide(mainwin->messageview->headerview->hbox);
 		textview_reflect_prefs(mainwin->messageview->mimeview->textview);
-		folderview_reflect_prefs();
-		summary_reflect_prefs();
 		summary_redisplay_msg(mainwin->summaryview);
 		if (prefs_common.layout_mode == SMALL_LAYOUT) {
 			if (mainwin->in_folder) {
