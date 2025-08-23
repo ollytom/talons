@@ -35,7 +35,6 @@
 #include "textview.h"
 #include "mimeview.h"
 #include "menu.h"
-#include "about.h"
 #include "filesel.h"
 #include "foldersel.h"
 #include "sourcewindow.h"
@@ -150,8 +149,6 @@ static void addressbook_open_cb		(GtkAction	*action,
 static void add_address_cb		(GtkAction	*action,
 					 gpointer	 data);
 
-static void about_cb			(GtkAction	*action,
-					 gpointer	 data);
 static void messageview_update		(MessageView	*msgview,
 					 MsgInfo	*old_msginfo);
 static gboolean messageview_update_msg	(gpointer source, gpointer data);
@@ -277,9 +274,6 @@ static GtkActionEntry msgview_entries[] =
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/Actions",                            NULL, N_("Actio_ns"), NULL, NULL, NULL },
 	{"Tools/Actions/PlaceHolder",                NULL, "Placeholder", NULL, NULL, G_CALLBACK(messageview_nothing_cb) },
-
-/* Help menu */
-	{"Help/About",                               NULL, N_("_About"), NULL, NULL, G_CALLBACK(about_cb) },
 };
 
 static GtkToggleActionEntry msgview_toggle_entries[] =
@@ -428,7 +422,6 @@ static void messageview_add_toolbar(MessageView *msgview, GtkWidget *window)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu", "View", "View", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu", "Message", "Message", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu", "Tools", "Tools", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu", "Help", "Help", GTK_UI_MANAGER_MENU)
 
 /* File menu */
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/File", "SaveAs", "File/SaveAs", GTK_UI_MANAGER_MENUITEM)
@@ -578,9 +571,6 @@ static void messageview_add_toolbar(MessageView *msgview, GtkWidget *window)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "Actions", "Tools/Actions", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools/Actions", "PlaceHolder", "Tools/Actions/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
 
-/* Help menu */
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Help", "About", "Help/About", GTK_UI_MANAGER_MENUITEM)
-
 	menubar = gtk_ui_manager_get_widget(msgview->ui_manager, "/Menu");
 	gtk_widget_show_all(menubar);
 	gtk_window_add_accel_group(GTK_WINDOW(window), gtk_ui_manager_get_accel_group(msgview->ui_manager));
@@ -677,32 +667,6 @@ void messageview_init(MessageView *messageview)
 	mimeview_init(messageview->mimeview);
 
 	noticeview_hide(messageview->noticeview);
-}
-
-static void notification_convert_header(gchar **dest,
-					const gchar *src_,
-					gint header_len)
-{
-	char *src;
-
-	cm_return_if_fail(src_ != NULL);
-
-	if (header_len < 1) {
-		*dest = g_strdup("");
-		return;
-	}
-
-	Xstrndup_a(src, src_, strlen(src_), return);
-
-	remove_return(src);
-
-	if (is_ascii_str(src)) {
-		*dest = g_strdup(src);
-		return;
-	} else {
-		*dest = g_malloc(BUFFSIZE);
-		conv_encode_header(*dest, BUFFSIZE, src, header_len, FALSE);
-	}
 }
 
 static gboolean find_encrypted_func(GNode *node, gpointer data)
@@ -2271,11 +2235,6 @@ static void add_address_cb(GtkAction *action, gpointer data)
 
 	addressbook_add_contact(msginfo->fromname, from, NULL, picture);
 	avatars_avatarrender_free(avatarr);
-}
-
-static void about_cb(GtkAction *gaction, gpointer data)
-{
-	about_show();
 }
 
 static gboolean messageview_update_msg(gpointer source, gpointer data)
