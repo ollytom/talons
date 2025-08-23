@@ -755,10 +755,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 		/* process messages */
 		folder_item_update_freeze();
 
-		procmsg_msglist_filter(msglist, pop3_session->ac_prefs,
-				&filtered, &unfiltered,
-				pop3_session->ac_prefs->filter_on_recv);
-
 		if (unfiltered != NULL)
 			folder_item_move_msgs(inbox, unfiltered);
 
@@ -1429,7 +1425,7 @@ static gint get_spool(FolderItem *dest, const gchar *mbox, PrefsAccount *account
 	debug_print("Getting new messages from %s into %s...\n",
 		    mbox, dest->path);
 
-	msgs = proc_mbox(dest, tmp_mbox, account->filter_on_recv, account);
+	msgs = proc_mbox(dest, tmp_mbox, FALSE, account);
 
 	unlink(tmp_mbox);
 	if (msgs >= 0) empty_mbox(mbox);

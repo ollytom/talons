@@ -370,11 +370,6 @@ gboolean procmsg_msg_has_flagged_parent	(MsgInfo 	*info,
 gboolean procmsg_msg_has_marked_parent	(MsgInfo	*info);
 void procmsg_msginfo_set_to_folder	(MsgInfo 	*msginfo,
 					 FolderItem 	*to_folder);
-void procmsg_msglist_filter		(GSList 	*list,
-					 PrefsAccount 	*ac,
-					 GSList 	**filtered,
-					 GSList 	**unfiltered,
-					 gboolean 	 do_filter);
 
 MsgInfo *procmsg_msginfo_new_from_mimeinfo
 					(MsgInfo 	*src_msginfo,
