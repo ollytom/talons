@@ -65,7 +65,6 @@
 #include "prefs_summaries.h"
 #include "prefs_themes.h"
 #include "prefs_other.h"
-#include "prefs_proxy.h"
 #include "prefs_logging.h"
 #include "prefs_send.h"
 #include "prefs_wrapping.h"
@@ -107,7 +106,6 @@
 #endif
 
 #include "imap-thread.h"
-#include "nntp-thread.h"
 #include "stock_pixmap.h"
 #ifdef USE_GNUTLS
 #  include "ssl.h"
@@ -502,7 +500,6 @@ int main(int argc, char *argv[])
 	prefs_summaries_init();
 	prefs_message_init();
 	prefs_other_init();
-	prefs_proxy_init();
 	prefs_logging_init();
 	prefs_receive_init();
 	prefs_send_init();
@@ -549,7 +546,6 @@ int main(int argc, char *argv[])
 
 	imap_main_init(prefs_common.skip_ssl_cert_check);
 	imap_main_set_timeout(prefs_common.io_timeout_secs);
-	nntp_main_init(prefs_common.skip_ssl_cert_check);
 	/* If we can't read a folder list or don't have accounts,
 	 * it means the configuration's not done. Either this is
 	 * a brand new install, a failed/refused migration,
@@ -792,7 +788,6 @@ static void exit_claws(MainWindow *mainwin)
 	close_log_file(LOG_DEBUG_FILTERING);
 
 	imap_main_done(TRUE);
-	nntp_main_done(TRUE);
 
 	lock_socket_remove();
 
@@ -811,7 +806,6 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_summaries_done();
 	prefs_message_done();
 	prefs_other_done();
-	prefs_proxy_done();
 	prefs_receive_done();
 	prefs_logging_done();
 	prefs_send_done();

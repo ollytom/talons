@@ -531,10 +531,6 @@ struct _PrefsCommon
 
 	gboolean mainwin_toolbar_always_enable_actions;
 
-	/* Proxy */
-	gboolean use_proxy;
-	ProxyInfo proxy_info;
-
     /* Quicksearch */
     guint qs_press_timeout;
 };

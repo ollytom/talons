@@ -314,24 +314,6 @@ typedef struct SSLPage
 	GtkWidget *use_nonblocking_ssl_checkbtn;
 } SSLPage;
 
-typedef struct ProxyPage
-{
-	PrefsPage page;
-
-	GtkWidget *vbox;
-
-	GtkWidget *proxy_checkbtn;
-	GtkWidget *default_proxy_checkbtn;
-	GtkWidget *socks4_radiobtn;
-	GtkWidget *socks5_radiobtn;
-	GtkWidget *proxy_host_entry;
-	GtkWidget *proxy_port_spinbtn;
-	GtkWidget *proxy_auth_checkbtn;
-	GtkWidget *proxy_name_entry;
-	GtkWidget *proxy_pass_entry;
-	GtkWidget *proxy_send_checkbtn;
-} ProxyPage;
-
 typedef struct AdvancedPage
 {
     PrefsPage page;
@@ -377,7 +359,6 @@ static PrivacyPage privacy_page;
 #ifdef USE_GNUTLS
 static SSLPage ssl_page;
 #endif
-static ProxyPage proxy_page;
 static AdvancedPage advanced_page;
 
 struct BasicProtocol {
@@ -851,48 +832,6 @@ static PrefParam ssl_param[] = {
 	{"use_nonblocking_ssl", "1", &tmp_ac_prefs.use_nonblocking_ssl, P_BOOL,
 	 NULL, NULL, NULL},
 #endif /* USE_GNUTLS */
-
-	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
-};
-
-static PrefParam proxy_param[] = {
-	/* SOCKS proxy */
-	{"use_proxy", "FALSE", &tmp_ac_prefs.use_proxy, P_BOOL,
-	&proxy_page.proxy_checkbtn,
-	prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"use_default_proxy", "TRUE", &tmp_ac_prefs.use_default_proxy, P_BOOL,
-	&proxy_page.default_proxy_checkbtn,
-	prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"use_proxy_for_send", "TRUE", &tmp_ac_prefs.use_proxy_for_send, P_BOOL,
-	&proxy_page.proxy_send_checkbtn,
-	prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"proxy_type", "1", &tmp_ac_prefs.proxy_info.proxy_type, P_ENUM,
-	&proxy_page.socks4_radiobtn,
-	prefs_account_enum_set_data_from_radiobtn,
-	prefs_account_enum_set_radiobtn},
-
-	{"proxy_host", "localhost", &tmp_ac_prefs.proxy_info.proxy_host, P_STRING,
-	&proxy_page.proxy_host_entry,
-	prefs_set_data_from_entry, prefs_set_entry},
-
-	{"proxy_port", "1080", &tmp_ac_prefs.proxy_info.proxy_port, P_USHORT,
-	&proxy_page.proxy_port_spinbtn,
-	prefs_set_data_from_spinbtn, prefs_set_spinbtn},
-
-	{"use_proxy_auth", "FALSE", &tmp_ac_prefs.proxy_info.use_proxy_auth, P_BOOL,
-	&proxy_page.proxy_auth_checkbtn,
-	prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"proxy_name", "", &tmp_ac_prefs.proxy_info.proxy_name, P_STRING,
-	&proxy_page.proxy_name_entry,
-	prefs_set_data_from_entry, prefs_set_entry},
-
-	{"proxy_pass", NULL, &tmp_ac_prefs.proxy_info.proxy_pass, P_PASSWORD,
-	NULL, NULL, NULL},
-
 
 	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
 };
@@ -2970,163 +2909,6 @@ static void ssl_create_widget_func(PrefsPage * _page,
 #undef CREATE_RADIO_BUTTONS
 #endif /* USE_GNUTLS */
 
-static void proxy_create_widget_func(PrefsPage * _page,
-                                           GtkWindow * window,
-                                           gpointer data)
-{
-	ProxyPage *page = (ProxyPage *) _page;
-	PrefsAccount *ac_prefs = (PrefsAccount *) data;
-	GtkWidget *vbox1, *vbox2, *vbox3, *vbox4;
-	GtkWidget *proxy_frame;
-	GtkWidget *proxy_checkbtn;
-	GtkWidget *default_proxy_checkbtn;
-	GtkWidget *hbox;
-	GtkWidget *label;
-	GtkWidget *socks4_radiobtn;
-	GtkWidget *socks5_radiobtn;
-	GtkWidget *proxy_host_entry;
-	GtkWidget *proxy_port_spinbtn;
-	GtkWidget *proxy_auth_checkbtn;
-	GtkWidget *proxy_name_entry;
-	GtkWidget *proxy_pass_entry;
-	GtkWidget *proxy_send_checkbtn;
-	GtkWidget *table;
-	gchar *buf;
-
-	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
-
-	proxy_checkbtn = gtk_check_button_new_with_label (_("Use proxy server"));
-	PACK_FRAME (vbox1, proxy_frame, NULL);
-	gtk_frame_set_label_widget (GTK_FRAME(proxy_frame), proxy_checkbtn);
-
-	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING_NARROW);
-	gtk_container_add (GTK_CONTAINER (proxy_frame), vbox2);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox2), 8);
-
-	default_proxy_checkbtn =
-		gtk_check_button_new_with_label (C_("In account preferences, referring to whether or not use proxy settings from common preferences", "Use default settings"));
-	CLAWS_SET_TIP(default_proxy_checkbtn,
-			_("Use global proxy server settings"));
-	gtk_box_pack_start (GTK_BOX (vbox2), default_proxy_checkbtn, FALSE, FALSE, 0);
-
-	vbox3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING_NARROW);
-	gtk_box_pack_start (GTK_BOX (vbox2), vbox3, FALSE, FALSE, 0);
-
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_box_pack_start (GTK_BOX (vbox3), hbox, FALSE, FALSE, 0);
-
-	socks4_radiobtn = gtk_radio_button_new_with_label(NULL, "SOCKS4");
-	gtk_box_pack_start (GTK_BOX (hbox), socks4_radiobtn, FALSE, FALSE, 0);
-	g_object_set_data(G_OBJECT(socks4_radiobtn), MENU_VAL_ID,
-			  GINT_TO_POINTER(PROXY_SOCKS4));
-
-	CREATE_RADIO_BUTTON(hbox, socks5_radiobtn, socks4_radiobtn, "SOCKS5",
-			    PROXY_SOCKS5);
-
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_box_pack_start (GTK_BOX (vbox3), hbox, FALSE, FALSE, 0);
-
-	label = gtk_label_new(_("Hostname"));
-	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
-	proxy_host_entry = gtk_entry_new();
-	gtk_widget_set_size_request(proxy_host_entry, DEFAULT_ENTRY_WIDTH, -1);
-	gtk_box_pack_start(GTK_BOX(hbox), proxy_host_entry, TRUE, TRUE, 0);
-
-	label = gtk_label_new(_("Port"));
-	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
-	proxy_port_spinbtn = gtk_spin_button_new_with_range(0, 65535, 1080);
-	gtk_widget_set_size_request(proxy_port_spinbtn, 64, -1);
-	gtk_box_pack_start(GTK_BOX(hbox), proxy_port_spinbtn, FALSE, FALSE, 0);
-
-	vbox4 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING_NARROW);
-	gtk_box_pack_start(GTK_BOX(vbox3), vbox4, FALSE, FALSE, 0);
-
-	PACK_CHECK_BUTTON (vbox4, proxy_auth_checkbtn, _("Use authentication"));
-
-	table = gtk_grid_new();
-	gtk_box_pack_start (GTK_BOX (vbox4), table, FALSE, FALSE, 0);
-
-	label = gtk_label_new(_("Username"));
-	gtk_grid_attach(GTK_GRID(table), label, 0, 0, 1, 1);
-
-	proxy_name_entry = gtk_entry_new();
-	gtk_widget_set_size_request(proxy_name_entry, DEFAULT_ENTRY_WIDTH, -1);
-	gtk_grid_attach(GTK_GRID(table), proxy_name_entry, 1, 0, 1, 1);
-	gtk_widget_set_hexpand(proxy_name_entry, TRUE);
-	gtk_widget_set_halign(proxy_name_entry, GTK_ALIGN_FILL);
-
-	label = gtk_label_new(_("Password"));
-	gtk_grid_attach(GTK_GRID(table), label, 2, 0, 1, 1);
-
-	proxy_pass_entry = gtk_entry_new();
-	gtk_widget_set_size_request(proxy_pass_entry, DEFAULT_ENTRY_WIDTH, -1);
-	gtk_entry_set_visibility(GTK_ENTRY(proxy_pass_entry), FALSE);
-	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(proxy_pass_entry),
-					  GTK_ENTRY_ICON_SECONDARY,
-					  "view-reveal-symbolic");
-	gtk_entry_set_icon_activatable(GTK_ENTRY(proxy_pass_entry),
-				       GTK_ENTRY_ICON_SECONDARY, TRUE);
-	gtk_entry_set_icon_tooltip_text(GTK_ENTRY(proxy_pass_entry),
-					GTK_ENTRY_ICON_SECONDARY, _("Show password"));
-	g_signal_connect(proxy_pass_entry, "icon-press",
-			 G_CALLBACK(prefs_account_showpwd_toggled), NULL);
-	gtk_grid_attach(GTK_GRID(table), proxy_pass_entry, 3, 0, 1, 1);
-	gtk_widget_set_hexpand(proxy_pass_entry, TRUE);
-	gtk_widget_set_halign(proxy_pass_entry, GTK_ALIGN_FILL);
-
-	gtk_box_pack_start(GTK_BOX(vbox2), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 0);
-
-	PACK_CHECK_BUTTON(vbox2, proxy_send_checkbtn,
-			  _("Use proxy server for sending"));
-	CLAWS_SET_TIP(proxy_send_checkbtn,
-			_("If disabled, messages will be sent using direct connection to configured outgoing server, bypassing any configured proxy server"));
-
-	SET_TOGGLE_SENSITIVITY(proxy_auth_checkbtn, table);
-	SET_TOGGLE_SENSITIVITY(socks5_radiobtn, vbox4);
-	SET_TOGGLE_SENSITIVITY(proxy_checkbtn, vbox2);
-	SET_TOGGLE_SENSITIVITY_REVERSE(default_proxy_checkbtn, vbox3);
-
-	gtk_widget_show_all(vbox1);
-
-	page->proxy_checkbtn = proxy_checkbtn;
-	page->default_proxy_checkbtn = default_proxy_checkbtn;
-	page->socks4_radiobtn = socks4_radiobtn;
-	page->socks5_radiobtn = socks5_radiobtn;
-	page->proxy_host_entry = proxy_host_entry;
-	page->proxy_port_spinbtn = proxy_port_spinbtn;
-	page->proxy_auth_checkbtn = proxy_auth_checkbtn;
-	page->proxy_name_entry = proxy_name_entry;
-	page->proxy_pass_entry = proxy_pass_entry;
-	page->proxy_send_checkbtn = proxy_send_checkbtn;
-	page->vbox = vbox1;
-	page->page.widget = vbox1;
-
-	tmp_ac_prefs = *ac_prefs;
-
-	if (new_account) {
-		prefs_set_dialog_to_default(proxy_param);
-	} else {
-		prefs_set_dialog(proxy_param);
-
-		/* Passwords are handled outside of PrefParams. */
-		buf = passwd_store_get_account(ac_prefs->account_id,
-				PWS_ACCOUNT_PROXY_PASS);
-		gtk_entry_set_text(GTK_ENTRY(page->proxy_pass_entry),
-				buf != NULL ? buf : "");
-		if (buf != NULL) {
-			memset(buf, 0, strlen(buf));
-			g_free(buf);
-		}
-	}
-
-	page->vbox = vbox1;
-
-	page->page.widget = vbox1;
-}
-
 static void advanced_create_widget_func(PrefsPage * _page,
                                            GtkWindow * window,
                                            gpointer data)
@@ -3541,19 +3323,6 @@ static gint prefs_ssl_apply(void)
 }
 #endif
 
-static gint prefs_proxy_apply(void)
-{
-	prefs_set_data_from_dialog(proxy_param);
-
-	/* Passwords are stored outside of PrefParams. */
-	passwd_store_set_account(tmp_ac_prefs.account_id,
-			PWS_ACCOUNT_PROXY_PASS,
-			gtk_entry_get_text(GTK_ENTRY(proxy_page.proxy_pass_entry)),
-			FALSE);
-
-	return 0;
-}
-
 static gint prefs_advanced_apply(void)
 {
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(advanced_page.domain_checkbtn)) &&
@@ -3634,11 +3403,6 @@ static void ssl_destroy_widget_func(PrefsPage *_page)
 	/* SSLPage *page = (SSLPage *) _page; */
 }
 #endif
-
-static void proxy_destroy_widget_func(PrefsPage *_page)
-{
-	/* ProxyPage *page = (ProxyPage *) _page; */
-}
 
 static void advanced_destroy_widget_func(PrefsPage *_page)
 {
@@ -3728,16 +3492,6 @@ static gboolean ssl_can_close_func(PrefsPage *_page)
 	return prefs_ssl_apply() >= 0;
 }
 #endif
-
-static gboolean proxy_can_close_func(PrefsPage *_page)
-{
-	ProxyPage *page = (ProxyPage *) _page;
-
-	if (!page->page.page_open)
-		return TRUE;
-
-	return prefs_proxy_apply() >= 0;
-}
 
 static gboolean advanced_can_close_func(PrefsPage *_page)
 {
@@ -3850,17 +3604,6 @@ static void ssl_save_func(PrefsPage *_page)
 		cancelled = FALSE;
 }
 #endif
-
-static void proxy_save_func(PrefsPage *_page)
-{
-	ProxyPage *page = (ProxyPage *) _page;
-
-	if (!page->page.page_open)
-		return;
-
-	if (prefs_proxy_apply() >= 0)
-		cancelled = FALSE;
-}
 
 static void advanced_save_func(PrefsPage *_page)
 {
@@ -4085,24 +3828,6 @@ static gboolean sslcert_get_password(gpointer source, gpointer data)
 }
 #endif
 
-static void register_proxy_page(void)
-{
-	static gchar *path[3];
-
-	path[0] = _("Account");
-	path[1] = _("Proxy");
-	path[2] = NULL;
-
-	proxy_page.page.path = path;
-	proxy_page.page.weight = 1000.0;
-	proxy_page.page.create_widget = proxy_create_widget_func;
-	proxy_page.page.destroy_widget = proxy_destroy_widget_func;
-	proxy_page.page.save_page = proxy_save_func;
-	proxy_page.page.can_close = proxy_can_close_func;
-
-	prefs_account_register_page((PrefsPage *) &proxy_page);
-}
-
 static void register_advanced_page(void)
 {
 	static gchar *path[3];
@@ -4134,7 +3859,6 @@ void prefs_account_init()
 	hooks_register_hook(SSLCERT_GET_CLIENT_CERT_HOOKLIST, sslcert_get_client_cert_hook, NULL);
 	hooks_register_hook(SSL_CERT_GET_PASSWORD, sslcert_get_password, NULL);
 #endif
-	register_proxy_page();
 #ifdef USE_OAUTH2
 	register_oauth2_page();
 #endif
@@ -4155,7 +3879,6 @@ PrefsAccount *prefs_account_new(void)
 	prefs_set_default(templates_param);
 	prefs_set_default(privacy_param);
 	prefs_set_default(ssl_param);
-	prefs_set_default(proxy_param);
 	prefs_set_default(advanced_param);
 	*ac_prefs = tmp_ac_prefs;
 	ac_prefs->account_id = prefs_account_get_new_id();
@@ -4200,7 +3923,6 @@ PrefsAccount *prefs_account_new_from_config(const gchar *label)
 	prefs_read_config(templates_param, label, rcpath, NULL);
 	prefs_read_config(privacy_param, label, rcpath, NULL);
 	prefs_read_config(ssl_param, label, rcpath, NULL);
-	prefs_read_config(proxy_param, label, rcpath, NULL);
 	prefs_read_config(advanced_param, label, rcpath, NULL);
 	g_free(rcpath);
 
@@ -4339,7 +4061,6 @@ void prefs_account_write_config_all(GList *account_list)
 		WRITE_PARAM(templates_param)
 		WRITE_PARAM(privacy_param)
 		WRITE_PARAM(ssl_param)
-		WRITE_PARAM(proxy_param)
 		WRITE_PARAM(advanced_param)
 
 		g_free(privacy_prefs);
@@ -4386,7 +4107,6 @@ void prefs_account_free(PrefsAccount *ac_prefs)
 	prefs_free(templates_param);
 	prefs_free(privacy_param);
 	prefs_free(ssl_param);
-	prefs_free(proxy_param);
 	prefs_free(advanced_param);
 }
 

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __SESSION_H__
@@ -30,7 +30,6 @@
 #include <unistd.h>
 
 #include "socket.h"
-#include "proxy.h"
 
 #define SESSION_BUFFSIZE	4096
 
@@ -148,14 +147,6 @@ struct _Session
 	gboolean ssl_cert_auto_accept;
 	gint ping_tag;
 
-	/* Pointer to ProxyInfo struct holding the info about proxy
-	 * to be used. Set to NULL if no proxy is used.
-	 * If non-NULL, the memory this pointer is pointing at does
-	 * not belong to this Session, and shouldn't be modified
-	 * or freed by Session. It is usually a pointer to the
-	 * SockInfo in common prefs, or in account prefs. */
-	ProxyInfo *proxy_info;
-
 #ifdef USE_GNUTLS
 	SSLType ssl_type;
 	gchar *gnutls_priority;
@@ -163,7 +154,7 @@ struct _Session
 #endif
 };
 
-void session_init		(Session	*session, 
+void session_init		(Session	*session,
 				 const void 	*prefs_account,
 				 gboolean	 is_smtp);
 gint session_connect		(Session	*session,

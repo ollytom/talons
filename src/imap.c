@@ -1198,7 +1198,6 @@ static IMAPSession *imap_session_new(Folder * folder,
 				     const PrefsAccount *account)
 {
 	IMAPSession *session;
-	ProxyInfo *proxy_info = NULL;
 	gushort port;
 	int r;
 	int authenticated = FALSE;
@@ -1237,43 +1236,17 @@ static IMAPSession *imap_session_new(Folder * folder,
 	log_message(LOG_PROTOCOL, "%s\n", buf);
 	g_free(buf);
 
-	if (account->use_proxy) {
-		if (account->use_default_proxy) {
-			proxy_info = (ProxyInfo *)&(prefs_common.proxy_info);
-			if (proxy_info->use_proxy_auth)
-				proxy_info->proxy_pass = passwd_store_get(PWS_CORE, PWS_CORE_PROXY,
-					PWS_CORE_PROXY_PASS);
-		} else {
-			proxy_info = (ProxyInfo *)&(account->proxy_info);
-			if (proxy_info->use_proxy_auth)
-				proxy_info->proxy_pass = passwd_store_get_account(account->account_id,
-					PWS_ACCOUNT_PROXY_PASS);
-		}
-	}
-
 	if (account->set_tunnelcmd) {
 		r = imap_threaded_connect_cmd(folder,
 					      account->tunnelcmd,
 					      account->recv_server,
 					      port);
 	}
-	else
-	{
-#ifdef USE_GNUTLS
-
+	else {
 		if (ssl_type == SSL_TUNNEL) {
-			r = imap_threaded_connect_ssl(folder,
-						      account->recv_server,
-						      port,
-						      proxy_info);
-		}
-		else
-#endif
-		{
-			r = imap_threaded_connect(folder,
-						  account->recv_server,
-						  port,
-						  proxy_info);
+			r = imap_threaded_connect_ssl(folder, account->recv_server, port);
+		} else {
+			r = imap_threaded_connect(folder, account->recv_server, port);
 		}
 	}
 
@@ -1309,7 +1282,6 @@ static IMAPSession *imap_session_new(Folder * folder,
 	SESSION(session)->server           = g_strdup(account->recv_server);
 	SESSION(session)->port             = port;
  	SESSION(session)->sock             = NULL;
-	SESSION(session)->proxy_info       = proxy_info;
 	SESSION(session)->destroy          = imap_session_destroy;
 
 	session->capability = NULL;

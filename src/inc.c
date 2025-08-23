@@ -39,7 +39,6 @@
 #include "prefs_account.h"
 #include "account.h"
 #include "procmsg.h"
-#include "proxy.h"
 #include "socket.h"
 #include "ssl.h"
 #include "pop.h"
@@ -838,7 +837,6 @@ static IncState inc_pop3_session_do(IncSession *session)
 	gchar *account_name;
 	gushort port;
 	gchar *buf;
-	ProxyInfo *proxy_info = NULL;
 
 	debug_print("getting new messages of account %s...\n",
 		    ac->account_name);
@@ -880,21 +878,6 @@ static IncState inc_pop3_session_do(IncSession *session)
 	log_message(LOG_PROTOCOL, "%s\n", buf);
 
 	progress_dialog_set_label(inc_dialog->dialog, buf);
-
-	if (ac->use_proxy) {
-		if (ac->use_default_proxy) {
-			proxy_info = (ProxyInfo *)&(prefs_common.proxy_info);
-			if (proxy_info->use_proxy_auth)
-				proxy_info->proxy_pass = passwd_store_get(PWS_CORE, PWS_CORE_PROXY,
-					PWS_CORE_PROXY_PASS);
-		} else {
-			proxy_info = (ProxyInfo *)&(ac->proxy_info);
-			if (proxy_info->use_proxy_auth)
-				proxy_info->proxy_pass = passwd_store_get_account(ac->account_id,
-					PWS_ACCOUNT_PROXY_PASS);
-		}
-	}
-	SESSION(pop3_session)->proxy_info = proxy_info;
 
 	GTK_EVENTS_FLUSH();
 	g_free(buf);

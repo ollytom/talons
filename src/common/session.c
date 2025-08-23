@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -103,8 +103,6 @@ void session_init(Session *session, const void *prefs_account, gboolean is_smtp)
 	session->is_smtp = is_smtp;
 
 	session->ping_tag = -1;
-
-	session->proxy_info = NULL;
 }
 
 /*!
@@ -124,11 +122,6 @@ gint session_connect(Session *session, const gchar *server, gushort port)
 {
 	session->server = g_strdup(server);
 	session->port = port;
-
-	if (session->proxy_info) {
-		server = session->proxy_info->proxy_host;
-		port = session->proxy_info->proxy_port;
-	}
 
 #ifdef G_OS_UNIX
 	session->conn_id = sock_connect_async(server, port, session_connect_cb,
@@ -178,18 +171,6 @@ static gint session_connect_cb(SockInfo *sock, gpointer data)
 	sock->is_smtp = session->is_smtp;
 	sock->ssl_cert_auto_accept = session->ssl_cert_auto_accept;
 
-	if (session->proxy_info) {
-		debug_print("connecting through socks\n");
-		sock_set_nonblocking_mode(sock, FALSE);
-		if (proxy_connect(sock, session->server, session->port,
-					session->proxy_info) < 0) {
-			g_warning("can't establish SOCKS connection");
-			session->state = SESSION_ERROR;
-			return -1;
-		}
-	}
-
-
 #ifdef USE_GNUTLS
 	sock->gnutls_priority = session->gnutls_priority;
 	sock->use_tls_sni = session->use_tls_sni;
@@ -207,7 +188,7 @@ static gint session_connect_cb(SockInfo *sock, gpointer data)
 	}
 #endif
 
-	/* we could have gotten a timeout while waiting for user input in 
+	/* we could have gotten a timeout while waiting for user input in
 	 * an SSL certificate dialog */
 	if (session->state == SESSION_TIMEOUT) {
 		if (session->connect_finished)
@@ -585,7 +566,7 @@ static gboolean session_read_msg_cb(SockInfo *source, GIOCondition condition,
 			}
 			return FALSE;
 		}
-		
+
 		if (read_len == 0) {
 			g_warning("sock_read: received EOF");
 			session->state = SESSION_EOF;
