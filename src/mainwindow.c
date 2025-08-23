@@ -77,7 +77,6 @@
 #include "icon_legend.h"
 #include "textview.h"
 #include "imap.h"
-#include "news.h"
 #include "socket.h"
 #include "printing.h"
 #include "send_message.h"
@@ -3524,7 +3523,6 @@ static void online_switch_clicked (GtkButton *btn, gpointer data)
 		mainwindow_check_synchronise(mainwin, TRUE);
 		prefs_common.work_offline = TRUE;
 		imap_disconnect_all(TRUE);
-		nntp_disconnect_all(TRUE);
 		hooks_invoke(OFFLINE_SWITCH_HOOKLIST, NULL);
 	} else {
 		/*go online */

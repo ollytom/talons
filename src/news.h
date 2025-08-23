@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __NEWS_H__
@@ -34,22 +34,5 @@ struct _NewsGroupInfo
 	guint last;
 	gchar type;
 };
-
-FolderClass *news_get_class		(void);
-
-GSList *news_get_group_list		(Folder		*folder);
-void news_group_list_free		(GSList		*group_list);
-void news_remove_group_list_cache	(Folder		*folder);
-
-gint news_post				(Folder		*folder,
-					 const gchar	*file);
-gint news_cancel_article		(Folder 	*folder,
-					 MsgInfo 	*msginfo);
-int news_folder_locked			(Folder 	*folder);
-
-guint nntp_folder_get_refcnt(Folder *folder);
-void nntp_folder_ref(Folder *folder);
-void nntp_folder_unref(Folder *folder);
-void nntp_disconnect_all(gboolean have_connectivity);
 
 #endif /* __NEWS_H__ */

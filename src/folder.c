@@ -96,7 +96,6 @@ void folder_system_init(void)
 {
 	folder_register_class(mh_get_class());
 	folder_register_class(imap_get_class());
-	folder_register_class(news_get_class());
 }
 
 static GSList *folder_get_class_list(void)
@@ -1597,13 +1596,7 @@ gchar *folder_item_get_name(FolderItem *item)
 		if (folder_item_parent(item) == NULL) {
 			name = g_strconcat(item->name, " (", item->folder->klass->uistr, ")", NULL);
 		} else {
-			if (FOLDER_CLASS(item->folder) == news_get_class() &&
-			    item->path && !g_strcmp0(item->name, item->path))
-				name = get_abbrev_newsgroup_name
-					(item->path,
-					 prefs_common.ng_abbrev_len);
-			else
-				name = g_strdup(item->name);
+			name = g_strdup(item->name);
 		}
 	}
 

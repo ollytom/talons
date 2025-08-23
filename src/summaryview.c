@@ -62,7 +62,6 @@
 #include "folder_item_prefs.h"
 #include "string_match.h"
 #include "toolbar.h"
-#include "news.h"
 #include "hooks.h"
 #include "description_window.h"
 #include "folderutils.h"
@@ -4196,8 +4195,6 @@ void summary_cancel(SummaryView *summaryview)
 
 	if (!check_permission(summaryview, msginfo))
 		return;
-
-	news_cancel_article(summaryview->folder_item->folder, msginfo);
 
 	if (summary_is_locked(summaryview)) return;
 

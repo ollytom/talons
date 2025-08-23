@@ -79,7 +79,6 @@ claws_mail_SOURCES = \
 	mh_gtk.c \
 	mimeview.c \
 	msgcache.c \
-	news.c \
 	noticeview.c \
 	oauth2.c \
 	password.c \
