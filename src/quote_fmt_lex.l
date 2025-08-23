@@ -17,7 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #include "quote_fmt_lex.h"
@@ -62,13 +62,13 @@ int escaped_string = 0;
  * always return to S_NORMAL after quote fmt parsing is
  * done.
  */
-%} 
+%}
 
 %{
 	if (quote_fmt_firsttime) {
 		BEGIN S_NORMAL;
 		quote_fmt_firsttime = 0;
-	}	
+	}
 %}
 
 <S_NORMAL>("%X"|"%cursor") /* cursor pos */ return SET_CURSOR_POS;
@@ -88,7 +88,6 @@ int escaped_string = 0;
 <S_NORMAL>("%r"|"%references") /* references */ return SHOW_REFERENCES;
 <S_NORMAL>("%s"|"%subject") /* subject */ return SHOW_SUBJECT;
 <S_NORMAL>("%t"|"%to") /* to */ return SHOW_TO;
-<S_NORMAL>("%T"|"%dict") /* current dictionary */ return SHOW_DICT;
 <S_NORMAL>("%tags") /* tags */ return SHOW_TAGS;
 <S_NORMAL>("%Q"|"%quoted_msg") /* quoted message */ return SHOW_QUOTED_MESSAGE;
 <S_NORMAL>("%q"|"%quoted_msg_no_sig") /* quoted message with no signature */ return SHOW_QUOTED_MESSAGE_NO_SIGNATURE;
@@ -98,7 +97,6 @@ int escaped_string = 0;
 <S_NORMAL>("%ao"|"%account_org") /* organization in compose account */ return SHOW_ACCOUNT_ORGANIZATION;
 <S_NORMAL>("%as"|"%account_sig") /* signature in compose account */ return SHOW_ACCOUNT_SIG;
 <S_NORMAL>("%asp"|"%account_sigpath") /* signature path in compose account */ return SHOW_ACCOUNT_SIGPATH;
-<S_NORMAL>("%aT"|"%account_dict") /* main dict (if enabled) in compose account */ return SHOW_ACCOUNT_DICT;
 <S_NORMAL>("%ABc"|"%addrbook_cc") /* completion of 'Cc' from the address book */ return SHOW_ADDRESSBOOK_COMPLETION_FOR_CC;
 <S_NORMAL>("%ABf"|"%addrbook_from") /* completion of 'From' from the address book */ return SHOW_ADDRESSBOOK_COMPLETION_FOR_FROM;
 <S_NORMAL>("%ABt"|"%addrbook_to") /* completion of 'To' from the address book */ return SHOW_ADDRESSBOOK_COMPLETION_FOR_TO;
@@ -117,7 +115,6 @@ int escaped_string = 0;
 ("?N"|"?F"|"?L"|"?I"|"?fullname"|"?firstname"|"?lastname"|"?initials") /* query from name */ return QUERY_FULLNAME;
 ("?s"|"?subject") /* query subject */ return QUERY_SUBJECT;
 ("?t"|"?to") /* query to */ return QUERY_TO;
-("?T"|"?dict") /* query current dictionary set and enabled */ return QUERY_DICT;
 ("?c"|"?cc") /* query cc */ return QUERY_CC;
 ("?n"|"?newsgroups") /* query newsgroups */ return QUERY_NEWSGROUPS;
 ("?i"|"?messageid") /* query message-id */ return QUERY_MESSAGEID;
@@ -126,7 +123,6 @@ int escaped_string = 0;
 ("?ao"|"?account_org") /* query organization in compose account */ return QUERY_ACCOUNT_ORGANIZATION;
 ("?as"|"?account_sig") /* query signature */ return QUERY_ACCOUNT_SIG;
 ("?asp"|"?account_sigpath") /* query signature path */ return QUERY_ACCOUNT_SIGPATH;
-("?aT"|"?account_dict") /* query account main dict enabled */ return QUERY_ACCOUNT_DICT;
 ("?ABc"|"?addrbook_cc") /* query completion for 'Cc' in address book */ return QUERY_CC_FOUND_IN_ADDRESSBOOK;
 ("?ABf"|"?addrbook_from") /* query completion for 'From' in address book */ return QUERY_FROM_FOUND_IN_ADDRESSBOOK;
 ("?ABt"|"?addrbook_to") /* query completion for 'To' in address book */ return QUERY_TO_FOUND_IN_ADDRESSBOOK;
@@ -135,7 +131,6 @@ int escaped_string = 0;
 ("!N"|"!F"|"!L"|"!I"|"!fullname"|"!firstname"|"!lastname"|"!initials") /* query not(from name) */ return QUERY_NOT_FULLNAME;
 ("!s"|"!subject") /* query not(subject) */ return QUERY_NOT_SUBJECT;
 ("!t"|"!to") /* query not(to) */ return QUERY_NOT_TO;
-("!T"|"!dict") /* query not(current dictionary set and enabled) */ return QUERY_NOT_DICT;
 ("!c"|"!cc") /* query not(cc) */ return QUERY_NOT_CC;
 ("!n"|"!newsgroups") /* query not(newsgroups) */ return QUERY_NOT_NEWSGROUPS;
 ("!i"|"!messageid") /* query not(message-id) */ return QUERY_NOT_MESSAGEID;
@@ -144,7 +139,6 @@ int escaped_string = 0;
 ("!ao"|"!account_org") /* query not(organization in compose account) */ return QUERY_NOT_ACCOUNT_ORGANIZATION;
 ("!as"|"!account_sig") /* query not(signature) */ return QUERY_NOT_ACCOUNT_SIG;
 ("!asp"|"!account_sigpath") /* query not(signature path) */ return QUERY_NOT_ACCOUNT_SIGPATH;
-("!aT"|"!account_dict") /* query not(account main dict enabled and set) */ return QUERY_NOT_ACCOUNT_DICT;
 ("!ABc"|"!addrbook_cc") /* query not(completion for 'Cc' in address book) */ return QUERY_NOT_CC_FOUND_IN_ADDRESSBOOK;
 ("!ABf"|"!addrbook_from") /* query not(completion for 'From' in address book) */ return QUERY_NOT_FROM_FOUND_IN_ADDRESSBOOK;
 ("!ABt"|"!addrbook_to") /* query not(completion for 'To' in address book) */ return QUERY_NOT_TO_FOUND_IN_ADDRESSBOOK;

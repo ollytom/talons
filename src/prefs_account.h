@@ -153,10 +153,6 @@ struct _PrefsAccount
 	gchar    *auto_bcc;
 	gboolean  set_autoreplyto;
 	gchar    *auto_replyto;
-	gboolean  enable_default_dictionary;
-	gchar	 *default_dictionary;
-	gboolean  enable_default_alt_dictionary;
-	gchar	 *default_alt_dictionary;
 	gboolean  compose_with_format;
 	gchar	 *compose_subject_format;
 	gchar	 *compose_body_format;

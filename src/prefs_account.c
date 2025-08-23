@@ -250,12 +250,6 @@ typedef struct ComposePage
 	GtkWidget *autobcc_entry;
 	GtkWidget *autoreplyto_checkbtn;
 	GtkWidget *autoreplyto_entry;
-#if USE_ENCHANT
-	GtkWidget *checkbtn_enable_default_dictionary;
-	GtkWidget *combo_default_dictionary;
-	GtkWidget *checkbtn_enable_default_alt_dictionary;
-	GtkWidget *combo_default_alt_dictionary;
-#endif
 } ComposePage;
 
 typedef struct TemplatesPage
@@ -447,11 +441,6 @@ static void prefs_account_nntpauth_toggled(GtkToggleButton *button, gpointer use
 static void prefs_account_mailcmd_toggled(GtkToggleButton *button,  gpointer user_data);
 static void prefs_account_showpwd_toggled(GtkEntry *entry, gpointer user_data);
 static void prefs_account_filter_on_recv_toggled(GtkToggleButton *button, gpointer user_data);
-
-#if USE_ENCHANT
-static void prefs_account_compose_default_dictionary_set_string_from_optmenu (PrefParam *pparam);
-static void prefs_account_compose_default_dictionary_set_optmenu_from_string (PrefParam *pparam);
-#endif
 
 static gchar *privacy_prefs;
 
@@ -721,38 +710,6 @@ static PrefParam compose_param[] = {
 	{"auto_replyto", NULL, &tmp_ac_prefs.auto_replyto, P_STRING,
 	 &compose_page.autoreplyto_entry,
 	 prefs_set_data_from_entry, prefs_set_entry},
-
-#if USE_ENCHANT
-	{"enable_default_dictionary", "", &tmp_ac_prefs.enable_default_dictionary, P_BOOL,
-	 &compose_page.checkbtn_enable_default_dictionary,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"default_dictionary", NULL, &tmp_ac_prefs.default_dictionary, P_STRING,
-	 &compose_page.combo_default_dictionary,
-	 prefs_account_compose_default_dictionary_set_string_from_optmenu,
-	 prefs_account_compose_default_dictionary_set_optmenu_from_string},
-
-	{"enable_default_alt_dictionary", "", &tmp_ac_prefs.enable_default_alt_dictionary, P_BOOL,
-	 &compose_page.checkbtn_enable_default_alt_dictionary,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"default_alt_dictionary", NULL, &tmp_ac_prefs.default_alt_dictionary, P_STRING,
-	 &compose_page.combo_default_alt_dictionary,
-	 prefs_account_compose_default_dictionary_set_string_from_optmenu,
-	 prefs_account_compose_default_dictionary_set_optmenu_from_string},
-#else
-	{"enable_default_dictionary", "", &tmp_ac_prefs.enable_default_dictionary, P_BOOL,
-	 NULL, NULL, NULL},
-
-	{"default_dictionary", NULL, &tmp_ac_prefs.default_dictionary, P_STRING,
-	 NULL, NULL, NULL},
-
-	{"enable_default_alt_dictionary", "", &tmp_ac_prefs.enable_default_alt_dictionary, P_BOOL,
-	 NULL, NULL, NULL},
-
-	{"default_alt_dictionary", NULL, &tmp_ac_prefs.default_alt_dictionary, P_STRING,
-	 NULL, NULL, NULL},
-#endif
 
 	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
 };
@@ -2368,14 +2325,6 @@ static void compose_create_widget_func(PrefsPage * _page,
 	GtkWidget *autobcc_entry;
 	GtkWidget *autoreplyto_checkbtn;
 	GtkWidget *autoreplyto_entry;
-#if USE_ENCHANT
-	GtkWidget *frame_dict;
-	GtkWidget *table_dict;
-	GtkWidget *checkbtn_enable_default_dictionary = NULL;
-	GtkWidget *combo_default_dictionary = NULL;
-	GtkWidget *checkbtn_enable_default_alt_dictionary = NULL;
-	GtkWidget *combo_default_alt_dictionary = NULL;
-#endif
 
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox1);
@@ -2495,43 +2444,6 @@ static void compose_create_widget_func(PrefsPage * _page,
 
 	SET_TOGGLE_SENSITIVITY (autoreplyto_checkbtn, autoreplyto_entry);
 
-#if USE_ENCHANT
-	PACK_FRAME (vbox1, frame_dict, _("Spell check dictionaries"));
-
-	table_dict =  gtk_grid_new();
-	gtk_widget_show (table_dict);
-	gtk_container_add (GTK_CONTAINER (frame_dict), table_dict);
-	gtk_container_set_border_width (GTK_CONTAINER (table_dict), 8);
-	gtk_grid_set_row_spacing(GTK_GRID(table_dict), VSPACING_NARROW_2);
-	gtk_grid_set_column_spacing(GTK_GRID(table_dict), 8);
-
-	/* Default dictionary */
-	checkbtn_enable_default_dictionary = gtk_check_button_new_with_label(_("Default dictionary"));
-	gtk_grid_attach(GTK_GRID(table_dict), checkbtn_enable_default_dictionary, 0, 0, 1, 1);
-
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_default_dictionary),
-			tmp_ac_prefs.enable_default_dictionary);
-
-	combo_default_dictionary = gtkaspell_dictionary_combo_new(TRUE);
-	gtk_grid_attach(GTK_GRID(table_dict), combo_default_dictionary, 1, 0, 1, 1);
-
-	SET_TOGGLE_SENSITIVITY(checkbtn_enable_default_dictionary, combo_default_dictionary);
-
-	/* Default dictionary */
-	checkbtn_enable_default_alt_dictionary = gtk_check_button_new_with_label(_("Default alternate dictionary"));
-	gtk_grid_attach(GTK_GRID(table_dict), checkbtn_enable_default_alt_dictionary, 0, 1, 1, 1);
-
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_default_alt_dictionary),
-			tmp_ac_prefs.enable_default_alt_dictionary);
-
-	combo_default_alt_dictionary = gtkaspell_dictionary_combo_new(FALSE);
-	gtk_grid_attach(GTK_GRID(table_dict), combo_default_alt_dictionary, 1, 1, 1, 1);
-
-	SET_TOGGLE_SENSITIVITY(checkbtn_enable_default_alt_dictionary, combo_default_alt_dictionary);
-
-	gtk_widget_show_all(table_dict);
-#endif
-
 	page->sigfile_radiobtn = sigfile_radiobtn;
 	page->entry_sigpath      = entry_sigpath;
 	page->checkbtn_autosig   = checkbtn_autosig;
@@ -2543,23 +2455,6 @@ static void compose_create_widget_func(PrefsPage * _page,
 	page->autobcc_entry      = autobcc_entry;
 	page->autoreplyto_checkbtn = autoreplyto_checkbtn;
 	page->autoreplyto_entry  = autoreplyto_entry;
-#ifdef USE_ENCHANT
-	page->checkbtn_enable_default_dictionary = checkbtn_enable_default_dictionary;
-	page->combo_default_dictionary = combo_default_dictionary;
-	page->checkbtn_enable_default_alt_dictionary = checkbtn_enable_default_alt_dictionary;
-	page->combo_default_alt_dictionary = combo_default_alt_dictionary;
-#endif
-
-#ifdef USE_ENCHANT
-	/* reset gtkaspell menus */
-	if (compose_page.combo_default_dictionary != NULL) {
-		gtk_combo_box_set_model(GTK_COMBO_BOX(compose_page.combo_default_dictionary),
-					gtkaspell_dictionary_store_new());
-		gtk_combo_box_set_model(GTK_COMBO_BOX(compose_page.combo_default_alt_dictionary),
-					gtkaspell_dictionary_store_new_with_refresh(
-						FALSE));
-	}
-#endif
 
 	tmp_ac_prefs = *ac_prefs;
 
@@ -5731,56 +5626,6 @@ static void prefs_account_filter_on_recv_toggled(GtkToggleButton *button,
 	do_filter = gtk_toggle_button_get_active (button);
 	gtk_widget_set_sensitive(receive_page.filterhook_on_recv_checkbtn, do_filter);
 }
-
-#if USE_ENCHANT
-static void prefs_account_compose_default_dictionary_set_string_from_optmenu
-							(PrefParam *pparam)
-{
-	GtkWidget *combo;
-	gchar **str;
-
-	cm_return_if_fail(*pparam->widget != NULL);
-
-	combo = *pparam->widget;
-	str = (gchar **) pparam->data;
-
-	g_free(*str);
-	*str = gtkaspell_get_dictionary_menu_active_item(GTK_COMBO_BOX(combo));
-}
-
-static void prefs_account_compose_default_dictionary_set_optmenu_from_string
-							(PrefParam *pparam)
-{
-	GtkWidget *combo;
-	gchar *dictionary;
-
-	cm_return_if_fail(*pparam->widget != NULL);
-
-	dictionary = *((gchar **) pparam->data);
-	if (dictionary != NULL) {
-		if (strrchr(dictionary, '/')) {
-			dictionary = g_strdup(strrchr(dictionary, '/')+1);
-		}
-
-		if (strchr(dictionary, '-')) {
-			*(strchr(dictionary, '-')) = '\0';
-		}
-	}
-	combo = *pparam->widget;
-	if (dictionary && *dictionary)
-		gtkaspell_set_dictionary_menu_active_item(GTK_COMBO_BOX(combo),
-							  dictionary);
-	else {
-		GtkTreeModel *model;
-		GtkTreeIter iter;
-		if((model = gtk_combo_box_get_model(GTK_COMBO_BOX(combo))) == NULL)
-			return;
-		if((gtk_tree_model_get_iter_first(model, &iter)) == FALSE)
-			return;
-		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo), &iter);
-	}
-}
-#endif
 
 gchar *prefs_account_generate_msgid(PrefsAccount *account)
 {

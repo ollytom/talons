@@ -63,7 +63,6 @@
 #include "prefs_message.h"
 #include "prefs_receive.h"
 #include "prefs_quote.h"
-#include "prefs_spelling.h"
 #include "prefs_summaries.h"
 #include "prefs_themes.h"
 #include "prefs_other.h"
@@ -375,12 +374,6 @@ static void main_dump_features_list(gboolean show_debug_only)
 		debug_print("Compiled-in features:\n");
 	else
 		g_print("Compiled-in features:\n");
-#if USE_ENCHANT
-	if (show_debug_only)
-		debug_print(" Enchant\n");
-	else
-		g_print(" Enchant\n");
-#endif
 #if USE_GNUTLS
 	if (show_debug_only)
 		debug_print(" GnuTLS\n");
@@ -517,10 +510,6 @@ int main(int argc, char *argv[])
 	prefs_receive_init();
 	prefs_send_init();
 	matcher_init();
-#ifdef USE_ENCHANT
-	gtkaspell_checkers_init();
-	prefs_spelling_init();
-#endif
 
 	codeconv_set_allow_jisx0201_kana(prefs_common.allow_jisx0201_kana);
 	codeconv_set_broken_are_utf8(prefs_common.broken_are_utf8);
@@ -830,10 +819,6 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_receive_done();
 	prefs_logging_done();
 	prefs_send_done();
-#ifdef USE_ENCHANT
-	prefs_spelling_done();
-	gtkaspell_checkers_quit();
-#endif
 	claws_done();
 }
 

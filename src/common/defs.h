@@ -79,7 +79,6 @@
 #define HOMEPAGE_URI		"https://www.claws-mail.org/"
 #define MANUAL_URI		"https://www.claws-mail.org/documentation.php"
 #define FAQ_URI			"https://www.claws-mail.org/faq/index.php"
-#define DICTS_URI		"https://www.claws-mail.org/win32/dictionaries.php"
 #define BUGZILLA_URI		"https://www.thewildbeast.co.uk/claws-mail/bugzilla/enter_bug.cgi"
 #define THEMES_URI		"https://www.claws-mail.org/themes.php"
 #define TOOLS_URI		"https://www.claws-mail.org/tools.php"

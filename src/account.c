@@ -1006,10 +1006,6 @@ static void account_clone(GtkWidget *widget, gpointer data)
         ACP_FDUP(auto_bcc);
         ACP_FASSIGN(set_autoreplyto);
         ACP_FDUP(auto_replyto);
-	ACP_FASSIGN(enable_default_dictionary);
-	ACP_FDUP(default_dictionary);
-	ACP_FASSIGN(enable_default_alt_dictionary);
-	ACP_FDUP(default_alt_dictionary);
 	ACP_FASSIGN(compose_with_format);
 	ACP_FDUP(compose_subject_format);
 	ACP_FDUP(compose_body_format);

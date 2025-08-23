@@ -80,10 +80,6 @@ struct _FolderItemPrefs {
 	gboolean enable_default_account;
 	gint default_account;
 
-	gboolean enable_default_dictionary;
-	gchar *default_dictionary;
-	gboolean enable_default_alt_dictionary;
-	gchar *default_alt_dictionary;
 	SignOrEncryptType always_sign;
 	SignOrEncryptType always_encrypt;
 	gboolean save_copy_to_folder;

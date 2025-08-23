@@ -10,7 +10,7 @@ endif
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = dist-bzip2 dist-xz
 
-SUBDIRS = po src tools config doc manual
+SUBDIRS = po src config doc manual
 
 EXTRA_DIST = \
 	ChangeLog \

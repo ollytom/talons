@@ -11,4 +11,4 @@ Name: Claws Mail
 Description: Claws Mail
 Version: @MAJOR_VERSION@.@MINOR_VERSION@.@MICRO_VERSION@.@EXTRA_VERSION@
 
-Cflags: -I${pkgincludedir}/common -I${pkgincludedir}/gtk @ENCHANT_CFLAGS@ @GPGME_CFLAGS@ -I${pkgincludedir}
+Cflags: -I${pkgincludedir}/common -I${pkgincludedir}/gtk @GPGME_CFLAGS@ -I${pkgincludedir}

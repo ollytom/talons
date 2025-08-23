@@ -105,10 +105,6 @@ struct _Toolbar {
 	GSList    *action_list;
 	GSList    *item_list;
 
-#ifdef USE_ENCHANT
-	GtkWidget *spellcheck_btn;
-#endif
-
 	GtkWidget *privacy_sign_btn;
 	GtkWidget *privacy_encrypt_btn;
 };
@@ -201,9 +197,6 @@ enum {
 	A_LINEWRAP_CURRENT,
 	A_LINEWRAP_ALL,
 	A_ADDRBOOK,
-#ifdef USE_ENCHANT
-	A_CHECK_SPELLING,
-#endif
 	A_PRIVACY_SIGN,
 	A_PRIVACY_ENCRYPT,
 

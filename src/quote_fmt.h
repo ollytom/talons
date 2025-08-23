@@ -21,10 +21,6 @@
 
 #define __QUOTE_FMT_H__
 
-#ifdef USE_ENCHANT
-#include "gtkaspell.h"
-#endif
-
 #define quote_fmt_parse	quote_fmtparse
 
 void quote_fmt_quote_description(GtkWidget *widget, GtkWidget *pref_window);
@@ -32,18 +28,11 @@ void quote_fmt_quote_description(GtkWidget *widget, GtkWidget *pref_window);
 gchar *quote_fmt_get_buffer(void);
 GList *quote_fmt_get_attachments_list(void);
 gint quote_fmt_get_line(void);
-#ifdef USE_ENCHANT
-void quote_fmt_init(MsgInfo *info, const gchar *my_quote_str,
-		    const gchar *my_body, gboolean my_dry_run,
-			PrefsAccount *account,
-			gboolean escaped_string,
-			GtkAspell *gtkaspell);
-#else
+
 void quote_fmt_init(MsgInfo *info, const gchar *my_quote_str,
 		    const gchar *my_body, gboolean my_dry_run,
 			PrefsAccount *account,
 			gboolean escaped_string);
-#endif
 gint quote_fmtparse(void);
 int quote_fmtlex_destroy(void);
 void quote_fmt_scan_string(const gchar *str);

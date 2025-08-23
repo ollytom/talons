@@ -59,12 +59,7 @@ gboolean prefs_template_string_is_valid(gchar *string, gint *line, gboolean esca
 		dummyinfo.newsgroups="alt.test";
 		dummyinfo.subject="subject";
 
-
-#ifdef USE_ENCHANT
-		quote_fmt_init(&dummyinfo, NULL, NULL, TRUE, account, FALSE, NULL);
-#else
 		quote_fmt_init(&dummyinfo, NULL, NULL, TRUE, account, FALSE);
-#endif
 		quote_fmt_scan_string(tmp);
 		quote_fmt_parse();
 		g_free(tmp);

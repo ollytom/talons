@@ -201,10 +201,6 @@ static void toolbar_linewrap_all_cb		(GtkWidget	*widget,
 					 	 gpointer	 data);
 static void toolbar_addrbook_cb   		(GtkWidget   	*widget,
 					 	 gpointer     	 data);
-#ifdef USE_ENCHANT
-static void toolbar_check_spelling_cb  		(GtkWidget   	*widget,
-					 	 gpointer     	 data);
-#endif
 static void toolbar_cancel_inc_cb		(GtkWidget	*widget,
 						 gpointer	 data);
 static void toolbar_cancel_send_cb		(GtkWidget	*widget,
@@ -262,9 +258,6 @@ struct {
 	{ "A_LINEWRAP_CURRENT",	N_("Wrap long lines of current paragraph") },
 	{ "A_LINEWRAP_ALL",     N_("Wrap all long lines")                  },
 	{ "A_ADDRBOOK",      	N_("Address book")                         },
-#ifdef USE_ENCHANT
-	{ "A_CHECK_SPELLING",	N_("Check spelling")                       },
-#endif
 	{ "A_PRIVACY_SIGN",     N_("Sign")                                 },
 	{ "A_PRIVACY_ENCRYPT",  N_("Encrypt")                              },
 	{ "A_CLAWS_ACTIONS",   	N_("Claws Mail Actions Feature")           },
@@ -388,9 +381,6 @@ GList *toolbar_get_action_items(ToolbarType source)
 					A_INSERT,        A_ATTACH,       A_SIG,
 					A_REP_SIG,       A_EXTEDITOR,    A_LINEWRAP_CURRENT,
 					A_LINEWRAP_ALL,  A_ADDRBOOK,
-#ifdef USE_ENCHANT
-					A_CHECK_SPELLING,
-#endif
 					A_PRIVACY_SIGN, A_PRIVACY_ENCRYPT,
 					A_CLOSE };
 
@@ -529,9 +519,6 @@ const gchar *toolbar_get_short_text(int action) {
 	case A_LINEWRAP_CURRENT:return _("Wrap para.");
 	case A_LINEWRAP_ALL:	return _("Wrap all");
 	case A_ADDRBOOK: 		return _("Address");
-	#ifdef USE_ENCHANT
-	case A_CHECK_SPELLING:	return _("Check spelling");
-	#endif
 	case A_PRIVACY_SIGN:	return _("Sign");
 	case A_PRIVACY_ENCRYPT:	return _("Encrypt");
 
@@ -591,9 +578,6 @@ gint toolbar_get_icon(int action) {
 	case A_LINEWRAP_CURRENT:return STOCK_PIXMAP_LINEWRAP_CURRENT;
 	case A_LINEWRAP_ALL:	return STOCK_PIXMAP_LINEWRAP_ALL;
 	case A_ADDRBOOK: 		return STOCK_PIXMAP_ADDRESS_BOOK;
-	#ifdef USE_ENCHANT
-	case A_CHECK_SPELLING:	return STOCK_PIXMAP_CHECK_SPELLING;
-	#endif
 	case A_PRIVACY_SIGN:	return STOCK_PIXMAP_MAIL_PRIVACY_SIGNED;
 	case A_PRIVACY_ENCRYPT:	return STOCK_PIXMAP_MAIL_PRIVACY_ENCRYPTED;
 
@@ -1876,13 +1860,6 @@ static void toolbar_linewrap_all_cb(GtkWidget *widget, gpointer data)
 	compose_toolbar_cb(A_LINEWRAP_ALL, data);
 }
 
-#ifdef USE_ENCHANT
-static void toolbar_check_spelling_cb(GtkWidget *widget, gpointer data)
-{
-	compose_toolbar_cb(A_CHECK_SPELLING, data);
-}
-#endif
-
 static void toolbar_privacy_sign_cb(GtkWidget *widget, gpointer data)
 {
 	ToolbarItem *toolbar_item = (ToolbarItem*)data;
@@ -2060,9 +2037,6 @@ static void toolbar_buttons_cb(GtkWidget   *widget,
 		{ A_LINEWRAP_CURRENT,	toolbar_linewrap_current_cb	},
 		{ A_LINEWRAP_ALL,		toolbar_linewrap_all_cb   	},
 		{ A_ADDRBOOK,			toolbar_addrbook_cb			},
-#ifdef USE_ENCHANT
-		{ A_CHECK_SPELLING,     toolbar_check_spelling_cb	},
-#endif
 		{ A_PRIVACY_SIGN,		toolbar_privacy_sign_cb		},
 		{ A_PRIVACY_ENCRYPT,	toolbar_privacy_encrypt_cb	},
 		{ A_CLAWS_ACTIONS,		toolbar_actions_execute_cb	},
@@ -2412,12 +2386,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,_("Address book"));
 			toolbar_data->addrbook_btn = item;
 			break;
-#ifdef USE_ENCHANT
-		case A_CHECK_SPELLING:
-			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,_("Check spelling"));
-			toolbar_data->spellcheck_btn = item;
-			break;
-#endif
 		case A_PRIVACY_SIGN:
 			TOOLBAR_TOGGLE_ITEM(item,icon_wid,toolbar_item->text,_("Sign"));
 			g_signal_connect (G_OBJECT(item), "toggled",
@@ -2759,10 +2727,6 @@ void toolbar_comp_set_sensitive(gpointer data, gboolean sensitive)
 		GTK_BUTTON_SET_SENSITIVE(compose->toolbar->linewrap_all_btn, sensitive);
 	if (compose->toolbar->addrbook_btn)
 		GTK_BUTTON_SET_SENSITIVE(compose->toolbar->addrbook_btn, sensitive);
-#ifdef USE_ENCHANT
-	if (compose->toolbar->spellcheck_btn)
-		GTK_BUTTON_SET_SENSITIVE(compose->toolbar->spellcheck_btn, sensitive);
-#endif
 	for (; items != NULL; items = g_slist_next(items)) {
 		ToolbarClawsActions *item = (ToolbarClawsActions *)items->data;
 		GTK_BUTTON_SET_SENSITIVE(item->widget, sensitive);
@@ -2819,9 +2783,6 @@ static void toolbar_init(Toolbar * toolbar)
 	toolbar->preferences_btn   = NULL;
 	toolbar->action_list       = NULL;
 	toolbar->item_list         = NULL;
-#ifdef USE_ENCHANT
-	toolbar->spellcheck_btn    = NULL;
-#endif
 
 	toolbar->privacy_sign_btn  = NULL;
 	toolbar->privacy_encrypt_btn = NULL;

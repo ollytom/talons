@@ -104,7 +104,6 @@ claws_mail_SOURCES = \
 	prefs_quote.c \
 	prefs_receive.c \
 	prefs_send.c \
-	prefs_spelling.c \
 	prefs_summaries.c \
 	prefs_summary_column.c \
 	prefs_summary_open.c \
@@ -207,7 +206,6 @@ claws_mailinclude_HEADERS = \
 	prefs_quote.h \
 	prefs_receive.h \
 	prefs_send.h \
-	prefs_spelling.h \
 	prefs_summaries.h \
 	prefs_summary_column.h \
 	prefs_summary_open.h \
@@ -465,7 +463,6 @@ claws_mail_DEPENDENCIES = $(claws_mail_deps) \
 claws_mail_LDADD = \
 	$(etpan_library) \
 	gtk/libclawsgtk.la \
-	$(ENCHANT_LIBS) \
 	$(INTLLIBS) \
 	$(GTK_LIBS) \
 	$(GNUTLS_LIBS) \
@@ -487,7 +484,6 @@ AM_CPPFLAGS = \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DDATAROOTDIR=\""$(datarootdir)"\" \
 	$(IFLAGS) \
-	$(ENCHANT_CFLAGS) \
 	$(GTK_CFLAGS) \
 	$(GNUTLS_CFLAGS) \
 	$(NETTLE_CFLAGS) \

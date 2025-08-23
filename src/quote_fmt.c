@@ -63,7 +63,6 @@ static gchar *quote_desc_strings[] = {
 	"%msg_no_sig (%m)",			N_("message body without signature"), /* message with no signature */
 	"%quoted_msg_no_sig (%q)",	N_("quoted message body without signature"), /* quoted message with no signature */
 	"%tags",				N_("message tags"), /* message tags */
-	"%dict (%T)",				N_("current dictionary"), /* current dictionary */
 	"%cursor (%X)",				N_("cursor position"), /* X marks the cursor spot */
 	"%account_fullname (%af)",	N_("account property: your name"), /* full name in compose account */
 	"%account_email (%am)",		N_("account property: your email address"), /* mail address in compose account */
@@ -71,7 +70,6 @@ static gchar *quote_desc_strings[] = {
 	"%account_org (%ao)",		N_("account property: organization"), /* organization in compose account */
 	"%account_sig (%as)",		N_("account property: signature"), /* signature set in account prefs */
 	"%account_sigpath (%asp)",	N_("account property: signature path"), /* signature path set in account prefs */
-	"%account_dict (%aT)",		N_("account property: default dictionary"), /* main dict (if enabled) in account */
 	"%addrbook_cc (%ABc)",		N_("address book <span style=\"oblique\">completion</span>: Cc"), /* completion of 'Cc' from address book */
 	"%addrbook_from (%ABf)",	N_("address book <span style=\"oblique\">completion</span>: From"), /* completion of 'From' from address book */
 	"%addrbook_to (%ABt)",		N_("address book <span style=\"oblique\">completion</span>: To"), /* completion of 'To' from address book */

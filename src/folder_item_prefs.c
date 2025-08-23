@@ -71,16 +71,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"default_account", NULL, &tmp_prefs.default_account, P_INT,
 	 NULL, NULL, NULL},
-#if USE_ENCHANT
-	{"enable_default_dictionary", "", &tmp_prefs.enable_default_dictionary, P_BOOL,
-	 NULL, NULL, NULL},
-	{"default_dictionary", NULL, &tmp_prefs.default_dictionary, P_STRING,
-	 NULL, NULL, NULL},
-	{"enable_default_alt_dictionary", "", &tmp_prefs.enable_default_alt_dictionary, P_BOOL,
-	 NULL, NULL, NULL},
-	{"default_alt_dictionary", NULL, &tmp_prefs.default_alt_dictionary, P_STRING,
-	 NULL, NULL, NULL},
-#endif
 	{"always_sign", "0", &tmp_prefs.always_sign, P_ENUM,
  	 NULL, NULL, NULL},
 	{"always_encrypt", "0", &tmp_prefs.always_encrypt, P_ENUM,
@@ -204,12 +194,6 @@ static FolderItemPrefs *folder_item_prefs_clear(FolderItemPrefs *prefs)
 	prefs->folder_chmod = 0;
 	prefs->enable_default_account = FALSE;
 	prefs->default_account = 0;
-#if USE_ENCHANT
-	prefs->enable_default_dictionary = FALSE;
-	prefs->default_dictionary = NULL;
-	prefs->enable_default_alt_dictionary = FALSE;
-	prefs->default_alt_dictionary = NULL;
-#endif
 	prefs->always_sign = SIGN_OR_ENCRYPT_DEFAULT;
 	prefs->always_encrypt = SIGN_OR_ENCRYPT_DEFAULT;
 	prefs->save_copy_to_folder = FALSE;
@@ -312,12 +296,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 	tmp_prefs.folder_chmod			= src->prefs->folder_chmod;
 	tmp_prefs.enable_default_account	= src->prefs->enable_default_account;
 	tmp_prefs.default_account		= src->prefs->default_account;
-#if USE_ENCHANT
-	tmp_prefs.enable_default_dictionary	= src->prefs->enable_default_dictionary;
-	tmp_prefs.default_dictionary		= g_strdup(src->prefs->default_dictionary);
-	tmp_prefs.enable_default_alt_dictionary	= src->prefs->enable_default_alt_dictionary;
-	tmp_prefs.default_alt_dictionary	= g_strdup(src->prefs->default_alt_dictionary);
-#endif
 	tmp_prefs.always_sign    	= src->prefs->always_sign;
 	tmp_prefs.always_encrypt    = src->prefs->always_encrypt;
 	tmp_prefs.save_copy_to_folder		= src->prefs->save_copy_to_folder;

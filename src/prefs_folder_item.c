@@ -49,10 +49,6 @@
 #include "stock_pixmap.h"
 #include "file-utils.h"
 
-#if USE_ENCHANT
-#include "gtkaspell.h"
-#endif
-
 #define ASSIGN_STRING(string, value) \
 	{ \
 		g_free(string); \
@@ -132,12 +128,6 @@ struct _FolderItemComposePage
 	GtkWidget *entry_default_replyto;
 	GtkWidget *checkbtn_enable_default_account;
 	GtkWidget *optmenu_default_account;
-#if USE_ENCHANT
-	GtkWidget *checkbtn_enable_default_dictionary;
-	GtkWidget *checkbtn_enable_default_alt_dictionary;
-	GtkWidget *combo_default_dictionary;
-	GtkWidget *combo_default_alt_dictionary;
-#endif
 	GtkWidget *always_sign;
 	GtkWidget *always_encrypt;
 
@@ -151,10 +141,6 @@ struct _FolderItemComposePage
 	GtkWidget *default_bcc_rec_checkbtn;
 	GtkWidget *default_replyto_rec_checkbtn;
 	GtkWidget *default_account_rec_checkbtn;
-#if USE_ENCHANT
-	GtkWidget *default_dictionary_rec_checkbtn;
-	GtkWidget *default_alt_dictionary_rec_checkbtn;
-#endif
 	GtkWidget *always_sign_rec_checkbtn;
 	GtkWidget *always_encrypt_rec_checkbtn;
 };
@@ -920,15 +906,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	GtkWidget *optmenu_default_account = NULL;
 	GtkListStore *optmenu_default_account_menu = NULL;
 	GtkTreeIter iter;
-#if USE_ENCHANT
-	GtkWidget *checkbtn_enable_default_dictionary = NULL;
-	GtkWidget *combo_default_dictionary = NULL;
-	GtkWidget *checkbtn_enable_default_alt_dictionary = NULL;
-	GtkWidget *combo_default_alt_dictionary = NULL;
-	GtkWidget *default_dictionary_rec_checkbtn = NULL;
-	GtkWidget *default_alt_dictionary_rec_checkbtn = NULL;
-	gchar *dictionary;
-#endif
 	GtkWidget *always_sign;
 	GtkListStore *always_sign_menu;
 	GtkWidget *always_encrypt;
@@ -953,11 +930,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	page->item	   = item;
 
 	/* Table */
-#if USE_ENCHANT
-# define TABLEHEIGHT 7
-#else
-# define TABLEHEIGHT 6
-#endif
+#define TABLEHEIGHT 6
 	table = gtk_grid_new();
 	gtk_container_set_border_width (GTK_CONTAINER (table), VBOX_BORDER);
 	gtk_grid_set_row_spacing(GTK_GRID(table), 4);
@@ -1184,70 +1157,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	gtk_grid_attach(GTK_GRID(table), default_account_rec_checkbtn, 2, rowcount, 1, 1);
 	rowcount++;
 
-#if USE_ENCHANT
-	/* Default dictionary */
-	checkbtn_enable_default_dictionary = gtk_check_button_new_with_label(_("Default dictionary"));
-	gtk_grid_attach(GTK_GRID(table),  checkbtn_enable_default_dictionary, 0, rowcount, 1, 1);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_default_dictionary),
-	    			     item->prefs->enable_default_dictionary);
-
-	combo_default_dictionary = gtkaspell_dictionary_combo_new(TRUE);
-	gtk_grid_attach(GTK_GRID(table), combo_default_dictionary, 1, rowcount, 1, 1);
-
-	dictionary = item->prefs->default_dictionary;
-	if (dictionary && strrchr(dictionary, '/')) {
-		gchar *tmp = g_strdup(strrchr(dictionary, '/')+1);
-		g_free(item->prefs->default_dictionary);
-		item->prefs->default_dictionary = tmp;
-		dictionary = item->prefs->default_dictionary;
-	}
-	if (item->prefs->default_dictionary &&
-	    strchr(item->prefs->default_dictionary, '-')) {
-		*(strchr(item->prefs->default_dictionary, '-')) = '\0';
-	}
-	if (dictionary)
-		gtkaspell_set_dictionary_menu_active_item(
-			GTK_COMBO_BOX(combo_default_dictionary), dictionary);
-
-	SET_TOGGLE_SENSITIVITY(checkbtn_enable_default_dictionary, combo_default_dictionary);
-
-	default_dictionary_rec_checkbtn = gtk_check_button_new();
-	gtk_grid_attach(GTK_GRID(table), default_dictionary_rec_checkbtn, 2, rowcount, 1, 1);
-
-	rowcount++;
-
-	/* Default alternate dictionary */
-	checkbtn_enable_default_alt_dictionary = gtk_check_button_new_with_label(_("Default alternate dictionary"));
-	gtk_grid_attach(GTK_GRID(table), checkbtn_enable_default_alt_dictionary, 0, rowcount, 1, 1);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_enable_default_alt_dictionary),
-	    			     item->prefs->enable_default_alt_dictionary);
-
-	combo_default_alt_dictionary = gtkaspell_dictionary_combo_new(FALSE);
-	gtk_grid_attach(GTK_GRID(table), combo_default_alt_dictionary, 1, rowcount, 1, 1);
-
-	dictionary = item->prefs->default_alt_dictionary;
-	if (dictionary && strrchr(dictionary, '/')) {
-		gchar *tmp = g_strdup(strrchr(dictionary, '/')+1);
-		g_free(item->prefs->default_alt_dictionary);
-		item->prefs->default_alt_dictionary = tmp;
-		dictionary = item->prefs->default_alt_dictionary;
-	}
-	if (item->prefs->default_alt_dictionary &&
-	    strchr(item->prefs->default_alt_dictionary, '-')) {
-		*(strchr(item->prefs->default_alt_dictionary, '-')) = '\0';
-	}
-	if (dictionary)
-		gtkaspell_set_dictionary_menu_active_item(
-			GTK_COMBO_BOX(combo_default_alt_dictionary), dictionary);
-
-	SET_TOGGLE_SENSITIVITY(checkbtn_enable_default_alt_dictionary, combo_default_alt_dictionary);
-
-	default_alt_dictionary_rec_checkbtn = gtk_check_button_new();
-	gtk_grid_attach(GTK_GRID(table), default_alt_dictionary_rec_checkbtn, 2, rowcount, 1, 1);
-
-	rowcount++;
-#endif
-
 	/* PGP sign? */
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 	gtk_box_set_spacing(GTK_BOX(hbox), 8);
@@ -1331,12 +1240,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	page->entry_default_replyto = entry_default_replyto;
 	page->checkbtn_enable_default_account = checkbtn_enable_default_account;
 	page->optmenu_default_account = optmenu_default_account;
-#ifdef USE_ENCHANT
-	page->checkbtn_enable_default_dictionary = checkbtn_enable_default_dictionary;
-	page->combo_default_dictionary = combo_default_dictionary;
-	page->checkbtn_enable_default_alt_dictionary = checkbtn_enable_default_alt_dictionary;
-	page->combo_default_alt_dictionary = combo_default_alt_dictionary;
-#endif
 	page->always_sign = always_sign;
 	page->always_encrypt = always_encrypt;
 
@@ -1349,10 +1252,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	page->default_bcc_rec_checkbtn		  = default_bcc_rec_checkbtn;
 	page->default_replyto_rec_checkbtn		  = default_replyto_rec_checkbtn;
 	page->default_account_rec_checkbtn	  = default_account_rec_checkbtn;
-#if USE_ENCHANT
-	page->default_dictionary_rec_checkbtn = default_dictionary_rec_checkbtn;
-	page->default_alt_dictionary_rec_checkbtn = default_alt_dictionary_rec_checkbtn;
-#endif
 	page->always_sign_rec_checkbtn = always_sign_rec_checkbtn;
 	page->always_encrypt_rec_checkbtn = always_encrypt_rec_checkbtn;
 
@@ -1474,22 +1373,6 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 				GTK_COMBO_BOX(page->optmenu_default_account));
 	}
 
-#if USE_ENCHANT
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_dictionary_rec_checkbtn))) {
-		prefs->enable_default_dictionary =
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_enable_default_dictionary));
-		ASSIGN_STRING(prefs->default_dictionary,
-			      gtkaspell_get_dictionary_menu_active_item(
-			      		GTK_COMBO_BOX(page->combo_default_dictionary)));
-	}
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_alt_dictionary_rec_checkbtn))) {
-		prefs->enable_default_alt_dictionary =
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_enable_default_alt_dictionary));
-		ASSIGN_STRING(prefs->default_alt_dictionary,
-			      gtkaspell_get_dictionary_menu_active_item(
-				      GTK_COMBO_BOX(page->combo_default_alt_dictionary)));
-	}
-#endif
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_sign_rec_checkbtn))) {
 		prefs->always_sign =
 				combobox_get_active_data(GTK_COMBO_BOX(page->always_sign));
@@ -1524,10 +1407,6 @@ static gboolean compose_save_recurse_func(GNode *node, gpointer data)
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_cc_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_bcc_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_replyto_rec_checkbtn)) ||
-#if USE_ENCHANT
-	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_dictionary_rec_checkbtn)) ||
-	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_alt_dictionary_rec_checkbtn)) ||
-#endif
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_sign_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_encrypt_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_reply_to_rec_checkbtn))
@@ -1535,10 +1414,6 @@ static gboolean compose_save_recurse_func(GNode *node, gpointer data)
 		return TRUE;
 	else if ((node == page->item->node) && item_protocol(item) == A_NNTP &&
 	    !(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_account_rec_checkbtn))
-#if USE_ENCHANT
-	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_dictionary_rec_checkbtn))
-	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_alt_dictionary_rec_checkbtn))
-#endif
 	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_sign_rec_checkbtn))
 	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_encrypt_rec_checkbtn))
 		    ))

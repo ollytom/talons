@@ -157,10 +157,6 @@ AC_ARG_ENABLE(oauth2,
 		[  --disable-oauth2                Do not build OAuth2 support],
 		    [enable_oauth2=$enableval], [enable_oauth2=yes])
 
-AC_ARG_ENABLE(enchant,
-		[  --disable-enchant               Do not build Enchant support for spell-checking],
-		[enable_enchant=$enableval], [enable_enchant=yes])
-
 AC_ARG_ENABLE(valgrind,
 		[  --disable-valgrind              Do not build valgrind support for debugging],
 		[enable_valgrind=$enableval], [enable_valgrind=yes])
@@ -308,24 +304,6 @@ GTK_CFLAGS="$GTK_CFLAGS -DGTK_DISABLE_SINGLE_INCLUDES -DGSEAL_ENABLE"
 AC_SUBST(GTK_CFLAGS)
 AC_SUBST(GTK_LIBS)
 
-dnl enchant is used for spell checking
-AC_MSG_CHECKING([whether to use enchant])
-AC_MSG_RESULT($enable_enchant)
-if test $enable_enchant = yes; then
-		PKG_CHECK_MODULES(ENCHANT, enchant-2 >= 2.0.0,
-		[
-			AC_DEFINE(USE_ENCHANT, 1, enchant-2)
-			echo "Building with enchant-2"
-			enable_enchant=yes
-		],
-		[
-			echo "Building without enchant-notification"
-			enable_enchant=no
-		])
-	AC_SUBST(ENCHANT_CFLAGS)
-	AC_SUBST(ENCHANT_LIBS)
-fi
-
 dnl
 dnl Check whether we need to pass -lresolv
 dnl
@@ -437,7 +415,6 @@ echo ""
 echo "gnuTLS               : $enable_gnutls"
 echo "OAuth2               : $enable_oauth2"
 echo "iconv                : $am_cv_func_iconv"
-echo "enchant              : $enable_enchant"
 echo "Unit tests           : $enable_tests"
 echo "Valgrind support     : $enable_valgrind"
 

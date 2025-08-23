@@ -98,7 +98,6 @@
 #include "hooks.h"
 #include "privacy.h"
 #include "autofaces.h"
-#include "spell_entry.h"
 #include "headers.h"
 #include "file-utils.h"
 #include "fence.h"
@@ -353,10 +352,6 @@ static void compose_add_header_entry	(Compose *compose, const gchar *header,
 					 gchar *text, ComposePrefType pref_type);
 static void compose_remove_header_entries(Compose *compose);
 
-#if USE_ENCHANT
-static void compose_spell_menu_changed	(void *data);
-static void compose_dict_changed	(void *data);
-#endif
 static void compose_add_field_list	( Compose *compose,
 					  GList *listAddress );
 
@@ -524,21 +519,10 @@ static void compose_nothing_cb		   (GtkAction *action, gpointer data)
 
 }
 
-#if USE_ENCHANT
-static void compose_check_all		   (GtkAction *action, gpointer data);
-static void compose_highlight_all	   (GtkAction *action, gpointer data);
-static void compose_check_backwards	   (GtkAction *action, gpointer data);
-static void compose_check_forwards_go	   (GtkAction *action, gpointer data);
-#endif
-
 static PrefsAccount *compose_find_account	(MsgInfo *msginfo);
 
 static MsgInfo *compose_msginfo_new_from_compose(Compose *compose);
 
-#ifdef USE_ENCHANT
-static void compose_set_dictionaries_from_folder_prefs(Compose *compose,
-						FolderItem *folder_item);
-#endif
 static void compose_attach_update_label(Compose *compose);
 static void compose_set_folder_prefs(Compose *compose, FolderItem *folder,
 				     gboolean respect_default_to);
@@ -562,9 +546,6 @@ static GtkActionEntry compose_entries[] =
 /* menus */
 	{"Message",                       NULL, N_("_Message"), NULL, NULL, NULL },
 	{"Edit",                          NULL, N_("_Edit"), NULL, NULL, NULL },
-#if USE_ENCHANT
-	{"Spelling",                      NULL, N_("_Spelling"), NULL, NULL, NULL },
-#endif
 	{"Options",                       NULL, N_("_Options"), NULL, NULL, NULL },
 	{"Tools",                         NULL, N_("_Tools"), NULL, NULL, NULL },
 /* Message menu */
@@ -621,16 +602,6 @@ static GtkActionEntry compose_entries[] =
 	{"Edit/WrapAllLines",             NULL, N_("Wrap all long _lines"), "<control><alt>L", NULL, G_CALLBACK(compose_wrap_all_cb) }, /* 1 */
 	/* {"Edit/---",                   NULL, "---", NULL, NULL, NULL }, */
 	{"Edit/ExtEditor",                NULL, N_("Edit with e_xternal editor"), "<shift><control>X", NULL, G_CALLBACK(compose_ext_editor_cb) },
-#if USE_ENCHANT
-/* Spelling menu */
-	{"Spelling/CheckAllSel",          NULL, N_("_Check all or check selection"), NULL, NULL, G_CALLBACK(compose_check_all) },
-	{"Spelling/HighlightAll",         NULL, N_("_Highlight all misspelled words"), NULL, NULL, G_CALLBACK(compose_highlight_all) },
-	{"Spelling/CheckBackwards",       NULL, N_("Check _backwards misspelled word"), NULL, NULL, G_CALLBACK(compose_check_backwards) },
-	{"Spelling/ForwardNext",          NULL, N_("_Forward to next misspelled word"), NULL, NULL, G_CALLBACK(compose_check_forwards_go) },
-
-	{"Spelling/---",                  NULL, "---", NULL, NULL, NULL },
-	{"Spelling/Options",              NULL, N_("_Options"), NULL, NULL, NULL },
-#endif
 
 	{"Options/ReplyMode",                 NULL, N_("Reply _mode"), NULL, NULL, NULL },
 	{"Options/---",                       NULL, "---", NULL, NULL, NULL },
@@ -941,13 +912,7 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 			/* decode \-escape sequences in the internal representation of the quote format */
 			tmp = g_malloc(strlen(item->prefs->compose_override_from_format)+1);
 			pref_get_unescaped_pref(tmp, item->prefs->compose_override_from_format);
-
-#ifdef USE_ENCHANT
-			quote_fmt_init(dummyinfo, NULL, NULL, FALSE, compose->account, FALSE,
-					compose->gtkaspell);
-#else
 			quote_fmt_init(dummyinfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
 			quote_fmt_scan_string(tmp);
 			quote_fmt_parse();
 
@@ -970,9 +935,6 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 	compose_create_tags(textview, compose);
 
 	undo_block(compose->undostruct);
-#ifdef USE_ENCHANT
-	compose_set_dictionaries_from_folder_prefs(compose, item);
-#endif
 
 	if (account->auto_sig)
 		compose_insert_sig(compose, FALSE);
@@ -1016,12 +978,8 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 			pref_get_unescaped_pref(tmp, subject_format);
 
 			subject = gtk_editable_get_chars(GTK_EDITABLE(compose->subject_entry), 0, -1);
-#ifdef USE_ENCHANT
-			quote_fmt_init(dummyinfo, NULL, subject, FALSE, compose->account, FALSE,
-					compose->gtkaspell);
-#else
 			quote_fmt_init(dummyinfo, NULL, subject, FALSE, compose->account, FALSE);
-#endif
+
 			quote_fmt_scan_string(tmp);
 			quote_fmt_parse();
 
@@ -1062,10 +1020,6 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 			quote_fmt_reset_vartable();
 
 			g_free(tmp);
-#ifdef USE_ENCHANT
-			if (compose->gtkaspell && compose->gtkaspell->check_while_typing)
-				gtkaspell_highlight_all(compose->gtkaspell);
-#endif
 			mfield = BODY_FIELD_PRESENT;
 		}
 
@@ -1495,12 +1449,8 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 		tmp = g_malloc(strlen(msginfo->folder->prefs->reply_override_from_format)+1);
 		pref_get_unescaped_pref(tmp, msginfo->folder->prefs->reply_override_from_format);
 
-#ifdef USE_ENCHANT
-		quote_fmt_init(compose->replyinfo, NULL, NULL, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
-#else
+
 		quote_fmt_init(compose->replyinfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
 		quote_fmt_scan_string(tmp);
 		quote_fmt_parse();
 
@@ -1520,10 +1470,6 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 	compose_create_tags(textview, compose);
 
 	undo_block(compose->undostruct);
-#ifdef USE_ENCHANT
-	compose_set_dictionaries_from_folder_prefs(compose, msginfo->folder);
-	gtkaspell_block_check(compose->gtkaspell);
-#endif
 
 	if (quote_mode == COMPOSE_QUOTE_FORCED ||
 			(quote_mode == COMPOSE_QUOTE_CHECK && prefs_common.reply_with_quote)) {
@@ -1577,11 +1523,6 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 
 	compose_wrap_all(compose);
 
-#ifdef USE_ENCHANT
-	if (compose->gtkaspell && compose->gtkaspell->check_while_typing)
-		gtkaspell_highlight_all(compose->gtkaspell);
-	gtkaspell_unblock_check(compose->gtkaspell);
-#endif
 	SIGNAL_UNBLOCK(textbuf);
 
 	gtk_widget_grab_focus(compose->text);
@@ -1687,13 +1628,7 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 		tmp = g_malloc(strlen(msginfo->folder->prefs->forward_override_from_format)+1);
 		pref_get_unescaped_pref(tmp, msginfo->folder->prefs->forward_override_from_format);
 
-#ifdef USE_ENCHANT
-		gtkaspell_block_check(compose->gtkaspell);
-		quote_fmt_init(full_msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
-#else
 		quote_fmt_init(full_msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
 		quote_fmt_scan_string(tmp);
 		quote_fmt_parse();
 
@@ -1768,11 +1703,6 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 
 	compose_wrap_all(compose);
 
-#ifdef USE_ENCHANT
-	if (compose->gtkaspell && compose->gtkaspell->check_while_typing)
-		gtkaspell_highlight_all(compose->gtkaspell);
-	gtkaspell_unblock_check(compose->gtkaspell);
-#endif
 	SIGNAL_UNBLOCK(textbuf);
 
 	if (privacy_system_can_sign(compose->privacy_system) == FALSE &&
@@ -1881,13 +1811,7 @@ static Compose *compose_forward_multiple(PrefsAccount *account, GSList *msginfo_
 			/* decode \-escape sequences in the internal representation of the quote format */
 			tmp = g_malloc(strlen(msginfo->folder->prefs->forward_override_from_format)+1);
 			pref_get_unescaped_pref(tmp, msginfo->folder->prefs->forward_override_from_format);
-
-#ifdef USE_ENCHANT
-			quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-					compose->gtkaspell);
-#else
 			quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
 			quote_fmt_scan_string(tmp);
 			quote_fmt_parse();
 
@@ -2642,11 +2566,6 @@ void compose_toolbar_cb(gint action, gpointer data)
 	case A_ADDRBOOK:
 		compose_address_cb(NULL, compose);
 		break;
-#ifdef USE_ENCHANT
-	case A_CHECK_SPELLING:
-		compose_check_all(NULL, compose);
-		break;
-#endif
 	case A_PRIVACY_SIGN:
 		break;
 	case A_PRIVACY_ENCRYPT:
@@ -2986,12 +2905,7 @@ static gchar *compose_quote_fmt(Compose *compose, MsgInfo *msginfo,
 	}
 
 	const char *qmark = "> ";
-#ifdef USE_ENCHANT
-	quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE,
-			compose->gtkaspell);
-#else
 	quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-#endif
 	quote_fmt_scan_string(qmark);
 	quote_fmt_parse();
 
@@ -3005,13 +2919,7 @@ static gchar *compose_quote_fmt(Compose *compose, MsgInfo *msginfo,
 		if (trimmed_body)
 			while (*trimmed_body == '\n')
 				trimmed_body++;
-
-#ifdef USE_ENCHANT
-		quote_fmt_init(msginfo, quote_str, trimmed_body, FALSE, compose->account, FALSE,
-				compose->gtkaspell);
-#else
 		quote_fmt_init(msginfo, quote_str, trimmed_body, FALSE, compose->account, FALSE);
-#endif
 		if (need_unescape) {
 			gchar *tmp = NULL;
 
@@ -4854,35 +4762,9 @@ static void compose_select_account(Compose *compose, PrefsAccount *account,
 			header_entry->combo)), &iter, COMBOBOX_TEXT, &header, -1);
 
 	if (header && !strlen(gtk_entry_get_text(GTK_ENTRY(header_entry->entry)))) {
-		if (account->protocol == A_NNTP) {
-			if (!strcmp(header, _("To:")))
-				combobox_select_by_text(
-					GTK_COMBO_BOX(header_entry->combo),
-					_("Newsgroups:"));
-		} else {
-			if (!strcmp(header, _("Newsgroups:")))
-				combobox_select_by_text(
-					GTK_COMBO_BOX(header_entry->combo),
-					_("To:"));
-		}
-
+		combobox_select_by_text(GTK_COMBO_BOX(header_entry->combo), "To:");
 	}
 	g_free(header);
-
-#ifdef USE_ENCHANT
-	/* use account's dict info if set */
-	if (compose->gtkaspell) {
-		if (account->enable_default_dictionary)
-			gtkaspell_change_dict(compose->gtkaspell,
-					account->default_dictionary, FALSE);
-		if (account->enable_default_alt_dictionary)
-			gtkaspell_change_alt_dict(compose->gtkaspell,
-					account->default_alt_dictionary);
-		if (account->enable_default_dictionary
-			|| account->enable_default_alt_dictionary)
-			compose_spell_menu_changed(compose);
-	}
-#endif
 }
 
 gboolean compose_check_for_valid_recipient(Compose *compose) {
@@ -7303,113 +7185,25 @@ static void entry_paste_clipboard(Compose *compose, GtkWidget *entry, GdkAtom cl
 static gboolean text_clicked(GtkWidget *text, GdkEventButton *event,
                                        Compose *compose)
 {
+	if (event->button != 2)
+		return FALSE;
+
 	gint prev_autowrap;
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text));
 
-#if USE_ENCHANT
-	if (event->button == 3) {
-		GtkTextIter iter;
-		GtkTextIter sel_start, sel_end;
-		gboolean stuff_selected;
-		gint x, y;
-		/* move the cursor to allow GtkAspell to check the word
-		 * under the mouse */
-		if (event->x && event->y) {
-			gtk_text_view_window_to_buffer_coords(GTK_TEXT_VIEW(text),
-				GTK_TEXT_WINDOW_TEXT, event->x, event->y,
-				&x, &y);
-			gtk_text_view_get_iter_at_location (GTK_TEXT_VIEW(text),
-				&iter, x, y);
-		} else {
-			GtkTextMark *mark = gtk_text_buffer_get_insert(buffer);
-			gtk_text_buffer_get_iter_at_mark(buffer, &iter, mark);
-		}
-		/* get selection */
-		stuff_selected = gtk_text_buffer_get_selection_bounds(
-				buffer,
-				&sel_start, &sel_end);
+	GtkTextIter iter;
+	gint x, y;
+	BLOCK_WRAP();
+	/* get the middle-click position to paste at the correct place */
+	gtk_text_view_window_to_buffer_coords(GTK_TEXT_VIEW(text),
+		GTK_TEXT_WINDOW_TEXT, event->x, event->y,
+		&x, &y);
+	gtk_text_view_get_iter_at_location (GTK_TEXT_VIEW(text), &iter, x, y);
 
-		gtk_text_buffer_place_cursor (buffer, &iter);
-		/* reselect stuff */
-		if (stuff_selected
-		&& gtk_text_iter_in_range(&iter, &sel_start, &sel_end)) {
-			gtk_text_buffer_select_range(buffer,
-				&sel_start, &sel_end);
-		}
-		return FALSE; /* pass the event so that the right-click goes through */
-	}
-#endif
-	if (event->button == 2) {
-		GtkTextIter iter;
-		gint x, y;
-		BLOCK_WRAP();
-		/* get the middle-click position to paste at the correct place */
-		gtk_text_view_window_to_buffer_coords(GTK_TEXT_VIEW(text),
-			GTK_TEXT_WINDOW_TEXT, event->x, event->y,
-			&x, &y);
-		gtk_text_view_get_iter_at_location (GTK_TEXT_VIEW(text),
-			&iter, x, y);
-
-		entry_paste_clipboard(compose, text, GDK_SELECTION_PRIMARY, &iter);
-		UNBLOCK_WRAP();
-		return TRUE;
-	}
-	return FALSE;
+	entry_paste_clipboard(compose, text, GDK_SELECTION_PRIMARY, &iter);
+	UNBLOCK_WRAP();
+	return TRUE;
 }
-
-#if USE_ENCHANT
-static void compose_spell_menu_changed(void *data)
-{
-	Compose *compose = (Compose *)data;
-	GSList *items;
-	GtkWidget *menuitem;
-	GtkWidget *parent_item;
-	GtkMenu *menu = GTK_MENU(gtk_menu_new());
-	GSList *spell_menu;
-
-	if (compose->gtkaspell == NULL)
-		return;
-
-	parent_item = gtk_ui_manager_get_widget(compose->ui_manager,
-			"/Menu/Spelling/Options");
-
-	/* setting the submenu removes '/Spelling/Options' from the factory
-	 * so we need to save it */
-
-	if (parent_item == NULL) {
-		parent_item = compose->aspell_options_menu;
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(parent_item), NULL);
-	} else
-		compose->aspell_options_menu = parent_item;
-
-	spell_menu = gtkaspell_make_config_menu(compose->gtkaspell);
-
-	spell_menu = g_slist_reverse(spell_menu);
-	for (items = spell_menu;
-	     items; items = items->next) {
-		menuitem = GTK_WIDGET(GTK_MENU_ITEM(items->data));
-		gtk_menu_shell_prepend(GTK_MENU_SHELL(menu), GTK_WIDGET(menuitem));
-		gtk_widget_show(GTK_WIDGET(menuitem));
-	}
-	g_slist_free(spell_menu);
-
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(parent_item), GTK_WIDGET(menu));
-	gtk_widget_show(parent_item);
-}
-
-static void compose_dict_changed(void *data)
-{
-	Compose *compose = (Compose *) data;
-
-	if(!compose->gtkaspell)
-		return;
-	if(compose->gtkaspell->recheck_when_changing_dict == FALSE)
-		return;
-
-	gtkaspell_highlight_all(compose->gtkaspell);
-	claws_spell_entry_recheck_all(CLAWS_SPELL_ENTRY(compose->subject_entry));
-}
-#endif
 
 static gboolean compose_popup_menu(GtkWidget *widget, gpointer data)
 {
@@ -7461,10 +7255,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	GtkWidget *popupmenu;
 	GtkActionGroup *action_group = NULL;
-
-#if USE_ENCHANT
-        GtkAspell * gtkaspell = NULL;
-#endif
 
 	static GdkGeometry geometry;
 	GdkRectangle workarea = {0};
@@ -7534,9 +7324,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu", "Message", "Message", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu", "Edit", "Edit", GTK_UI_MANAGER_MENU)
-#ifdef USE_ENCHANT
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu", "Spelling", "Spelling", GTK_UI_MANAGER_MENU)
-#endif
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu", "Options", "Options", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu", "Tools", "Tools", GTK_UI_MANAGER_MENU)
 
@@ -7595,16 +7382,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Edit", "Separator3", "Edit/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Edit", "ExtEditor", "Edit/ExtEditor", GTK_UI_MANAGER_MENUITEM)
-
-#if USE_ENCHANT
-/* Spelling menu */
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Spelling", "CheckAllSel", "Spelling/CheckAllSel", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Spelling", "HighlightAll", "Spelling/HighlightAll", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Spelling", "CheckBackwards", "Spelling/CheckBackwards", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Spelling", "ForwardNext", "Spelling/ForwardNext", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Spelling", "Separator1", "Spelling/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Spelling", "Options", "Spelling/Options", GTK_UI_MANAGER_MENU)
-#endif
 
 /* Options menu */
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "ReplyMode", "Options/ReplyMode", GTK_UI_MANAGER_MENU)
@@ -7695,12 +7472,7 @@ static Compose *compose_create(PrefsAccount *account,
 	label = gtk_label_new_with_mnemonic(_("S_ubject:"));
 	gtk_box_pack_start(GTK_BOX(subject), label, FALSE, FALSE, HSPACING_NARROW);
 	gtk_widget_show(label);
-
-#ifdef USE_ENCHANT
-	subject_entry = claws_spell_entry_new();
-#else
 	subject_entry = gtk_entry_new();
-#endif
 	gtk_box_pack_start(GTK_BOX(subject), subject_entry, TRUE, TRUE, HSPACING_NARROW);
 	g_signal_connect_after(G_OBJECT(subject_entry), "grab_focus",
 			 G_CALLBACK(compose_grab_focus_cb), compose);
@@ -7878,40 +7650,6 @@ static Compose *compose_create(PrefsAccount *account,
 		hooks_register_hook(FOLDER_UPDATE_HOOKLIST,
 				compose_update_folder_hook,
 				(gpointer) compose);
-
-#if USE_ENCHANT
-	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Spelling", FALSE);
-	if (mode != COMPOSE_REDIRECT) {
-        	if (prefs_common.enable_aspell && prefs_common.dictionary &&
-	    	    strcmp(prefs_common.dictionary, "")) {
-			gtkaspell = gtkaspell_new(prefs_common.dictionary,
-						  prefs_common.alt_dictionary,
-						  conv_get_locale_charset_str(),
-						  prefs_common.color[COL_MISSPELLED],
-						  prefs_common.check_while_typing,
-						  prefs_common.recheck_when_changing_dict,
-						  prefs_common.use_alternate,
-						  prefs_common.use_both_dicts,
-						  GTK_TEXT_VIEW(text),
-						  GTK_WINDOW(compose->window),
-						  compose_dict_changed,
-						  compose_spell_menu_changed,
-						  compose);
-			if (!gtkaspell) {
-				alertpanel_error(_("Spell checker could not "
-						"be started.\n%s"),
-						gtkaspell_checkers_strerror());
-				gtkaspell_checkers_reset_error();
-			} else {
-				cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Spelling", TRUE);
-			}
-        	}
-	}
-	compose->gtkaspell = gtkaspell;
-	compose_spell_menu_changed(compose);
-	claws_spell_entry_set_gtkaspell(CLAWS_SPELL_ENTRY(subject_entry), gtkaspell);
-#endif
-
 	compose_select_account(compose, account, TRUE);
 
 	cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Edit/AutoWrap", prefs_common.autowrap);
@@ -8373,12 +8111,6 @@ static void compose_destroy(Compose *compose)
 
 	if (addressbook_get_target_compose() == compose)
 		addressbook_set_target_compose(NULL);
-#if USE_ENCHANT
-        if (compose->gtkaspell) {
-	        gtkaspell_delete(compose->gtkaspell);
-		compose->gtkaspell = NULL;
-        }
-#endif
 
 	if (!compose->batch) {
 		gtk_window_get_size(GTK_WINDOW(compose->window),
@@ -9056,9 +8788,6 @@ static char *ext_editor_menu_entries[] = {
 	"Menu/Message/Save",
 	"Menu/Message/Print",
 	"Menu/Edit",
-#if USE_ENCHANT
-	"Menu/Spelling",
-#endif
 	"Menu/Tools/Actions",
 	NULL
 };
@@ -9369,9 +9098,6 @@ static void compose_allow_user_actions (Compose *compose, gboolean allow)
 	toolbar_comp_set_sensitive(compose, allow);
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Message", allow);
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Edit", allow);
-#if USE_ENCHANT
-	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Spelling", allow);
-#endif
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options", allow);
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Tools", allow);
 
@@ -9805,12 +9531,6 @@ static void compose_insert_file_cb(GtkAction *action, gpointer data)
 		}
 		g_list_free(file_list);
 	}
-
-#ifdef USE_ENCHANT
-	if (files_inserted > 0 && compose->gtkaspell &&
-       	    compose->gtkaspell->check_while_typing)
-		gtkaspell_highlight_all(compose->gtkaspell);
-#endif
 }
 
 static void compose_insert_sig_cb(GtkAction *action, gpointer data)
@@ -10209,13 +9929,6 @@ static void compose_paste_cb(GtkAction *action, gpointer data)
 	GtkTextBuffer *buffer;
 	if (compose->focused_editable && gtk_widget_has_focus(compose->focused_editable))
 		entry_paste_clipboard(compose, compose->focused_editable, GDK_SELECTION_CLIPBOARD, NULL);
-
-#ifdef USE_ENCHANT
-	if (gtk_widget_has_focus(compose->text) &&
-	    compose->gtkaspell &&
-            compose->gtkaspell->check_while_typing)
-	    	gtkaspell_highlight_all(compose->gtkaspell);
-#endif
 }
 
 static void compose_paste_as_quote_cb(GtkAction *action, gpointer data)
@@ -11072,61 +10785,6 @@ static void text_inserted(GtkTextBuffer *buffer, GtkTextIter *iter,
 			(500, (GSourceFunc) compose_defer_auto_save_draft, compose);
 }
 
-#if USE_ENCHANT
-static void compose_check_all(GtkAction *action, gpointer data)
-{
-	Compose *compose = (Compose *)data;
-	if (!compose->gtkaspell)
-		return;
-
-	if (gtk_widget_has_focus(compose->subject_entry))
-		claws_spell_entry_check_all(
-			CLAWS_SPELL_ENTRY(compose->subject_entry));
-	else
-		gtkaspell_check_all(compose->gtkaspell);
-}
-
-static void compose_highlight_all(GtkAction *action, gpointer data)
-{
-	Compose *compose = (Compose *)data;
-	if (compose->gtkaspell) {
-		claws_spell_entry_recheck_all(
-			CLAWS_SPELL_ENTRY(compose->subject_entry));
-		gtkaspell_highlight_all(compose->gtkaspell);
-	}
-}
-
-static void compose_check_backwards(GtkAction *action, gpointer data)
-{
-	Compose *compose = (Compose *)data;
-	if (!compose->gtkaspell) {
-		cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Spelling", FALSE);
-		return;
-	}
-
-	if (gtk_widget_has_focus(compose->subject_entry))
-		claws_spell_entry_check_backwards(
-			CLAWS_SPELL_ENTRY(compose->subject_entry));
-	else
-		gtkaspell_check_backwards(compose->gtkaspell);
-}
-
-static void compose_check_forwards_go(GtkAction *action, gpointer data)
-{
-	Compose *compose = (Compose *)data;
-	if (!compose->gtkaspell) {
-		cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Spelling", FALSE);
-		return;
-	}
-
-	if (gtk_widget_has_focus(compose->subject_entry))
-		claws_spell_entry_check_forwards_go(
-			CLAWS_SPELL_ENTRY(compose->subject_entry));
-	else
-		gtkaspell_check_forwards_go(compose->gtkaspell);
-}
-#endif
-
 /*!
  *\brief	Guess originating forward account from MsgInfo and several
  *		"common preference" settings. Return NULL if no guess.
@@ -11471,29 +11129,6 @@ static MsgInfo *compose_msginfo_new_from_compose(Compose *compose)
 
 	return newmsginfo;
 }
-
-#ifdef USE_ENCHANT
-/* update compose's dictionaries from folder dict settings */
-static void compose_set_dictionaries_from_folder_prefs(Compose *compose,
-						FolderItem *folder_item)
-{
-	cm_return_if_fail(compose != NULL);
-
-	if (compose->gtkaspell && folder_item && folder_item->prefs) {
-		FolderItemPrefs *prefs = folder_item->prefs;
-
-		if (prefs->enable_default_dictionary)
-			gtkaspell_change_dict(compose->gtkaspell,
-					prefs->default_dictionary, FALSE);
-		if (folder_item->prefs->enable_default_alt_dictionary)
-			gtkaspell_change_alt_dict(compose->gtkaspell,
-					prefs->default_alt_dictionary);
-		if (prefs->enable_default_dictionary
-			|| prefs->enable_default_alt_dictionary)
-			compose_spell_menu_changed(compose);
-	}
-}
-#endif
 
 static void compose_subject_entry_activated(GtkWidget *widget, gpointer data)
 {

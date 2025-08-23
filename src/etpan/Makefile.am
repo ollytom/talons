@@ -25,13 +25,11 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/common \
 	-I$(top_srcdir)/src/gtk \
 	$(GTK_CFLAGS) \
-	$(LIBETPAN_CFLAGS) \
-	$(ENCHANT_CFLAGS)
+	$(LIBETPAN_CFLAGS)
 
 libclawsetpan_la_LIBADD = \
 	../common/libclawscommon.la \
 	$(GTK_LIBS) \
-	$(LIBETPAN_LIBS) \
-	$(ENCHANT_LIBS)
+	$(LIBETPAN_LIBS)
 
 .PHONY: test

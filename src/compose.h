@@ -36,10 +36,6 @@ typedef struct _AttachInfo	AttachInfo;
 #include "viewtypes.h"
 #include "folder.h"
 
-#ifdef USE_ENCHANT
-#include "gtkaspell.h"
-#endif
-
 #define COMPOSE_CHECK_BEFORE_SEND_HOOKLIST "compose_check_before_send"
 #define COMPOSE_CREATED_HOOKLIST "compose_created"
 
@@ -253,11 +249,6 @@ struct _Compose
 	GtkUIManager *ui_manager;
 
 	gint folder_update_callback_id;
-#if USE_ENCHANT
-        /* GNU/aspell spell checker */
-        GtkAspell *gtkaspell;
-	GtkWidget *aspell_options_menu;
-#endif
 };
 
 struct _AttachInfo
