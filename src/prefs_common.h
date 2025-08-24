@@ -223,7 +223,6 @@ struct _PrefsCommon
 
 	gboolean trans_hdr;
 	gint display_folder_unread;
-	gint ng_abbrev_len;
 
 	gboolean show_searchbar;
 	gboolean swap_from;

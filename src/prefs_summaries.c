@@ -52,7 +52,6 @@ typedef struct _SummariesPage
 	GtkWidget *window;
 
 	GtkWidget *optmenu_folder_unread;
-	GtkWidget *spinbtn_ng_abbrev_len;
 	GtkWidget *checkbtn_useaddrbook;
 	GtkWidget *checkbtn_show_tooltips;
 	GtkWidget *checkbtn_threadsubj;
@@ -363,9 +362,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *vbox1, *vbox2, *vbox3, *vbox4;
 	GtkWidget *frame_new_folders;
 	GtkWidget *optmenu_folder_unread;
-	GtkWidget *label_ng_abbrev;
-	GtkWidget *spinbtn_ng_abbrev_len;
-	GtkAdjustment *spinbtn_ng_abbrev_len_adj;
 	GtkWidget *checkbtn_useaddrbook;
 	GtkWidget *checkbtn_show_tooltips;
 	GtkWidget *checkbtn_threadsubj;
@@ -474,28 +470,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			 G_CALLBACK(startup_folder_toggled), checkbtn_reopen_last_folder);
 	g_signal_connect(G_OBJECT(startup_folder_select), "clicked",
 			 G_CALLBACK(foldersel_cb), startup_folder_entry);
-
-	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox1);
-	gtk_box_pack_start(GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
-
-	label_ng_abbrev = gtk_label_new
-		(_("Abbreviate newsgroup names longer than"));
-	gtk_widget_show (label_ng_abbrev);
-	gtk_box_pack_start (GTK_BOX (hbox1), label_ng_abbrev, FALSE, FALSE, 0);
-
-	spinbtn_ng_abbrev_len_adj = GTK_ADJUSTMENT(gtk_adjustment_new (16, 0, 999, 1, 10, 0));
-	spinbtn_ng_abbrev_len = gtk_spin_button_new
-		(GTK_ADJUSTMENT (spinbtn_ng_abbrev_len_adj), 1, 0);
-	gtk_widget_show (spinbtn_ng_abbrev_len);
-	gtk_box_pack_start (GTK_BOX (hbox1), spinbtn_ng_abbrev_len,
-			    FALSE, FALSE, 0);
-	gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinbtn_ng_abbrev_len),
-				     TRUE);
-
-	label_ng_abbrev = gtk_label_new (_("letters"));
-	gtk_widget_show (label_ng_abbrev);
-	gtk_box_pack_start (GTK_BOX (hbox1), label_ng_abbrev, FALSE, FALSE, 0);
 
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox1);
@@ -728,7 +702,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 		 _("Hide deleted messages"));
 
 	prefs_summaries->optmenu_folder_unread = optmenu_folder_unread;
-	prefs_summaries->spinbtn_ng_abbrev_len = spinbtn_ng_abbrev_len;
 	prefs_summaries->checkbtn_useaddrbook = checkbtn_useaddrbook;
 	prefs_summaries->checkbtn_show_tooltips = checkbtn_show_tooltips;
 	prefs_summaries->checkbtn_threadsubj = checkbtn_threadsubj;
@@ -778,8 +751,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			prefs_common.show_tooltips);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_threadsubj),
 			prefs_common.thread_by_subject);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_ng_abbrev_len),
-			prefs_common.ng_abbrev_len);
 	gtk_entry_set_text(GTK_ENTRY(entry_datefmt),
 			prefs_common.date_format?prefs_common.date_format:"");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_reopen_last_folder),
@@ -853,8 +824,6 @@ static void prefs_summaries_save(PrefsPage *_page)
 			GTK_TOGGLE_BUTTON(page->checkbtn_show_tooltips));
 	prefs_common.thread_by_subject = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_threadsubj));
-	prefs_common.ng_abbrev_len = gtk_spin_button_get_value_as_int(
-			GTK_SPIN_BUTTON(page->spinbtn_ng_abbrev_len));
 
 	g_free(prefs_common.date_format);
 	prefs_common.date_format = gtk_editable_get_chars(

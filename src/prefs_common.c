@@ -231,9 +231,6 @@ static PrefParam param[] = {
 	{"display_folder_unread_num", "0",
 	 &prefs_common.display_folder_unread, P_INT,
 	 NULL, NULL, NULL},
-	{"newsgroup_abbrev_len", "16",
-	 &prefs_common.ng_abbrev_len, P_INT,
-	 NULL, NULL, NULL},
 
 #ifdef ENABLE_NLS
 	{"translate_header", "TRUE", &prefs_common.trans_hdr, P_BOOL,
