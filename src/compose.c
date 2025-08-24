@@ -7464,10 +7464,8 @@ static Compose *compose_create(PrefsAccount *account,
 	gtk_box_pack_start(GTK_BOX(edit_vbox), scrolledwin, TRUE, TRUE, 0);
 
 	text = gtk_text_view_new();
-	if (prefs_common.show_compose_margin) {
-		gtk_text_view_set_left_margin(GTK_TEXT_VIEW(text), 6);
-		gtk_text_view_set_right_margin(GTK_TEXT_VIEW(text), 6);
-	}
+	gtk_text_view_set_left_margin(GTK_TEXT_VIEW(text), 4);
+	gtk_text_view_set_right_margin(GTK_TEXT_VIEW(text), 4);
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text));
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text), GTK_WRAP_WORD_CHAR);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(text), TRUE);

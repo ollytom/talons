@@ -201,7 +201,6 @@ struct _PrefsCommon
 	gboolean compose_with_format;
 	gchar *compose_subject_format;
 	gchar *compose_body_format;
-	gboolean show_compose_margin;
 	gboolean type_any_header;
 	gboolean notify_pasted_attachments;
 
