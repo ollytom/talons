@@ -218,16 +218,6 @@ static PrefParam param[] = {
 	{"quote_chars", ">", &prefs_common.quote_chars, P_STRING,
 	 NULL, NULL, NULL},
 
-	/* image viewer */
-	{"display_image", "TRUE", &prefs_common.display_img, P_BOOL,
-	 NULL, NULL, NULL},
-	{"resize_image", "TRUE", &prefs_common.resize_img, P_BOOL,
-	 NULL, NULL, NULL},
-	{"inline_image", "TRUE", &prefs_common.inline_img, P_BOOL,
-	 NULL, NULL, NULL},
-	{"fit_image_height", "TRUE", &prefs_common.fit_img_height, P_BOOL,
-	 NULL, NULL, NULL},
-
 	{"display_folder_unread_num", "0",
 	 &prefs_common.display_folder_unread, P_INT,
 	 NULL, NULL, NULL},

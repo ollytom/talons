@@ -202,10 +202,6 @@ gboolean gtkut_list_view_select_row(GtkWidget *list, gint row);
 GtkUIManager *gtkut_create_ui_manager(void);
 GtkUIManager *gtkut_ui_manager(void);
 
-GdkPixbuf *claws_load_pixbuf_fitting(GdkPixbuf *pixbuf, gboolean inline_img,
-				     gboolean fit_img_height,
-				     int box_width, int box_height);
-
 GtkWidget *gtkut_time_select_combo_new();
 void gtkut_time_select_select_by_time(GtkComboBox *combo, int hour, int minute);
 gboolean gtkut_time_select_get_time(GtkComboBox *combo, int *hour, int *minute);
