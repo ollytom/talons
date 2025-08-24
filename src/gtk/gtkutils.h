@@ -183,12 +183,6 @@ gboolean get_tag_range(GtkTextIter *iter,
 GtkWidget *face_get_from_header(const gchar *o_face);
 
 GtkWidget *gtkut_sc_combobox_create(GtkWidget *eventbox, gboolean focus_on_click);
-void gtkutils_scroll_one_line	(GtkWidget *widget,
-				 GtkAdjustment *vadj,
-				 gboolean up);
-gboolean gtkutils_scroll_page	(GtkWidget *widget,
-				 GtkAdjustment *vadj,
-				 gboolean up);
 
 gboolean gtkut_tree_model_text_iter_prev(GtkTreeModel *model,
 				 GtkTreeIter *iter,

@@ -5926,40 +5926,27 @@ static gboolean summary_key_pressed(GtkWidget *widget, GdkEventKey *event,
 	if (summaryview->selected) {
 		gboolean handled = FALSE;
 		switch (event->keyval) {
-		case GDK_KEY_space:		/* Page down or go to the next */
+		case GDK_KEY_space:
 			handled = TRUE;
 			if (event->state & GDK_CONTROL_MASK) {
 				handled = FALSE;
 				break;
 			}
-			if (event->state & GDK_SHIFT_MASK)
-				mimeview_scroll_page(messageview->mimeview, TRUE);
 			if (summaryview->displayed != summaryview->selected) {
-					summary_display_msg(summaryview,
-							    summaryview->selected);
+					summary_display_msg(summaryview, summaryview->selected);
 			} else {
 				if (mod_pressed) {
-					if (!mimeview_scroll_page(messageview->mimeview, TRUE))
-						summary_select_prev_unread(summaryview);
+					summary_select_prev_unread(summaryview);
 				} else {
-					if (!mimeview_scroll_page(messageview->mimeview, FALSE))
-						summary_select_next_unread(summaryview);
+					summary_select_next_unread(summaryview);
 				}
 			}
 			break;
-		case GDK_KEY_BackSpace:	/* Page up */
-			handled = TRUE;
-			mimeview_scroll_page(messageview->mimeview, TRUE);
-			break;
-		case GDK_KEY_Return:	/* Scroll up/down one line */
+		case GDK_KEY_Return:
 		case GDK_KEY_KP_Enter:
 			handled = TRUE;
-			if (summaryview->displayed != summaryview->selected) {
-				summary_display_msg(summaryview,
-						    summaryview->selected);
-				break;
-			}
-			mimeview_scroll_one_line(messageview->mimeview, mod_pressed);
+			if (summaryview->displayed != summaryview->selected)
+				summary_display_msg(summaryview, summaryview->selected);
 			break;
 		}
 

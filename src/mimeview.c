@@ -81,9 +81,6 @@ static void mimeview_selected		(GtkTreeSelection	*selection,
 static gint mimeview_button_pressed	(GtkWidget	*widget,
 					 GdkEventButton	*event,
 					 MimeView	*mimeview);
-static gint mimeview_key_pressed	(GtkWidget	*widget,
-					 GdkEventKey	*event,
-					 MimeView	*mimeview);
 
 static void mimeview_drag_data_get      (GtkWidget	  *widget,
 					 GdkDragContext   *drag_context,
@@ -349,8 +346,6 @@ MimeView *mimeview_create(MainWindow *mainwin)
 			 G_CALLBACK(mimeview_selected), mimeview);
 	g_signal_connect(G_OBJECT(ctree), "button_release_event",
 			 G_CALLBACK(mimeview_button_pressed), mimeview);
-	g_signal_connect(G_OBJECT(ctree), "key_press_event",
-			 G_CALLBACK(mimeview_key_pressed), mimeview);
 	g_signal_connect(G_OBJECT(ctree), "drag_data_get",
 			 G_CALLBACK(mimeview_drag_data_get), mimeview);
 
@@ -1490,12 +1485,6 @@ static gboolean part_button_pressed(MimeView *mimeview, GdkEventButton *event,
 	return FALSE;
 }
 
-
-gboolean mimeview_pass_key_press_event(MimeView *mimeview, GdkEventKey *event)
-{
-	return mimeview_key_pressed(mimeview->ctree, event, mimeview);
-}
-
 void mimeview_select_next_part(MimeView *mimeview)
 {
 	GtkTreeView *ctree = GTK_TREE_VIEW(mimeview->ctree);
@@ -1567,56 +1556,6 @@ skip:
 
 #define BREAK_ON_MODIFIER_KEY() \
 	if ((event->state & (GDK_MOD1_MASK|GDK_CONTROL_MASK)) != 0) break
-
-static gint mimeview_key_pressed(GtkWidget *widget, GdkEventKey *event,
-				 MimeView *mimeview)
-{
-	SummaryView *summaryview;
-
-	if (!event) return FALSE;
-	if (!mimeview->opened) return FALSE;
-
-	summaryview = mimeview->messageview->mainwin->summaryview;
-
-	if (summaryview && quicksearch_has_focus(summaryview->quicksearch))
-		return FALSE;
-
-	switch (event->keyval) {
-	case GDK_KEY_Home:
-	case GDK_KEY_End:
-		textview_scroll_max(mimeview->textview,
-				    (event->keyval == GDK_KEY_Home));
-		return TRUE;
-	case GDK_KEY_Page_Down:
-	case GDK_KEY_space:
-		if (mimeview_scroll_page(mimeview,
-					 (event->state & GDK_SHIFT_MASK) != 0))
-			return TRUE;
-
-		if (!(event->state & GDK_SHIFT_MASK))
-			mimeview_select_next_part(mimeview);
-		return TRUE;
-	case GDK_KEY_Page_Up:
-	case GDK_KEY_BackSpace:
-		mimeview_scroll_page(mimeview, TRUE);
-		return TRUE;
-	case GDK_KEY_Return:
-	case GDK_KEY_KP_Enter:
-		mimeview_scroll_one_line(mimeview,
-					 (event->state & GDK_MOD1_MASK) != 0);
-		return TRUE;
-	case GDK_KEY_Up:
-	case GDK_KEY_Down:
-		mimeview_scroll_one_line(mimeview, (event->keyval == GDK_KEY_Up));
-		return TRUE;
-	default:
-		break;
-	}
-
-	if (mimeview->messageview->new_window) return FALSE;
-
-	return summary_pass_key_press_event(summaryview, event);
-}
 
 static void mimeview_drag_data_get(GtkWidget	    *widget,
 				   GdkDragContext   *drag_context,
@@ -2342,22 +2281,6 @@ static gint icon_key_pressed(GtkWidget *button, GdkEventKey *event,
 	if (!event) return FALSE;
 
 	switch (event->keyval) {
-	case GDK_KEY_space:
-		if (mimeview_scroll_page(mimeview, FALSE))
-			return TRUE;
-
-		mimeview_select_next_part(mimeview);
-		return TRUE;
-
-		break;
-	case GDK_KEY_BackSpace:
-		mimeview_scroll_page(mimeview, TRUE);
-		return TRUE;
-	case GDK_KEY_Return:
-	case GDK_KEY_KP_Enter:
-		mimeview_scroll_one_line(mimeview,
-					 (event->state & GDK_MOD1_MASK) != 0);
-		return TRUE;
 	case GDK_KEY_y:
 		BREAK_ON_MODIFIER_KEY();
 		mimeview_save_as(mimeview);
@@ -2771,28 +2694,5 @@ void mimeview_handle_cmd(MimeView *mimeview, const gchar *cmd, GdkEventButton *e
 		quicksearch_set(mimeview->messageview->mainwin->summaryview->quicksearch,
 				ADVANCED_SEARCH_EXTENDED, buf);
 		g_free(buf);
-	}
-}
-
-gboolean mimeview_scroll_page(MimeView *mimeview, gboolean up)
-{
-	if (mimeview->type == MIMEVIEW_TEXT)
-		return textview_scroll_page(mimeview->textview, up);
-	else if (mimeview->mimeviewer) {
-		MimeViewer *mimeviewer = mimeview->mimeviewer;
-		if (mimeviewer->scroll_page)
-			return mimeviewer->scroll_page(mimeviewer, up);
-	}
-	return TRUE;
-}
-
-void mimeview_scroll_one_line(MimeView *mimeview, gboolean up)
-{
-	if (mimeview->type == MIMEVIEW_TEXT)
-		textview_scroll_one_line(mimeview->textview, up);
-	else if (mimeview->mimeviewer) {
-		MimeViewer *mimeviewer = mimeview->mimeviewer;
-		if (mimeviewer->scroll_one_line)
-			mimeviewer->scroll_one_line(mimeviewer, up);
 	}
 }

@@ -1381,10 +1381,8 @@ static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event,
 	    messageview->window) {
 		MsgInfo *new_msginfo = summary_get_selected_msg(messageview->mainwin->summaryview);
 		messageview_show(messageview, new_msginfo, messageview->all_headers);
-		return FALSE;
 	}
-
-	return mimeview_pass_key_press_event(messageview->mimeview, event);
+	return FALSE;
 }
 
 static void select_account_cb(GtkWidget *w, gpointer data)

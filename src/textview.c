@@ -150,9 +150,6 @@ static GPtrArray *textview_scan_header	(TextView	*textview,
 static void textview_show_header	(TextView	*textview,
 					 GPtrArray	*headers);
 
-static gint textview_key_pressed		(GtkWidget	*widget,
-						 GdkEventKey	*event,
-						 TextView	*textview);
 static gboolean textview_motion_notify		(GtkWidget	*widget,
 						 GdkEventMotion	*motion,
 						 TextView	*textview);
@@ -264,8 +261,6 @@ TextView *textview_create(void)
 
 	gtk_container_add(GTK_CONTAINER(scrolledwin), text);
 
-	g_signal_connect(G_OBJECT(text), "key-press-event",
-			 G_CALLBACK(textview_key_pressed), textview);
 	g_signal_connect(G_OBJECT(text), "motion-notify-event",
 			 G_CALLBACK(textview_motion_notify), textview);
 	g_signal_connect(G_OBJECT(text), "leave-notify-event",
@@ -1983,114 +1978,6 @@ gboolean textview_search_string_backward(TextView *textview, const gchar *str,
 	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
 
 	return gtkut_text_view_search_string_backward(text, str, case_sens);
-}
-
-void textview_scroll_one_line(TextView *textview, gboolean up)
-{
-	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
-	GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(text));
-
-	gtkutils_scroll_one_line(GTK_WIDGET(text), vadj, up);
-}
-
-gboolean textview_scroll_page(TextView *textview, gboolean up)
-{
-	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
-	GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(text));
-
-	return gtkutils_scroll_page(GTK_WIDGET(text), vadj, up);
-}
-
-void textview_scroll_max(TextView *textview, gboolean up)
-{
-	GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview->text));
-	GtkTextIter iter;
-
-	if (up) {
-		gtk_text_buffer_get_start_iter(buffer, &iter);
-		gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(textview->text),
-						&iter, 0.0, TRUE, 0.0, 1.0);
-
-	} else {
-		gtk_text_buffer_get_end_iter(buffer, &iter);
-		gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(textview->text),
-						&iter, 0.0, TRUE, 0.0, 0.0);
-	}
-}
-
-#define KEY_PRESS_EVENT_STOP() \
-	g_signal_stop_emission_by_name(G_OBJECT(widget), \
-				       "key_press_event");
-
-static gint textview_key_pressed(GtkWidget *widget, GdkEventKey *event,
-				 TextView *textview)
-{
-	GdkWindow *window = NULL;
-	SummaryView *summaryview = NULL;
-	MessageView *messageview = textview->messageview;
-	gboolean mod_pressed;
-
-	if (!event) return FALSE;
-	if (messageview->mainwin)
-		summaryview = messageview->mainwin->summaryview;
-
-	switch (event->keyval) {
-	case GDK_KEY_Tab:
-	case GDK_KEY_Left:
-	case GDK_KEY_Up:
-	case GDK_KEY_Right:
-	case GDK_KEY_Down:
-	case GDK_KEY_Control_L:
-	case GDK_KEY_Control_R:
-		return FALSE;
-	case GDK_KEY_Home:
-	case GDK_KEY_End:
-		textview_scroll_max(textview,(event->keyval == GDK_KEY_Home));
-		return TRUE;
-	case GDK_KEY_space:
-		mod_pressed = ((event->state & (GDK_SHIFT_MASK|GDK_MOD1_MASK)) != 0);
-		if (!mimeview_scroll_page(messageview->mimeview, mod_pressed) &&
-				summaryview != NULL) {
-			if (mod_pressed)
-				summary_select_prev_unread(summaryview);
-			else
-				summary_select_next_unread(summaryview);
-		}
-		break;
-	case GDK_KEY_Page_Down:
-		mimeview_scroll_page(messageview->mimeview, FALSE);
-		break;
-	case GDK_KEY_Page_Up:
-	case GDK_KEY_BackSpace:
-		mimeview_scroll_page(messageview->mimeview, TRUE);
-		break;
-	case GDK_KEY_Return:
-	case GDK_KEY_KP_Enter:
-		mimeview_scroll_one_line
-			(messageview->mimeview, (event->state &
-				    (GDK_SHIFT_MASK|GDK_MOD1_MASK)) != 0);
-		break;
-	case GDK_KEY_Delete:
-		if (summaryview)
-			summary_pass_key_press_event(summaryview, event);
-		break;
-	default:
-		if (messageview->mainwin) {
-			window = gtk_widget_get_window(messageview->mainwin->window);
-			if (summaryview &&
-			    event->window != window) {
-				GdkEventKey tmpev = *event;
-
-				tmpev.window = window;
-				KEY_PRESS_EVENT_STOP();
-				gtk_widget_event(messageview->mainwin->window,
-						 (GdkEvent *)&tmpev);
-			}
-		}
-		break;
-	}
-
-	return TRUE;
 }
 
 static gboolean textview_motion_notify(GtkWidget *widget,

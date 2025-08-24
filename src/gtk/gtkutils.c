@@ -1079,66 +1079,6 @@ GtkWidget *gtkut_sc_combobox_create(GtkWidget *eventbox, gboolean focus_on_click
 	return combobox;
 }
 
-gboolean gtkutils_scroll_page(GtkWidget *widget, GtkAdjustment *vadj, gboolean up)
-{
-	gfloat upper;
-	gfloat page_incr;
-	gfloat old_value;
-
-	page_incr = gtk_adjustment_get_page_increment(vadj);
-	if (prefs_common.scroll_halfpage)
-		page_incr /= 2;
-
-	old_value = gtk_adjustment_get_value(vadj);
-	if (!up) {
-		upper = gtk_adjustment_get_upper(vadj) - gtk_adjustment_get_page_size(vadj);
-		if (old_value < upper) {
-			old_value += page_incr;
-			old_value = MIN(old_value, upper);
-			gtk_adjustment_set_value(vadj, old_value);
-			g_signal_emit_by_name(G_OBJECT(vadj),
-					      "value_changed", 0);
-		} else
-			return FALSE;
-	} else {
-		if (old_value > 0.0) {
-			old_value -= page_incr;
-			old_value = MAX(old_value, 0.0);
-			gtk_adjustment_set_value(vadj, old_value);
-			g_signal_emit_by_name(G_OBJECT(vadj),
-					      "value_changed", 0);
-		} else
-			return FALSE;
-	}
-	return TRUE;
-}
-
-void gtkutils_scroll_one_line(GtkWidget *widget, GtkAdjustment *vadj, gboolean up)
-{
-	gfloat upper;
-	gfloat old_value;
-
-	old_value = gtk_adjustment_get_value(vadj);
-	if (!up) {
-		upper = gtk_adjustment_get_upper(vadj) - gtk_adjustment_get_page_size(vadj);
-		if (old_value < upper) {
-			old_value += gtk_adjustment_get_step_increment(vadj);
-			old_value = MIN(old_value, upper);
-			gtk_adjustment_set_value(vadj, old_value);
-			g_signal_emit_by_name(G_OBJECT(vadj),
-					      "value_changed", 0);
-		}
-	} else {
-		if (old_value > 0.0) {
-			old_value -= gtk_adjustment_get_step_increment(vadj);
-			old_value = MAX(old_value, 0.0);
-			gtk_adjustment_set_value(vadj, old_value);
-			g_signal_emit_by_name(G_OBJECT(vadj),
-					      "value_changed", 0);
-		}
-	}
-}
-
 gboolean gtkut_tree_model_text_iter_prev(GtkTreeModel *model,
 				 GtkTreeIter *iter,
 				 const gchar* text)
