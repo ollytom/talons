@@ -508,11 +508,6 @@ static PrefParam param[] = {
 	{"never_send_retrcpt", "FALSE", &prefs_common.never_send_retrcpt, P_BOOL,
 	 NULL, NULL, NULL},
 
-	{"enable_smooth_scroll", "FALSE",
-	 &prefs_common.enable_smooth_scroll, P_BOOL,
-	 NULL, NULL, NULL},
-	{"scroll_step", "1", &prefs_common.scroll_step, P_INT,
-	 NULL, NULL, NULL},
 	{"scroll_half_page", "FALSE", &prefs_common.scroll_halfpage, P_BOOL,
 	 NULL, NULL, NULL},
 	{"hide_quoted", "TRUE",

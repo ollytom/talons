@@ -1079,80 +1079,11 @@ GtkWidget *gtkut_sc_combobox_create(GtkWidget *eventbox, gboolean focus_on_click
 	return combobox;
 }
 
-static void gtkutils_smooth_scroll_do(GtkWidget *widget, GtkAdjustment *vadj,
-				      gfloat old_value, gfloat last_value,
-				      gint step)
-{
-	gint change_value;
-	gboolean up;
-	gint i;
-
-	if (old_value < last_value) {
-		change_value = last_value - old_value;
-		up = FALSE;
-	} else {
-		change_value = old_value - last_value;
-		up = TRUE;
-	}
-
-	for (i = step; i <= change_value; i += step) {
-		gtk_adjustment_set_value(vadj, old_value + (up ? -i : i));
-		g_signal_emit_by_name(G_OBJECT(vadj),
-				      "value_changed", 0);
-	}
-
-	gtk_adjustment_set_value(vadj, last_value);
-	g_signal_emit_by_name(G_OBJECT(vadj), "value_changed", 0);
-
-	gtk_widget_queue_draw(widget);
-}
-
-static gboolean gtkutils_smooth_scroll_page(GtkWidget *widget, GtkAdjustment *vadj, gboolean up)
-{
-	gfloat upper;
-	gfloat page_incr;
-	gfloat old_value;
-	gfloat last_value;
-
-	page_incr = gtk_adjustment_get_page_increment(vadj);
-	if (prefs_common.scroll_halfpage)
-		page_incr /= 2;
-
-	old_value = gtk_adjustment_get_value(vadj);
-	if (!up) {
-		upper = gtk_adjustment_get_upper(vadj) - gtk_adjustment_get_page_size(vadj);
-		if (old_value < upper) {
-			last_value = old_value + page_incr;
-			last_value = MIN(last_value, upper);
-
-			gtkutils_smooth_scroll_do(widget, vadj, old_value,
-						  last_value,
-						  prefs_common.scroll_step);
-		} else
-			return FALSE;
-	} else {
-		if (old_value > 0.0) {
-			last_value = old_value - page_incr;
-			last_value = MAX(last_value, 0.0);
-
-			gtkutils_smooth_scroll_do(widget, vadj, old_value,
-						  last_value,
-						  prefs_common.scroll_step);
-		} else
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
 gboolean gtkutils_scroll_page(GtkWidget *widget, GtkAdjustment *vadj, gboolean up)
 {
 	gfloat upper;
 	gfloat page_incr;
 	gfloat old_value;
-
-	if (prefs_common.enable_smooth_scroll)
-		return gtkutils_smooth_scroll_page(widget, vadj, up);
 
 	page_incr = gtk_adjustment_get_page_increment(vadj);
 	if (prefs_common.scroll_halfpage)
@@ -1182,44 +1113,10 @@ gboolean gtkutils_scroll_page(GtkWidget *widget, GtkAdjustment *vadj, gboolean u
 	return TRUE;
 }
 
-static void gtkutils_smooth_scroll_one_line(GtkWidget *widget, GtkAdjustment *vadj, gboolean up)
-{
-	gfloat upper;
-	gfloat old_value;
-	gfloat last_value;
-
-	old_value = gtk_adjustment_get_value(vadj);
-	if (!up) {
-		upper = gtk_adjustment_get_upper(vadj) - gtk_adjustment_get_page_size(vadj);
-		if (old_value < upper) {
-			last_value = old_value + gtk_adjustment_get_step_increment(vadj);
-			last_value = MIN(last_value, upper);
-
-			gtkutils_smooth_scroll_do(widget, vadj, old_value,
-						  last_value,
-						  prefs_common.scroll_step);
-		}
-	} else {
-		if (old_value > 0.0) {
-			last_value = old_value - gtk_adjustment_get_step_increment(vadj);
-			last_value = MAX(last_value, 0.0);
-
-			gtkutils_smooth_scroll_do(widget, vadj, old_value,
-						  last_value,
-						  prefs_common.scroll_step);
-		}
-	}
-}
-
 void gtkutils_scroll_one_line(GtkWidget *widget, GtkAdjustment *vadj, gboolean up)
 {
 	gfloat upper;
 	gfloat old_value;
-
-	if (prefs_common.enable_smooth_scroll) {
-		gtkutils_smooth_scroll_one_line(widget, vadj, up);
-		return;
-	}
 
 	old_value = gtk_adjustment_get_value(vadj);
 	if (!up) {

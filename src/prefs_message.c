@@ -54,8 +54,6 @@ typedef struct _MessagePage
 	GtkWidget *checkbtn_promote_html_part;
 	GtkWidget *spinbtn_linespc;
 
-	GtkWidget *checkbtn_smoothscroll;
-	GtkWidget *spinbtn_scrollstep;
 	GtkWidget *checkbtn_halfpage;
 	GtkWidget *checkbtn_hide_quoted;
 
@@ -84,11 +82,8 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	GtkWidget *frame;
 	GtkWidget *vbox_scr;
-	GtkWidget *checkbtn_smoothscroll;
 	GtkWidget *hbox_scr;
 	GtkWidget *label_scr;
-	GtkAdjustment *spinbtn_scrollstep_adj;
-	GtkWidget *spinbtn_scrollstep;
 	GtkWidget *checkbtn_halfpage;
 	GtkWidget *checkbtn_hide_quoted;
 
@@ -168,30 +163,9 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_widget_show (hbox1);
 	gtk_box_pack_start (GTK_BOX (vbox_scr), hbox1, FALSE, TRUE, 0);
 
-	PACK_CHECK_BUTTON(hbox1, checkbtn_smoothscroll, _("Smooth scroll"));
-
 	hbox_scr = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox_scr);
 	gtk_box_pack_start (GTK_BOX (hbox1), hbox_scr, FALSE, FALSE, 0);
-
-	label_scr = gtk_label_new (_("Step"));
-	gtk_widget_show (label_scr);
-	gtk_box_pack_start (GTK_BOX (hbox_scr), label_scr, FALSE, FALSE, 0);
-
-	spinbtn_scrollstep_adj = GTK_ADJUSTMENT(gtk_adjustment_new (1, 1, 100, 1, 10, 0));
-	spinbtn_scrollstep = gtk_spin_button_new
-		(GTK_ADJUSTMENT (spinbtn_scrollstep_adj), 1, 0);
-	gtk_widget_show (spinbtn_scrollstep);
-	gtk_box_pack_start (GTK_BOX (hbox_scr), spinbtn_scrollstep,
-			    FALSE, FALSE, 0);
-	gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinbtn_scrollstep),
-				     TRUE);
-
-	label_scr = gtk_label_new (_("pixels"));
-	gtk_widget_show (label_scr);
-	gtk_box_pack_start (GTK_BOX (hbox_scr), label_scr, FALSE, FALSE, 0);
-
-	SET_TOGGLE_SENSITIVITY (checkbtn_smoothscroll, hbox_scr)
 
 	PACK_CHECK_BUTTON(vbox1, checkbtn_attach_desc,
 			  _("Show attachment descriptions (rather than names)"));
@@ -224,8 +198,6 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 		prefs_common.render_html);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_promote_html_part),
 		prefs_common.promote_html_part);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_smoothscroll),
-		prefs_common.enable_smooth_scroll);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_hide_quoted),
 		prefs_common.hide_quoted);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_halfpage),
@@ -234,8 +206,6 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 		prefs_common.attach_desc);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_linespc),
 		prefs_common.line_space);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_scrollstep),
-		prefs_common.scroll_step);
 
 	prefs_message->window = GTK_WIDGET(window);
 	prefs_message->checkbtn_dispxface = checkbtn_dispxface;
@@ -244,9 +214,7 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_message->checkbtn_html = checkbtn_html;
 	prefs_message->checkbtn_promote_html_part = checkbtn_promote_html_part;
 	prefs_message->spinbtn_linespc = spinbtn_linespc;
-	prefs_message->checkbtn_smoothscroll = checkbtn_smoothscroll;
 	prefs_message->checkbtn_hide_quoted = checkbtn_hide_quoted;
-	prefs_message->spinbtn_scrollstep = spinbtn_scrollstep;
 	prefs_message->checkbtn_halfpage = checkbtn_halfpage;
 	prefs_message->checkbtn_attach_desc = checkbtn_attach_desc;
 
@@ -267,8 +235,6 @@ static void prefs_message_save(PrefsPage *_page)
 		GTK_TOGGLE_BUTTON(page->checkbtn_html));
 	prefs_common.promote_html_part = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_promote_html_part));
-	prefs_common.enable_smooth_scroll = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_smoothscroll));
 	prefs_common.scroll_halfpage = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_halfpage));
 	prefs_common.hide_quoted = gtk_toggle_button_get_active(
@@ -277,8 +243,6 @@ static void prefs_message_save(PrefsPage *_page)
 		GTK_TOGGLE_BUTTON(page->checkbtn_attach_desc));
 	prefs_common.line_space = gtk_spin_button_get_value_as_int(
 		GTK_SPIN_BUTTON(page->spinbtn_linespc));
-	prefs_common.scroll_step = gtk_spin_button_get_value_as_int(
-		GTK_SPIN_BUTTON(page->spinbtn_scrollstep));
 
 	main_window_reflect_prefs_all_real(FALSE);
 }
