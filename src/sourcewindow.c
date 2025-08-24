@@ -208,10 +208,6 @@ static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event,
 		if ((event->state & GDK_CONTROL_MASK) != 0)
 			gtk_widget_destroy(sourcewin->window);
 		break;
-	case GDK_KEY_Escape:
-		source_window_destroy(sourcewin);
-		return TRUE;
-		break;
 	}
 
 	return FALSE;

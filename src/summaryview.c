@@ -5962,8 +5962,6 @@ static gboolean summary_key_pressed(GtkWidget *widget, GdkEventKey *event,
 			(GTK_SCROLLED_WINDOW(summaryview->scrolledwin));
 		if (gtk_adjustment_get_lower(adj) != gtk_adjustment_get_value(adj))
 			break;
-		/* FALLTHROUGH */
-	case GDK_KEY_Escape:
 		folderview_grab_focus(summaryview->folderview);
 		mainwindow_exit_folder(summaryview->mainwin);
 		return TRUE;

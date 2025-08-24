@@ -35,9 +35,6 @@
 
 static void hide_cb				(GtkWidget	*widget,
 						 LogWindow	*logwin);
-static gboolean key_pressed			(GtkWidget	*widget,
-						 GdkEventKey	*event,
-						 LogWindow	*logwin);
 static void size_allocate_cb	(GtkWidget *widget,
 					 GtkAllocation *allocation,
 					 gpointer data);
@@ -96,8 +93,6 @@ LogWindow *log_window_create(LogInstance instance)
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(key_pressed), logwin);
 	g_signal_connect_after(G_OBJECT(window), "hide",
 			 G_CALLBACK(hide_cb), logwin);
 	gtk_widget_realize(window);
@@ -330,17 +325,6 @@ static gboolean log_window_append(gpointer source, gpointer data)
 static void hide_cb(GtkWidget *widget, LogWindow *logwin)
 {
 	logwin->hidden = TRUE;
-}
-
-static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event,
-			LogWindow *logwin)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		gtk_widget_hide(logwin->window);
-	else if (event && event->keyval == GDK_KEY_Delete)
-		log_window_clear(NULL, logwin);
-
-	return FALSE;
 }
 
 static void log_window_clear(GtkWidget *widget, LogWindow *logwin)

@@ -8487,8 +8487,7 @@ static gboolean compose_can_autosave(Compose *compose)
 {
 	if (compose->privacy_system && compose->use_encryption)
 		return prefs_common.autosave && prefs_common.autosave_encrypted;
-	else
-		return prefs_common.autosave;
+	return prefs_common.autosave;
 }
 
 /**

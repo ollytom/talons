@@ -88,15 +88,6 @@ static gint addressbook_foldersel_delete_event( GtkWidget *widget, GdkEventAny *
 	return TRUE;
 }
 
-static gboolean addressbook_foldersel_key_pressed( GtkWidget *widget, GdkEventKey *event, gboolean *cancelled )
-{
-	if ( event && event->keyval == GDK_KEY_Escape ) {
-		addressbook_foldersel_cancelled = TRUE;
-		gtk_main_quit();
-	}
-	return FALSE;
-}
-
 static void set_selected_ptr()
 {
 	GtkWidget *view = addressbook_foldersel_dlg.view_folder;
@@ -159,8 +150,6 @@ static void addressbook_foldersel_create( void )
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	g_signal_connect( G_OBJECT(window), "delete_event",
 			  G_CALLBACK(addressbook_foldersel_delete_event), NULL );
-	g_signal_connect( G_OBJECT(window), "key_press_event",
-			  G_CALLBACK(addressbook_foldersel_key_pressed), NULL );
 	g_signal_connect(G_OBJECT(window), "size_allocate",
 			 G_CALLBACK(addressbook_foldersel_size_allocate_cb), NULL);
 

@@ -110,14 +110,6 @@ static gint edit_group_delete_event(GtkWidget *widget, GdkEventAny *event, gbool
 	return TRUE;
 }
 
-static gboolean edit_group_key_pressed(GtkWidget *widget, GdkEventKey *event, gboolean *cancelled) {
-	if (event && event->keyval == GDK_KEY_Escape) {
-		*cancelled = TRUE;
-		gtk_main_quit();
-	}
-	return FALSE;
-}
-
 static gchar *edit_group_format_item_clist( ItemPerson *person, ItemEMail *email ) {
 	gchar *str = NULL;
 	gchar *aName = ADDRITEM_NAME(email);
@@ -294,9 +286,6 @@ static void addressbook_edit_group_create(gboolean *cancelled)
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(edit_group_delete_event),
-			 cancelled);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(edit_group_key_pressed),
 			 cancelled);
 	g_signal_connect(G_OBJECT(window), "size_allocate",
 			 G_CALLBACK(addressbook_edit_group_size_allocate_cb), NULL);

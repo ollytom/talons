@@ -111,9 +111,7 @@ static gint account_delete_event	(GtkWidget	*widget,
 					 gpointer	 data);
 static void account_size_allocate_cb(GtkWidget *widget,
 					 GtkAllocation *allocation);
-static gboolean account_key_pressed	(GtkWidget	*widget,
-					 GdkEventKey	*event,
-					 gpointer	 data);
+
 static gboolean account_search_func_cb (GtkTreeModel *model, gint column,
 						const gchar *key, GtkTreeIter *iter,
 						gpointer search_data);
@@ -721,8 +719,6 @@ static void account_edit_create(void)
 	gtk_window_set_title (GTK_WINDOW (window), _("Edit accounts"));
 	g_signal_connect (G_OBJECT (window), "delete_event",
 			  G_CALLBACK (account_delete_event), NULL);
-	g_signal_connect (G_OBJECT (window), "key_press_event",
-			  G_CALLBACK (account_key_pressed), NULL);
 	MANAGE_WINDOW_SIGNALS_CONNECT (window);
 	gtk_widget_realize(window);
 
@@ -1264,14 +1260,6 @@ static gint account_delete_event(GtkWidget *widget, GdkEventAny *event,
 {
 	account_edit_close(NULL, NULL);
 	return TRUE;
-}
-
-static gboolean account_key_pressed(GtkWidget *widget, GdkEventKey *event,
-				    gpointer data)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		account_edit_close(NULL, NULL);
-	return FALSE;
 }
 
 static gboolean account_search_func_cb (GtkTreeModel *model, gint column, const gchar *key,

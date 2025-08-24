@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -80,11 +80,6 @@ static LogInstanceData log_instances[LOG_INSTANCE_MAX] = {
 	{ DEBUG_FILTERING_APPEND_TEXT_HOOKLIST, NULL, NULL, NULL }
 };
 
-gboolean prefs_common_enable_log_standard(void);
-gboolean prefs_common_enable_log_warning(void);
-gboolean prefs_common_enable_log_error(void);
-gboolean prefs_common_enable_log_status(void);
-
 static gboolean invoke_hook_cb (gpointer data)
 {
 	LogText *logtext = (LogText *)data;
@@ -109,7 +104,7 @@ void set_log_file(LogInstance instance, const gchar *filename)
 	/* backup old logfile if existing */
 	if (is_file_exist(fullname)) {
 		gchar *backupname;
-		
+
 		backupname = g_strconcat(fullname, ".bak", NULL);
 		unlink(backupname);
 		if (g_rename(fullname, backupname) < 0)
@@ -212,10 +207,10 @@ void log_print(LogInstance instance, const gchar *format, ...)
 	logtext->instance = instance;
 	logtext->text = g_strdup(buf);
 	logtext->type = LOG_NORMAL;
-	
+
 	g_timeout_add(0, invoke_hook_cb, logtext);
 
-	if (log_fp[instance] && prefs_common_enable_log_standard()) {
+	if (log_fp[instance]) {
 		FPUTS(buf, log_fp[instance])
 		log_size[instance] += strlen(buf);
 		FFLUSH(log_fp[instance])
@@ -243,10 +238,10 @@ void log_message(LogInstance instance, const gchar *format, ...)
 	logtext->instance = instance;
 	logtext->text = g_strdup(buf + LOG_TIME_LEN);
 	logtext->type = LOG_MSG;
-	
+
 	g_timeout_add(0, invoke_hook_cb, logtext);
 
-	if (log_fp[instance] && prefs_common_enable_log_standard()) {
+	if (log_fp[instance]) {
 		FWRITE(buf, 1, LOG_TIME_LEN, log_fp[instance])
 		FPUTS("* message: ", log_fp[instance])
 		log_size[instance] += strlen("* message: ");
@@ -277,10 +272,10 @@ void log_warning(LogInstance instance, const gchar *format, ...)
 	logtext->instance = instance;
 	logtext->text = g_strdup(buf + LOG_TIME_LEN);
 	logtext->type = LOG_WARN;
-	
+
 	g_timeout_add(0, invoke_hook_cb, logtext);
 
-	if (log_fp[instance] && prefs_common_enable_log_warning()) {
+	if (log_fp[instance]) {
 		FWRITE(buf, 1, LOG_TIME_LEN, log_fp[instance])
 		FPUTS("** warning: ", log_fp[instance])
 		log_size[instance] += strlen("** warning: ");
@@ -311,10 +306,10 @@ void log_error(LogInstance instance, const gchar *format, ...)
 	logtext->instance = instance;
 	logtext->text = g_strdup(buf + LOG_TIME_LEN);
 	logtext->type = LOG_ERROR;
-	
+
 	g_timeout_add(0, invoke_hook_cb, logtext);
 
-	if (log_fp[instance] && prefs_common_enable_log_error()) {
+	if (log_fp[instance]) {
 		FWRITE(buf, 1, LOG_TIME_LEN, log_fp[instance])
 		FPUTS("*** error: ", log_fp[instance])
 		log_size[instance] += strlen("*** error: ");
@@ -345,10 +340,10 @@ void log_status_ok(LogInstance instance, const gchar *format, ...)
 	logtext->instance = instance;
 	logtext->text = g_strdup(buf + LOG_TIME_LEN);
 	logtext->type = LOG_STATUS_OK;
-	
+
 	g_timeout_add(0, invoke_hook_cb, logtext);
 
-	if (log_fp[instance] && prefs_common_enable_log_status()) {
+	if (log_fp[instance]) {
 		FWRITE(buf, 1, LOG_TIME_LEN, log_fp[instance])
 		FPUTS("* OK: ", log_fp[instance])
 		log_size[instance] += strlen("* OK: ");
@@ -379,10 +374,10 @@ void log_status_nok(LogInstance instance, const gchar *format, ...)
 	logtext->instance = instance;
 	logtext->text = g_strdup(buf + LOG_TIME_LEN);
 	logtext->type = LOG_STATUS_NOK;
-	
+
 	g_timeout_add(0, invoke_hook_cb, logtext);
 
-	if (log_fp[instance] && prefs_common_enable_log_status()) {
+	if (log_fp[instance]) {
 		FWRITE(buf, 1, LOG_TIME_LEN, log_fp[instance])
 		FPUTS("* NOT OK: ", log_fp[instance])
 		log_size[instance] += strlen("* NOT OK: ");
@@ -413,10 +408,10 @@ void log_status_skip(LogInstance instance, const gchar *format, ...)
 	logtext->instance = instance;
 	logtext->text = g_strdup(buf + LOG_TIME_LEN);
 	logtext->type = LOG_STATUS_SKIP;
-	
+
 	g_timeout_add(0, invoke_hook_cb, logtext);
 
-	if (log_fp[instance] && prefs_common_enable_log_status()) {
+	if (log_fp[instance]) {
 		FWRITE(buf, 1, LOG_TIME_LEN, log_fp[instance])
 		FPUTS("* SKIPPED: ", log_fp[instance])
 		log_size[instance] += strlen("* SKIPPED: ");

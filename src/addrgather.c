@@ -124,16 +124,6 @@ static gint addrgather_dlg_delete_event(
 	return TRUE;
 }
 
-static gboolean addrgather_dlg_key_pressed(
-	GtkWidget *widget, GdkEventKey *event, gpointer data )
-{
-	if( event && event->keyval == GDK_KEY_Escape ) {
-		addrgather_dlg.cancelled = TRUE;
-		gtk_main_quit();
-	}
-	return FALSE;
-}
-
 static void addrgather_size_allocate(
 	GtkWidget *widget, GtkAllocation *allocation )
 {
@@ -451,8 +441,6 @@ static void addrgather_dlg_create(void)
 
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(addrgather_dlg_delete_event), NULL);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(addrgather_dlg_key_pressed), NULL);
 	g_signal_connect(G_OBJECT(window), "size_allocate",
 			 G_CALLBACK(addrgather_size_allocate), NULL);
 

@@ -90,14 +90,6 @@ static gint edit_book_delete_event( GtkWidget *widget, GdkEventAny *event, gbool
 	return TRUE;
 }
 
-static gboolean edit_book_key_pressed( GtkWidget *widget, GdkEventKey *event, gboolean *cancelled ) {
-	if (event && event->keyval == GDK_KEY_Escape) {
-		*cancelled = TRUE;
-		gtk_main_quit();
-	}
-	return FALSE;
-}
-
 static void edit_book_file_check( void ) {
 	gint t;
 	gchar *sMsg;
@@ -149,9 +141,6 @@ static void addressbook_edit_book_create( gboolean *cancelled ) {
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(edit_book_delete_event),
-			 cancelled);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(edit_book_key_pressed),
 			 cancelled);
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);

@@ -38,9 +38,9 @@
 StockPixmap legend_icons[ICONS] = {
 	STOCK_PIXMAP_NEW,
 	STOCK_PIXMAP_UNREAD,
-	STOCK_PIXMAP_REPLIED, 
-	STOCK_PIXMAP_FORWARDED, 
-	STOCK_PIXMAP_REPLIED_AND_FORWARDED, 
+	STOCK_PIXMAP_REPLIED,
+	STOCK_PIXMAP_FORWARDED,
+	STOCK_PIXMAP_REPLIED_AND_FORWARDED,
 	STOCK_PIXMAP_IGNORETHREAD,
 	STOCK_PIXMAP_WATCHTHREAD,
 	STOCK_PIXMAP_SPAM,
@@ -54,7 +54,7 @@ StockPixmap legend_icons[ICONS] = {
 	STOCK_PIXMAP_MOVED,
 	STOCK_PIXMAP_COPIED,
 	STOCK_PIXMAP_LOCKED,
-	STOCK_PIXMAP_DIR_OPEN, 
+	STOCK_PIXMAP_DIR_OPEN,
 	STOCK_PIXMAP_DIR_OPEN_HRM,
 	STOCK_PIXMAP_DIR_OPEN_MARK,
 	STOCK_PIXMAP_DIR_NOSELECT_OPEN,
@@ -97,7 +97,6 @@ static struct LegendDialog {
 } legend;
 
 static void legend_create(void);
-static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event);
 static void legend_close(void);
 
 void legend_show(void)
@@ -130,8 +129,6 @@ static void legend_create(void)
 	gtk_window_set_default_size(GTK_WINDOW(window), 666, 340);
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(legend_close), NULL);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(key_pressed), NULL);
 	gtk_widget_realize(window);
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -193,14 +190,6 @@ static void legend_create(void)
 	gtk_widget_show_all(window);
 
 	legend.window = window;
-}
-
-static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event)
-{
-	if (event && event->keyval == GDK_KEY_Escape) {
-		legend_close();
-	}
-	return FALSE;
 }
 
 static void legend_close(void)

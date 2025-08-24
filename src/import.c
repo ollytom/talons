@@ -56,7 +56,6 @@ static void import_cancel_cb(GtkWidget *widget, gpointer data);
 static void import_filesel_cb(GtkWidget *widget, gpointer data);
 static void import_destsel_cb(GtkWidget *widget, gpointer data);
 static gint delete_event(GtkWidget *widget, GdkEventAny *event, gpointer data);
-static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 gint import_mbox(FolderItem *default_dest, const gchar* mbox_file)
 /* return values: -2 skipped/cancelled, -1 error, 0 OK */
@@ -120,8 +119,6 @@ static void import_create(void)
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(delete_event), NULL);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(key_pressed), NULL);
 	MANAGE_WINDOW_SIGNALS_CONNECT(window);
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
@@ -278,11 +275,4 @@ static gint delete_event(GtkWidget *widget, GdkEventAny *event, gpointer data)
 {
 	import_cancel_cb(NULL, NULL);
 	return TRUE;
-}
-
-static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer data)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		import_cancel_cb(NULL, NULL);
-	return FALSE;
 }

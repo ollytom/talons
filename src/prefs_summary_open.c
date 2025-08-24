@@ -71,9 +71,6 @@ static void prefs_summary_open_delete_cb	(GtkButton	*btn,
 static void prefs_summary_open_up		(void);
 static void prefs_summary_open_down		(void);
 
-static gboolean prefs_summary_open_key_pressed	(GtkWidget	*widget,
-							 GdkEventKey	*event,
-							 gpointer	 data);
 static void prefs_summary_open_ok		(void);
 static void prefs_summary_open_cancel		(void);
 static gint prefs_summary_open_deleted	(GtkWidget	*widget,
@@ -188,9 +185,6 @@ static void prefs_summary_open_create(void)
 	MANAGE_WINDOW_SIGNALS_CONNECT(window);
 	g_signal_connect (G_OBJECT(window), "delete_event",
 			  G_CALLBACK(prefs_summary_open_deleted),
-			  NULL);
-	g_signal_connect (G_OBJECT(window), "key_press_event",
-			  G_CALLBACK(prefs_summary_open_key_pressed),
 			  NULL);
 	g_signal_connect (G_OBJECT(ok_btn), "clicked",
 			  G_CALLBACK(prefs_summary_open_ok),
@@ -524,15 +518,6 @@ static void prefs_summary_open_down(void)
 
 	gtk_tree_path_free(try);
 	prefs_summary_open_set_list();
-}
-
-static gboolean prefs_summary_open_key_pressed(GtkWidget *widget,
-					     GdkEventKey *event,
-					     gpointer data)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		prefs_summary_open_cancel();
-	return FALSE;
 }
 
 static void prefs_summary_open_ok(void)

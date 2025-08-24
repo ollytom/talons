@@ -644,11 +644,6 @@ static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer data
 	if (!event)
 		return FALSE;
 
-	if (event->keyval == GDK_KEY_Escape) {
-		foldersel_cancel(NULL, NULL);
-		return TRUE;
-	}
-
 	GtkTreePath *path = NULL;
 	gtk_tree_view_get_cursor(GTK_TREE_VIEW(treeview), &path, NULL);
 	if (path == NULL)

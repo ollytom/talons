@@ -81,9 +81,6 @@ static void prefs_custom_header_delete_cb	(void);
 static void prefs_custom_header_up		(void);
 static void prefs_custom_header_down		(void);
 
-static gboolean prefs_custom_header_key_pressed	(GtkWidget	*widget,
-						 GdkEventKey	*event,
-						 gpointer	 data);
 static void prefs_custom_header_ok		(void);
 static void prefs_custom_header_cancel		(void);
 static gint prefs_custom_header_deleted		(GtkWidget	*widget,
@@ -183,9 +180,6 @@ static void prefs_custom_header_create(void)
 	MANAGE_WINDOW_SIGNALS_CONNECT (window);
 	g_signal_connect (G_OBJECT(window), "delete_event",
 			  G_CALLBACK(prefs_custom_header_deleted),
-			  NULL);
-	g_signal_connect (G_OBJECT(window), "key_press_event",
-			  G_CALLBACK(prefs_custom_header_key_pressed),
 			  NULL);
 	g_signal_connect (G_OBJECT(ok_btn), "clicked",
 			  G_CALLBACK(prefs_custom_header_ok), NULL);
@@ -761,15 +755,6 @@ static void prefs_custom_header_down(void)
 
 	gtk_list_store_swap(store, &next, &sel);
 	prefs_custom_header_set_list(cur_ac);
-}
-
-static gboolean prefs_custom_header_key_pressed(GtkWidget *widget,
-						GdkEventKey *event,
-						gpointer data)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		prefs_custom_header_cancel();
-	return FALSE;
 }
 
 static void prefs_custom_header_ok(void)

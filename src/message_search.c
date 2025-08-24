@@ -381,10 +381,6 @@ static void message_search_next_clicked(GtkButton *button, gpointer data)
 static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event,
 			    gpointer data)
 {
-	if (event && (event->keyval == GDK_KEY_Escape)) {
-		gtk_widget_hide(search_window.window);
-	}
-
 	if (event && (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)) {
 		message_search_execute(FALSE);
 	}

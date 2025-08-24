@@ -260,16 +260,6 @@ static gint edit_person_delete_event(GtkWidget *widget, GdkEventAny *event, gboo
 	return TRUE;
 }
 
-static gboolean edit_person_key_pressed(GtkWidget *widget, GdkEventKey *event, gboolean *cancelled) {
-	if (prefs_common.addressbook_use_editaddress_dialog) {
-	if (event && event->keyval == GDK_KEY_Escape) {
-		*cancelled = TRUE;
-		gtk_main_quit();
-	}
-	}
-	return FALSE;
-}
-
 static gchar *_title_new_ = NULL;
 static gchar *_title_edit_ = NULL;
 
@@ -656,9 +646,6 @@ static void addressbook_edit_person_dialog_create( gboolean *cancelled ) {
 	g_signal_connect(G_OBJECT(window), "size_allocate",
 			 G_CALLBACK(edit_person_size_allocate_cb),
 			cancelled);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(edit_person_key_pressed),
-			 cancelled);
 
 	vbox = addressbook_edit_person_widgets_create(window, cancelled);
 

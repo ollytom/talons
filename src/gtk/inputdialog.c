@@ -160,7 +160,7 @@ gchar *input_dialog_with_invisible_checkbtn(const gchar *title, const gchar *mes
 gchar *input_dialog_combo(const gchar *title, const gchar *message,
 			  const gchar *default_string, GList *list)
 {
-	return input_dialog_combo_remember(title, message, 
+	return input_dialog_combo_remember(title, message,
 		default_string, list, FALSE);
 }
 
@@ -216,7 +216,7 @@ gchar *input_dialog_with_checkbtn(const gchar	*title,
 	is_pass = FALSE;
 	gtk_entry_set_visibility(GTK_ENTRY(entry), TRUE);
 
-	return input_dialog_open(title, message, checkbtn_label, default_string, 
+	return input_dialog_open(title, message, checkbtn_label, default_string,
 	       			 prefs_common.inherit_folder_props, checkbtn_state);
 }
 
@@ -264,9 +264,9 @@ gchar *input_dialog_query_password_keep(const gchar *server, const gchar *user, 
 		}
 		else {
 			gboolean state = prefs_common.session_passwords;
-			pass = input_dialog_with_invisible_checkbtn(_("Input password"), 
+			pass = input_dialog_with_invisible_checkbtn(_("Input password"),
 					message, NULL,
-					_("Remember password for this session"), 
+					_("Remember password for this session"),
 					&state);
 			if (state) {
 				*keep = g_strdup (pass);
@@ -277,7 +277,7 @@ gchar *input_dialog_query_password_keep(const gchar *server, const gchar *user, 
 	}
 	else {
 		pass = input_dialog_with_invisible(_("Input password"), message, NULL);
-	}		
+	}
 	g_free(message);
 
 	return pass;
@@ -312,20 +312,20 @@ static void input_dialog_create(gboolean is_password)
 
 	/* for title label */
 	icon_q = gtk_image_new_from_icon_name("dialog-question-symbolic",
-        			GTK_ICON_SIZE_DIALOG); 
+        			GTK_ICON_SIZE_DIALOG);
 	gtk_widget_set_halign(icon_q, GTK_ALIGN_CENTER);
 	gtk_widget_set_valign(icon_q, GTK_ALIGN_START);
 	gtk_box_pack_start (GTK_BOX (hbox), icon_q, FALSE, FALSE, 0);
 	icon_p = gtk_image_new_from_icon_name("dialog-password-symbolic",
-        			GTK_ICON_SIZE_DIALOG); 
+        			GTK_ICON_SIZE_DIALOG);
 	gtk_widget_set_halign(icon_p, GTK_ALIGN_CENTER);
 	gtk_widget_set_valign(icon_p, GTK_ALIGN_START);
 	gtk_box_pack_start (GTK_BOX (hbox), icon_p, FALSE, FALSE, 0);
-	
+
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
 	gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 16);
 	gtk_widget_show (vbox);
-	
+
 	msg_title = gtk_label_new("");
 	gtk_label_set_xalign(GTK_LABEL(msg_title), 0.0);
 	gtk_label_set_justify(GTK_LABEL(msg_title), GTK_JUSTIFY_LEFT);
@@ -345,13 +345,13 @@ static void input_dialog_create(gboolean is_password)
 	}
 	if (font_desc)
 		gtk_widget_override_font(msg_title, font_desc);
-	
+
 	msg_label = gtk_label_new("");
 	gtk_label_set_xalign(GTK_LABEL(msg_label), 0.0);
 	gtk_label_set_justify(GTK_LABEL(msg_label), GTK_JUSTIFY_LEFT);
 	gtk_box_pack_start(GTK_BOX(vbox), msg_label, FALSE, FALSE, 0);
 	gtk_widget_show(msg_label);
-		
+
 	entry = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, FALSE, 0);
 	g_signal_connect(G_OBJECT(entry), "activate",
@@ -371,7 +371,7 @@ static void input_dialog_create(gboolean is_password)
 					  GTK_RESPONSE_NONE);
 
 	gtk_widget_show_all(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-	
+
 	gtk_widget_hide(remember_checkbtn);
 
 	if (is_password)
@@ -505,10 +505,7 @@ static gint delete_event(GtkWidget *widget, GdkEventAny *event, gpointer data)
 
 static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-	if (event && event->keyval == GDK_KEY_Escape) {
-		ack = FALSE;
-		fin = TRUE;
-	} else if (event && (event->keyval == GDK_KEY_KP_Enter ||
+	if (event && (event->keyval == GDK_KEY_KP_Enter ||
 		   event->keyval == GDK_KEY_Return)) {
 		ack = TRUE;
 		fin = TRUE;

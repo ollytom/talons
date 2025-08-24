@@ -95,9 +95,6 @@ static void date_format_ok_btn_clicked		(GtkButton	*button,
 						 GtkWidget     **widget);
 static void date_format_cancel_btn_clicked	(GtkButton	*button,
 						 GtkWidget     **widget);
-static gboolean date_format_key_pressed		(GtkWidget	*keywidget,
-						 GdkEventKey	*event,
-						 GtkWidget     **widget);
 static gboolean date_format_on_delete		(GtkWidget	*dialogwidget,
 						 GdkEventAny	*event,
 						 GtkWidget     **widget);
@@ -332,9 +329,6 @@ static GtkWidget *date_format_create(GtkButton *button, void *data)
 			 &datefmt_win);
 	g_signal_connect(G_OBJECT(cancel_btn), "clicked",
 			 G_CALLBACK(date_format_cancel_btn_clicked),
-			 &datefmt_win);
-	g_signal_connect(G_OBJECT(datefmt_win), "key_press_event",
-			 G_CALLBACK(date_format_key_pressed),
 			 &datefmt_win);
 	g_signal_connect(G_OBJECT(datefmt_win), "delete_event",
 			 G_CALLBACK(date_format_on_delete),
@@ -945,14 +939,6 @@ static void date_format_cancel_btn_clicked(GtkButton *button,
 
 	gtk_widget_destroy(*widget);
 	*widget = NULL;
-}
-
-static gboolean date_format_key_pressed(GtkWidget *keywidget, GdkEventKey *event,
-					GtkWidget **widget)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		date_format_cancel_btn_clicked(NULL, widget);
-	return FALSE;
 }
 
 static gboolean date_format_on_delete(GtkWidget *dialogwidget,

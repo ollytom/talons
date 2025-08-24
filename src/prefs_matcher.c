@@ -258,9 +258,6 @@ static void prefs_matcher_substitute_cb	(void);
 static void prefs_matcher_delete_cb	(void);
 static void prefs_matcher_up		(void);
 static void prefs_matcher_down		(void);
-static gboolean prefs_matcher_key_pressed(GtkWidget	*widget,
-					 GdkEventKey	*event,
-					 gpointer	 data);
 static void prefs_matcher_ok		(void);
 static void prefs_matcher_cancel	(void);
 static gint prefs_matcher_deleted	(GtkWidget *widget, GdkEventAny *event,
@@ -560,8 +557,6 @@ static void prefs_matcher_create(void)
 			 G_CALLBACK(prefs_matcher_deleted), NULL);
 	g_signal_connect(G_OBJECT(window), "size_allocate",
 			 G_CALLBACK(prefs_matcher_size_allocate_cb), NULL);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(prefs_matcher_key_pressed), NULL);
 	MANAGE_WINDOW_SIGNALS_CONNECT(window);
 	g_signal_connect(G_OBJECT(ok_btn), "clicked",
 			 G_CALLBACK(prefs_matcher_ok), NULL);
@@ -1978,23 +1973,6 @@ static void prefs_matcher_criteria_select(GtkWidget *widget,
 		gtk_label_set_text(GTK_LABEL(matcher.match_label), _("Program returns"));
 		break;
 	}
-}
-
-/*!
- *\brief	Handle key press
- *
- *\param	widget Widget receiving key press
- *\param	event Key event
- *\param	data User data
- */
-static gboolean prefs_matcher_key_pressed(GtkWidget *widget, GdkEventKey *event,
-				     gpointer data)
-{
-	if (event && event->keyval == GDK_KEY_Escape) {
-		prefs_matcher_cancel();
-		return TRUE;
-	}
-	return FALSE;
 }
 
 /*!

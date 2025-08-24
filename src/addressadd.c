@@ -92,14 +92,6 @@ static gint addressadd_delete_event( GtkWidget *widget, GdkEventAny *event, gboo
 	return TRUE;
 }
 
-static gboolean addressadd_key_pressed( GtkWidget *widget, GdkEventKey *event, gboolean *cancelled ) {
-	if (event && event->keyval == GDK_KEY_Escape) {
-		addressadd_cancelled = TRUE;
-		gtk_main_quit();
-	}
-	return FALSE;
-}
-
 /* Points addressadd_dlg.fiSelected to the selected item */
 static void set_selected_ptr()
 {
@@ -165,8 +157,6 @@ static void addressadd_create( void ) {
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	g_signal_connect( G_OBJECT(window), "delete_event",
 			  G_CALLBACK(addressadd_delete_event), NULL );
-	g_signal_connect( G_OBJECT(window), "key_press_event",
-			  G_CALLBACK(addressadd_key_pressed), NULL );
 	g_signal_connect(G_OBJECT(window), "size_allocate",
 			 G_CALLBACK(addressadd_size_allocate_cb), NULL);
 

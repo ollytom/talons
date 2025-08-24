@@ -123,9 +123,6 @@ static void prefs_summary_column_cancel	(void);
 static gint prefs_summary_column_delete_event	(GtkWidget	*widget,
 						 GdkEventAny	*event,
 						 gpointer	 data);
-static gboolean prefs_summary_column_key_pressed(GtkWidget	*widget,
-						 GdkEventKey	*event,
-						 gpointer	 data);
 
 static GtkListStore *prefs_summary_column_create_store	(void);
 
@@ -226,9 +223,6 @@ static void prefs_summary_column_create(void)
 			     _("Message list columns configuration"));
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(prefs_summary_column_delete_event),
-			 NULL);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(prefs_summary_column_key_pressed),
 			 NULL);
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
@@ -670,15 +664,6 @@ static gint prefs_summary_column_delete_event(GtkWidget *widget,
 {
 	summary_col.finished = TRUE;
 	return TRUE;
-}
-
-static gboolean prefs_summary_column_key_pressed(GtkWidget *widget,
-						 GdkEventKey *event,
-						 gpointer data)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		summary_col.finished = TRUE;
-	return FALSE;
 }
 
 static GtkListStore *prefs_summary_column_create_store(void)

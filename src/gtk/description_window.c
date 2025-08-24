@@ -33,9 +33,6 @@
 #include "prefs_gtk.h"
 
 static void description_create				(DescriptionWindow *dwindow);
-static gboolean description_window_key_pressed		(GtkWidget *widget,
-						 	 GdkEventKey *event,
-							 gpointer data);
 static gboolean description_window_focus_in_event	(GtkWidget *widget,
 							 GdkEventFocus *event,
 							 gpointer data);
@@ -156,8 +153,6 @@ static void description_create(DescriptionWindow * dwindow)
 
 	g_signal_connect(G_OBJECT(close_btn), "clicked",
 			 G_CALLBACK(description_window_destroy), dwindow);
-	g_signal_connect(G_OBJECT(dwindow->window), "key_press_event",
-		 	 G_CALLBACK(description_window_key_pressed), dwindow);
 	g_signal_connect(G_OBJECT(dwindow->window), "focus_in_event",
 			 G_CALLBACK(description_window_focus_in_event), NULL);
 	g_signal_connect(G_OBJECT(dwindow->window), "focus_out_event",
@@ -172,15 +167,6 @@ static void description_create(DescriptionWindow * dwindow)
 	gtk_widget_show_all(vbox);
 	gtk_widget_set_size_request(dwindow->window,
                                (width < 400) ? 400 : width, 450);
-}
-
-static gboolean description_window_key_pressed(GtkWidget *widget,
-				 	       GdkEventKey *event,
-					       gpointer data)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		description_window_destroy(widget, data);
-	return FALSE;
 }
 
 static gboolean description_window_focus_in_event (GtkWidget *widget,

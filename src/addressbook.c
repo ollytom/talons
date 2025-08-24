@@ -591,9 +591,7 @@ void addressbook_refresh( void )
 
 static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-	if (event && event->keyval == GDK_KEY_Escape)
-		addressbook_close();
-	else if (event && event->keyval == GDK_KEY_Delete) {
+	if (event && event->keyval == GDK_KEY_Delete) {
 		/* TODO: enable deletion when focus is in ctree (needs implementation in _del_clicked() */
 		if ( /* address_index_has_focus || */ address_list_has_focus )
 			addressbook_del_clicked(NULL, NULL);

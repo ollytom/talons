@@ -1333,17 +1333,6 @@ static void icon_chooser_cancel_clicked(GtkButton *button,
 	prefs_toolbar->icon_chooser_view = NULL;
 }
 
-static gboolean icon_chooser_key_pressed(GtkWidget *widget, GdkEventKey *event,
-			ToolbarPage *prefs_toolbar)
-{
-	if (event && event->keyval == GDK_KEY_Escape) {
-		icon_chooser_cancel_clicked(NULL, prefs_toolbar);
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
 static gboolean icon_list_key_pressed(GtkWidget *widget, GdkEventKey *event,
 			ToolbarPage *prefs_toolbar)
 {
@@ -1470,8 +1459,6 @@ static void icon_chooser_create(GtkButton *button, ToolbarPage *prefs_toolbar)
 	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(icon_view), SET_ICON);
 	gtk_container_add(GTK_CONTAINER(scrollwin), GTK_WIDGET(icon_view));
 
-	g_signal_connect(G_OBJECT(icon_chooser_win), "key_press_event",
-			 G_CALLBACK(icon_chooser_key_pressed), prefs_toolbar);
 	g_signal_connect(G_OBJECT(icon_view), "item-activated",
 			 G_CALLBACK(icon_chooser_activated), prefs_toolbar);
 	g_signal_connect(G_OBJECT(icon_chooser_win),

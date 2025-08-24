@@ -76,10 +76,6 @@ static void prefs_display_header_delete_cb	(GtkButton	*btn,
 						 gpointer	 list_view_data);
 static void prefs_display_header_up		(void);
 static void prefs_display_header_down		(void);
-
-static gboolean prefs_display_header_key_pressed	(GtkWidget	*widget,
-							 GdkEventKey	*event,
-							 gpointer	 data);
 static void prefs_display_header_ok		(void);
 static void prefs_display_header_cancel		(void);
 static gint prefs_display_header_deleted	(GtkWidget	*widget,
@@ -222,9 +218,6 @@ static void prefs_display_header_create(void)
 	MANAGE_WINDOW_SIGNALS_CONNECT(window);
 	g_signal_connect (G_OBJECT(window), "delete_event",
 			  G_CALLBACK(prefs_display_header_deleted),
-			  NULL);
-	g_signal_connect (G_OBJECT(window), "key_press_event",
-			  G_CALLBACK(prefs_display_header_key_pressed),
 			  NULL);
 	g_signal_connect (G_OBJECT(ok_btn), "clicked",
 			  G_CALLBACK(prefs_display_header_ok),
@@ -667,15 +660,6 @@ static void prefs_display_header_down(void)
 		gtk_list_store_swap(store, &next, &sel);
 
 	gtk_tree_path_free(try);
-}
-
-static gboolean prefs_display_header_key_pressed(GtkWidget *widget,
-					     GdkEventKey *event,
-					     gpointer data)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		prefs_display_header_cancel();
-	return FALSE;
 }
 
 static void prefs_display_header_ok(void)

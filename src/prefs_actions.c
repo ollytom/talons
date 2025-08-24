@@ -846,14 +846,9 @@ static gint prefs_actions_deleted(GtkWidget *widget, GdkEventAny *event,
 static gboolean prefs_actions_key_pressed(GtkWidget *widget, GdkEventKey *event,
 					  gpointer data)
 {
-	if (event && event->keyval == GDK_KEY_Escape)
-		prefs_actions_cancel(widget, data);
-	else {
-		GtkWidget *focused = gtkut_get_focused_child(
-				GTK_CONTAINER(widget));
-		if (focused && GTK_IS_EDITABLE(focused))
-			modified = TRUE;
-	}
+	GtkWidget *focused = gtkut_get_focused_child(GTK_CONTAINER(widget));
+	if (focused && GTK_IS_EDITABLE(focused))
+		modified = TRUE;
 	return FALSE;
 }
 

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #include "config.h"
@@ -182,13 +182,6 @@ static gint delete_event(GtkWidget *widget, GdkEventAny *event, FolderSortDialog
 	return TRUE;
 }
 
-static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, FolderSortDialog *dialog)
-{
-	if (event && event->keyval == GDK_KEY_Escape)
-		destroy_dialog(dialog);
-	return FALSE;
-}
-
 static void foldersort_size_allocate_cb(GtkWidget *widget, GtkAllocation *allocation)
 {
 	cm_return_if_fail(allocation != NULL);
@@ -234,8 +227,6 @@ void foldersort_open()
 			 G_CALLBACK(delete_event), dialog);
 	g_signal_connect (G_OBJECT(window), "size_allocate",
 			 G_CALLBACK (foldersort_size_allocate_cb), NULL);
-	g_signal_connect(G_OBJECT(window), "key_press_event",
-			 G_CALLBACK(key_pressed), dialog);
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 	gtk_widget_show(vbox);

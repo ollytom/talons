@@ -133,7 +133,6 @@ static void prefs_themes_btn_remove_clicked_cb	(GtkWidget *widget, gpointer data
 static void prefs_themes_btn_install_clicked_cb	(GtkWidget *widget, gpointer data);
 static void prefs_themes_btn_viewall_clicked_cb	(GtkWidget *widget, gpointer data);
 static void prefs_themes_viewall_close_btn_clicked	(GtkWidget *widget, gpointer data);
-static gboolean prefs_themes_viewall_key_pressed	(GtkWidget *keywidget, GdkEventKey *event, GtkWidget **widget);
 static void prefs_themes_menu_item_activated_cb	(GtkWidget *widget, gpointer data);
 
 static void prefs_themes_update_buttons		(const ThemesData *tdata);
@@ -576,15 +575,6 @@ end_inst:
 	g_free(alert_title);
 }
 
-static gboolean prefs_themes_viewall_key_pressed(GtkWidget *keywidget, GdkEventKey *event, GtkWidget **widget)
-{
-	if (event && event->keyval == GDK_KEY_Escape) {
-		prefs_themes_viewall_close_btn_clicked(NULL, widget);
-	}
-
-	return FALSE;
-}
-
 static void prefs_themes_viewall_close_btn_clicked(GtkWidget *widget, gpointer data)
 {
 	GtkWidget **window = (GtkWidget **) data;
@@ -656,9 +646,6 @@ static void prefs_themes_btn_viewall_clicked_cb(GtkWidget *widget, gpointer data
 
 	g_signal_connect(G_OBJECT(close_btn), "clicked",
 		G_CALLBACK(prefs_themes_viewall_close_btn_clicked),
-		&viewall_win);
-	g_signal_connect(G_OBJECT(viewall_win), "key_press_event",
-		G_CALLBACK(prefs_themes_viewall_key_pressed),
 		&viewall_win);
 
 	manage_window_set_transient(GTK_WINDOW(viewall_win));
