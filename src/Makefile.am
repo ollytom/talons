@@ -93,7 +93,6 @@ claws_mail_SOURCES = \
 	prefs_ext_prog.c \
 	prefs_folder_item.c \
 	prefs_gtk.c \
-	prefs_logging.c \
 	prefs_matcher.c \
 	prefs_message.c \
 	prefs_other.c \
@@ -192,7 +191,6 @@ claws_mailinclude_HEADERS = \
 	prefs_ext_prog.h \
 	prefs_folder_item.h \
 	prefs_gtk.h \
-	prefs_logging.h \
 	prefs_matcher.h \
 	prefs_message.h \
 	prefs_other.h \

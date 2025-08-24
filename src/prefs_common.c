@@ -653,14 +653,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"log_length", "500", &prefs_common.loglength, P_INT,
 	 NULL, NULL, NULL},
-    	{"enable_log_standard", "TRUE", &prefs_common.enable_log_standard, P_BOOL,
-	 NULL, NULL, NULL},
-    	{"enable_log_warning", "TRUE", &prefs_common.enable_log_warning, P_BOOL,
-	 NULL, NULL, NULL},
-    	{"enable_log_error", "TRUE", &prefs_common.enable_log_error, P_BOOL,
-	 NULL, NULL, NULL},
-    	{"enable_log_status", "TRUE", &prefs_common.enable_log_status, P_BOOL,
-	 NULL, NULL, NULL},
 	{"log_msg_color", "#00af00", &prefs_common.color[COL_LOG_MSG],
 	 P_COLOR, NULL, NULL, NULL},
 	{"log_warn_color", "#af0000", &prefs_common.color[COL_LOG_WARN],
@@ -1280,24 +1272,6 @@ gchar *pref_get_pref_from_entry(GtkEntry *entry)
 gboolean prefs_common_unsafe_ssl_certs(void)
 {
 	return prefs_common.unsafe_ssl_certs;
-}
-
-gboolean prefs_common_enable_log_standard(void)
-{
-	return prefs_common.enable_log_standard;
-}
-
-gboolean prefs_common_enable_log_warning(void)
-{
-	return prefs_common.enable_log_warning;
-}
-gboolean prefs_common_enable_log_error(void)
-{
-	return prefs_common.enable_log_error;
-}
-gboolean prefs_common_enable_log_status(void)
-{
-	return prefs_common.enable_log_status;
 }
 
 /**

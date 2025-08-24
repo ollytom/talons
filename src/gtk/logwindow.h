@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __LOGWINDOW_H__
@@ -42,8 +42,6 @@ struct _LogWindow
 	GdkRGBA *status_nok_color;
 	GdkRGBA *status_skip_color;
 
-	gboolean clip;
-	guint	 clip_length;
 	gulong 	 hook_id;
 	GtkTextBuffer *buffer;
 	GtkTextTag *error_tag;
@@ -58,6 +56,5 @@ LogWindow *log_window_create(LogInstance instance);
 void log_window_init(LogWindow *logwin);
 void log_window_show(LogWindow *logwin);
 void log_window_show_error(LogWindow *logwin);
-void log_window_set_clipping(LogWindow *logwin, gboolean clip, guint clip_length);
 
 #endif /* __LOGWINDOW_H__ */

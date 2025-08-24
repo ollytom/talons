@@ -387,10 +387,6 @@ struct _PrefsCommon
 
     	gboolean cliplog;
     	guint loglength;
-	gboolean enable_log_standard;
-	gboolean enable_log_warning;
-	gboolean enable_log_error;
-	gboolean enable_log_status;
 
 	gboolean confirm_on_exit;
 	gboolean session_passwords;

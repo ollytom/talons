@@ -43,14 +43,12 @@ static void size_allocate_cb	(GtkWidget *widget,
 					 gpointer data);
 static gboolean log_window_append		(gpointer 	 source,
 						 gpointer   	 data);
-static void log_window_clip			(LogWindow	*logwin,
-						 guint		 glip_length);
 static void log_window_clear			(GtkWidget	*widget,
 						 LogWindow	*logwin);
 static void log_window_popup_menu_extend	(GtkTextView	*textview,
 						 GtkMenu	*menu,
 						 LogWindow	*logwin);
-					 
+
 /*!
  *\brief	Save Gtk object size to prefs dataset
  */
@@ -234,14 +232,6 @@ void log_window_show_error(LogWindow *logwin)
 	log_window_jump_to_error(logwin);
 }
 
-void log_window_set_clipping(LogWindow *logwin, gboolean clip, guint clip_length)
-{
-	cm_return_if_fail(logwin != NULL);
-
-	logwin->clip = clip;
-	logwin->clip_length = clip_length;
-}
-
 static gboolean log_window_append(gpointer source, gpointer data)
 {
 	LogText *logtext = (LogText *) source;
@@ -255,9 +245,6 @@ static gboolean log_window_append(gpointer source, gpointer data)
 	cm_return_val_if_fail(logtext != NULL, TRUE);
 	cm_return_val_if_fail(logtext->text != NULL, TRUE);
 	cm_return_val_if_fail(logwindow != NULL, FALSE);
-
-	if (logwindow->clip && !logwindow->clip_length)
-		return FALSE;
 
 	text = GTK_TEXT_VIEW(logwindow->text);
 	buffer = logwindow->buffer;
@@ -327,15 +314,12 @@ static gboolean log_window_append(gpointer source, gpointer data)
 	}
 	gtk_text_buffer_get_start_iter(buffer, &iter);
 
-	if (logwindow->clip)
-	       log_window_clip (logwindow, logwindow->clip_length);
-
 	if (!logwindow->hidden) {
 		GtkAdjustment *vadj = gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(text));
 		gfloat upper = gtk_adjustment_get_upper(vadj) -
 		    gtk_adjustment_get_page_size(vadj);
 		gfloat value = gtk_adjustment_get_value(vadj);
-		if (value == upper || 
+		if (value == upper ||
 		    (upper - value < 16 && value < 8))
 			gtk_text_view_scroll_mark_onscreen(text, logwindow->end_mark);
 	}
@@ -353,46 +337,17 @@ static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event,
 {
 	if (event && event->keyval == GDK_KEY_Escape)
 		gtk_widget_hide(logwin->window);
-	else if (event && event->keyval == GDK_KEY_Delete) 
+	else if (event && event->keyval == GDK_KEY_Delete)
 		log_window_clear(NULL, logwin);
 
 	return FALSE;
-}
-
-static void log_window_clip(LogWindow *logwin, guint clip_length)
-{
-        guint length;
-	guint point;
-	GtkTextBuffer *textbuf = logwin->buffer;
-	GtkTextIter start_iter, end_iter;
-	
-	length = gtk_text_buffer_get_line_count(textbuf);
-	/* debug_print("Log window length: %u\n", length); */
-	
-	if (length > clip_length) {
-	        /* find the end of the first line after the cut off
-		 * point */
-       	        point = length - clip_length;
-		gtk_text_buffer_get_iter_at_line(textbuf, &end_iter, point);
-		if (!gtk_text_iter_forward_to_line_end(&end_iter))
-			return;
-		gtk_text_buffer_get_start_iter(textbuf, &start_iter);
-		gtk_text_buffer_delete(textbuf, &start_iter, &end_iter);
-		if (logwin->has_error) {
-			gtk_text_buffer_get_start_iter(textbuf, &start_iter);
-			if (mainwindow_get_mainwindow() && !gtk_text_iter_forward_to_tag_toggle(&start_iter, logwin->error_tag)) {
-				mainwindow_clear_error(mainwindow_get_mainwindow());
-				logwin->has_error = FALSE;
-			}
-		}
-	}
 }
 
 static void log_window_clear(GtkWidget *widget, LogWindow *logwin)
 {
 	GtkTextBuffer *textbuf = logwin->buffer;
 	GtkTextIter start_iter, end_iter;
-	
+
 	gtk_text_buffer_get_start_iter(textbuf, &start_iter);
 	gtk_text_buffer_get_end_iter(textbuf, &end_iter);
 	gtk_text_buffer_delete(textbuf, &start_iter, &end_iter);
@@ -407,7 +362,7 @@ static void log_window_popup_menu_extend(GtkTextView *textview,
    			GtkMenu *menu, LogWindow *logwin)
 {
 	GtkWidget *menuitem;
-	
+
 	cm_return_if_fail(menu != NULL);
 	cm_return_if_fail(GTK_IS_MENU_SHELL(menu));
 

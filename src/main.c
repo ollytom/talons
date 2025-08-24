@@ -65,7 +65,6 @@
 #include "prefs_summaries.h"
 #include "prefs_themes.h"
 #include "prefs_other.h"
-#include "prefs_logging.h"
 #include "prefs_send.h"
 #include "prefs_wrapping.h"
 #include "prefs_compose_writing.h"
@@ -253,12 +252,6 @@ static gboolean defer_jump(void *data)
 		toolbar_main_set_sensitive(static_mainwindow);
 	}
 	return FALSE;
-}
-
-static void chk_update_val(GtkWidget *widget, gpointer data)
-{
-        gboolean *val = (gboolean *)data;
-	*val = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
 static gboolean sc_exiting = FALSE;
@@ -500,7 +493,6 @@ int main(int argc, char *argv[])
 	prefs_summaries_init();
 	prefs_message_init();
 	prefs_other_init();
-	prefs_logging_init();
 	prefs_receive_init();
 	prefs_send_init();
 	matcher_init();
@@ -511,7 +503,6 @@ int main(int argc, char *argv[])
 	sock_set_io_timeout(prefs_common.io_timeout_secs);
 	prefs_actions_read_config();
 	prefs_display_header_read_config();
-	/* prefs_filtering_read_config(); */
 	addressbook_read_file();
 	gtkut_widget_init();
 	priv_pixbuf_gdk(PRIV_PIXMAP_CLAWS_MAIL_ICON, &icon);
@@ -807,7 +798,6 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_message_done();
 	prefs_other_done();
 	prefs_receive_done();
-	prefs_logging_done();
 	prefs_send_done();
 	claws_done();
 }
