@@ -119,3 +119,4 @@ Makefile.in
 /version
 .zig-cache
 src/fence/zig-out/
+*~
