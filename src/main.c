@@ -255,12 +255,6 @@ static gboolean defer_jump(void *data)
 }
 
 static gboolean sc_exiting = FALSE;
-static gboolean show_at_startup = TRUE;
-
-void main_set_show_at_startup(gboolean show)
-{
-	show_at_startup = show;
-}
 
 bool verify_folderlist_xml()
 {
@@ -614,11 +608,7 @@ int main(int argc, char *argv[])
 		prefs_common_write_config();
 	}
 
-	if (!mainwin_shown) {
-		/* apart if something told not to show */
-		if (show_at_startup)
-			main_window_popup(mainwin);
-	}
+	main_window_popup(mainwin);
 
 	if (cmd.geometry != NULL) {
 		if (!gtk_window_parse_geometry(GTK_WINDOW(mainwin->window), cmd.geometry))
