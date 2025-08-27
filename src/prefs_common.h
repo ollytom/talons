@@ -321,8 +321,6 @@ struct _PrefsCommon
 	gboolean enable_bgcolor;
 	gboolean recycle_quote_colors;
 	gboolean display_header;
-	gboolean display_xface;
-	gboolean save_xface;
 	gint line_space;
 	gboolean render_html;
 	gboolean promote_html_part;

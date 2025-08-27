@@ -96,7 +96,6 @@
 #include "combobox.h"
 #include "hooks.h"
 #include "privacy.h"
-#include "autofaces.h"
 #include "headers.h"
 #include "file-utils.h"
 #include "fence.h"
@@ -6489,20 +6488,6 @@ static gchar *compose_get_header(Compose *compose)
 				g_string_append_printf(header, "%s: %s\n", chdr->name, buf);
 			}
 		}
-	}
-
-	/* Automatic Faces and X-Faces */
-	if (get_account_xface (buf, sizeof(buf), compose->account->account_name) == 0) {
-		g_string_append_printf(header, "X-Face: %s\n", buf);
-	}
-	else if (get_default_xface (buf, sizeof(buf)) == 0) {
-		g_string_append_printf(header, "X-Face: %s\n", buf);
-	}
-	if (get_account_face (buf, sizeof(buf), compose->account->account_name) == 0) {
-		g_string_append_printf(header, "Face: %s\n", buf);
-	}
-	else if (get_default_face (buf, sizeof(buf)) == 0) {
-		g_string_append_printf(header, "Face: %s\n", buf);
 	}
 
 	/* get special headers */

@@ -1689,56 +1689,6 @@ static GPtrArray *textview_scan_header(TextView *textview, FILE *fp)
 	return sorted_headers;
 }
 
-static void textview_show_avatar(TextView *textview)
-{
-	GtkAllocation allocation;
-	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
-	MsgInfo *msginfo = textview->messageview->msginfo;
-	gint x, wx, wy;
-	AvatarRender *avatarr;
-
-	if (!prefs_common.display_xface)
-		goto bail;
-
-	avatarr = avatars_avatarrender_new(msginfo);
-	hooks_invoke(AVATAR_IMAGE_RENDER_HOOKLIST, avatarr);
-
-	if (!avatarr->image) {
-		avatars_avatarrender_free(avatarr);
-		goto bail;
-	}
-
-	if (textview->image)
-		gtk_widget_destroy(textview->image);
-
-	textview->image = avatarr->image;
-	textview->avatar_type = avatarr->type;
-	avatarr->image = NULL; /* avoid destroying */
-	avatars_avatarrender_free(avatarr);
-
-	gtk_widget_set_name(GTK_WIDGET(textview->image), "textview_avatar");
-	gtk_widget_show(textview->image);
-
-	gtk_widget_get_allocation(textview->text, &allocation);
-	x = allocation.width - WIDTH - 5;
-
-	gtk_text_view_buffer_to_window_coords(
-		GTK_TEXT_VIEW(textview->text),
-		GTK_TEXT_WINDOW_TEXT, x, 5, &wx, &wy);
-
-	gtk_text_view_add_child_in_window(text, textview->image,
-		GTK_TEXT_WINDOW_TEXT, wx, wy);
-
-	gtk_widget_show_all(textview->text);
-
-	return;
-bail:
-	if (textview->image)
-		gtk_widget_destroy(textview->image);
-	textview->image = NULL;
-	textview->avatar_type = 0;
-}
-
 void textview_show_icon(TextView *textview, const gchar *stock_id)
 {
 	GtkAllocation allocation;
@@ -1801,80 +1751,6 @@ static void textview_save_contact_pic(TextView *textview)
 		}
 	}
 	g_free(filename);
-}
-
-static void textview_show_contact_pic(TextView *textview)
-{
-	MsgInfo *msginfo = textview->messageview->msginfo;
-	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
-	gint x, wx, wy;
-	gchar *filename = NULL;
-	GError *error = NULL;
-	GdkPixbuf *picture = NULL;
-	gint w, h;
-	GtkAllocation allocation;
-
-	if (!prefs_common.display_xface)
-		goto bail;
-
-	if (msginfo->extradata && msginfo->extradata->avatars)
-		return;
-
-	if (textview->image)
-		gtk_widget_destroy(textview->image);
-
-	filename = addrindex_get_picture_file(msginfo->from);
-
-	if (!filename)
-		goto bail;
-	if (!is_file_exist(filename)) {
-		g_free(filename);
-		goto bail;
-	}
-
-	gdk_pixbuf_get_file_info(filename, &w, &h);
-
-	if (w > 48 || h > 48)
-		picture = gdk_pixbuf_new_from_file_at_scale(filename,
-						48, 48, TRUE, &error);
-	else
-		picture = gdk_pixbuf_new_from_file(filename, &error);
-
-	if (error) {
-		debug_print("Failed to import image: %s\n",
-				error->message);
-		g_error_free(error);
-		goto bail;
-	}
-	g_free(filename);
-
-	if (picture) {
-		textview->image = gtk_image_new_from_pixbuf(picture);
-		g_object_unref(picture);
-	}
-	cm_return_if_fail(textview->image != NULL);
-
-	gtk_widget_set_name(GTK_WIDGET(textview->image), "textview_contact_pic");
-	gtk_widget_show(textview->image);
-
-	gtk_widget_get_allocation(textview->text, &allocation);
-	x = allocation.width - WIDTH - 5;
-
-	gtk_text_view_buffer_to_window_coords(
-		GTK_TEXT_VIEW(textview->text),
-		GTK_TEXT_WINDOW_TEXT, x, 5, &wx, &wy);
-
-	gtk_text_view_add_child_in_window(text, textview->image,
-		GTK_TEXT_WINDOW_TEXT, wx, wy);
-
-	gtk_widget_show_all(textview->text);
-
-	return;
-bail:
-	if (textview->image)
-		gtk_widget_destroy(textview->image);
-	textview->image = NULL;
-	textview->avatar_type = 0;
 }
 
 static void textview_show_header(TextView *textview, GPtrArray *headers)
@@ -1957,11 +1833,6 @@ static void textview_show_header(TextView *textview, GPtrArray *headers)
 		gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, "\n", 1,
 							 "header", NULL);
 	}
-
-	textview_show_avatar(textview);
-	if (prefs_common.save_xface)
-		textview_save_contact_pic(textview);
-	textview_show_contact_pic(textview);
 }
 
 gboolean textview_search_string(TextView *textview, const gchar *str,

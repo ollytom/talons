@@ -495,10 +495,6 @@ static PrefParam param[] = {
 
 	{"display_header", "TRUE", &prefs_common.display_header, P_BOOL,
 	 NULL, NULL, NULL},
-	{"display_xface", "TRUE", &prefs_common.display_xface,
-	 P_BOOL, NULL, NULL, NULL},
-	{"save_xface", "TRUE", &prefs_common.save_xface,
-	 P_BOOL, NULL, NULL, NULL},
 	{"render_html", "TRUE", &prefs_common.render_html, P_BOOL,
 	 NULL, NULL, NULL},
 	{"promote_html_part", "FALSE", &prefs_common.promote_html_part, P_BOOL,

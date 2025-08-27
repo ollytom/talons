@@ -47,8 +47,6 @@ typedef struct _MessagePage
 	GtkWidget *window;
 
 	GtkWidget *checkbtn_disphdr;
-	GtkWidget *checkbtn_dispxface;
-	GtkWidget *checkbtn_savexface;
 
 	GtkWidget *checkbtn_html;
 	GtkWidget *checkbtn_promote_html_part;
@@ -68,8 +66,6 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *vbox2;
 	GtkWidget *hbox1;
 	GtkWidget *checkbtn_disphdr;
-	GtkWidget *checkbtn_dispxface;
-	GtkWidget *checkbtn_savexface;
 
 	GtkWidget *button_edit_disphdr;
 	GtkWidget *checkbtn_html;
@@ -96,10 +92,6 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
 
 	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Headers"));
-	PACK_CHECK_BUTTON(vbox2, checkbtn_dispxface,
-			  _("Display Face in message view"));
-	PACK_CHECK_BUTTON(vbox2, checkbtn_savexface,
-			  _("Save Face in address book if possible"));
 
 	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox1);
@@ -182,11 +174,6 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_widget_show (hbox2);
 	gtk_box_pack_start (GTK_BOX (hbox1), hbox2, FALSE, FALSE, 0);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_dispxface),
-		prefs_common.display_xface);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_savexface),
-		prefs_common.save_xface);
-
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_disphdr),
 		prefs_common.display_header);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_html),
@@ -201,8 +188,6 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 		prefs_common.line_space);
 
 	prefs_message->window = GTK_WIDGET(window);
-	prefs_message->checkbtn_dispxface = checkbtn_dispxface;
-	prefs_message->checkbtn_savexface = checkbtn_savexface;
 	prefs_message->checkbtn_disphdr = checkbtn_disphdr;
 	prefs_message->checkbtn_html = checkbtn_html;
 	prefs_message->checkbtn_promote_html_part = checkbtn_promote_html_part;
@@ -217,10 +202,6 @@ static void prefs_message_save(PrefsPage *_page)
 {
 	MessagePage *page = (MessagePage *) _page;
 
-	prefs_common.display_xface = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_dispxface));
-	prefs_common.save_xface = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_savexface));
 	prefs_common.display_header = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_disphdr));
 	prefs_common.render_html = gtk_toggle_button_get_active(

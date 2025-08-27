@@ -543,122 +543,16 @@ static void prefs_custom_header_val_from_file_cb(void)
 	gchar *contents = NULL;
 	const gchar *hdr = gtk_entry_get_text(GTK_ENTRY(customhdr.hdr_entry));
 
-	if (!strcmp(hdr, "Face"))
-		filename = filesel_select_file_open(_("Choose a PNG file"), NULL);
-	else if (!strcmp(hdr, "X-Face"))
-		filename = filesel_select_file_open(_("Choose an XBM file"), NULL);
-	else
-		filename = filesel_select_file_open(_("Choose a text file"), NULL);
+	filename = filesel_select_file_open(_("Choose a text file"), NULL);
+	if (!filename)
+		return;
 
-	if (!strcmp(hdr, "Face") || !strcmp(hdr, "X-Face")) {
-		if (filename && is_file_exist(filename)) {
-			FILE *fp = NULL;
-			gint len;
-			gchar inbuf[B64_LINE_SIZE], *outbuf;
-			gchar *tmp = NULL;
-			gint w, h;
-			GdkPixbufFormat *format = gdk_pixbuf_get_file_info(
-							filename, &w, &h);
-
-			if (format == NULL) {
-				alertpanel_error(_("This file isn't an image."));
-				g_free(filename);
-				return;
-			}
-			if (w != 48 || h != 48) {
-				alertpanel_error(_("The chosen image isn't the correct size (48x48)."));
-				g_free(filename);
-				return;
-			}
-			if (!strcmp(hdr, "Face")) {
-				if (get_file_size(filename) > 725) {
-					alertpanel_error(_("The image is too big; it must be maximum 725 bytes."));
-					g_free(filename);
-					return;
-				}
-				if (g_ascii_strcasecmp("png", gdk_pixbuf_format_get_name(format))) {
-					alertpanel_error(_("The image isn't in the correct format (PNG)."));
-					g_print("%s\n", gdk_pixbuf_format_get_name(format));
-					g_free(filename);
-					return;
-				}
-			} else if (!strcmp(hdr, "X-Face")) {
-				gchar *tmp = NULL, *cmd = NULL;
-				int i = 0;
-				if (g_ascii_strcasecmp("xbm", gdk_pixbuf_format_get_name(format))) {
-					alertpanel_error(_("The image isn't in the correct format (XBM)."));
-					g_print("%s\n", gdk_pixbuf_format_get_name(format));
-					g_free(filename);
-					return;
-				}
-				cmd = g_strdup_printf("compface %s", filename);
-				tmp = get_command_output(cmd);
-				g_free(cmd);
-				if (tmp == NULL || *tmp == '\0') {
-					alertpanel_error(_("Couldn't call `compface`. Make sure it's in your $PATH."));
-					g_free(filename);
-					g_free(tmp);
-					return;
-				}
-				if (strstr(tmp, "compface:")) {
-					alertpanel_error(_("Compface error: %s"), tmp);
-					g_free(filename);
-					g_free(tmp);
-					return;
-				}
-				while (tmp[i]) {
-					gchar *tmp2 = NULL;
-					if (tmp[i] == ' ') {
-						i++; continue;
-					}
-					if (tmp[i] == '\r' || tmp[i] == '\n') {
-						i++; continue;
-					}
-					tmp2 = contents;
-					contents = g_strdup_printf("%s%c",tmp2?tmp2:"", tmp[i]);
-					g_free(tmp2);
-					i++;
-				}
-				g_free(tmp);
-				goto settext;
-			}
-
-			fp = g_fopen(filename, "rb");
-			if (!fp) {
-				g_free(filename);
-				return;
-			}
-
-			while ((len = fread(inbuf, sizeof(gchar),
-					    B64_LINE_SIZE, fp))
-			       == B64_LINE_SIZE) {
-				outbuf = g_base64_encode(inbuf, B64_LINE_SIZE);
-
-				tmp = contents;
-				contents = g_strconcat(tmp?tmp:"",outbuf, NULL);
-				g_free(outbuf);
-				g_free(tmp);
-			}
-			if (len > 0 && feof(fp)) {
-				tmp = contents;
-				outbuf = g_base64_encode(inbuf, len);
-				contents = g_strconcat(tmp?tmp:"",outbuf, NULL);
-				g_free(outbuf);
-				g_free(tmp);
-			}
-			fclose(fp);
-		}
-	} else {
-		if (!filename)
-			return;
-
-		contents = file_read_to_str(filename);
-		if (strchr(contents, '\n') || strchr(contents,'\r')) {
-			alertpanel_error(_("This file contains newlines."));
-			g_free(contents);
-			g_free(filename);
-			return;
-		}
+	contents = file_read_to_str(filename);
+	if (strchr(contents, '\n') || strchr(contents,'\r')) {
+		alertpanel_error(_("This file contains newlines."));
+		g_free(contents);
+		g_free(filename);
+		return;
 	}
 settext:
 	if (contents && strlen(contents))
@@ -885,16 +779,7 @@ static gboolean prefs_custom_header_selected(GtkTreeSelection *selector,
 
 	ENTRY_SET_TEXT(customhdr.hdr_entry, ch->name);
 	ENTRY_SET_TEXT(customhdr.val_entry, ch->value);
-	if (!g_strcmp0("Face",ch->name) && ch->value != NULL) {
-		preview = GTK_IMAGE(face_get_from_header (ch->value));
-		pixbuf = gtk_image_get_pixbuf(preview);
-		gtk_image_set_from_pixbuf (GTK_IMAGE(customhdr.preview), pixbuf);
-		gtk_widget_show(customhdr.preview);
-		g_object_ref_sink (G_OBJECT(preview));
-	}
-	else {
-		gtk_widget_hide(customhdr.preview);
-	}
+	gtk_widget_hide(customhdr.preview);
 	return TRUE;
 }
 

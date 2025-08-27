@@ -48,7 +48,6 @@ claws_mail_SOURCES = \
 	addritem.c \
 	advsearch.c \
 	alertpanel.c \
-	autofaces.c \
 	avatars.c \
 	compose.c \
 	customheader.c \
@@ -142,7 +141,6 @@ claws_mailinclude_HEADERS = \
 	addrharvest.h \
 	advsearch.h \
 	alertpanel.h \
-	autofaces.h \
 	avatars.h \
 	compose.h \
 	customheader.h \
