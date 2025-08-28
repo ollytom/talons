@@ -974,7 +974,6 @@ static void inc_progress_dialog_set_label(IncProgressDialog *inc_dialog,
 		break;
 	case POP3_GETAUTH_USER:
 	case POP3_GETAUTH_PASS:
-	case POP3_GETAUTH_APOP:
 		progress_dialog_set_label(dialog, _("Authenticating..."));
 		statusbar_pop_all();
 		statusbar_print_all(_("Retrieving messages from %s (%s)..."),
@@ -1130,7 +1129,6 @@ static gint inc_recv_message(Session *session, const gchar *msg, gpointer data)
 	switch (POP3_SESSION(session)->state) {
 	case POP3_GETAUTH_USER:
 	case POP3_GETAUTH_PASS:
-	case POP3_GETAUTH_APOP:
 	case POP3_GETRANGE_STAT:
 	case POP3_GETRANGE_LAST:
 	case POP3_GETRANGE_UIDL:

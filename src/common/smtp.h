@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __SMTP_H__
@@ -113,7 +113,7 @@ struct _SMTPSession
 	gchar *error_msg;
 	gboolean is_esmtp;
 	ESMTPFlag esmtp_flags;
-	
+
 	void *dialog;
 
 #ifdef USE_GNUTLS

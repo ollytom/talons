@@ -32,7 +32,6 @@
 #include <errno.h>
 
 #include "pop.h"
-#include "md5.h"
 #include "partial_download.h"
 #include "prefs_account.h"
 #include "utils.h"
@@ -49,7 +48,6 @@ static gint pop3_greeting_recv		(Pop3Session *session,
 					 const gchar *msg);
 static gint pop3_getauth_user_send	(Pop3Session *session);
 static gint pop3_getauth_pass_send	(Pop3Session *session);
-static gint pop3_getauth_apop_send	(Pop3Session *session);
 #ifdef USE_GNUTLS
 static gint pop3_stls_send		(Pop3Session *session);
 static gint pop3_stls_recv		(Pop3Session *session);
@@ -138,46 +136,6 @@ static gint pop3_getauth_pass_send(Pop3Session *session)
 
 	session->state = POP3_GETAUTH_PASS;
 	pop3_gen_send(session, "PASS %s", session->pass);
-	return PS_SUCCESS;
-}
-
-static gint pop3_getauth_apop_send(Pop3Session *session)
-{
-	gchar *start, *end;
-	gchar *apop_str;
-	gchar md5sum[33];
-
-	cm_return_val_if_fail(session->user != NULL, -1);
-	cm_return_val_if_fail(session->pass != NULL, -1);
-
-	session->state = POP3_GETAUTH_APOP;
-
-	if ((start = strchr(session->greeting, '<')) == NULL) {
-		log_error(LOG_PROTOCOL, _("Required APOP timestamp not found "
-			    "in greeting\n"));
-		session->error_val = PS_PROTOCOL;
-		return -1;
-	}
-
-	if ((end = strchr(start, '>')) == NULL || end == start + 1) {
-		log_error(LOG_PROTOCOL, _("Timestamp syntax error in greeting\n"));
-		session->error_val = PS_PROTOCOL;
-		return -1;
-	}
-	*(end + 1) = '\0';
-
-	if (!is_ascii_str(start)) {
-		log_error(LOG_PROTOCOL, _("Timestamp syntax error in greeting (not ASCII)\n"));
-		session->error_val = PS_PROTOCOL;
-		return -1;
-	}
-
-	apop_str = g_strconcat(start, session->pass, NULL);
-	md5_hex_digest(md5sum, apop_str);
-	g_free(apop_str);
-
-	pop3_gen_send(session, "APOP %s %s", session->user, md5sum);
-
 	return PS_SUCCESS;
 }
 
@@ -458,14 +416,6 @@ static gint pop3_retr_recv(Pop3Session *session, const gchar *data, guint len)
 	session->msg[session->cur_msg].recv_time =
 		drop_ok == 1 ? RECV_TIME_KEEP : session->current_time;
 
-	return PS_SUCCESS;
-}
-
-static gint pop3_top_send(Pop3Session *session, gint max_size)
-{
-	gint num_lines = (max_size*1024)/82; /* consider lines to be 80 chars */
-	session->state = POP3_TOP;
-	pop3_gen_send(session, "TOP %d %d", session->cur_msg, num_lines);
 	return PS_SUCCESS;
 }
 
@@ -954,7 +904,6 @@ static Pop3ErrorValue pop3_ok(Pop3Session *session, const gchar *msg)
 #endif
 			case POP3_GETAUTH_USER:
 			case POP3_GETAUTH_PASS:
-			case POP3_GETAUTH_APOP:
 				log_error(LOG_PROTOCOL, _("error occurred on authentication\n"));
 				ok = PS_AUTHFAIL;
 				break;
@@ -1020,17 +969,12 @@ static gint pop3_session_recv_msg(Session *session, const gchar *msg)
 			val = pop3_getauth_oauth2_send(pop3_session);
 		else
 #endif
-		if (pop3_session->ac_prefs->use_pop_auth && pop3_session->ac_prefs->pop_auth_type == POPAUTH_APOP)
-			val = pop3_getauth_apop_send(pop3_session);
-		else
 			val = pop3_getauth_user_send(pop3_session);
 		break;
 #ifdef USE_GNUTLS
 	case POP3_STLS:
 		if (pop3_stls_recv(pop3_session) != PS_SUCCESS)
 			return -1;
-		if (pop3_session->ac_prefs->use_pop_auth && pop3_session->ac_prefs->pop_auth_type == POPAUTH_APOP)
-			val = pop3_getauth_apop_send(pop3_session);
 #ifdef USE_OAUTH2
 		else if (pop3_session->ac_prefs->use_pop_auth && pop3_session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2)
 			val = pop3_getauth_oauth2_send(pop3_session);
@@ -1048,7 +992,6 @@ static gint pop3_session_recv_msg(Session *session, const gchar *msg)
 		break;
 #endif
 	case POP3_GETAUTH_PASS:
-	case POP3_GETAUTH_APOP:
 #ifdef USE_OAUTH2
 	case POP3_GETAUTH_OAUTH2:
 #endif

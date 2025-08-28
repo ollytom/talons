@@ -53,7 +53,6 @@
 #include "procheader.h"
 #include "prefs_account.h"
 #include "codeconv.h"
-#include "md5.h"
 #include "utils.h"
 #include "prefs_common.h"
 #include "inputdialog.h"
@@ -881,12 +880,6 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 	case IMAP_AUTH_ANON:
 		ok = imap_cmd_login(session, user, pass, "ANONYMOUS");
 		break;
-	case IMAP_AUTH_CRAM_MD5:
-		ok = imap_cmd_login(session, user, pass, "CRAM-MD5");
-		break;
-	case IMAP_AUTH_DIGEST_MD5:
-		ok = imap_cmd_login(session, user, pass, "DIGEST-MD5");
-		break;
 	case IMAP_AUTH_SCRAM_SHA1:
 		ok = imap_cmd_login(session, user, pass, "SCRAM-SHA-1");
 		break;
@@ -922,8 +915,6 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 	default:
 		debug_print("capabilities:\n"
 				"\t ANONYMOUS %d\n"
-				"\t CRAM-MD5 %d\n"
-				"\t DIGEST-MD5 %d\n"
 				"\t SCRAM-SHA-1 %d\n"
 				"\t SCRAM-SHA-224 %d\n"
 				"\t SCRAM-SHA-256 %d\n"
@@ -936,8 +927,6 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 				"\t LOGIN %d\n"
 				"\t GSSAPI %d\n",
 			imap_has_capability(session, "ANONYMOUS"),
-			imap_has_capability(session, "CRAM-MD5"),
-			imap_has_capability(session, "DIGEST-MD5"),
 			imap_has_capability(session, "SCRAM-SHA-1"),
 			imap_has_capability(session, "SCRAM-SHA-224"),
 			imap_has_capability(session, "SCRAM-SHA-256"),
@@ -949,10 +938,6 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 #endif
 			imap_has_capability(session, "LOGIN"),
 			imap_has_capability(session, "GSSAPI"));
-		if (imap_has_capability(session, "CRAM-MD5"))
-			ok = imap_cmd_login(session, user, pass, "CRAM-MD5");
-		if (ok == MAILIMAP_ERROR_LOGIN && imap_has_capability(session, "DIGEST-MD5"))
-			ok = imap_cmd_login(session, user, pass, "DIGEST-MD5");
 		if (ok == MAILIMAP_ERROR_LOGIN && imap_has_capability(session, "SCRAM-SHA-512"))
 			ok = imap_cmd_login(session, user, pass, "SCRAM-SHA-512");
 		if (ok == MAILIMAP_ERROR_LOGIN && imap_has_capability(session, "SCRAM-SHA-384"))
@@ -980,18 +965,6 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 	if (ok == MAILIMAP_NO_ERROR)
 		session->authenticated = TRUE;
 	else {
-		if (type == IMAP_AUTH_CRAM_MD5) {
-			ext_info = _("\n\nCRAM-MD5 logins only work if libetpan has been "
-				     "compiled with SASL support and the "
-				     "CRAM-MD5 SASL plugin is installed.");
-		}
-
-		if (type == IMAP_AUTH_DIGEST_MD5) {
-			ext_info = _("\n\nDIGEST-MD5 logins only work if libetpan has been "
-				     "compiled with SASL support and the "
-				     "DIGEST-MD5 SASL plugin is installed.");
-		}
-
 		if (type == IMAP_AUTH_SCRAM_SHA1) {
 			ext_info = _("\n\nSCRAM-SHA-1 logins only work if libetpan has been "
 				     "compiled with SASL support and the "

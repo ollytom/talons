@@ -1473,7 +1473,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 
 	COMBOBOX_ADD (menu2, _("Select"), 0);
 	COMBOBOX_ADD (menu2, NULL, 0);
-	COMBOBOX_ADD (menu2, "APOP", POPAUTH_APOP);
 	COMBOBOX_ADD (menu2, "OAuth2", POPAUTH_OAUTH2);
 #ifndef USE_OAUTH2
 	gtk_list_store_set(menu2, &iter, COMBOBOX_SENS, FALSE, -1);
@@ -1587,10 +1586,8 @@ static void receive_create_widget_func(PrefsPage * _page,
 	COMBOBOX_ADD (menu, _("Automatic"), 0);
 	COMBOBOX_ADD (menu, NULL, 0);
 	COMBOBOX_ADD (menu, _("Plain text"), IMAP_AUTH_PLAINTEXT);
-	COMBOBOX_ADD (menu, "CRAM-MD5", IMAP_AUTH_CRAM_MD5);
 	COMBOBOX_ADD (menu, "ANONYMOUS", IMAP_AUTH_ANON);
 	COMBOBOX_ADD (menu, "GSSAPI", IMAP_AUTH_GSSAPI);
-	COMBOBOX_ADD (menu, "DIGEST-MD5", IMAP_AUTH_DIGEST_MD5);
 	COMBOBOX_ADD (menu, "SCRAM-SHA-1", IMAP_AUTH_SCRAM_SHA1);
 	COMBOBOX_ADD (menu, "SCRAM-SHA-224", IMAP_AUTH_SCRAM_SHA224);
 	COMBOBOX_ADD (menu, "SCRAM-SHA-256", IMAP_AUTH_SCRAM_SHA256);
@@ -1859,12 +1856,10 @@ static void send_create_widget_func(PrefsPage * _page,
 	COMBOBOX_ADD (menu, NULL, 0);
 	COMBOBOX_ADD (menu, "PLAIN", SMTPAUTH_PLAIN);
 	COMBOBOX_ADD (menu, "LOGIN", SMTPAUTH_LOGIN);
-	COMBOBOX_ADD (menu, "CRAM-MD5", SMTPAUTH_CRAM_MD5);
 	COMBOBOX_ADD (menu, "OAUTH2", SMTPAUTH_OAUTH2);
 #ifndef USE_OAUTH2
 	gtk_list_store_set(menu, &iter, COMBOBOX_SENS, FALSE, -1);
 #endif
-	COMBOBOX_ADD (menu, "DIGEST-MD5", SMTPAUTH_DIGEST_MD5);
 	gtk_list_store_set(menu, &iter, COMBOBOX_SENS, FALSE, -1);
 
 	PACK_SPACER(vbox4, vbox_spc, VSPACING_NARROW_2);

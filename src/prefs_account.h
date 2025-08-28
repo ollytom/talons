@@ -43,7 +43,6 @@ typedef enum {
 
 typedef enum
 {
-	POPAUTH_APOP      = 1 << 0,
 	POPAUTH_OAUTH2    = 1 << 1
 } POPAuthType;
 

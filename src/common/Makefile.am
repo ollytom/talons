@@ -20,7 +20,6 @@ libclawscommon_la_SOURCES = $(arch_sources) \
 	file-utils.c \
 	hooks.c \
 	log.c \
-	md5.c \
 	mgutils.c \
 	passcrypt.c \
 	prefs.c \
@@ -49,7 +48,6 @@ clawscommoninclude_HEADERS = $(arch_headers) \
 	defs.h \
 	hooks.h \
 	log.h \
-	md5.h \
 	mgutils.h \
 	passcrypt.h \
 	prefs.h \

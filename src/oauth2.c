@@ -38,7 +38,6 @@
 
 #include "imap.h"
 #include "oauth2.h"
-#include "md5.h"
 #include "utils.h"
 #include "log.h"
 #include "time.h"

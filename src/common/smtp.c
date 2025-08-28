@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -33,7 +33,6 @@
 #include <string.h>
 
 #include "smtp.h"
-#include "md5.h"
 #include "utils.h"
 #include "log.h"
 
@@ -46,7 +45,6 @@ static gint smtp_starttls(SMTPSession *session);
 #ifdef USE_OAUTH2
 static gint smtp_auth_oauth2(SMTPSession *session);
 #endif
-static gint smtp_auth_cram_md5(SMTPSession *session);
 static gint smtp_auth_login(SMTPSession *session);
 static gint smtp_auth_plain(SMTPSession *session);
 
@@ -131,12 +129,12 @@ gint smtp_from(SMTPSession *session)
 	cm_return_val_if_fail(session->from != NULL, SM_ERROR);
 
 	session->state = SMTP_FROM;
-	
+
 	if (session->is_esmtp && (session->esmtp_flags & ESMTP_SIZE)!=0)
 		mail_size = g_strdup_printf(" SIZE=%d", session->send_data_len);
 	else
 		mail_size = g_strdup("");
-		
+
 
 	if (strchr(session->from, '<'))
 		g_snprintf(buf, sizeof(buf), "MAIL FROM:%s%s", session->from,
@@ -160,13 +158,7 @@ static gint smtp_auth(SMTPSession *session)
 	cm_return_val_if_fail(session->user != NULL, SM_ERROR);
 
 	session->state = SMTP_AUTH;
-
-	if ((session->forced_auth_type == SMTPAUTH_CRAM_MD5
-	     || session->forced_auth_type == 0)
-            &&
-	     (session->avail_auth_type & SMTPAUTH_CRAM_MD5) != 0)
-		smtp_auth_cram_md5(session);
-	else if ((session->forced_auth_type == SMTPAUTH_LOGIN
+	if ((session->forced_auth_type == SMTPAUTH_LOGIN
 		  || session->forced_auth_type == 0)
                  &&
 		  (session->avail_auth_type & SMTPAUTH_LOGIN) != 0)
@@ -218,45 +210,6 @@ static gint smtp_auth_recv(SMTPSession *session, const gchar *msg)
 			log_print(LOG_PROTOCOL, "ESMTP> *\n");
 		}
 		break;
-	case SMTPAUTH_CRAM_MD5:
-		session->state = SMTP_AUTH_CRAM_MD5;
-
-		if (!strncmp(msg, "334 ", 4)) {
-			gchar *response;
-			gchar *response64;
-			gchar *challenge;
-			gsize challengelen;
-			guchar hexdigest[33];
-
-			challenge = g_base64_decode_zero(msg + 4, &challengelen);
-			log_print(LOG_PROTOCOL, "ESMTP< [Decoded: %s]\n", challenge);
-
-			g_snprintf(buf, sizeof(buf), "%s", session->pass);
-			md5_hex_hmac(hexdigest, challenge, challengelen,
-				     buf, strlen(session->pass));
-			g_free(challenge);
-
-			response = g_strdup_printf
-				("%s %s", session->user, hexdigest);
-			log_print(LOG_PROTOCOL, "ESMTP> [Encoded: %s]\n", response);
-
-			response64 = g_base64_encode(response, strlen(response));
-			g_free(response);
-
-			if (session_send_msg(SESSION(session), response64) < 0) {
-				g_free(response64);
-				return SM_ERROR;
-			}
-			log_print(LOG_PROTOCOL, "ESMTP> %s\n", response64);
-			g_free(response64);
-		} else {
-			/* Server rejects AUTH */
-			if (session_send_msg(SESSION(session), "*") < 0)
-				return SM_ERROR;
-			log_print(LOG_PROTOCOL, "ESMTP> *\n");
-		}
-		break;
-	case SMTPAUTH_DIGEST_MD5:
         default:
         	/* stop smtp_auth when no correct authtype */
 		if (session_send_msg(SESSION(session), "*") < 0)
@@ -321,10 +274,6 @@ static gint smtp_ehlo_recv(SMTPSession *session, const gchar *msg)
 				session->avail_auth_type |= SMTPAUTH_PLAIN;
 			if (strcasestr(p, "LOGIN"))
 				session->avail_auth_type |= SMTPAUTH_LOGIN;
-			if (strcasestr(p, "CRAM-MD5"))
-				session->avail_auth_type |= SMTPAUTH_CRAM_MD5;
-			if (strcasestr(p, "DIGEST-MD5"))
-				session->avail_auth_type |= SMTPAUTH_DIGEST_MD5;
 #ifdef USE_GNUTLS
 			if (strcasestr(p, "XOAUTH2"))
 				session->avail_auth_type |= SMTPAUTH_OAUTH2;
@@ -362,18 +311,6 @@ static gint smtp_starttls(SMTPSession *session)
 	return SM_OK;
 }
 #endif
-
-static gint smtp_auth_cram_md5(SMTPSession *session)
-{
-	session->state = SMTP_AUTH;
-	session->auth_type = SMTPAUTH_CRAM_MD5;
-
-	if (session_send_msg(SESSION(session), "AUTH CRAM-MD5") < 0)
-		return SM_ERROR;
-	log_print(LOG_PROTOCOL, "ESMTP> AUTH CRAM-MD5\n");
-
-	return SM_OK;
-}
 
 static gint smtp_auth_plain(SMTPSession *session)
 {
@@ -539,7 +476,7 @@ static gint smtp_session_recv_msg(Session *session, const gchar *msg)
 	SMTPSession *smtp_session = SMTP_SESSION(session);
 	gboolean cont = FALSE;
 	gint ret = 0;
-	
+
 	if (strlen(msg) < 4) {
 		log_warning(LOG_PROTOCOL, _("bad SMTP response\n"));
 		return -1;
@@ -555,9 +492,6 @@ static gint smtp_session_recv_msg(Session *session, const gchar *msg)
 #ifdef USE_GNUTLS
         case SMTP_AUTH_OAUTH2:
 #endif
-	case SMTP_AUTH_CRAM_MD5:
-		log_print(LOG_PROTOCOL, "ESMTP< %s\n", msg);
-		break;
 	default:
 		log_print(LOG_PROTOCOL, "SMTP< %s\n", msg);
 		break;
@@ -626,7 +560,7 @@ static gint smtp_session_recv_msg(Session *session, const gchar *msg)
 		if (cont == TRUE)
 			break;
 		if (smtp_session->max_message_size > 0
-		&& smtp_session->max_message_size < 
+		&& smtp_session->max_message_size <
 		   smtp_session->send_data_len) {
 			log_warning(LOG_PROTOCOL, _("Message is too big "
 			      "(Maximum size is %s)\n"),
@@ -680,9 +614,6 @@ static gint smtp_session_recv_msg(Session *session, const gchar *msg)
 #ifdef USE_GNUTLS
         case SMTP_AUTH_OAUTH2:
 #endif
-	case SMTP_AUTH_CRAM_MD5:
-		ret = smtp_from(smtp_session);
-		break;
 	case SMTP_FROM:
 		if (smtp_session->cur_to)
 			ret = smtp_rcpt(smtp_session);
