@@ -60,8 +60,6 @@ static gboolean about_textview_motion_notify(GtkWidget *widget,
 static gboolean about_textview_leave_notify(GtkWidget *widget,
 					GdkEventCrossing *event,
 					GtkWidget *textview);
-static void about_size_allocate_cb(GtkWidget *widget,
-				   	GtkAllocation *allocation);
 static void about_textview_uri_update(GtkWidget *textview, gint x, gint y);
 
 static GtkWidget *link_popupmenu;
@@ -590,22 +588,16 @@ static void about_create(void)
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
 
-	g_signal_connect(G_OBJECT(window), "size_allocate",
-			 G_CALLBACK(about_size_allocate_cb), NULL);
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	g_signal_connect(G_OBJECT(window), "key_press_event",
 			 G_CALLBACK(key_pressed), NULL);
 
-	if (!geometry.min_width) {
-		geometry.min_width = 450;
-		geometry.min_height = 500;
-	}
+	geometry.min_width = 450;
+	geometry.min_height = 500;
 
 	gtk_window_set_geometry_hints(GTK_WINDOW(window), NULL, &geometry,
 				      GDK_HINT_MIN_SIZE);
-	gtk_window_set_default_size(GTK_WINDOW(window), prefs_common.aboutwin_width,
-				    prefs_common.aboutwin_height);
 
 	gtk_widget_realize(window);
 
@@ -690,16 +682,6 @@ static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event)
 		gtk_widget_hide(window);
 	return FALSE;
 }
-
-static void about_size_allocate_cb(GtkWidget *widget,
-				   GtkAllocation *allocation)
-{
-	cm_return_if_fail(allocation != NULL);
-
-	gtk_window_get_size(GTK_WINDOW(widget),
-		&prefs_common.aboutwin_width, &prefs_common.aboutwin_height);
-}
-
 
 static gboolean about_textview_uri_clicked(GtkTextTag *tag, GObject *obj,
 					GdkEvent *event, GtkTextIter *iter,
