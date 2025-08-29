@@ -474,19 +474,6 @@ GtkWidget *summary_get_main_widget(SummaryView *summaryview)
 		summary_update_msg, (gpointer) summaryview);	\
 }
 
-static void popup_menu_selection_done(GtkMenuShell *shell, gpointer user_data)
-{
-	SummaryView *summaryview = (SummaryView *)user_data;
-
-	cm_return_if_fail(summaryview != NULL);
-
-	/* If a message is displayed, place cursor back on the message. */
-	if (summaryview->displayed != NULL &&
-			summaryview->displayed != summaryview->selected) {
-		gtk_sctree_select(GTK_SCTREE(summaryview->ctree), summaryview->displayed);
-	}
-}
-
 SummaryView *summary_create(MainWindow *mainwin)
 {
 	SummaryView *summaryview;
@@ -1289,24 +1276,20 @@ gboolean summary_show(SummaryView *summaryview, FolderItem *item, gboolean avoid
 		g_slist_free(mlist);
 		mlist = not_killed;
 	} else {
-		summary_set_hide_menu(summaryview, "/Menu/View/HideReadMessages",
-						FALSE);
-		summary_set_hide_menu(summaryview, "/Menu/View/HideDelMessages",
-						FALSE);
-		summary_set_hide_menu(summaryview, "/Menu/View/HideReadThreads",
-						FALSE);
+		summary_set_hide_menu(summaryview, "/Menu/View/HideReadMessages", FALSE);
+		summary_set_hide_menu(summaryview, "/Menu/View/HideDelMessages", FALSE);
+		summary_set_hide_menu(summaryview, "/Menu/View/HideReadThreads", FALSE);
 	}
 
 	if (!hidden_removed) {
-        	not_killed = NULL;
-        	for(cur = mlist ; cur != NULL && cur->data != NULL ; cur = g_slist_next(cur)) {
-                	MsgInfo * msginfo = (MsgInfo *) cur->data;
-
-                	if (!msginfo->hidden)
-                        	not_killed = g_slist_prepend(not_killed, msginfo);
-                	else
-                        	procmsg_msginfo_free(&msginfo);
-        	}
+		not_killed = NULL;
+		for (cur = mlist ; cur != NULL && cur->data != NULL ; cur = g_slist_next(cur)) {
+			MsgInfo * msginfo = (MsgInfo *) cur->data;
+			if (!msginfo->hidden)
+				not_killed = g_slist_prepend(not_killed, msginfo);
+			else
+				procmsg_msginfo_free(&msginfo);
+		}
 		g_slist_free(mlist);
 		mlist = not_killed;
 	}
@@ -2432,11 +2415,9 @@ static void summary_status_show(SummaryView *summaryview)
 	gchar *itstr;
 	GList *rowlist, *cur;
 	guint n_selected = 0, n_new = 0, n_unread = 0, n_total = 0;
-	guint n_marked = 0, n_replied = 0, n_forwarded = 0, n_locked = 0, n_ignored = 0, n_watched = 0;
 	goffset sel_size = 0, n_size = 0;
 	MsgInfo *msginfo;
 	gchar *name;
-	gchar *tooltip;
 
 	if (!summaryview->folder_item) {
 		gtk_label_set_text(GTK_LABEL(summaryview->statlabel_folder), "");
@@ -2476,31 +2457,11 @@ static void summary_status_show(SummaryView *summaryview)
 					n_new++;
 				if (MSG_IS_UNREAD(msginfo->flags))
 					n_unread++;
-				if (MSG_IS_MARKED(msginfo->flags))
-					n_marked++;
-				if (MSG_IS_REPLIED(msginfo->flags))
-					n_replied++;
-				if (MSG_IS_FORWARDED(msginfo->flags))
-					n_forwarded++;
-				if (MSG_IS_LOCKED(msginfo->flags))
-					n_locked++;
-				if (MSG_IS_IGNORE_THREAD(msginfo->flags))
-					n_ignored++;
-				if (MSG_IS_WATCH_THREAD(msginfo->flags))
-					n_watched++;
 			}
 		}
 	} else {
 		n_new = summaryview->folder_item->new_msgs;
 		n_unread = summaryview->folder_item->unread_msgs;
-		n_marked = summaryview->folder_item->marked_msgs;
-		n_replied = summaryview->folder_item->replied_msgs;
-		n_forwarded = summaryview->folder_item->forwarded_msgs;
-		n_locked = summaryview->folder_item->locked_msgs;
-		n_ignored = summaryview->folder_item->ignored_msgs;
-		n_watched = summaryview->folder_item->watched_msgs;
-		n_total = summaryview->folder_item->total_msgs;
-		n_size = summaryview->total_size;
 	}
 
 	name = folder_item_get_name(summaryview->folder_item);
@@ -2553,38 +2514,8 @@ static void summary_status_show(SummaryView *summaryview)
 		str = g_strdup_printf(_("%d new, %d unread, %d total (%s)"),
 					      n_new, n_unread, n_total,
 					      to_human_readable((goffset)n_size));
-
-	g_signal_connect(G_OBJECT(summaryview->popupmenu), "selection-done",
-			G_CALLBACK(popup_menu_selection_done), summaryview);
-
 		gtk_label_set_text(GTK_LABEL(summaryview->statlabel_msgs), str);
 		g_free(str);
-		tooltip = g_strdup_printf("<b>%s</b>\n"
-					"<b>%s</b> %d\n"
-					"<b>%s</b> %d\n"
-					"<b>%s</b> %d\n"
-					"<b>%s</b> %s\n\n"
-					"<b>%s</b> %d\n"
-					"<b>%s</b> %d\n"
-					"<b>%s</b> %d\n"
-					"<b>%s</b> %d\n"
-					"<b>%s</b> %d\n"
-					"<b>%s</b> %d",
-					_("Message summary"),
-					_("New:"), n_new,
-					_("Unread:"), n_unread,
-					_("Total:"), n_total,
-					_("Size:"), to_human_readable((goffset)n_size),
-					_("Marked:"), n_marked,
-					_("Replied:"), n_replied,
-					_("Forwarded:"), n_forwarded,
-					_("Locked:"), n_locked,
-					_("Ignored:"), n_ignored,
-					_("Watched:"), n_watched);
-
-		gtk_widget_set_tooltip_markup(GTK_WIDGET(summaryview->statlabel_msgs),
-				            tooltip);
-		g_free(tooltip);
 	} else {
 		gchar *ssize, *tsize;
 		if (n_selected) {
@@ -5908,7 +5839,6 @@ static gboolean summary_key_pressed(GtkWidget *widget, GdkEventKey *event,
 {
 	GtkCMCTree *ctree = GTK_CMCTREE(widget);
 	GtkCMCTreeNode *node;
-	MessageView *messageview;
 	GtkAdjustment *adj;
 	gboolean mod_pressed;
 
@@ -5917,8 +5847,6 @@ static gboolean summary_key_pressed(GtkWidget *widget, GdkEventKey *event,
 
 	if (quicksearch_has_focus(summaryview->quicksearch))
 		return FALSE;
-
-	messageview = summaryview->messageview;
 
 	mod_pressed =
 		((event->state & (GDK_SHIFT_MASK|GDK_MOD1_MASK)) != 0);

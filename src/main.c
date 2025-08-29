@@ -384,7 +384,6 @@ int main(int argc, char *argv[])
 	guint num_folder_class = 0;
 	gboolean start_done = TRUE;
 	gboolean never_ran = FALSE;
-	gboolean mainwin_shown = FALSE;
 	gint ret;
 
 	sc_starting = TRUE;
@@ -1296,15 +1295,15 @@ gboolean claws_is_starting(void)
 gchar *claws_get_socket_name(void)
 {
 	char *dir = g_strdup_printf("%s/claws-mail", g_get_user_runtime_dir());
-	stat sb;
-	int ok = g_stat(socket_dir, &sb);
+	struct stat sb;
+	int ok = stat(dir, &sb);
 	if (ok < 0 && errno != ENOENT) {
 		g_print("stat %s: %s\n", dir, g_strerror(errno));
 	}
 	if (!is_dir_exist(dir) && make_dir(dir) < 0) {
 		g_print("create %s: %s\n", dir, g_strerror(errno));
 	}
-	char *filename = g_strdup_printf("%s/control.sock", dir)
+	char *filename = g_strdup_printf("%s/control.sock", dir);
 	g_free(dir);
 
 	debug_print("Using control socket %s\n", filename);

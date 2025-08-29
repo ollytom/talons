@@ -231,32 +231,6 @@ static GtkTargetEntry mimeview_mime_types[] =
 GSList *mimeviewer_factories;
 GSList *mimeviews;
 
-static GdkCursor *hand_cursor = NULL;
-
-static gboolean mimeview_visi_notify(GtkWidget *widget,
-				       GdkEventVisibility *event,
-				       MimeView *mimeview)
-{
-	gdk_window_set_cursor(gtk_widget_get_window(widget), hand_cursor);
-	return FALSE;
-}
-
-static gboolean mimeview_leave_notify(GtkWidget *widget,
-				      GdkEventCrossing *event,
-				      MimeView *mimeview)
-{
-	gdk_window_set_cursor(gtk_widget_get_window(widget), NULL);
-	return FALSE;
-}
-
-static gboolean mimeview_enter_notify(GtkWidget *widget,
-				      GdkEventCrossing *event,
-				      MimeView *mimeview)
-{
-	gdk_window_set_cursor(gtk_widget_get_window(widget), hand_cursor);
-	return FALSE;
-}
-
 MimeView *mimeview_create(MainWindow *mainwin)
 {
 	MimeView *mimeview;
@@ -283,10 +257,6 @@ MimeView *mimeview_create(MainWindow *mainwin)
 
 	gchar *titles[N_MIMEVIEW_COLS];
 	gint cols;
-
-	if (!hand_cursor)
-		hand_cursor = gdk_cursor_new_for_display(
-				gtk_widget_get_display(mainwin->window), GDK_HAND2);
 
 	debug_print("Creating MIME view...\n");
 	mimeview = g_new0(MimeView, 1);
@@ -372,13 +342,6 @@ MimeView *mimeview_create(MainWindow *mainwin)
 
     	mime_toggle = gtk_event_box_new();
 	gtk_event_box_set_visible_window(GTK_EVENT_BOX(mime_toggle), FALSE);
-
-	g_signal_connect(G_OBJECT(mime_toggle), "motion-notify-event",
-			 G_CALLBACK(mimeview_visi_notify), mimeview);
-	g_signal_connect(G_OBJECT(mime_toggle), "leave-notify-event",
-			 G_CALLBACK(mimeview_leave_notify), mimeview);
-	g_signal_connect(G_OBJECT(mime_toggle), "enter-notify-event",
-			 G_CALLBACK(mimeview_enter_notify), mimeview);
 
 	gtk_container_set_border_width(GTK_CONTAINER(mime_toggle), 2);
 	gtk_widget_show(mime_toggle);
@@ -2347,13 +2310,6 @@ static void icon_list_append_icon (MimeView *mimeview, MimeInfo *mimeinfo)
 	mimeview->icon_count++;
 	button = gtk_event_box_new();
 
-	g_signal_connect(G_OBJECT(button), "motion-notify-event",
-			 G_CALLBACK(mimeview_visi_notify), mimeview);
-	g_signal_connect(G_OBJECT(button), "leave-notify-event",
-			 G_CALLBACK(mimeview_leave_notify), mimeview);
-	g_signal_connect(G_OBJECT(button), "enter-notify-event",
-			 G_CALLBACK(mimeview_enter_notify), mimeview);
-
 	gtk_container_set_border_width(GTK_CONTAINER(button), 2);
 	g_object_set_data(G_OBJECT(button), "icon_number",
 			  GINT_TO_POINTER(mimeview->icon_count));
@@ -2603,8 +2559,6 @@ static gint mime_toggle_button_cb(GtkWidget *button, GdkEventButton *event,
 				    MimeView *mimeview)
 {
 	g_object_ref(button);
-
-	mimeview_leave_notify(button, NULL, NULL);
 
 	mimeview->ctree_mode = !mimeview->ctree_mode;
 	if (mimeview->ctree_mode) {
