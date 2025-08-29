@@ -169,7 +169,7 @@ static gint session_connect_cb(SockInfo *sock, gpointer data)
 	session->sock = sock;
 	sock->account = session->account;
 	sock->is_smtp = session->is_smtp;
-	sock->ssl_cert_auto_accept = session->ssl_cert_auto_accept;
+	sock->ssl_cert_auto_accept = TRUE;
 
 #ifdef USE_GNUTLS
 	sock->gnutls_priority = session->gnutls_priority;

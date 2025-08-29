@@ -117,7 +117,6 @@ claws_mail_SOURCES = \
 	send_message.c \
 	setup.c \
 	sourcewindow.c \
-	ssl_manager.c \
 	statusbar.c \
 	stock_pixmap.c \
 	summary_search.c \
@@ -216,7 +215,6 @@ claws_mailinclude_HEADERS = \
 	send_message.h \
 	setup.h \
 	sourcewindow.h \
-	ssl_manager.h \
 	statusbar.h \
 	stock_pixmap.h \
 	summary_search.h \

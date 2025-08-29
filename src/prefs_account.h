@@ -90,7 +90,6 @@ struct _PrefsAccount
 	gchar *in_ssl_client_cert_file;
 	gchar *in_ssl_client_cert_pass;
 
-	gboolean ssl_certs_auto_accept;
 	gboolean use_nonblocking_ssl;
 	gboolean use_tls_sni;
 

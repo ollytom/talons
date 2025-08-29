@@ -66,8 +66,6 @@
 #include "about.h"
 #include "manual.h"
 #include "version.h"
-#include "ssl_manager.h"
-#include "sslcertwindow.h"
 #include "prefs_gtk.h"
 #include "hooks.h"
 #include "progressindicator.h"
@@ -319,10 +317,6 @@ static void prefs_actions_open_cb	(GtkAction	*action,
 static void prefs_account_open_cb	(GtkAction	*action,
 				  gpointer	 data);
 
-#ifdef USE_GNUTLS
-static void ssl_manager_open_cb 	(GtkAction	*action,
-				  gpointer	 data);
-#endif
 static void new_account_cb	 (GtkAction	*action,
 				  gpointer	 data);
 
@@ -663,10 +657,6 @@ static GtkActionEntry mainwin_entries[] =
 
 	{"Tools/Execute",                            NULL, N_("E_xecute"), "X", NULL, G_CALLBACK(execute_summary_cb) },
 	{"Tools/Expunge",                            NULL, N_("Exp_unge"), "<control>E", NULL, G_CALLBACK(expunge_summary_cb) },
-#ifdef USE_GNUTLS
-	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
-	{"Tools/TLSCertificates",                    NULL, N_("TLS cer_tificates"), NULL, NULL, G_CALLBACK(ssl_manager_open_cb) },
-#endif
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/NetworkLog",                         NULL, N_("Network _Log"), "<shift><control>L", NULL, G_CALLBACK(log_window_show_cb) },
 
@@ -1296,10 +1286,7 @@ MainWindow *main_window_create()
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Execute", "Tools/Execute", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Expunge", "Tools/Expunge", GTK_UI_MANAGER_MENUITEM)
-#ifdef USE_GNUTLS
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator6", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "TLSCertificates", "Tools/TLSCertificates", GTK_UI_MANAGER_MENUITEM)
-#endif
+
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator7", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "NetworkLog", "Tools/NetworkLog", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator8", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
@@ -1568,9 +1555,7 @@ MainWindow *main_window_create()
 	folderview_init(folderview);
 	summary_init(summaryview);
 	messageview_init(messageview);
-#ifdef USE_GNUTLS
-	sslcertwindow_register_hook();
-#endif
+
 	mainwin->lock_count = 0;
 	mainwin->menu_lock_count = 0;
 	mainwin->cursor_count = 0;
@@ -4171,13 +4156,6 @@ static void prefs_actions_open_cb(GtkAction *action, gpointer data)
 	prefs_actions_open(mainwin);
 }
 
-#ifdef USE_GNUTLS
-static void ssl_manager_open_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	ssl_manager_open(mainwin);
-}
-#endif
 static void prefs_account_open_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;

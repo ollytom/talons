@@ -588,7 +588,7 @@ int imap_threaded_connect_ssl(Folder * folder, const char * server, int port)
 	param.account = folder->account;
 
 	if (folder->account)
-		accept_if_valid = folder->account->ssl_certs_auto_accept;
+		accept_if_valid = TRUE;
 
 	refresh_resolvers();
 	if (threaded_run(folder, &param, &result, connect_ssl_run))
@@ -1146,7 +1146,7 @@ int imap_threaded_starttls(Folder * folder, const gchar *host, int port)
 	param.account = folder->account;
 
 	if (folder->account)
-		accept_if_valid = folder->account->ssl_certs_auto_accept;
+		accept_if_valid = TRUE;
 
 	if (threaded_run(folder, &param, &result, starttls_run))
 		return MAILIMAP_ERROR_INVAL;

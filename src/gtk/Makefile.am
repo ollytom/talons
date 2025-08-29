@@ -30,7 +30,6 @@ libclawsgtk_la_SOURCES = \
 	prefswindow.c \
 	progressdialog.c \
 	quicksearch.c \
-	sslcertwindow.c \
 	claws-marshal.c
 
 clawsgtkincludedir = $(pkgincludedir)/gtk
@@ -53,7 +52,6 @@ clawsgtkinclude_HEADERS = \
 	prefswindow.h \
 	progressdialog.h \
 	quicksearch.h \
-	sslcertwindow.h \
 	claws-marshal.h \
 	gtkcmctree.h \
 	gtkcmclist.h \
