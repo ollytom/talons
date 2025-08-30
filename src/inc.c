@@ -23,6 +23,7 @@
 
 #include "defs.h"
 
+#include <fcntl.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
@@ -663,7 +664,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 	for (; inc_dialog->queue_list != NULL && !cancelled; inc_dialog->cur_row++) {
 		session = inc_dialog->queue_list->data;
 		pop3_session = POP3_SESSION(session->session);
-		GSList *filtered, *unfiltered;
 
 		if (pop3_session->pass == NULL) {
 			SET_PIXMAP_AND_TEXT(okpix, _("Cancelled"));
@@ -754,9 +754,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 		/* process messages */
 		folder_item_update_freeze();
 
-		if (unfiltered != NULL)
-			folder_item_move_msgs(inbox, unfiltered);
-
 		for(msglist_element = msglist; msglist_element != NULL;
 		    msglist_element = msglist_element->next) {
 			procmsg_msginfo_free((MsgInfo**)&(msglist_element->data));
@@ -764,8 +761,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 		folder_item_update_thaw();
 
 		g_slist_free(msglist);
-		g_slist_free(filtered);
-		g_slist_free(unfiltered);
 
 		statusbar_pop_all();
 
@@ -1379,7 +1374,6 @@ static gint inc_spool_account(PrefsAccount *account)
 static gint get_spool(FolderItem *dest, const gchar *mbox, PrefsAccount *account)
 {
 	gint msgs, size;
-	gint lockfd;
 	gchar tmp_mbox[MAXPATHLEN + 1];
 
 	cm_return_val_if_fail(dest != NULL, -1);
@@ -1387,30 +1381,34 @@ static gint get_spool(FolderItem *dest, const gchar *mbox, PrefsAccount *account
 	cm_return_val_if_fail(account != NULL, -1);
 
 	if (!is_file_exist(mbox) || (size = get_file_size(mbox)) == 0) {
-		debug_print("%s: no messages in local mailbox.\n", mbox);
+		debug_print("%s: no messages\n", mbox);
 		return 0;
 	} else if (size < 0)
 		return -1;
 
-	if ((lockfd = lock_mbox(mbox, LOCK_FLOCK)) < 0)
-		return -1;
+	g_snprintf(tmp_mbox, sizeof(tmp_mbox), "%s/tmpmbox.%p", get_tmp_dir(), mbox);
 
-	g_snprintf(tmp_mbox, sizeof(tmp_mbox), "%s%ctmpmbox.%p",
-		   get_tmp_dir(), G_DIR_SEPARATOR, mbox);
-
-	if (copy_mbox(lockfd, tmp_mbox) < 0) {
-		unlock_mbox(mbox, lockfd, LOCK_FLOCK);
+	int spool = open(mbox, O_RDONLY);
+	if (flock(spool, LOCK_EX|LOCK_NB) < 0) {
+		perror("lock mbox");
 		return -1;
 	}
-
-	debug_print("Getting new messages from %s into %s...\n",
-		    mbox, dest->path);
+	debug_print("Getting new messages from %s into %s...\n", mbox, dest->path);
+	if (copy_mbox(spool, tmp_mbox) < 0) {
+		flock(spool, LOCK_UN);
+		close(spool);
+		return -1;
+	}
+	close(spool);
 
 	msgs = proc_mbox(dest, tmp_mbox, FALSE, account);
-
 	unlink(tmp_mbox);
-	if (msgs >= 0) empty_mbox(mbox);
-	unlock_mbox(mbox, lockfd, LOCK_FLOCK);
+	if (msgs >= 0) {
+		if (truncate(mbox, 0) < 0)
+			perror("truncate mbox");
+	}
+
+	flock(spool, LOCK_UN);
 
 	return msgs;
 }

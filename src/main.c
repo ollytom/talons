@@ -27,24 +27,19 @@
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <time.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifdef G_OS_UNIX
-#  include <signal.h>
-#  include <errno.h>
-#  include <fcntl.h>
-#endif
-
-#if HAVE_FLOCK
-#include <sys/file.h>
-#endif
+#include <time.h>
+#include <unistd.h>
 
 #ifdef HAVE_VALGRIND
 #include <valgrind.h>
@@ -1314,7 +1309,6 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 {
 	gint sock;
 	GList *curr;
-#ifdef G_OS_UNIX
 	gchar *path;
 
 	path = claws_get_socket_name();
@@ -1323,7 +1317,6 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 
 	if (sock < 0) {
 		gint ret;
-#if HAVE_FLOCK
 		gchar *socket_lock;
 		gint lock_fd;
 		/* If connect failed, no other process is running.
@@ -1349,38 +1342,16 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 			g_free(socket_lock);
 			return -1;
 		}
-#endif
 
 		unlink(path);
 		debug_print("Opening socket %s\n", path);
 		ret = fd_open_unix(path);
-#if HAVE_FLOCK
 		flock(lock_fd, LOCK_UN);
 		close(lock_fd);
 		unlink(socket_lock);
 		g_free(socket_lock);
-#endif
 		return ret;
 	}
-#else
-        HANDLE hmutex;
-
-        hmutex = CreateMutexA(NULL, FALSE, "ClawsMail");
-        if (!hmutex) {
-                debug_print("cannot create Mutex\n");
-                return -1;
-        }
-        if (GetLastError() != ERROR_ALREADY_EXISTS) {
-                sock = fd_open_inet(50216);
-                if (sock < 0)
-                        return 0;
-                return sock;
-        }
-
-        sock = fd_connect_inet(50216);
-        if (sock < 0)
-                return -1;
-#endif
 	/* remote command mode */
 
 	debug_print("another Claws Mail instance is already running.\n");
