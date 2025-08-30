@@ -541,7 +541,6 @@ static void prefs_custom_header_val_from_file_cb(void)
 {
 	gchar *filename = NULL;
 	gchar *contents = NULL;
-	const gchar *hdr = gtk_entry_get_text(GTK_ENTRY(customhdr.hdr_entry));
 
 	filename = filesel_select_file_open(_("Choose a text file"), NULL);
 	if (!filename)
@@ -554,7 +553,7 @@ static void prefs_custom_header_val_from_file_cb(void)
 		g_free(filename);
 		return;
 	}
-settext:
+
 	if (contents && strlen(contents))
 		gtk_entry_set_text(GTK_ENTRY(customhdr.val_entry), contents);
 
@@ -761,8 +760,6 @@ static gboolean prefs_custom_header_selected(GtkTreeSelection *selector,
 {
 	GtkTreeIter iter;
 	CustomHeader *ch;
-	GtkImage *preview;
-	GdkPixbuf *pixbuf;
 	CustomHeader default_ch = { 0, "", NULL };
 
 	if (currently_selected)

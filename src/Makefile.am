@@ -175,7 +175,6 @@ claws_mailinclude_HEADERS = \
 	news.h \
 	noticeview.h \
 	oauth2.h \
-	partial_download.h \
 	password.h \
 	passwordstore.h \
 	pop.h \

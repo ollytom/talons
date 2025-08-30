@@ -32,7 +32,6 @@
 #include <errno.h>
 
 #include "pop.h"
-#include "partial_download.h"
 #include "prefs_account.h"
 #include "utils.h"
 #include "log.h"
@@ -43,6 +42,12 @@
 #ifdef USE_OAUTH2
 #include "defs.h"
 #endif
+
+typedef enum {
+	POP3_TOTALLY_RECEIVED	= 0,
+	POP3_PARTIALLY_RECEIVED = 1,
+	POP3_MUST_COMPLETE_RECV = 2
+} PartialDownloadStatus;
 
 static gint pop3_greeting_recv		(Pop3Session *session,
 					 const gchar *msg);
