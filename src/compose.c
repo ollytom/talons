@@ -67,7 +67,6 @@
 #include "stock_pixmap.h"
 #include "send_message.h"
 #include "imap.h"
-#include "news.h"
 #include "customheader.h"
 #include "prefs_common.h"
 #include "prefs_account.h"
@@ -909,13 +908,11 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 	gtk_text_buffer_get_start_iter(textbuf, &iter);
 	gtk_text_buffer_place_cursor(textbuf, &iter);
 
-	if (account->protocol != A_NNTP) {
-		if (mailto && *mailto != '\0') {
-			mfield = compose_entries_set(compose, mailto, COMPOSE_TO);
-		} else {
-			compose_set_folder_prefs(compose, item, TRUE);
-		}
-	}
+	if (mailto && *mailto != '\0')
+		mfield = compose_entries_set(compose, mailto, COMPOSE_TO);
+	else
+		compose_set_folder_prefs(compose, item, TRUE);
+
 	compose_add_field_list( compose, listAddress );
 
 	if (item && item->prefs && item->prefs->compose_with_format) {
@@ -3075,7 +3072,7 @@ static void compose_reply_set_entry(Compose *compose, MsgInfo *msginfo,
 	default_reply_to = msginfo->folder &&
 		msginfo->folder->prefs->enable_default_reply_to;
 
-	if (compose->account->protocol != A_NNTP) {
+	if (1) {
 		compose_set_folder_prefs(compose, msginfo->folder, FALSE);
 
 		if (reply_to_ml && !default_reply_to) {
@@ -3152,44 +3149,11 @@ static void compose_reply_set_entry(Compose *compose, MsgInfo *msginfo,
 				}
 			}
 		}
-	} else {
-		if (to_sender || (compose->followup_to &&
-			!strncmp(compose->followup_to, "poster", 6)))
-			compose_entry_append
-				(compose,
-				 (compose->replyto ? compose->replyto :
-		    		 	msginfo->from ? msginfo->from : ""),
-				 COMPOSE_TO, PREF_NONE);
-
-		else if (followup_and_reply_to || to_all) {
-			compose_entry_append
-		    		(compose,
-		    		 (compose->replyto ? compose->replyto :
-		    		 msginfo->from ? msginfo->from : ""),
-		    		 COMPOSE_TO, PREF_NONE);
-
-			compose_entry_append
-				(compose,
-			 	 compose->followup_to ? compose->followup_to :
-			 	 compose->newsgroups ? compose->newsgroups : "",
-			 	 COMPOSE_NEWSGROUPS, PREF_NONE);
-
-			compose_entry_append
-				(compose,
-				 msginfo->cc ? msginfo->cc : "",
-				 COMPOSE_CC, PREF_NONE);
-		}
-		else
-			compose_entry_append
-				(compose,
-			 	 compose->followup_to ? compose->followup_to :
-			 	 compose->newsgroups ? compose->newsgroups : "",
-			 	 COMPOSE_NEWSGROUPS, PREF_NONE);
 	}
 	compose_reply_set_subject(compose, msginfo);
 
 	if (to_ml && compose->ml_post) return;
-	if (!to_all || compose->account->protocol == A_NNTP) return;
+	if (!to_all) return;
 
 	if (compose->replyto) {
 		Xstrdup_a(replyto, compose->replyto, return);
@@ -4609,11 +4573,11 @@ compose_current_mail_account(void)
 {
 	PrefsAccount *ac;
 
-	if (cur_account && cur_account->protocol != A_NNTP)
+	if (cur_account)
 		ac = cur_account;
 	else {
 		ac = account_get_default();
-		if (!ac || ac->protocol == A_NNTP) {
+		if (!ac) {
 			alertpanel_error(_("Account for sending mail is not specified.\n"
 					   "Please select a mail account before sending."));
 			return NULL;
@@ -4749,7 +4713,7 @@ gboolean compose_check_for_valid_recipient(Compose *compose) {
 	slist_free_strings_full(compose->newsgroup_list);
         compose->newsgroup_list = NULL;
 
-	/* search header entries for to and newsgroup entries */
+	/* search header entries for to */
 	for (list = compose->header_list; list; list = list->next) {
 		gchar *header;
 		gchar *entry;
@@ -4761,12 +4725,6 @@ gboolean compose_check_for_valid_recipient(Compose *compose) {
 			for (strptr = recipient_headers_mail; *strptr != NULL; strptr++) {
 				if (!g_ascii_strcasecmp(header, prefs_common_translated_header_name(*strptr))) {
 					compose->to_list = address_list_append(compose->to_list, entry);
-					recipient_found = TRUE;
-				}
-			}
-			for (strptr = recipient_headers_news; *strptr != NULL; strptr++) {
-				if (!g_ascii_strcasecmp(header, prefs_common_translated_header_name(*strptr))) {
-					compose->newsgroup_list = newsgroup_list_append(compose->newsgroup_list, entry);
 					recipient_found = TRUE;
 				}
 			}
@@ -5774,7 +5732,7 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 	FILE *fp;
 	GSList *cur;
 	gint num;
-	PrefsAccount *mailac = NULL, *newsac = NULL;
+	PrefsAccount *mailac = NULL;
 	gboolean err = FALSE;
 
 	debug_print("queueing message...\n");
@@ -5794,19 +5752,10 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 
 	if (compose->to_list) {
     		mailac = compose->account;
-		if (!mailac && cur_account && cur_account->protocol != A_NNTP)
+		if (!mailac && cur_account)
 	    		mailac = cur_account;
 		else if (!mailac && !(mailac = compose_current_mail_account())) {
 			alertpanel_error(_("No account for sending mails available!"));
-			return COMPOSE_QUEUE_ERROR_NO_MSG;
-		}
-	}
-
-	if (compose->newsgroup_list) {
-                if (compose->account->protocol == A_NNTP)
-                        newsac = compose->account;
-                else {
-			alertpanel_error(_("Selected account isn't NNTP: Posting is impossible."));
 			return COMPOSE_QUEUE_ERROR_NO_MSG;
 		}
 	}
@@ -5845,10 +5794,7 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 		err |= (fprintf(fp, "SSV:%s\n", mailac->smtp_server) < 0);
 	else
 		err |= (fprintf(fp, "SSV:\n") < 0);
-	if (newsac)
-		err |= (fprintf(fp, "NSV:%s\n", newsac->nntp_server) < 0);
-	else
-		err |= (fprintf(fp, "NSV:\n") < 0);
+	err |= (fprintf(fp, "NSV:\n") < 0);
 	err |= (fprintf(fp, "SSH:\n") < 0);
 	/* write recipient list */
 	if (compose->to_list) {
@@ -5869,9 +5815,6 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 	/* account IDs */
 	if (mailac)
 		err |= (fprintf(fp, "MAID:%d\n", mailac->account_id) < 0);
-	if (newsac)
-		err |= (fprintf(fp, "NAID:%d\n", newsac->account_id) < 0);
-
 
 	if (compose->privacy_system != NULL) {
 		err |= (fprintf(fp, "X-Claws-Privacy-System:%s\n", compose->privacy_system) < 0);
@@ -6400,14 +6343,6 @@ static gchar *compose_get_header(Compose *compose)
 	/* Cc */
 	compose_add_headerfield_from_headerlist(compose, header, "Cc", ", ");
 
-	/* Bcc */
-	/*
-	 * If this account is a NNTP account remove Bcc header from
-	 * message body since it otherwise will be publicly shown
-	 */
-	if (compose->account->protocol != A_NNTP)
-		compose_add_headerfield_from_headerlist(compose, header, "Bcc", ", ");
-
 	/* Subject */
 	str = gtk_editable_get_chars(GTK_EDITABLE(compose->subject_entry), 0, -1);
 
@@ -6766,9 +6701,6 @@ static void compose_create_header_entry(Compose *compose)
 	}
 	if (!compose->header_last || !standard_header) {
 		switch(compose->account->protocol) {
-			case A_NNTP:
-				header = prefs_common_translated_header_name("Newsgroups:");
-				break;
 			default:
 				header = prefs_common_translated_header_name("To:");
 				break;
@@ -7605,12 +7537,7 @@ static Compose *compose_create(PrefsAccount *account,
 		compose_entry_append(compose, account->auto_replyto, COMPOSE_REPLYTO, PREF_ACCOUNT);
 
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options/ReplyMode", compose->mode == COMPOSE_REPLY);
-	if (account->protocol != A_NNTP)
-		gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN((compose->header_last->combo)))),
-				prefs_common_translated_header_name("To:"));
-	else
-		gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN((compose->header_last->combo)))),
-				prefs_common_translated_header_name("Newsgroups:"));
+	gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN((compose->header_last->combo)))), prefs_common_translated_header_name("To:"));
 
 	addressbook_set_target_compose(compose);
 
@@ -8940,9 +8867,7 @@ static void account_activated(GtkComboBox *optmenu, gpointer data)
 		}
 		g_slist_free(saved_list);
 
-		combobox_select_by_data(GTK_COMBO_BOX(compose->header_last->combo),
-					(ac->protocol == A_NNTP) ?
-					COMPOSE_NEWSGROUPS : COMPOSE_TO);
+		combobox_select_by_data(GTK_COMBO_BOX(compose->header_last->combo),COMPOSE_TO);
 	}
 
 	/* Set message save folder */
@@ -10937,23 +10862,6 @@ void compose_check_for_email_account(Compose *compose)
 
 	if (!compose)
 		return;
-
-	if (compose->account && compose->account->protocol == A_NNTP) {
-		ac = account_get_cur_account();
-		if (ac->protocol == A_NNTP) {
-			list = account_get_list();
-
-			for( ; list != NULL ; list = g_list_next(list)) {
-				curr = (PrefsAccount *) list->data;
-				if (curr->protocol != A_NNTP) {
-					ac = curr;
-					break;
-				}
-			}
-		}
-		combobox_select_by_data(GTK_COMBO_BOX(compose->account_combo),
-					ac->account_id);
-	}
 }
 
 void compose_reply_to_address(MessageView *msgview, MsgInfo *msginfo,

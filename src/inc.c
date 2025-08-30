@@ -243,7 +243,6 @@ static gint inc_account_mail_real(MainWindow *mainwin, PrefsAccount *account)
 
 	switch (account->protocol) {
 	case A_IMAP4:
-	case A_NNTP:
 		/* Melvin: bug [14]
 		 * FIXME: it should return foldeview_check_new() value.
 		 * TODO: do it when bug [19] is fixed (IMAP folder sets
@@ -361,7 +360,6 @@ void inc_account_list_mail(MainWindow *mainwin, GList *account_list, gboolean au
 				break;
 
 			case A_IMAP4:
-			case A_NNTP:
 				new_msgs += folderview_check_new(FOLDER(account->folder));
 				break;
 

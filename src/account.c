@@ -249,7 +249,7 @@ GList *account_find_all_from_address(GList *ac_list, const gchar *address)
 
 	for (cur = account_list; cur != NULL; cur = cur->next) {
 		ac = (PrefsAccount *)cur->data;
-		if (ac->protocol != A_NNTP && ac->address &&
+		if (ac->address &&
 		    strcasestr(address, ac->address) != NULL)
 			ac_list = g_list_append(ac_list, ac);
 	}
@@ -305,7 +305,7 @@ PrefsAccount *account_find_from_address(const gchar *address, gboolean newsgroup
 
 	for (cur = account_list; cur != NULL; cur = cur->next) {
 		ac = (PrefsAccount *)cur->data;
-		if ((ac->protocol != A_NNTP || newsgroups_ok) && ac->address &&
+		if ((newsgroups_ok) && ac->address &&
 		    g_ascii_strcasecmp(address, ac->address) == 0)
 			return ac;
 	}
@@ -418,16 +418,9 @@ void account_add(void)
 
 	account_list_view_set();
 
-	if (ac_prefs->protocol == A_IMAP4 || ac_prefs->protocol == A_NNTP) {
+	if (ac_prefs->protocol == A_IMAP4) {
 		Folder *folder;
-
-		if (ac_prefs->protocol == A_IMAP4) {
-			folder = folder_new(folder_get_class_from_string("imap"), ac_prefs->account_name,
-					    ac_prefs->recv_server);
-		} else {
-			folder = folder_new(folder_get_class_from_string("news"), ac_prefs->account_name,
-					    ac_prefs->nntp_server);
-		}
+		folder = folder_new(folder_get_class_from_string("imap"), ac_prefs->account_name, ac_prefs->recv_server);
 		if (folder == NULL) {
 			alertpanel_error(_("Can't create folder."));
 			return;
@@ -435,8 +428,7 @@ void account_add(void)
 		folder->account = ac_prefs;
 		ac_prefs->folder = folder;
 		folder_add(folder);
-		if (ac_prefs->protocol == A_IMAP4)
-			folder->klass->create_tree(folder);
+		folder->klass->create_tree(folder);
 		folderview_set_all();
 		folder_write_list();
 	}
@@ -526,26 +518,15 @@ void account_set_missing_folder(void)
 
 	for (cur = account_list; cur != NULL; cur = cur->next) {
 		ap = (PrefsAccount *)cur->data;
-		if ((ap->protocol == A_IMAP4 || ap->protocol == A_NNTP) &&
-		    !ap->folder) {
-			Folder *folder;
-
-			if (ap->protocol == A_IMAP4) {
-				folder = folder_new(folder_get_class_from_string("imap"), ap->account_name,
-						    ap->recv_server);
-			} else {
-				folder = folder_new(folder_get_class_from_string("news"), ap->account_name,
-						    ap->nntp_server);
-			}
+		if ((ap->protocol == A_IMAP4) && !ap->folder) {
+			Folder *folder = folder_new(folder_get_class_from_string("imap"), ap->account_name, ap->recv_server);
 			if (folder == NULL)
 				return;
 			folder->account = ap;
 			ap->folder = folder;
 			folder_add(folder);
-			if (ap->protocol == A_IMAP4)
-				folder->klass->create_tree(folder);
+			folder->klass->create_tree(folder);
 			folder_write_list();
-
 		}
 	}
 }
@@ -901,7 +882,7 @@ static void account_clone(GtkWidget *widget, gpointer data)
 	if (ac_prefs == NULL)
 		return;
 
-	if (ac_prefs->protocol == A_IMAP4 || ac_prefs->protocol == A_NNTP) {
+	if (ac_prefs->protocol == A_IMAP4) {
 		alertpanel_error(_("Accounts with remote folders cannot be copied."));
 		return;
 	}
@@ -920,9 +901,6 @@ static void account_clone(GtkWidget *widget, gpointer data)
 	ACP_FASSIGN(protocol);
 	ACP_FDUP(recv_server);
 	ACP_FDUP(smtp_server);
-	ACP_FDUP(nntp_server);
-	ACP_FASSIGN(use_nntp_auth);
-	ACP_FASSIGN(use_nntp_auth_onconnect);
 	ACP_FDUP(userid);
 	ACP_FDUP(passwd);
 
@@ -932,7 +910,6 @@ static void account_clone(GtkWidget *widget, gpointer data)
 
 	ACP_FASSIGN(ssl_pop);
 	ACP_FASSIGN(ssl_imap);
-	ACP_FASSIGN(ssl_nntp);
 	ACP_FASSIGN(ssl_smtp);
 	ACP_FASSIGN(use_nonblocking_ssl);
 	ACP_FASSIGN(use_tls_sni);
@@ -1023,8 +1000,6 @@ static void account_clone(GtkWidget *widget, gpointer data)
         ACP_FASSIGN(popport);
         ACP_FASSIGN(set_imapport);
         ACP_FASSIGN(imapport);
-        ACP_FASSIGN(set_nntpport);
-        ACP_FASSIGN(nntpport);
         ACP_FASSIGN(set_domain);
         ACP_FDUP(domain);
         ACP_FASSIGN(mark_crosspost_read);
@@ -1443,7 +1418,6 @@ static void account_list_store_insert_account_item(GtkListStore *list_store,
 	GtkTreeIter iter;
 	gboolean is_get_all = (ac_prefs->protocol == A_POP3 ||
 			ac_prefs->protocol == A_IMAP4 ||
-			ac_prefs->protocol == A_NNTP  ||
 			ac_prefs->protocol == A_LOCAL) &&
 		ac_prefs->recv_at_getall;
 	gchar *protocol, *server;
@@ -1459,21 +1433,16 @@ static void account_list_store_insert_account_item(GtkListStore *list_store,
 		   "IMAP (TLS)" :
 		   ac_prefs->ssl_imap == SSL_STARTTLS ?
 		   "IMAP (STARTTLS)" : "IMAP") :
-		   ac_prefs->protocol == A_NNTP ?
-		  (ac_prefs->ssl_nntp == SSL_TUNNEL ?
-		   "NNTP (TLS)" : "NNTP") :
 		   ac_prefs->protocol == A_LOCAL ? "Local" :
 		   ac_prefs->protocol == A_NONE ?  "SMTP" : "-";
 #else
 	protocol = ac_prefs->protocol == A_POP3  ? "POP" :
 		   ac_prefs->protocol == A_IMAP4 ? "IMAP" :
 		   ac_prefs->protocol == A_LOCAL ? "Local" :
-		   ac_prefs->protocol == A_NNTP  ? "NNTP" :
 		   ac_prefs->protocol == A_NONE ?  "SMTP" : "-";
 #endif
 
-	server= ac_prefs->protocol == A_NNTP ? ac_prefs->nntp_server :
-		   ac_prefs->protocol == A_LOCAL ?  "-" :
+	server= ac_prefs->protocol == A_LOCAL ?  "-" :
 		   ac_prefs->protocol == A_NONE ? ac_prefs->smtp_server :
 		   ac_prefs->recv_server;
 
@@ -1725,7 +1694,6 @@ static void account_get_all_toggled(GtkCellRendererToggle *widget,
 	/* check if the account has a selectable get all checkbox anyway... */
 	if (!(ac->protocol == A_POP3  ||
 	      ac->protocol == A_IMAP4 ||
-	      ac->protocol == A_NNTP  ||
 	      ac->protocol == A_LOCAL))
 		return;
 

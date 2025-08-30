@@ -37,7 +37,6 @@
 #include "session.h"
 #include "inc.h"
 #include "imap.h"
-#include "news.h"
 #include "mh.h"
 #include "utils.h"
 #include "xml.h"

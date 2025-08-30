@@ -123,14 +123,10 @@ typedef struct BasicPage
 	gpointer *protocol_optmenu;
 	GtkWidget *recvserv_label;
 	GtkWidget *smtpserv_label;
-	GtkWidget *nntpserv_label;
 	GtkWidget *localmbox_label;
 	GtkWidget *mailcmd_label;
 	GtkWidget *recvserv_entry;
 	GtkWidget *smtpserv_entry;
-	GtkWidget *nntpserv_entry;
-	GtkWidget *nntpauth_checkbtn;
-	GtkWidget *nntpauth_onconnect_checkbtn;
 	GtkWidget *localmbox_entry;
 	GtkWidget *mailcmd_checkbtn;
 	GtkWidget *mailcmd_entry;
@@ -175,11 +171,6 @@ typedef struct ReceivePage
 	GtkWidget *subsonly_checkbtn;
 	GtkWidget *low_bandwidth_checkbtn;
 	GtkWidget *imap_batch_size_spinbtn;
-
-	GtkWidget *frame_maxarticle;
-	GtkWidget *maxarticle_label;
-	GtkWidget *maxarticle_spinbtn;
-	GtkAdjustment *maxarticle_spinbtn_adj;
 
 	GtkWidget *autochk_checkbtn;
 	GtkWidget *autochk_use_default_checkbtn;
@@ -252,9 +243,9 @@ typedef struct ComposePage
 
 typedef struct TemplatesPage
 {
-    PrefsPage page;
+	PrefsPage page;
 
-    GtkWidget *vbox;
+	GtkWidget *vbox;
 
 	GtkWidget *checkbtn_compose_with_format;
 	GtkWidget *compose_subject_format;
@@ -296,10 +287,6 @@ typedef struct SSLPage
 	GtkWidget *imap_ssltunnel_radiobtn;
 	GtkWidget *imap_starttls_radiobtn;
 
-	GtkWidget *nntp_frame;
-	GtkWidget *nntp_nossl_radiobtn;
-	GtkWidget *nntp_ssltunnel_radiobtn;
-
 	GtkWidget *send_frame;
 	GtkWidget *smtp_nossl_radiobtn;
 	GtkWidget *smtp_ssltunnel_radiobtn;
@@ -327,9 +314,6 @@ typedef struct AdvancedPage
 	GtkWidget *imapport_hbox;
 	GtkWidget *imapport_checkbtn;
 	GtkWidget *imapport_spinbtn;
-	GtkWidget *nntpport_hbox;
-	GtkWidget *nntpport_checkbtn;
-	GtkWidget *nntpport_spinbtn;
 	GtkWidget *domain_checkbtn;
 	GtkWidget *domain_entry;
 
@@ -371,7 +355,6 @@ struct BasicProtocol {
 static char *protocol_names[] = {
 	N_("POP"),
 	N_("IMAP"),
-	N_("News (NNTP)"),
 	N_("Local mbox file"),
 	N_("None (SMTP only)")
 };
@@ -415,7 +398,6 @@ static void prefs_account_set_autochk_interval_to_widgets(PrefParam *pparam);
 static void prefs_account_enum_set_data_from_radiobtn	(PrefParam *pparam);
 static void prefs_account_enum_set_radiobtn		(PrefParam *pparam);
 
-static void prefs_account_nntpauth_toggled(GtkToggleButton *button, gpointer user_data);
 static void prefs_account_mailcmd_toggled(GtkToggleButton *button,  gpointer user_data);
 static void prefs_account_showpwd_toggled(GtkEntry *entry, gpointer user_data);
 
@@ -449,9 +431,6 @@ static PrefParam basic_param[] = {
 	{"smtp_server", NULL, &tmp_ac_prefs.smtp_server, P_STRING,
 	 &basic_page.smtpserv_entry, prefs_set_data_from_entry, prefs_set_entry},
 
-	{"nntp_server", NULL, &tmp_ac_prefs.nntp_server, P_STRING,
-	 &basic_page.nntpserv_entry, prefs_set_data_from_entry, prefs_set_entry},
-
 	{"local_mbox", "/var/mail", &tmp_ac_prefs.local_mbox, P_STRING,
 	 &basic_page.localmbox_entry, prefs_set_data_from_entry, prefs_set_entry},
 
@@ -460,14 +439,6 @@ static PrefParam basic_param[] = {
 
 	{"mail_command", DEFAULT_SENDMAIL_CMD, &tmp_ac_prefs.mail_command, P_STRING,
 	 &basic_page.mailcmd_entry, prefs_set_data_from_entry, prefs_set_entry},
-
-	{"use_nntp_auth", "FALSE", &tmp_ac_prefs.use_nntp_auth, P_BOOL,
-	 &basic_page.nntpauth_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"use_nntp_auth_onconnect", "FALSE", &tmp_ac_prefs.use_nntp_auth_onconnect, P_BOOL,
-	 &basic_page.nntpauth_onconnect_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
 
 	{"user_id", NULL, &tmp_ac_prefs.userid, P_STRING,
 	 &basic_page.uid_entry, prefs_set_data_from_entry, prefs_set_entry},
@@ -513,10 +484,6 @@ static PrefParam receive_param[] = {
 	{"receive_at_get_all", "TRUE", &tmp_ac_prefs.recv_at_getall, P_BOOL,
 	 &receive_page.recvatgetall_checkbtn,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"max_news_articles", "300", &tmp_ac_prefs.max_articles, P_INT,
-	 &receive_page.maxarticle_spinbtn,
-	 prefs_set_data_from_spinbtn, prefs_set_spinbtn},
 
 	{"inbox", "#mh/Mailbox/inbox", &tmp_ac_prefs.inbox, P_STRING,
 	 &receive_page.inbox_entry, prefs_set_data_from_entry, prefs_set_entry},
@@ -768,11 +735,6 @@ static PrefParam ssl_param[] = {
 	 prefs_account_enum_set_data_from_radiobtn,
 	 prefs_account_enum_set_radiobtn},
 
-	{"ssl_nntp", "1", &tmp_ac_prefs.ssl_nntp, P_ENUM,
-	 &ssl_page.nntp_nossl_radiobtn,
-	 prefs_account_enum_set_data_from_radiobtn,
-	 prefs_account_enum_set_radiobtn},
-
 	{"ssl_smtp", "1", &tmp_ac_prefs.ssl_smtp, P_ENUM,
 	 &ssl_page.smtp_nossl_radiobtn,
 	 prefs_account_enum_set_data_from_radiobtn,
@@ -801,9 +763,6 @@ static PrefParam ssl_param[] = {
 	 NULL, NULL, NULL},
 
 	{"ssl_imap", "0", &tmp_ac_prefs.ssl_imap, P_ENUM,
-	 NULL, NULL, NULL},
-
-	{"ssl_nntp", "0", &tmp_ac_prefs.ssl_nntp, P_ENUM,
 	 NULL, NULL, NULL},
 
 	{"ssl_smtp", "0", &tmp_ac_prefs.ssl_smtp, P_ENUM,
@@ -851,14 +810,6 @@ static PrefParam advanced_param[] = {
 
 	{"imap_port", "143", &tmp_ac_prefs.imapport, P_USHORT,
 	 &advanced_page.imapport_spinbtn,
-	 prefs_set_data_from_spinbtn, prefs_set_spinbtn},
-
-	{"set_nntpport", "FALSE", &tmp_ac_prefs.set_nntpport, P_BOOL,
-	 &advanced_page.nntpport_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"nntp_port", "119", &tmp_ac_prefs.nntpport, P_USHORT,
-	 &advanced_page.nntpport_spinbtn,
 	 prefs_set_data_from_spinbtn, prefs_set_spinbtn},
 
 	{"set_domain", "FALSE", &tmp_ac_prefs.set_domain, P_BOOL,
@@ -1023,14 +974,10 @@ static void basic_create_widget_func(PrefsPage * _page,
 	GtkWidget *serv_table;
 	GtkWidget *recvserv_label;
 	GtkWidget *smtpserv_label;
-	GtkWidget *nntpserv_label;
 	GtkWidget *localmbox_label;
 	GtkWidget *mailcmd_label;
 	GtkWidget *recvserv_entry;
 	GtkWidget *smtpserv_entry;
-	GtkWidget *nntpserv_entry;
-	GtkWidget *nntpauth_checkbtn;
-	GtkWidget *nntpauth_onconnect_checkbtn;
 	GtkWidget *localmbox_entry;
 	GtkWidget *mailcmd_checkbtn;
 	GtkWidget *mailcmd_entry;
@@ -1185,24 +1132,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 	gtk_grid_set_column_spacing(GTK_GRID(serv_table), 8);
 	gtk_box_pack_start (GTK_BOX (vbox2), serv_table, FALSE, FALSE, 0);
 
-	nntpserv_entry = gtk_entry_new ();
-	gtk_widget_show (nntpserv_entry);
-	gtk_grid_attach(GTK_GRID(serv_table), nntpserv_entry, 1, 0, 2, 1);
-	gtk_widget_set_hexpand(nntpserv_entry, TRUE);
-	gtk_widget_set_halign(nntpserv_entry, GTK_ALIGN_FILL);
-
-	nntpauth_checkbtn = gtk_check_button_new_with_label
-		(_("This server requires authentication"));
-	gtk_widget_show (nntpauth_checkbtn);
-
-	gtk_grid_attach(GTK_GRID(serv_table), nntpauth_checkbtn, 0, 6, 2, 1);
-
-	nntpauth_onconnect_checkbtn = gtk_check_button_new_with_label
-		(_("Authenticate on connect"));
-	gtk_widget_show (nntpauth_onconnect_checkbtn);
-
-	gtk_grid_attach(GTK_GRID(serv_table), nntpauth_onconnect_checkbtn, 2, 6, 1, 1);
-
 	recvserv_entry = gtk_entry_new ();
 	gtk_widget_show (recvserv_entry);
 	gtk_grid_attach(GTK_GRID(serv_table), recvserv_entry, 1, 2, 2, 1);
@@ -1251,11 +1180,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 	g_signal_connect(pass_entry, "icon-press",
 			 G_CALLBACK(prefs_account_showpwd_toggled), NULL);
 
-	nntpserv_label = gtk_label_new (_("News server"));
-	gtk_widget_show (nntpserv_label);
-	gtk_label_set_xalign(GTK_LABEL (nntpserv_label), 1.0);
-	gtk_grid_attach(GTK_GRID(serv_table), nntpserv_label, 0, 0, 1, 1);
-
 	recvserv_label = gtk_label_new (_("Server for receiving"));
 	gtk_widget_show (recvserv_label);
 	gtk_label_set_xalign(GTK_LABEL (recvserv_label), 1.0);
@@ -1295,12 +1219,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 	gtk_label_set_xalign(GTK_LABEL (pass_label), 1.0);
 	gtk_grid_attach(GTK_GRID(serv_table), pass_label, 0, 8, 1, 1);
 
-	SET_TOGGLE_SENSITIVITY (nntpauth_checkbtn, uid_label);
-	SET_TOGGLE_SENSITIVITY (nntpauth_checkbtn, pass_label);
-	SET_TOGGLE_SENSITIVITY (nntpauth_checkbtn, uid_entry);
-	SET_TOGGLE_SENSITIVITY (nntpauth_checkbtn, pass_entry);
-	SET_TOGGLE_SENSITIVITY (nntpauth_checkbtn, nntpauth_onconnect_checkbtn);
-
 	page->acname_entry   = acname_entry;
 	page->default_checkbtn = default_checkbtn;
 
@@ -1315,10 +1233,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 	page->recvserv_entry   = recvserv_entry;
 	page->smtpserv_label   = smtpserv_label;
 	page->smtpserv_entry   = smtpserv_entry;
-	page->nntpserv_label   = nntpserv_label;
-	page->nntpserv_entry   = nntpserv_entry;
-	page->nntpauth_checkbtn  = nntpauth_checkbtn;
-	page->nntpauth_onconnect_checkbtn  = nntpauth_onconnect_checkbtn;
 	page->localmbox_label   = localmbox_label;
 	page->localmbox_entry   = localmbox_entry;
 	page->mailcmd_checkbtn   = mailcmd_checkbtn;
@@ -1401,10 +1315,7 @@ static void receive_create_widget_func(PrefsPage * _page,
 	GtkTreeIter iter;
 	GtkWidget *recvatgetall_checkbtn;
 
-	GtkWidget *frame, *frame2;
-	GtkWidget *maxarticle_label;
-	GtkWidget *maxarticle_spinbtn;
-	GtkAdjustment *maxarticle_spinbtn_adj;
+	GtkWidget *frame;
 
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox1);
@@ -1534,30 +1445,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 	g_signal_connect (G_OBJECT (inbox_btn), "clicked",
 			  G_CALLBACK (prefs_account_select_folder_cb),
 			  inbox_entry);
-
-	vbox2 = gtkut_get_options_frame(vbox1, &frame2, _("NNTP"));
-
-	hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox2);
-	gtk_box_pack_start (GTK_BOX (vbox2), hbox2, FALSE, FALSE, 0);
-
-	maxarticle_label = gtk_label_new
-		(_("Maximum number of articles to download"));
-	gtk_widget_show (maxarticle_label);
-	gtk_box_pack_start (GTK_BOX (hbox2), maxarticle_label, FALSE, FALSE, 0);
-
-	maxarticle_spinbtn_adj =
-		GTK_ADJUSTMENT(gtk_adjustment_new (300, 0, 10000, 10, 100, 0));
-	maxarticle_spinbtn = gtk_spin_button_new
-		(GTK_ADJUSTMENT (maxarticle_spinbtn_adj), 10, 0);
-	gtk_widget_show (maxarticle_spinbtn);
-	CLAWS_SET_TIP(maxarticle_spinbtn,
-			     _("unlimited if 0 is specified"));
-	gtk_box_pack_start (GTK_BOX (hbox2), maxarticle_spinbtn,
-			    FALSE, FALSE, 0);
-	gtk_widget_set_size_request (maxarticle_spinbtn, 64, -1);
-	gtk_spin_button_set_numeric
-		(GTK_SPIN_BUTTON (maxarticle_spinbtn), TRUE);
 
 	vbox2 = gtkut_get_options_frame(vbox1, &imap_frame, _("IMAP"));
 
@@ -1730,10 +1617,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 	page->local_inbox_btn		= local_inbox_btn;
 
 	page->recvatgetall_checkbtn      = recvatgetall_checkbtn;
-
-	page->frame_maxarticle	= frame2;
-	page->maxarticle_spinbtn     	= maxarticle_spinbtn;
-	page->maxarticle_spinbtn_adj 	= maxarticle_spinbtn_adj;
 
 	page->autochk_checkbtn = autochk_checkbtn;
 	page->autochk_widgets = autochk_widgets;
@@ -2047,7 +1930,6 @@ static void oauth2_create_widget_func(PrefsPage * _page,
 	Oauth2Info *oa2;
 	for (cur = oauth2_providers_list; cur != NULL; cur = cur->next) {
 		oa2 = (Oauth2Info *)cur->data;
-		debug_print("Building menu Oauth2 name: %s number: %i\n", oa2->oa2_name, j);
 		COMBOBOX_ADD (menu, oa2->oa2_name, j);
 		j++;
 	}
@@ -2198,7 +2080,6 @@ static void oauth2_create_widget_func(PrefsPage * _page,
 			g_free(buf);
 		}
 	}
-
 }
 #endif
 
@@ -2596,18 +2477,6 @@ static void imap_ssltunnel_toggled(GtkToggleButton *button,
 				  active ? 993 : 143);
 }
 
-static void nntp_ssltunnel_toggled(GtkToggleButton *button,
-					gpointer data)
-{
-	gboolean active = gtk_toggle_button_get_active(button);
-
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-			advanced_page.nntpport_checkbtn)) == TRUE)
-		return;
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(advanced_page.nntpport_spinbtn),
-				  active ? 563 : 119);
-}
-
 static void smtp_ssltunnel_toggled(GtkToggleButton *button,
 					gpointer data)
 {
@@ -2640,11 +2509,6 @@ static void ssl_create_widget_func(PrefsPage * _page,
 	GtkWidget *imap_nossl_radiobtn;
 	GtkWidget *imap_ssltunnel_radiobtn;
 	GtkWidget *imap_starttls_radiobtn;
-
-	GtkWidget *nntp_frame;
-	GtkWidget *vbox4;
-	GtkWidget *nntp_nossl_radiobtn;
-	GtkWidget *nntp_ssltunnel_radiobtn;
 
 	GtkWidget *send_frame;
 	GtkWidget *vbox5;
@@ -2697,22 +2561,6 @@ static void ssl_create_widget_func(PrefsPage * _page,
 			     SSL_STARTTLS);
 	g_signal_connect(G_OBJECT(imap_ssltunnel_radiobtn), "toggled",
 			 G_CALLBACK(imap_ssltunnel_toggled), NULL);
-
-	vbox4 = gtkut_get_options_frame(vbox1, &nntp_frame, _("NNTP"));
-
-	nntp_nossl_radiobtn =
-		gtk_radio_button_new_with_label (NULL, _("Don't use TLS"));
-	gtk_widget_show (nntp_nossl_radiobtn);
-	gtk_box_pack_start (GTK_BOX (vbox4), nntp_nossl_radiobtn,
-			    FALSE, FALSE, 0);
-	g_object_set_data (G_OBJECT (nntp_nossl_radiobtn),
-			   MENU_VAL_ID,
-			   GINT_TO_POINTER (SSL_NONE));
-
-	CREATE_RADIO_BUTTON(vbox4, nntp_ssltunnel_radiobtn, nntp_nossl_radiobtn,
-			    _("Use TLS"), SSL_TUNNEL);
-	g_signal_connect(G_OBJECT(nntp_ssltunnel_radiobtn), "toggled",
-			 G_CALLBACK(nntp_ssltunnel_toggled), NULL);
 
 	vbox5 = gtkut_get_options_frame(vbox1, &send_frame, _("Send (SMTP)"));
 
@@ -2841,10 +2689,6 @@ static void ssl_create_widget_func(PrefsPage * _page,
 	page->imap_ssltunnel_radiobtn = imap_ssltunnel_radiobtn;
 	page->imap_starttls_radiobtn  = imap_starttls_radiobtn;
 
-	page->nntp_frame              = nntp_frame;
-	page->nntp_nossl_radiobtn     = nntp_nossl_radiobtn;
-	page->nntp_ssltunnel_radiobtn = nntp_ssltunnel_radiobtn;
-
 	page->send_frame              = send_frame;
 	page->smtp_nossl_radiobtn     = smtp_nossl_radiobtn;
 	page->smtp_ssltunnel_radiobtn = smtp_ssltunnel_radiobtn;
@@ -2908,9 +2752,6 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	GtkWidget *hbox_imapport;
 	GtkWidget *checkbtn_imapport;
 	GtkWidget *spinbtn_imapport;
-	GtkWidget *hbox_nntpport;
-	GtkWidget *checkbtn_nntpport;
-	GtkWidget *spinbtn_nntpport;
 	GtkWidget *checkbtn_domain;
 	GtkWidget *entry_domain;
 	gchar *tip_domain;
@@ -2970,13 +2811,6 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	PACK_PORT_SPINBTN (hbox_imapport, spinbtn_imapport);
 	SET_TOGGLE_SENSITIVITY (checkbtn_imapport, spinbtn_imapport);
 	gtk_size_group_add_widget(size_group, checkbtn_imapport);
-
-	PACK_HBOX (hbox_nntpport);
-	PACK_CHECK_BUTTON (hbox_nntpport, checkbtn_nntpport,
-			   _("NNTP port"));
-	PACK_PORT_SPINBTN (hbox_nntpport, spinbtn_nntpport);
-	SET_TOGGLE_SENSITIVITY (checkbtn_nntpport, spinbtn_nntpport);
-	gtk_size_group_add_widget(size_group, checkbtn_nntpport);
 
 	PACK_HBOX (hbox1);
 	PACK_CHECK_BUTTON (hbox1, checkbtn_domain, _("Domain name"));
@@ -3057,9 +2891,6 @@ static void advanced_create_widget_func(PrefsPage * _page,
 	page->imapport_hbox		= hbox_imapport;
 	page->imapport_checkbtn	= checkbtn_imapport;
 	page->imapport_spinbtn		= spinbtn_imapport;
-	page->nntpport_hbox		= hbox_nntpport;
-	page->nntpport_checkbtn	= checkbtn_nntpport;
-	page->nntpport_spinbtn		= spinbtn_nntpport;
 	page->domain_checkbtn		= checkbtn_domain;
 	page->domain_entry		= entry_domain;
 	page->tunnelcmd_checkbtn	= checkbtn_tunnelcmd;
@@ -3154,11 +2985,6 @@ static gint prefs_basic_apply(void)
 		alertpanel_error(_("IMAP server is not entered."));
 		return -1;
 	}
-	if (protocol == A_NNTP &&
-	    *gtk_entry_get_text(GTK_ENTRY(basic_page.nntpserv_entry)) == '\0') {
-		alertpanel_error(_("NNTP server is not entered."));
-		return -1;
-	}
 
 	if (protocol == A_LOCAL &&
 	    *gtk_entry_get_text(GTK_ENTRY(basic_page.localmbox_entry)) == '\0') {
@@ -3172,9 +2998,8 @@ static gint prefs_basic_apply(void)
 		return -1;
 	}
 
-	if (protocol == A_IMAP4 || protocol == A_NNTP)
-		old_id = g_strdup_printf("#%s/%s",
-				protocol == A_IMAP4 ? "imap":"news",
+	if (protocol == A_IMAP4)
+		old_id = g_strdup_printf("#imap/%s",
 				tmp_ac_prefs.account_name ? tmp_ac_prefs.account_name : "(null)");
 
 	if (strchr(gtk_entry_get_text(GTK_ENTRY(basic_page.uid_entry)), '\n') != NULL) {
@@ -3204,10 +3029,8 @@ static gint prefs_basic_apply(void)
 	passwd_store_set_account(tmp_ac_prefs.account_id, PWS_ACCOUNT_OAUTH2_EXPIRY, "0", FALSE);
 #endif
 
-	if (protocol == A_IMAP4 || protocol == A_NNTP) {
-		new_id = g_strdup_printf("#%s/%s",
-				protocol == A_IMAP4 ? "imap":"news",
-				tmp_ac_prefs.account_name);
+	if (protocol == A_IMAP4) {
+		new_id = g_strdup_printf("#imap/%s", tmp_ac_prefs.account_name);
 		if (old_id)
 			g_free(old_id);
 		if (new_id)
@@ -4192,8 +4015,6 @@ PrefsAccount *prefs_account_open(PrefsAccount *ac_prefs, gboolean *dirty)
 			g_strstrip(ac_prefs->recv_server);
 		if (ac_prefs->smtp_server)
 			g_strstrip(ac_prefs->smtp_server);
-		if (ac_prefs->nntp_server)
-			g_strstrip(ac_prefs->nntp_server);
 
 		return ac_prefs;
 	}
@@ -4834,92 +4655,13 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 	gtk_widget_hide(protocol_optmenu->no_imap_warn_label);
 
 	switch(protocol) {
-	case A_NNTP:
-		gtk_widget_hide(protocol_optmenu->no_imap_warn_icon);
-		gtk_widget_hide(protocol_optmenu->no_imap_warn_label);
-		gtk_widget_show(send_page.msgid_checkbtn);
-		gtk_widget_show(send_page.xmailer_checkbtn);
-		gtk_widget_show(basic_page.nntpserv_label);
-		gtk_widget_show(basic_page.nntpserv_entry);
-		gtk_grid_set_row_spacing(GTK_GRID(basic_page.serv_table), VSPACING_NARROW);
-
-		gtk_widget_set_sensitive(basic_page.nntpauth_checkbtn, TRUE);
-		gtk_widget_show(basic_page.nntpauth_checkbtn);
-
-		gtk_widget_set_sensitive(basic_page.nntpauth_onconnect_checkbtn, TRUE);
-		gtk_widget_show(basic_page.nntpauth_onconnect_checkbtn);
-
-		gtk_widget_hide(basic_page.recvserv_label);
-		gtk_widget_hide(basic_page.recvserv_entry);
-		gtk_widget_show(basic_page.smtpserv_label);
-		gtk_widget_show(basic_page.smtpserv_entry);
- 		gtk_widget_hide(basic_page.localmbox_label);
-		gtk_widget_hide(basic_page.localmbox_entry);
-		gtk_widget_hide(basic_page.mailcmd_label);
-		gtk_widget_hide(basic_page.mailcmd_entry);
-		gtk_widget_hide(basic_page.mailcmd_checkbtn);
-		gtk_widget_show(basic_page.uid_label);
-		gtk_widget_show(basic_page.pass_label);
-		gtk_widget_show(basic_page.uid_entry);
-		gtk_widget_show(basic_page.pass_entry);
-
-		gtk_widget_set_sensitive(basic_page.uid_label,  TRUE);
-		gtk_widget_set_sensitive(basic_page.pass_label, TRUE);
-		gtk_widget_set_sensitive(basic_page.uid_entry,  TRUE);
-		gtk_widget_set_sensitive(basic_page.pass_entry, TRUE);
-
-		/* update userid/passwd sensitive state */
-
-		prefs_account_nntpauth_toggled
-			(GTK_TOGGLE_BUTTON(basic_page.nntpauth_checkbtn), NULL);
-		gtk_widget_hide(receive_page.pop3_frame);
-		gtk_widget_hide(receive_page.imap_frame);
-		gtk_widget_hide(receive_page.local_frame);
-		gtk_widget_show(receive_page.autochk_frame);
-		gtk_widget_show(receive_page.frame_maxarticle);
-		gtk_widget_set_sensitive(receive_page.recvatgetall_checkbtn, TRUE);
-		/* update pop_before_smtp sensitivity */
-		gtk_toggle_button_set_active
-			(GTK_TOGGLE_BUTTON(send_page.pop_bfr_smtp_checkbtn), FALSE);
-		gtk_widget_set_sensitive(send_page.pop_bfr_smtp_checkbtn, FALSE);
-		gtk_widget_set_sensitive(send_page.pop_bfr_smtp_tm_spinbtn, FALSE);
-
-		if (!tmp_ac_prefs.account_name) {
-			gtk_toggle_button_set_active
-				(GTK_TOGGLE_BUTTON(receive_page.recvatgetall_checkbtn),
-				 FALSE);
-		}
-
-#ifdef USE_GNUTLS
-		gtk_widget_hide(ssl_page.pop_frame);
-		gtk_widget_hide(ssl_page.imap_frame);
-		gtk_widget_show(ssl_page.nntp_frame);
-		gtk_widget_show(ssl_page.send_frame);
-#endif
-		gtk_widget_hide(advanced_page.popport_hbox);
-		gtk_widget_hide(advanced_page.imapport_hbox);
-		gtk_widget_show(advanced_page.nntpport_hbox);
-		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
-		gtk_widget_hide(advanced_page.tunnelcmd_entry);
-		gtk_widget_hide(receive_page.imapdir_label);
-		gtk_widget_hide(receive_page.imapdir_entry);
-		gtk_widget_hide(receive_page.subsonly_checkbtn);
-		gtk_widget_hide(receive_page.low_bandwidth_checkbtn);
-		gtk_widget_hide(receive_page.imap_batch_size_spinbtn);
-		break;
 	case A_LOCAL:
 		gtk_widget_show(send_page.msgid_checkbtn);
 		gtk_widget_show(send_page.xmailer_checkbtn);
 		gtk_widget_hide(protocol_optmenu->no_imap_warn_icon);
 		gtk_widget_hide(protocol_optmenu->no_imap_warn_label);
-		gtk_widget_hide(basic_page.nntpserv_label);
-		gtk_widget_hide(basic_page.nntpserv_entry);
- 		gtk_widget_set_sensitive(basic_page.nntpauth_checkbtn, FALSE);
-		gtk_widget_hide(basic_page.nntpauth_checkbtn);
 		gtk_grid_set_row_spacing(GTK_GRID(basic_page.serv_table), VSPACING_NARROW);
 
-		gtk_widget_set_sensitive(basic_page.nntpauth_onconnect_checkbtn, FALSE);
-		gtk_widget_hide(basic_page.nntpauth_onconnect_checkbtn);
 		gtk_widget_hide(basic_page.recvserv_label);
 		gtk_widget_hide(basic_page.recvserv_entry);
 		gtk_widget_show(basic_page.smtpserv_label);
@@ -4942,7 +4684,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(receive_page.imap_frame);
 		gtk_widget_show(receive_page.local_frame);
 		gtk_widget_show(receive_page.autochk_frame);
-		gtk_widget_hide(receive_page.frame_maxarticle);
 		gtk_widget_set_sensitive(receive_page.recvatgetall_checkbtn, TRUE);
 		prefs_account_mailcmd_toggled
 			(GTK_TOGGLE_BUTTON(basic_page.mailcmd_checkbtn), NULL);
@@ -4962,12 +4703,10 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 #ifdef USE_GNUTLS
 		gtk_widget_hide(ssl_page.pop_frame);
 		gtk_widget_hide(ssl_page.imap_frame);
-		gtk_widget_hide(ssl_page.nntp_frame);
 		gtk_widget_show(ssl_page.send_frame);
 #endif
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
-		gtk_widget_hide(advanced_page.nntpport_hbox);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
 		gtk_widget_hide(receive_page.imapdir_label);
@@ -4983,14 +4722,7 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 				TRUE);
 		gtk_widget_hide(send_page.msgid_checkbtn);
 		gtk_widget_show(send_page.xmailer_checkbtn);
-		gtk_widget_hide(basic_page.nntpserv_label);
-		gtk_widget_hide(basic_page.nntpserv_entry);
 		gtk_grid_set_row_spacing(GTK_GRID(basic_page.serv_table), VSPACING_NARROW);
-		gtk_widget_set_sensitive(basic_page.nntpauth_checkbtn, FALSE);
-		gtk_widget_hide(basic_page.nntpauth_checkbtn);
-
-		gtk_widget_set_sensitive(basic_page.nntpauth_onconnect_checkbtn, FALSE);
-		gtk_widget_hide(basic_page.nntpauth_onconnect_checkbtn);
 
 		gtk_widget_set_sensitive(basic_page.recvserv_label, TRUE);
 		gtk_widget_set_sensitive(basic_page.recvserv_entry, TRUE);
@@ -5016,7 +4748,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_show(receive_page.imap_frame);
 		gtk_widget_hide(receive_page.local_frame);
 		gtk_widget_show(receive_page.autochk_frame);
-		gtk_widget_hide(receive_page.frame_maxarticle);
 		gtk_widget_set_sensitive(receive_page.recvatgetall_checkbtn, TRUE);
 		gtk_widget_set_sensitive(basic_page.smtpserv_entry, TRUE);
 		gtk_widget_set_sensitive(basic_page.smtpserv_label, TRUE);
@@ -5036,12 +4767,10 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 #ifdef USE_GNUTLS
 		gtk_widget_hide(ssl_page.pop_frame);
 		gtk_widget_show(ssl_page.imap_frame);
-		gtk_widget_hide(ssl_page.nntp_frame);
 		gtk_widget_show(ssl_page.send_frame);
 #endif
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_show(advanced_page.imapport_hbox);
-		gtk_widget_hide(advanced_page.nntpport_hbox);
 		gtk_widget_show(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_show(advanced_page.tunnelcmd_entry);
 		gtk_widget_show(receive_page.imapdir_label);
@@ -5055,14 +4784,7 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_show(send_page.xmailer_checkbtn);
 		gtk_widget_hide(protocol_optmenu->no_imap_warn_icon);
 		gtk_widget_hide(protocol_optmenu->no_imap_warn_label);
-		gtk_widget_hide(basic_page.nntpserv_label);
-		gtk_widget_hide(basic_page.nntpserv_entry);
 		gtk_grid_set_row_spacing(GTK_GRID(basic_page.serv_table), VSPACING_NARROW);
-		gtk_widget_set_sensitive(basic_page.nntpauth_checkbtn, FALSE);
-		gtk_widget_hide(basic_page.nntpauth_checkbtn);
-
-		gtk_widget_set_sensitive(basic_page.nntpauth_onconnect_checkbtn, FALSE);
-		gtk_widget_hide(basic_page.nntpauth_onconnect_checkbtn);
 
 		gtk_widget_set_sensitive(basic_page.recvserv_label, FALSE);
 		gtk_widget_set_sensitive(basic_page.recvserv_entry, FALSE);
@@ -5089,7 +4811,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(receive_page.imap_frame);
 		gtk_widget_hide(receive_page.local_frame);
 		gtk_widget_hide(receive_page.autochk_frame);
-		gtk_widget_hide(receive_page.frame_maxarticle);
 		gtk_widget_set_sensitive(receive_page.recvatgetall_checkbtn, FALSE);
 
 		gtk_widget_set_sensitive(basic_page.smtpserv_entry, TRUE);
@@ -5105,12 +4826,10 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 #ifdef USE_GNUTLS
 		gtk_widget_hide(ssl_page.pop_frame);
 		gtk_widget_hide(ssl_page.imap_frame);
-		gtk_widget_hide(ssl_page.nntp_frame);
 		gtk_widget_show(ssl_page.send_frame);
 #endif
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
-		gtk_widget_hide(advanced_page.nntpport_hbox);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
 		gtk_widget_hide(receive_page.imapdir_label);
@@ -5126,14 +4845,7 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_show(send_page.xmailer_checkbtn);
 		gtk_widget_hide(protocol_optmenu->no_imap_warn_icon);
 		gtk_widget_hide(protocol_optmenu->no_imap_warn_label);
-		gtk_widget_hide(basic_page.nntpserv_label);
-		gtk_widget_hide(basic_page.nntpserv_entry);
 		gtk_grid_set_row_spacing(GTK_GRID(basic_page.serv_table), VSPACING_NARROW);
-		gtk_widget_set_sensitive(basic_page.nntpauth_checkbtn, FALSE);
-		gtk_widget_hide(basic_page.nntpauth_checkbtn);
-
-		gtk_widget_set_sensitive(basic_page.nntpauth_onconnect_checkbtn, FALSE);
-		gtk_widget_hide(basic_page.nntpauth_onconnect_checkbtn);
 
  		gtk_widget_set_sensitive(basic_page.recvserv_label, TRUE);
 		gtk_widget_set_sensitive(basic_page.recvserv_entry, TRUE);
@@ -5160,7 +4872,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(receive_page.imap_frame);
 		gtk_widget_hide(receive_page.local_frame);
 		gtk_widget_show(receive_page.autochk_frame);
-		gtk_widget_hide(receive_page.frame_maxarticle);
 		gtk_widget_set_sensitive(receive_page.recvatgetall_checkbtn, TRUE);
 
 		gtk_widget_set_sensitive(basic_page.smtpserv_entry, TRUE);
@@ -5179,12 +4890,10 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 #ifdef USE_GNUTLS
 		gtk_widget_show(ssl_page.pop_frame);
 		gtk_widget_hide(ssl_page.imap_frame);
-		gtk_widget_hide(ssl_page.nntp_frame);
 		gtk_widget_show(ssl_page.send_frame);
 #endif
 		gtk_widget_show(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
-		gtk_widget_hide(advanced_page.nntpport_hbox);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
 		gtk_widget_hide(advanced_page.tunnelcmd_entry);
 		gtk_widget_hide(receive_page.imapdir_label);
@@ -5196,21 +4905,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 	}
 
 	gtk_widget_queue_resize(basic_page.serv_frame);
-}
-
-static void prefs_account_nntpauth_toggled(GtkToggleButton *button,
-					   gpointer user_data)
-{
-	gboolean auth;
-
-	if (!gtk_widget_get_sensitive (GTK_WIDGET (button)))
-		return;
-	auth = gtk_toggle_button_get_active (button);
-	gtk_widget_set_sensitive(basic_page.uid_label,  auth);
-	gtk_widget_set_sensitive(basic_page.pass_label, auth);
-	gtk_widget_set_sensitive(basic_page.uid_entry,  auth);
-	gtk_widget_set_sensitive(basic_page.pass_entry, auth);
-	gtk_widget_set_sensitive(basic_page.nntpauth_onconnect_checkbtn, auth);
 }
 
 static void prefs_account_mailcmd_toggled(GtkToggleButton *button,

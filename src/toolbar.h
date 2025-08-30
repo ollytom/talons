@@ -253,10 +253,6 @@ void 	send_queue_cb			(gpointer	 data,
 void 	compose_mail_cb			(gpointer	data,
 					 guint		 action,
 					 GtkWidget	*widget);
-void 	compose_news_cb			(gpointer	 data,
-					 guint 		 action,
-					 GtkWidget      *widget);
-/* END */
 
 void 	toolbar_toggle			(guint		 action,
 					 gpointer 	 data);

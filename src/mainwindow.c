@@ -423,10 +423,6 @@ static void 	mw_compose_mail_cb			(GtkAction *gaction, gpointer data)
 {
 	compose_mail_cb(data, 0, NULL);
 }
-static void 	mw_compose_news_cb			(GtkAction *gaction, gpointer data)
-{
-	compose_news_cb(data, 0, NULL);
-}
 
 /* make sure to keep the tables below in sync with the default_menurc[] in prefs_other.c */
 static GtkActionEntry mainwin_entries[] =
@@ -568,7 +564,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Message/---",                                  NULL, "---", NULL, NULL, NULL },
 
 	{"Message/ComposeEmail",                         NULL, N_("Write a_n email message"), "<control>M", NULL, G_CALLBACK(mw_compose_mail_cb) },
-	{"Message/ComposeNews",                          NULL, N_("Write a news message"), NULL, NULL, G_CALLBACK(mw_compose_news_cb) },
 
 	{"Message/Reply",                                NULL, N_("_Reply"), "<control>R", NULL, G_CALLBACK(main_window_reply_cb) }, /* COMPOSE_REPLY */
 	{"Message/ReplyTo",                              NULL, N_("Repl_y to"), NULL, NULL, NULL },
@@ -1208,7 +1203,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "Separator1", "Message/---", GTK_UI_MANAGER_SEPARATOR)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "ComposeEmail", "Message/ComposeEmail", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "ComposeNews", "Message/ComposeNews", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "Reply", "Message/Reply", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "ReplyTo", "Message/ReplyTo", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/ReplyTo", "All", "Message/ReplyTo/All", GTK_UI_MANAGER_MENUITEM)
@@ -2333,13 +2327,6 @@ SensitiveCondMask main_window_get_current_state(MainWindow *mainwin)
 		}
 	}
 
-	for (account_list = account_get_list(); account_list != NULL; account_list = account_list->next) {
-		if (((PrefsAccount*)account_list->data)->protocol == A_NNTP) {
-			UPDATE_STATE(M_HAVE_NEWS_ACCOUNT);
-			break;
-		}
-	}
-
 	if (procmsg_spam_can_learn() &&
 	    (mainwin->summaryview->folder_item &&
 	     mainwin->summaryview->folder_item->folder->klass->type != F_UNKNOWN &&
@@ -2472,7 +2459,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	SET_SENSITIVE("Menu/Message/SendQueue", M_HAVE_ACCOUNT, M_HAVE_QUEUED_MAILS);
 	SET_SENSITIVE("Menu/Message/CancelSending", M_SEND_ACTIVE);
 	SET_SENSITIVE("Menu/Message/ComposeEmail", M_HAVE_ACCOUNT);
-	SET_SENSITIVE("Menu/Message/ComposeNews", M_HAVE_NEWS_ACCOUNT);
 	SET_SENSITIVE("Menu/Message/Reply", M_HAVE_ACCOUNT, M_TARGET_EXIST, M_SUMMARY_ISLIST);
 	SET_SENSITIVE("Menu/Message/ReplyTo", M_HAVE_ACCOUNT, M_TARGET_EXIST, M_SUMMARY_ISLIST);
 	SET_SENSITIVE("Menu/Message/FollowupReply", M_HAVE_ACCOUNT, M_TARGET_EXIST, M_NEWS, M_SUMMARY_ISLIST);

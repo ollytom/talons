@@ -216,7 +216,6 @@ struct {
 	{ "A_RECEIVE_CUR",   	N_("Receive Mail from current Account")    },
 	{ "A_SEND_QUEUED",   	N_("Send Queued Messages")                 },
 	{ "A_COMPOSE_EMAIL", 	N_("Write Email")                          },
-	{ "A_COMPOSE_NEWS",  	N_("Write News")                           },
 	{ "A_REPLY_MESSAGE", 	N_("Reply to Message")                     },
 	{ "A_REPLY_SENDER",  	N_("Reply to Sender")                      },
 	{ "A_REPLY_ALL",     	N_("Reply to All")                         },
@@ -914,19 +913,11 @@ static void activate_compose_button (Toolbar           *toolbar,
 	if ((!toolbar->compose_mail_btn))
 		return;
 
-	if (type == COMPOSEBUTTON_NEWS) {
-		gtk_tool_button_set_icon_widget(
-			GTK_TOOL_BUTTON(toolbar->compose_mail_btn),
-			toolbar->compose_news_icon);
-		CLAWS_SET_TOOL_ITEM_TIP(GTK_TOOL_ITEM(toolbar->compose_mail_btn), _("Write News message"));
-		gtk_widget_show(toolbar->compose_news_icon);
-	} else {
-		gtk_tool_button_set_icon_widget(
-			GTK_TOOL_BUTTON(toolbar->compose_mail_btn),
-			toolbar->compose_mail_icon);
-		CLAWS_SET_TOOL_ITEM_TIP(GTK_TOOL_ITEM(toolbar->compose_mail_btn), _("Write Email"));
-		gtk_widget_show(toolbar->compose_mail_icon);
-	}
+	gtk_tool_button_set_icon_widget(
+		GTK_TOOL_BUTTON(toolbar->compose_mail_btn),
+		toolbar->compose_mail_icon);
+	CLAWS_SET_TOOL_ITEM_TIP(GTK_TOOL_ITEM(toolbar->compose_mail_btn), _("Write Email"));
+	gtk_widget_show(toolbar->compose_mail_icon);
 	toolbar->compose_btn_type = type;
 }
 
@@ -1236,15 +1227,11 @@ static void toolbar_compose_cb(GtkWidget *widget, gpointer data)
 	switch (toolbar_item->type) {
 	case TOOLBAR_MAIN:
 		mainwin = (MainWindow*)toolbar_item->parent;
-		if (mainwin->toolbar->compose_btn_type == COMPOSEBUTTON_NEWS)
-			compose_news_cb(mainwin, 0, NULL);
-		else
-			compose_mail_cb(mainwin, 0, NULL);
+		compose_mail_cb(mainwin, 0, NULL);
 		break;
 	case TOOLBAR_MSGVIEW:
 		msgview = (MessageView*)toolbar_item->parent;
-		compose_new_with_folderitem(NULL,
-					    msgview->msginfo->folder, NULL);
+		compose_new_with_folderitem(NULL, msgview->msginfo->folder, NULL);
 		break;
 	default:
 		debug_print("toolbar event not supported\n");
@@ -2921,16 +2908,13 @@ void compose_mail_cb(gpointer data, guint action, GtkWidget *widget)
 
 	if (item) {
 		ac = account_find_from_item(item);
-		if (ac && ac->protocol != A_NNTP && ac->protocol != A_IMAP4) {
+		if (ac && ac->protocol != A_IMAP4) {
 			compose_new_with_folderitem(ac, item, NULL);		/* CLAWS */
 			return;
 		}
 	}
 
-	/*
-	 * CLAWS - use current account
-	 */
-	if (cur_account && (cur_account->protocol != A_NNTP)) {
+	if (cur_account) {
 		compose_new_with_folderitem(cur_account, item, NULL);
 		return;
 	}
@@ -2941,36 +2925,12 @@ void compose_mail_cb(gpointer data, guint action, GtkWidget *widget)
 	list = account_get_list();
 	for (cur = list ; cur != NULL ; cur = g_list_next(cur)) {
 		ac = (PrefsAccount *) cur->data;
-		if (ac->protocol != A_NNTP) {
-			compose_new_with_folderitem(ac, item, NULL);
-			return;
-		}
+		compose_new_with_folderitem(ac, item, NULL);
+		return;
 	}
 }
 
 void compose_news_cb(gpointer data, guint action, GtkWidget *widget)
 {
-	MainWindow *mainwin = (MainWindow*)data;
-	PrefsAccount * ac = NULL;
-	GList * list;
-	GList * cur;
-
-	if (mainwin->summaryview->folder_item) {
-		ac = mainwin->summaryview->folder_item->folder->account;
-		if (ac && ac->protocol == A_NNTP) {
-			compose_new_with_folderitem(ac,
-				    mainwin->summaryview->folder_item, NULL);
-			return;
-		}
-	}
-
-	list = account_get_list();
-	for(cur = list ; cur != NULL ; cur = g_list_next(cur)) {
-		ac = (PrefsAccount *) cur->data;
-		if (ac->protocol == A_NNTP) {
-			compose_new_with_folderitem(ac,
-				    mainwin->summaryview->folder_item, NULL);
-			return;
-		}
-	}
+	fprintf(stderr, "TODO(otl): remove this\n");
 }

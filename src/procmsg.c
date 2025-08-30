@@ -38,7 +38,6 @@
 #include "prefs_common.h"
 #include "account.h"
 #include "alertpanel.h"
-#include "news.h"
 #include "hooks.h"
 #include "msgcache.h"
 #include "mainwindow.h"

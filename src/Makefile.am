@@ -172,7 +172,6 @@ claws_mailinclude_HEADERS = \
 	mh_gtk.h \
 	mimeview.h \
 	msgcache.h \
-	news.h \
 	noticeview.h \
 	oauth2.h \
 	password.h \

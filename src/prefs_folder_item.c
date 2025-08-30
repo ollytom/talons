@@ -948,7 +948,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	gtk_grid_attach(GTK_GRID(table), label, 2, rowcount, 1, 1);
 	rowcount++;
 
-	if (item_protocol(item) != A_NNTP) {
+	if (item_protocol(item)) {
 		/* Save Copy to Folder */
 		checkbtn_save_copy_to_folder = gtk_check_button_new_with_label
 			(_("Save copy of outgoing messages to this folder instead of Sent"));
@@ -1124,14 +1124,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	account_list = account_get_list();
 	for (cur_ac = account_list; cur_ac != NULL; cur_ac = cur_ac->next) {
 		ac_prefs = (PrefsAccount *)cur_ac->data;
-		if (item->folder->account &&
-	    	    ( (item_protocol(item) == A_NNTP && ac_prefs->protocol != A_NNTP)
-		    ||(item_protocol(item) != A_NNTP && ac_prefs->protocol == A_NNTP)))
-			continue;
-
-		if (item->folder->klass->type != F_NEWS && ac_prefs->protocol == A_NNTP)
-			continue;
-
 		COMBOBOX_ADD_ESCAPED (optmenu_default_account_menu,
 					ac_prefs->account_name?ac_prefs->account_name : _("Untitled"),
 					ac_prefs->account_id);
@@ -1295,7 +1287,7 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 
 	cm_return_if_fail(prefs != NULL);
 
-	if (item_protocol(folder) != A_NNTP) {
+	if (item_protocol(folder)) {
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->request_return_receipt_rec_checkbtn))) {
 			prefs->request_return_receipt =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_request_return_receipt));
@@ -1398,7 +1390,7 @@ static gboolean compose_save_recurse_func(GNode *node, gpointer data)
 	/* optimise by not continuing if none of the 'apply to sub folders'
 	   check boxes are selected - and optimise the checking by only doing
 	   it once */
-	if ((node == page->item->node) && item_protocol(item) != A_NNTP &&
+	if ((node == page->item->node) &&
 	    !(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->request_return_receipt_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->save_copy_to_folder_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_from_rec_checkbtn)) ||
@@ -1412,7 +1404,7 @@ static gboolean compose_save_recurse_func(GNode *node, gpointer data)
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_reply_to_rec_checkbtn))
 			))
 		return TRUE;
-	else if ((node == page->item->node) && item_protocol(item) == A_NNTP &&
+	else if ((node == page->item->node) &&
 	    !(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_account_rec_checkbtn))
 	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_sign_rec_checkbtn))
 	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_encrypt_rec_checkbtn))

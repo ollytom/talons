@@ -29,7 +29,6 @@ typedef struct _PrefsAccount	PrefsAccount;
 typedef enum {
 	A_POP3,
 	A_IMAP4,
-	A_NNTP,
 	A_LOCAL,
 	A_NONE,	/* SMTP only */
 	NUM_RECV_PROTOCOLS
@@ -69,9 +68,6 @@ struct _PrefsAccount
 	RecvProtocol protocol;
 	gchar *recv_server;
 	gchar *smtp_server;
-	gchar *nntp_server;
-	gboolean use_nntp_auth;
-	gboolean use_nntp_auth_onconnect;
 	gchar *userid;
 	gchar *passwd;
 	gchar *session_passwd;
@@ -82,7 +78,6 @@ struct _PrefsAccount
 
 	SSLType ssl_pop;
 	SSLType ssl_imap;
-	SSLType ssl_nntp;
 	SSLType ssl_smtp;
 
 	gchar *out_ssl_client_cert_file;
@@ -173,8 +168,6 @@ struct _PrefsAccount
 	gushort   popport;
 	gboolean  set_imapport;
 	gushort   imapport;
-	gboolean  set_nntpport;
-	gushort   nntpport;
 	gboolean  set_domain;
 	gchar    *domain;
 	gboolean  set_gnutls_priority;

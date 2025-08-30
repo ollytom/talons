@@ -214,6 +214,7 @@ static void prefswindow_build_page(PrefsWindow *prefswindow, PrefsPage *page)
 {
 	GtkWidget *scrolledwin;
 
+	debug_print("prefswindow_build_page %s\n", page->path);
 	if (!page->page_open) {
 		scrolledwin = gtk_scrolled_window_new(NULL, NULL);
 		gtk_widget_show(scrolledwin);
@@ -222,7 +223,6 @@ static void prefswindow_build_page(PrefsWindow *prefswindow, PrefsPage *page)
 
 		page->create_widget(page, GTK_WINDOW(prefswindow->window), prefswindow->data);
 		gtk_container_add(GTK_CONTAINER(scrolledwin), page->widget);
-
 		gtk_container_add(GTK_CONTAINER(prefswindow->notebook), scrolledwin);
 
 		page->widget	= scrolledwin;
@@ -233,11 +233,9 @@ static void prefswindow_build_page(PrefsWindow *prefswindow, PrefsPage *page)
 static GSList *prefswindow_build_all_pages(PrefsWindow *prefswindow, GSList *prefs_pages)
 {
 	GSList *cur;
-
 	prefs_pages = g_slist_reverse(prefs_pages);
 	for (cur = prefs_pages; cur != NULL; cur = g_slist_next(cur)) {
 		PrefsPage *page = (PrefsPage *) cur->data;
-
 		prefswindow_build_page(prefswindow, page);
 	}
 	return g_slist_reverse(prefs_pages);
@@ -266,8 +264,7 @@ static void prefswindow_build_tree(GtkWidget *tree_view, GSList *prefs_pages,
 			find_name.found = FALSE;
 			find_name.name  = page->path[i];
 
-			/* find node to attach to
-			 * FIXME: we search the entire tree, so this is suboptimal... */
+			/* find node to attach to */
 			gtk_tree_model_foreach(GTK_TREE_MODEL(store),
 					       (GtkTreeModelForeachFunc) find_node_by_name,
 					       &find_name);
