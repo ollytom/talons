@@ -1401,7 +1401,7 @@ static gint get_spool(FolderItem *dest, const gchar *mbox, PrefsAccount *account
 	}
 	close(spool);
 
-	msgs = proc_mbox(dest, tmp_mbox, FALSE, account);
+	msgs = proc_mbox(dest, tmp_mbox, account);
 	unlink(tmp_mbox);
 	if (msgs >= 0) {
 		if (truncate(mbox, 0) < 0)

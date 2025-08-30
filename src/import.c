@@ -224,7 +224,7 @@ static void import_ok_cb(GtkWidget *widget, gpointer data)
 		return;
 	} else {
 		window = label_window_create(_("Importing mbox file..."));
-		import_ok = proc_mbox(dest, mbox, FALSE, NULL);
+		import_ok = proc_mbox(dest, mbox, NULL);
 		label_window_destroy(window);
 	}
 

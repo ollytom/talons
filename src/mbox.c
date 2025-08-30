@@ -61,8 +61,7 @@
 	} \
 }
 
-gint proc_mbox(FolderItem *dest, const gchar *mbox, gboolean apply_filter,
-	       PrefsAccount *account)
+gint proc_mbox(FolderItem *dest, const gchar *mbox, PrefsAccount *account)
 /* return values: -1 error, >=0 number of msgs added */
 {
 	FILE *mbox_fp;
