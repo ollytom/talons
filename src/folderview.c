@@ -878,8 +878,7 @@ static void folderview_select_node(FolderView *folderview, GtkCMCTreeNode *node)
 	gtk_cmctree_select(ctree, node);
 	gtk_cmclist_thaw(GTK_CMCLIST(ctree));
 	if ((folderview->summaryview->folder_item &&
-	    folderview->summaryview->folder_item->total_msgs > 0) ||
-	     prefs_common.layout_mode == SMALL_LAYOUT)
+	    folderview->summaryview->folder_item->total_msgs > 0))
 		summary_select_node(folderview->summaryview,
 				    folderview->summaryview->selected, OPEN_SELECTED_ON_FOLDER_OPEN);
 	else

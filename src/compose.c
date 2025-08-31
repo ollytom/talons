@@ -75,7 +75,6 @@
 #include "filesel.h"
 #include "procheader.h"
 #include "procmime.h"
-#include "statusbar.h"
 #include "quoted-printable.h"
 #include "codeconv.h"
 #include "utils.h"

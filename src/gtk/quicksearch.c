@@ -75,7 +75,7 @@ struct _QuickSearch
 
 	GList				*normal_search_strings;
 	GList				*extended_search_strings;
-	
+
 	AdvancedSearch			*asearch;
 	gboolean			 want_reexec;
 	gboolean			 want_history;
@@ -188,7 +188,7 @@ static void quicksearch_invoke_execute(QuickSearch *quicksearch, gboolean run_on
 	}
 
 	do {
-		gboolean active = quicksearch->request.matchstring != NULL 
+		gboolean active = quicksearch->request.matchstring != NULL
 				   && g_strcmp0(quicksearch->request.matchstring, "");
 		advsearch_set(quicksearch->asearch, quicksearch->request.type,
 				quicksearch->request.matchstring);
@@ -254,10 +254,10 @@ static void quicksearch_set_popdown_strings(QuickSearch *quicksearch)
 {
 	GtkWidget *search_string_entry = quicksearch->search_string_entry;
 
-	combobox_unset_popdown_strings(GTK_COMBO_BOX_TEXT(search_string_entry));	
+	combobox_unset_popdown_strings(GTK_COMBO_BOX_TEXT(search_string_entry));
 	if (prefs_common.summary_quicksearch_type == ADVANCED_SEARCH_EXTENDED)
 		combobox_set_popdown_strings(GTK_COMBO_BOX_TEXT(search_string_entry),
-			quicksearch->extended_search_strings);	
+			quicksearch->extended_search_strings);
 	else
 		combobox_set_popdown_strings(GTK_COMBO_BOX_TEXT(search_string_entry),
 			quicksearch->normal_search_strings);
@@ -366,7 +366,7 @@ static gboolean searchbar_pressed(GtkWidget *widget, GdkEventKey *event,
 		/* If the string entry is empty -> hide quicksearch bar. If not -> empty it */
 		if (!*str) {
 			summaryview_activate_quicksearch(
-				mainwindow_get_mainwindow()->summaryview, 
+				mainwindow_get_mainwindow()->summaryview,
 				FALSE);
 		} else {
 			quicksearch_set(quicksearch, prefs_common.summary_quicksearch_type, "");
@@ -517,7 +517,7 @@ static gboolean search_condition_expr(GtkMenuItem *widget, gpointer data)
 {
 	gchar * cond_str;
 	MatcherList * matchers = NULL;
-	
+
 	cm_return_val_if_fail(
 			mainwindow_get_mainwindow()->summaryview->quicksearch != NULL,
 			FALSE);
@@ -551,19 +551,19 @@ static void quicksearch_set_button(GtkButton *button, const gchar *icon, const g
 	GtkWidget *box;
 	gboolean icon_visible;
 
-	g_object_get(gtk_settings_get_default(), 
-					 "gtk-button-images", &icon_visible, 
+	g_object_get(gtk_settings_get_default(),
+					 "gtk-button-images", &icon_visible,
 					 NULL);
 
 	for (cur = children; cur; cur = cur->next)
 		gtk_container_remove(GTK_CONTAINER(button), GTK_WIDGET(cur->data));
-	
+
 	g_list_free(children);
 	box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	
+
 	gtk_container_add(GTK_CONTAINER(button), box);
 	if (icon_visible || !text || !*text || icon != NULL)
-		gtk_box_pack_start(GTK_BOX(box), gtk_image_new_from_icon_name(icon, 
+		gtk_box_pack_start(GTK_BOX(box), gtk_image_new_from_icon_name(icon,
 			GTK_ICON_SIZE_BUTTON), FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(box), gtk_label_new_with_mnemonic(text), FALSE, FALSE, 0);
 	gtk_widget_show_all(box);
@@ -998,7 +998,7 @@ QuickSearch *quicksearch_new()
 			       _("_Information"));
 	quicksearch_set_button(GTK_BUTTON(quicksearch->search_condition_expression), NULL, _("E_dit"));
 	quicksearch_set_button(GTK_BUTTON(quicksearch->clear_search), "edit-clear-symbolic", _("C_lear"));
-	
+
 	update_extended_buttons(quicksearch);
 
 	GTKUT_GDKRGBA_TO_GDKCOLOR(prefs_common.color[COL_QS_ACTIVE_BG],
@@ -1022,14 +1022,11 @@ void quicksearch_relayout(QuickSearch *quicksearch)
 {
 	switch (prefs_common.layout_mode) {
 	case NORMAL_LAYOUT:
-	case WIDE_LAYOUT:
-	case WIDE_MSGLIST_LAYOUT:
 		quicksearch_set_button(GTK_BUTTON(quicksearch->search_description),
 				       "dialog-information-symbolic", _("_Information"));
 		quicksearch_set_button(GTK_BUTTON(quicksearch->search_condition_expression), NULL, _("E_dit"));
 		quicksearch_set_button(GTK_BUTTON(quicksearch->clear_search), "edit-clear-symbolic", _("C_lear"));
 		break;
-	case SMALL_LAYOUT:
 	case VERTICAL_LAYOUT:
 		quicksearch_set_button(GTK_BUTTON(quicksearch->search_description), "dialog-information-symbolic", "");
 		quicksearch_set_button(GTK_BUTTON(quicksearch->search_condition_expression), NULL, _("E_dit"));
@@ -1059,7 +1056,7 @@ void quicksearch_show(QuickSearch *quicksearch)
 	if (!mainwin || !mainwin->summaryview) {
 		return;
 	}
-	
+
 	active_type = prefs_common_get_prefs()->summary_quicksearch_type;
 	quicksearch_set_type(quicksearch, active_type);
 }
@@ -1095,7 +1092,7 @@ void quicksearch_set(QuickSearch *quicksearch, AdvancedSearchType type, const gc
 		quicksearch->in_typing = FALSE;
 
 	quicksearch_set_matchstring(quicksearch, matchstring);
-		
+
 	g_signal_handlers_block_by_func(G_OBJECT(gtk_bin_get_child(GTK_BIN((quicksearch->search_string_entry)))),
 					G_CALLBACK(searchbar_changed_cb), quicksearch);
 	gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN((quicksearch->search_string_entry)))),
@@ -1119,7 +1116,7 @@ static void quicksearch_set_active(QuickSearch *quicksearch, gboolean active)
 
 	quicksearch->active = active;
 
-	if (active && 
+	if (active &&
 		(prefs_common.summary_quicksearch_type == ADVANCED_SEARCH_EXTENDED
 		 && !advsearch_has_proper_predicate(quicksearch->asearch)))
 		error = TRUE;
@@ -1178,7 +1175,7 @@ void quicksearch_set_search_strings(QuickSearch *quicksearch)
 		return;
 
 	matcher_parser_disable_warnings(TRUE);
-	
+
 	do {
 		newstr = advsearch_expand_search_string((gchar *) strings->data);
 		if (newstr && newstr[0] != '\0') {
@@ -1189,7 +1186,7 @@ void quicksearch_set_search_strings(QuickSearch *quicksearch)
 						g_strdup(strings->data));
 			} else {
 				matcher_list = matcher_parser_get_cond(newstr, FALSE);
-			
+
 				if (matcher_list) {
 					quicksearch->extended_search_strings =
 						g_list_prepend(
@@ -1204,10 +1201,10 @@ void quicksearch_set_search_strings(QuickSearch *quicksearch)
 			}
 		}
 		g_free(newstr);
-	
+
 	} while ((strings = g_list_next(strings)) != NULL);
 
-	matcher_parser_disable_warnings(FALSE);	
+	matcher_parser_disable_warnings(FALSE);
 
 	quicksearch->normal_search_strings = g_list_reverse(quicksearch->normal_search_strings);
 	quicksearch->extended_search_strings = g_list_reverse(quicksearch->extended_search_strings);
