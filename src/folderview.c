@@ -1670,14 +1670,10 @@ static void folderview_update_node(FolderView *folderview, GtkCMCTreeNode *node)
 			gtk_cmctree_node_set_foreground(ctree, node, &folderview->color_op);
 		else if (use_color)
 			gtk_cmctree_node_set_foreground(ctree, node, &folderview->color_new);
-		else if (!gdk_rgba_equal(&item->prefs->color, &black))
-			gtk_cmctree_node_set_foreground(ctree, node, &item->prefs->color);
 	} else if (use_color)
 		gtk_cmctree_node_set_foreground(ctree, node, &folderview->color_new);
 	else if (item->op_count > 0)
 		gtk_cmctree_node_set_foreground(ctree, node, &folderview->color_op);
-	else if (!gdk_rgba_equal(&item->prefs->color, &black))
-		gtk_cmctree_node_set_foreground(ctree, node, &item->prefs->color);
 
 	gtk_cmctree_node_set_row_style(ctree, node, style);
 
@@ -2639,17 +2635,6 @@ static gint folderview_clist_compare(GtkCMCList *clist,
 		return -1;
 
 	return g_utf8_collate(item1->name, item2->name);
-}
-
-void folderview_set_target_folder_color(GdkRGBA color_op)
-{
-	GList *list;
-	FolderView *folderview;
-
-	for (list = folderview_list; list != NULL; list = list->next) {
-		folderview = (FolderView *)list->data;
-		folderview->color_op = color_op;
-	}
 }
 
 static void drag_state_stop(FolderView *folderview)

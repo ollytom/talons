@@ -134,8 +134,6 @@ void folderview_move_folder		(FolderView 	*folderview,
 					 FolderItem 	*to_folder,
 					 gboolean	 copy);
 
-void folderview_set_target_folder_color (GdkRGBA		color_op);
-
 void folderview_register_popup		(FolderViewPopup	*fpopup);
 void folderview_unregister_popup	(FolderViewPopup	*fpopup);
 void folderview_update_search_icon	(FolderItem 		*item,

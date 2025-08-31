@@ -74,7 +74,6 @@ struct _FolderItemGeneralPage
 	GtkWidget *entry_regexp_test_result;
 	GtkWidget *checkbtn_folder_chmod;
 	GtkWidget *entry_folder_chmod;
-	GtkWidget *folder_color_btn;
 	GtkWidget *checkbtn_enable_processing;
 	GtkWidget *checkbtn_enable_processing_when_opening;
 	GtkWidget *checkbtn_newmailcheck;
@@ -90,7 +89,6 @@ struct _FolderItemGeneralPage
 	/* apply to sub folders */
 	GtkWidget *simplify_subject_rec_checkbtn;
 	GtkWidget *folder_chmod_rec_checkbtn;
-	GtkWidget *folder_color_rec_checkbtn;
 	GtkWidget *enable_processing_rec_checkbtn;
 	GtkWidget *enable_processing_when_opening_rec_checkbtn;
 	GtkWidget *newmailcheck_rec_checkbtn;
@@ -98,8 +96,6 @@ struct _FolderItemGeneralPage
 	GtkWidget *offlinesync_rec_checkbtn;
 	GtkWidget *render_html_rec_checkbtn;
 	GtkWidget *promote_html_part_rec_checkbtn;
-
-	GdkRGBA folder_color;
 };
 
 struct _FolderItemComposePage
@@ -208,8 +204,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 
 	GtkWidget *checkbtn_folder_chmod;
 	GtkWidget *entry_folder_chmod;
-	GtkWidget *folder_color;
-	GtkWidget *folder_color_btn;
 	GtkWidget *checkbtn_enable_processing;
 	GtkWidget *checkbtn_enable_processing_when_opening;
 	GtkWidget *checkbtn_newmailcheck;
@@ -227,7 +221,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	GtkWidget *simplify_subject_rec_checkbtn;
 
 	GtkWidget *folder_chmod_rec_checkbtn;
-	GtkWidget *folder_color_rec_checkbtn;
 	GtkWidget *enable_processing_rec_checkbtn;
 	GtkWidget *enable_processing_when_opening_rec_checkbtn;
 	GtkWidget *newmailcheck_rec_checkbtn;
@@ -401,36 +394,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	gtk_grid_attach(GTK_GRID(table), box1, 0, rowcount, 1, 1);
 	folder_chmod_rec_checkbtn = gtk_check_button_new();
 	gtk_grid_attach(GTK_GRID(table), folder_chmod_rec_checkbtn, 2, rowcount, 1, 1);
-
-	rowcount++;
-
-	/* Folder color */
-	box1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	box2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_box_pack_start(GTK_BOX(box1), box2, FALSE, FALSE, 0);
-
-	folder_color = gtk_label_new(_("Folder color"));
-	gtk_label_set_xalign(GTK_LABEL(folder_color), 0.0);
-	gtk_box_pack_start(GTK_BOX(box2), folder_color, FALSE, FALSE, 0);
-
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_start(GTK_BOX(box2), hbox, FALSE, FALSE, 0);
-
-	folder_color_btn = gtk_color_button_new_with_rgba(
-				&item->prefs->color);
-	gtk_color_button_set_title(GTK_COLOR_BUTTON(folder_color_btn),
-				   _("Pick color for folder"));
-
-  	gtk_box_pack_start (GTK_BOX(hbox), folder_color_btn, FALSE, FALSE, 0);
-	CLAWS_SET_TIP(folder_color_btn,
-			     _("Pick color for folder"));
-
-	page->folder_color = item->prefs->color;
-
-	gtk_grid_attach(GTK_GRID(table), box1, 0, rowcount, 1, 1);
-	folder_color_rec_checkbtn = gtk_check_button_new();
-	gtk_grid_attach(GTK_GRID(table), folder_color_rec_checkbtn, 2, rowcount, 1, 1);
-
 	rowcount++;
 
 	/* Enable processing at startup */
@@ -650,7 +613,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 
 	page->checkbtn_folder_chmod = checkbtn_folder_chmod;
 	page->entry_folder_chmod = entry_folder_chmod;
-	page->folder_color_btn = folder_color_btn;
 	page->checkbtn_enable_processing = checkbtn_enable_processing;
 	page->checkbtn_enable_processing_when_opening = checkbtn_enable_processing_when_opening;
 	page->checkbtn_newmailcheck = checkbtn_newmailcheck;
@@ -666,7 +628,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	page->simplify_subject_rec_checkbtn  = simplify_subject_rec_checkbtn;
 
 	page->folder_chmod_rec_checkbtn	     = folder_chmod_rec_checkbtn;
-	page->folder_color_rec_checkbtn	     = folder_color_rec_checkbtn;
 	page->enable_processing_rec_checkbtn = enable_processing_rec_checkbtn;
 	page->enable_processing_when_opening_rec_checkbtn = enable_processing_when_opening_rec_checkbtn;
 	page->newmailcheck_rec_checkbtn	     = newmailcheck_rec_checkbtn;
@@ -744,16 +705,6 @@ static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage 
 		g_free(buf);
 	}
 
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->folder_color_rec_checkbtn))) {
-		GdkRGBA old_color = prefs->color;
-		gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(page->folder_color_btn),
-				   &prefs->color);
-
-		/* update folder view */
-		if (!gdk_rgba_equal(&prefs->color, &old_color))
-			folder_item_update(folder, F_ITEM_UPDATE_MSGCNT);
-	}
-
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->enable_processing_rec_checkbtn))) {
 		prefs->enable_processing =
 			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_enable_processing));
@@ -808,7 +759,6 @@ static gboolean general_save_recurse_func(GNode *node, gpointer data)
 	    !(
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->simplify_subject_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->folder_chmod_rec_checkbtn)) ||
-	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->folder_color_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->enable_processing_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->enable_processing_when_opening_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->newmailcheck_rec_checkbtn)) ||

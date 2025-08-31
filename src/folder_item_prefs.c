@@ -77,8 +77,6 @@ static PrefParam param[] = {
  	 NULL, NULL, NULL},
 	{"save_copy_to_folder", NULL, &tmp_prefs.save_copy_to_folder, P_BOOL,
 	 NULL, NULL, NULL},
-	{"folder_color", "#000000", &tmp_prefs.color, P_COLOR,
-	 NULL, NULL, NULL},
 	{"enable_processing", "FALSE", &tmp_prefs.enable_processing, P_BOOL,
 	 NULL, NULL, NULL},
 	{"enable_processing_when_opening", "TRUE", &tmp_prefs.enable_processing_when_opening, P_BOOL,
@@ -181,10 +179,6 @@ static FolderItemPrefs *folder_item_prefs_clear(FolderItemPrefs *prefs)
 	prefs->enable_processing = FALSE;
 	prefs->enable_processing_when_opening = FALSE;
 	prefs->processing = NULL;
-	prefs->color.red = 0;
-	prefs->color.green = 0;
-	prefs->color.blue = 0;
-	prefs->color.alpha = 1;
 
 	prefs->newmailcheck = TRUE;
 	prefs->offlinesync = FALSE;
@@ -261,7 +255,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 	tmp_prefs.always_sign    	= src->prefs->always_sign;
 	tmp_prefs.always_encrypt    = src->prefs->always_encrypt;
 	tmp_prefs.save_copy_to_folder		= src->prefs->save_copy_to_folder;
-	tmp_prefs.color				= src->prefs->color;
 
 	*dest->prefs = tmp_prefs;
 	folder_item_prefs_save_config(dest);

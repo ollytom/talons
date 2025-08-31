@@ -55,7 +55,6 @@ SourceWindow *source_window_create(void)
 	GtkWidget *window;
 	GtkWidget *scrolledwin;
 	GtkWidget *text;
-	static PangoFontDescription *font_desc = NULL;
 
 	static GdkGeometry geometry;
 

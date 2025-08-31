@@ -83,7 +83,6 @@ struct _FolderItemPrefs {
 	SignOrEncryptType always_sign;
 	SignOrEncryptType always_encrypt;
 	gboolean save_copy_to_folder;
-	GdkRGBA color;
 };
 
 void folder_item_prefs_read_config(FolderItem * item);
