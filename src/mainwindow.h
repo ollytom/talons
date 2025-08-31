@@ -52,7 +52,6 @@ typedef enum
 	M_HIDE_READ_MSG,
 	M_DELAY_EXEC,
 	M_NOT_NEWS,
-	M_CAN_LEARN_SPAM,
 	M_ACTIONS_EXIST,
 	M_HAVE_QUEUED_MAILS,
 	M_TAGS_EXIST,
@@ -202,8 +201,6 @@ void main_window_toggle_work_offline          (MainWindow        *mainwin,
 					       gboolean		  ask_sync);
 
 MainWindow *mainwindow_get_mainwindow 	      (void);
-void mainwindow_learn			      (MainWindow *mainwin,
-					       gboolean is_spam);
 void mainwindow_jump_to			      (const gchar 	 *target,
 					       gboolean popup);
 void mainwindow_show_error		      (void);

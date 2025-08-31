@@ -41,12 +41,6 @@ typedef enum
  	COMPOSEBUTTON_NEWS
 } ComposeButtonType;
 
-typedef enum
-{
-	LEARN_SPAM,
- 	LEARN_HAM
-} LearnButtonType;
-
 struct _Toolbar {
 	GtkWidget *toolbar;
 
@@ -57,7 +51,6 @@ struct _Toolbar {
 
 	GtkWidget *compose_mail_btn;
 	GtkWidget *compose_mail_icon;
-	GtkWidget *compose_news_icon;
 
 	GtkWidget *reply_btn;
 	GtkWidget *replysender_btn;
@@ -74,16 +67,12 @@ struct _Toolbar {
 	GtkWidget *exec_btn;
 
 	GtkWidget *separator;
-	GtkWidget *learn_spam_btn;
-	GtkWidget *learn_spam_icon;
-	GtkWidget *learn_ham_icon;
 
 	GtkWidget *cancel_inc_btn;
 	GtkWidget *cancel_send_btn;
 	GtkWidget *cancel_all_btn;
 
 	ComposeButtonType compose_btn_type;
-	LearnButtonType learn_btn_type;
 
 	/* compose buttons */
 	GtkWidget *sendl_btn;
@@ -154,7 +143,6 @@ enum {
 	A_RECEIVE_CUR,
 	A_SEND_QUEUED,
 	A_COMPOSE_EMAIL,
-	A_COMPOSE_NEWS,
 	A_REPLY_MESSAGE,
 	A_REPLY_SENDER,
 	A_REPLY_ALL,
@@ -181,7 +169,6 @@ enum {
 	A_RUN_PROCESSING,
 
 	A_PRINT,
-	A_LEARN_SPAM,
 	A_GO_FOLDERS,
 	A_PREFERENCES,
 
@@ -267,8 +254,6 @@ void	toolbar_set_style		(GtkWidget	*toolbar_wid,
 void 	toolbar_destroy			(Toolbar	*toolbar);
 void 	toolbar_item_destroy		(ToolbarItem	*toolbar_item);
 
-void toolbar_set_learn_button		(Toolbar	*toolbar,
-					 LearnButtonType  learn_btn_type);
 const gchar *toolbar_get_short_text	(int action);
 int	     toolbar_get_icon		(int action);
 gboolean toolbar_check_action_btns	(ToolbarType	type);

@@ -94,9 +94,6 @@ static void activate_compose_button 		(Toolbar	*toolbar,
 static void toolbar_reply			(gpointer 	 data,
 						 guint		 action);
 
-static void toolbar_learn			(gpointer 	 data,
-						 guint		 action);
-
 static void toolbar_delete_dup		(gpointer 	 data,
 						 guint		 action);
 
@@ -111,9 +108,6 @@ static void toolbar_delete_dup_cb   		(GtkWidget   	*widget,
 					 	 gpointer     	 data);
 
 static void toolbar_compose_cb			(GtkWidget	*widget,
-					    	 gpointer	 data);
-
-static void toolbar_learn_cb			(GtkWidget	*widget,
 					    	 gpointer	 data);
 
 static void toolbar_reply_cb		   	(GtkWidget	*widget,
@@ -242,7 +236,6 @@ struct {
 	{ "A_RUN_PROCESSING",	N_("Run folder processing rules")          },
 
 	{ "A_PRINT",	     	N_("Print")                                },
-	{ "A_LEARN_SPAM",       N_("Learn Spam or Ham")                    },
 	{ "A_GO_FOLDERS",   	N_("Open folder/Go to folder list")        },
 	{ "A_PREFERENCES",      N_("Preferences")                          },
 
@@ -367,7 +360,7 @@ GList *toolbar_get_action_items(ToolbarType source)
 					A_MARK,          A_UNMARK,        A_LOCK,          A_UNLOCK,
 					A_ALL_READ,      A_ALL_UNREAD,    A_READ,          A_UNREAD,
 					A_RUN_PROCESSING,
-					A_PRINT,         A_ADDRBOOK,      A_LEARN_SPAM,    A_GO_FOLDERS,
+					A_PRINT,         A_ADDRBOOK, A_GO_FOLDERS,
 					A_CANCEL_INC,    A_CANCEL_SEND,   A_CANCEL_ALL,    A_PREFERENCES };
 
 		for (i = 0; i < sizeof main_items / sizeof main_items[0]; i++)  {
@@ -391,7 +384,7 @@ GList *toolbar_get_action_items(ToolbarType source)
 					A_COMPOSE_EMAIL, A_REPLY_MESSAGE, A_REPLY_SENDER,
 					A_REPLY_ALL,     A_REPLY_ML,      A_FORWARD,
 					A_TRASH,         A_DELETE_REAL,   A_GOTO_PREV,      A_GOTO_NEXT,
-					A_ADDRBOOK,      A_LEARN_SPAM,    A_CLOSE };
+					A_ADDRBOOK, A_CLOSE };
 
 		for (i = 0; i < sizeof msgv_items / sizeof msgv_items[0]; i++)
 			items = g_list_append(items, gettext(toolbar_text[msgv_items[i]].descr));
@@ -476,7 +469,6 @@ const gchar *toolbar_get_short_text(int action) {
 	case A_RECEIVE_CUR: 	return _("Get");
 	case A_SEND_QUEUED: 	return _("Send");
 	case A_COMPOSE_EMAIL: 	return C_("Toolbar", "Write");
-	case A_COMPOSE_NEWS: 	return C_("Toolbar", "Write");
 	case A_REPLY_MESSAGE: 	return _("Reply");
 	case A_REPLY_SENDER: 	return C_("Toolbar", "Sender");
 	case A_REPLY_ALL: 		return _("All");
@@ -503,7 +495,6 @@ const gchar *toolbar_get_short_text(int action) {
 	case A_RUN_PROCESSING:	return _("Run proc. rules");
 
 	case A_PRINT:	 		return _("Print");
-	case A_LEARN_SPAM: 		return _("Spam");
 	case A_GO_FOLDERS: 		return _("Folders");
 	case A_PREFERENCES:		return _("Preferences");
 
@@ -535,7 +526,6 @@ gint toolbar_get_icon(int action) {
 	case A_RECEIVE_CUR: 	return STOCK_PIXMAP_MAIL_RECEIVE;
 	case A_SEND_QUEUED: 	return STOCK_PIXMAP_MAIL_SEND_QUEUE;
 	case A_COMPOSE_EMAIL: 	return STOCK_PIXMAP_MAIL_COMPOSE;
-	case A_COMPOSE_NEWS: 	return STOCK_PIXMAP_NEWS_COMPOSE;
 	case A_REPLY_MESSAGE: 	return STOCK_PIXMAP_MAIL_REPLY;
 	case A_REPLY_SENDER: 	return STOCK_PIXMAP_MAIL_REPLY_TO_AUTHOR;
 	case A_REPLY_ALL: 		return STOCK_PIXMAP_MAIL_REPLY_TO_ALL;
@@ -562,7 +552,6 @@ gint toolbar_get_icon(int action) {
 	case A_RUN_PROCESSING:	return STOCK_PIXMAP_DIR_OPEN;
 
 	case A_PRINT:	 		return STOCK_PIXMAP_PRINTER_BTN;
-	case A_LEARN_SPAM: 		return STOCK_PIXMAP_SPAM_BTN;
 	case A_GO_FOLDERS: 		return STOCK_PIXMAP_GO_FOLDERS;
 	case A_PREFERENCES:		return STOCK_PIXMAP_PREFERENCES;
 
@@ -641,7 +630,6 @@ void toolbar_set_default(ToolbarType source)
 		{ A_FORWARD},
 		{ A_SEPARATOR},
 		{ A_TRASH},
-		{ A_LEARN_SPAM},
 		{ A_SEPARATOR},
 		{ A_GOTO_NEXT},
 		{ N_ACTION_VAL}
@@ -665,7 +653,6 @@ void toolbar_set_default(ToolbarType source)
 		{ A_FORWARD},
 		{ A_SEPARATOR},
 		{ A_TRASH},
-		{ A_LEARN_SPAM},
 		{ A_GOTO_NEXT},
 		{ N_ACTION_VAL}
 	};
@@ -928,44 +915,6 @@ void toolbar_set_compose_button(Toolbar            *toolbar,
 		activate_compose_button(toolbar,
 					prefs_common.toolbar_style,
 					compose_btn_type);
-}
-
-static void activate_learn_button (Toolbar           *toolbar,
-				     ToolbarStyle      style,
-				     LearnButtonType type)
-{
-	if ((!toolbar->learn_spam_btn))
-		return;
-
-	if (type == LEARN_SPAM) {
-		gtk_tool_button_set_icon_widget(
-			GTK_TOOL_BUTTON(toolbar->learn_spam_btn),
-			toolbar->learn_spam_icon);
-		gtk_tool_button_set_label(
-			GTK_TOOL_BUTTON(toolbar->learn_spam_btn),
-			_("Spam"));
-		CLAWS_SET_TOOL_ITEM_TIP(GTK_TOOL_ITEM(toolbar->learn_spam_btn), _("Learn spam"));
-		gtk_widget_show(toolbar->learn_spam_icon);
-	} else {
-		gtk_tool_button_set_icon_widget(
-			GTK_TOOL_BUTTON(toolbar->learn_spam_btn),
-			toolbar->learn_ham_icon);
-		gtk_tool_button_set_label(
-			GTK_TOOL_BUTTON(toolbar->learn_spam_btn),
-			_("Ham"));
-		CLAWS_SET_TOOL_ITEM_TIP(GTK_TOOL_ITEM(toolbar->learn_spam_btn), _("Learn ham"));
-		gtk_widget_show(toolbar->learn_ham_icon);
-	}
-	toolbar->learn_btn_type = type;
-}
-
-void toolbar_set_learn_button(Toolbar            *toolbar,
-				LearnButtonType  learn_btn_type)
-{
-	if (toolbar->learn_btn_type != learn_btn_type)
-		activate_learn_button(toolbar,
-					prefs_common.toolbar_style,
-					learn_btn_type);
 }
 
 void toolbar_toggle(guint action, gpointer data)
@@ -1237,63 +1186,6 @@ static void toolbar_compose_cb(GtkWidget *widget, gpointer data)
 		debug_print("toolbar event not supported\n");
 	}
 }
-
-static void toolbar_learn(gpointer data, guint as_spam)
-{
-	ToolbarItem *toolbar_item = (ToolbarItem*)data;
-	MainWindow *mainwin;
-	MessageView *msgview;
-
-	cm_return_if_fail(toolbar_item != NULL);
-
-	switch (toolbar_item->type) {
-	case TOOLBAR_MAIN:
-		mainwin = (MainWindow*)toolbar_item->parent;
-		if (as_spam)
-			mainwindow_learn(mainwin, TRUE);
-		else
-			mainwindow_learn(mainwin, FALSE);
-		break;
-	case TOOLBAR_MSGVIEW:
-		msgview = (MessageView*)toolbar_item->parent;
-		if (as_spam)
-			messageview_learn(msgview, TRUE);
-		else
-			messageview_learn(msgview, FALSE);
-		break;
-	default:
-		debug_print("toolbar event not supported\n");
-	}
-}
-
-static void toolbar_learn_cb(GtkWidget *widget, gpointer data)
-{
-	ToolbarItem *toolbar_item = (ToolbarItem*)data;
-	MainWindow *mainwin;
-	MessageView *msgview;
-
-	cm_return_if_fail(toolbar_item != NULL);
-
-	switch (toolbar_item->type) {
-	case TOOLBAR_MAIN:
-		mainwin = (MainWindow*)toolbar_item->parent;
-		if (mainwin->toolbar->learn_btn_type == LEARN_SPAM)
-			mainwindow_learn(mainwin, TRUE);
-		else
-			mainwindow_learn(mainwin, FALSE);
-		break;
-	case TOOLBAR_MSGVIEW:
-		msgview = (MessageView*)toolbar_item->parent;
-		if (msgview->toolbar->learn_btn_type == LEARN_SPAM)
-			messageview_learn(msgview, TRUE);
-		else
-			messageview_learn(msgview, FALSE);
-		break;
-	default:
-		debug_print("toolbar event not supported\n");
-	}
-}
-
 
 /*
  * Reply Message
@@ -1983,7 +1875,6 @@ static void toolbar_buttons_cb(GtkWidget   *widget,
 		{ A_RECEIVE_CUR,		toolbar_inc_cb				},
 		{ A_SEND_QUEUED,		toolbar_send_queued_cb		},
 		{ A_COMPOSE_EMAIL,		toolbar_compose_cb			},
-		{ A_COMPOSE_NEWS,		toolbar_compose_cb			},
 		{ A_REPLY_MESSAGE,		toolbar_reply_cb			},
 		{ A_REPLY_SENDER,		toolbar_reply_to_sender_cb	},
 		{ A_REPLY_ALL,			toolbar_reply_to_all_cb		},
@@ -2006,7 +1897,6 @@ static void toolbar_buttons_cb(GtkWidget   *widget,
 		{ A_UNREAD,				toolbar_unread_cb			},
 		{ A_RUN_PROCESSING,		toolbar_run_processing_cb	},
 		{ A_PRINT,				toolbar_print_cb			},
-		{ A_LEARN_SPAM,			toolbar_learn_cb			},
 		{ A_DELETE_DUP,			toolbar_delete_dup_cb		},
 		{ A_GO_FOLDERS,			toolbar_go_folders_cb		},
 
@@ -2116,15 +2006,6 @@ static void toolbar_delete_dup_menu_cb(GtkWidget *widget, gpointer data)
 	toolbar_delete_dup(toolbar_item, GPOINTER_TO_INT(int_value));
 }
 
-static void toolbar_learn_menu_cb(GtkWidget *widget, gpointer data)
-{
-	gpointer int_value = g_object_get_data(G_OBJECT(widget), "int-value");
-	ToolbarItem *toolbar_item = (ToolbarItem *)data;
-
-	toolbar_learn(toolbar_item, GPOINTER_TO_INT(int_value));
-}
-
-
 /**
  * Create a new toolbar with specified type
  * if a callback list is passed it will be used before the
@@ -2139,7 +2020,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 	GtkWidget *toolbar;
 	GtkWidget *icon_wid = NULL;
 	GtkWidget *icon_news;
-	GtkWidget *icon_ham;
 	GtkWidget *item;
 	ToolbarClawsActions *action_item;
 	GSList *cur;
@@ -2218,27 +2098,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			toolbar_data->compose_mail_btn = item;
 			toolbar_data->compose_mail_icon = icon_wid;
 			g_object_ref_sink(toolbar_data->compose_mail_icon);
-
-			icon_news = stock_pixmap_widget(STOCK_PIXMAP_NEWS_COMPOSE);
-			toolbar_data->compose_news_icon = icon_news;
-			g_object_ref_sink(toolbar_data->compose_news_icon);
-			break;
-		case A_LEARN_SPAM:
-			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
-				_("Spam"),
-				_("Learn as..."));
-			toolbar_data->learn_spam_btn = item;
-			toolbar_data->learn_spam_icon = icon_wid;
-			g_object_ref_sink(toolbar_data->learn_spam_icon);
-
-			icon_ham = stock_pixmap_widget(STOCK_PIXMAP_HAM_BTN);
-			toolbar_data->learn_ham_icon = icon_ham;
-			g_object_ref_sink(toolbar_data->learn_ham_icon);
-
-			menu = gtk_menu_new();
-			ADD_MENU_ITEM(_("Learn as _Spam"), toolbar_learn_menu_cb, TRUE);
-			ADD_MENU_ITEM(_("Learn as _Ham"), toolbar_learn_menu_cb, FALSE);
-			gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolbar_data->learn_spam_btn), menu);
 			break;
 		case A_DELETE_DUP:
 			TOOLBAR_MENUITEM(item,icon_wid,toolbar_item->text,
@@ -2429,9 +2288,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 					prefs_common.toolbar_style,
 					toolbar_data->compose_btn_type);
 	}
-	if (type != TOOLBAR_COMPOSE)
-		activate_learn_button(toolbar_data, prefs_common.toolbar_style,
-				LEARN_SPAM);
 
 	gtk_container_add(GTK_CONTAINER(container), toolbar);
 	gtk_container_set_border_width(GTK_CONTAINER(container), 0);
@@ -2449,9 +2305,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 void toolbar_destroy(Toolbar * toolbar)
 {
 	UNREF_ICON(compose_mail_icon);
-	UNREF_ICON(compose_news_icon);
-	UNREF_ICON(learn_spam_icon);
-	UNREF_ICON(learn_ham_icon);
 	TOOLBAR_DESTROY_ITEMS(toolbar->item_list);
 	TOOLBAR_DESTROY_ACTIONS(toolbar->action_list);
 }
@@ -2617,10 +2470,6 @@ do { \
 		SET_WIDGET_COND(toolbar->exec_btn,
 			M_DELAY_EXEC);
 
-	if (toolbar->learn_spam_btn)
-		SET_WIDGET_COND(toolbar->learn_spam_btn,
-			M_TARGET_EXIST, M_CAN_LEARN_SPAM, M_SUMMARY_ISLIST);
-
 	if (toolbar->cancel_inc_btn)
 		SET_WIDGET_COND(toolbar->cancel_inc_btn,
 				M_INC_ACTIVE);
@@ -2733,7 +2582,6 @@ static void toolbar_init(Toolbar * toolbar)
 	toolbar->send_btn          = NULL;
 	toolbar->compose_mail_btn  = NULL;
 	toolbar->compose_mail_icon = NULL;
-	toolbar->compose_news_icon = NULL;
 	toolbar->reply_btn         = NULL;
 	toolbar->replysender_btn   = NULL;
 	toolbar->replyall_btn      = NULL;
@@ -2746,9 +2594,6 @@ static void toolbar_init(Toolbar * toolbar)
 	toolbar->next_btn          = NULL;
 	toolbar->exec_btn          = NULL;
 	toolbar->separator         = NULL;
-	toolbar->learn_spam_btn    = NULL;
-	toolbar->learn_spam_icon   = NULL;
-	toolbar->learn_ham_icon    = NULL;
 	toolbar->cancel_inc_btn    = NULL;
 	toolbar->cancel_send_btn   = NULL;
 	toolbar->cancel_all_btn    = NULL;
@@ -2928,9 +2773,4 @@ void compose_mail_cb(gpointer data, guint action, GtkWidget *widget)
 		compose_new_with_folderitem(ac, item, NULL);
 		return;
 	}
-}
-
-void compose_news_cb(gpointer data, guint action, GtkWidget *widget)
-{
-	fprintf(stderr, "TODO(otl): remove this\n");
 }

@@ -206,10 +206,6 @@ static void mark_all_read_cb		(GtkAction	*action,
 				  gpointer	 data);
 static void mark_all_unread_cb		(GtkAction	*action,
 				  gpointer	 data);
-static void mark_as_spam_cb		(GtkAction	*action,
-				  gpointer	 data);
-static void mark_as_ham_cb		(GtkAction	*action,
-				  gpointer	 data);
 
 static void ignore_thread_cb		(GtkAction	*action,
 				  gpointer	 data);
@@ -615,11 +611,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Message/Marks/UnignoreThread",             NULL, N_("Unignore thread"), NULL, NULL, G_CALLBACK(unignore_thread_cb) },
 	{"Message/Marks/WatchThread",                NULL, N_("Watch thread"), NULL, NULL, G_CALLBACK(watch_thread_cb) },
 	{"Message/Marks/UnwatchThread",              NULL, N_("Unwatch thread"), NULL, NULL, G_CALLBACK(unwatch_thread_cb) },
-	/* separation */
-
-	{"Message/Marks/MarkSpam",                   NULL, N_("Mark as _spam"), NULL, NULL, G_CALLBACK(mark_as_spam_cb) },
-	{"Message/Marks/MarkHam",                    NULL, N_("Mark as _ham"), NULL, NULL, G_CALLBACK(mark_as_ham_cb) },
-	/* separation */
 
 	{"Message/Marks/Lock",                       NULL, N_("Lock"), NULL, NULL, G_CALLBACK(lock_msgs_cb) },
 	{"Message/Marks/Unlock",                     NULL, N_("Unlock"), NULL, NULL, G_CALLBACK(unlock_msgs_cb) },
@@ -1247,8 +1238,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "WatchThread", "Message/Marks/WatchThread", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "UnwatchThread", "Message/Marks/UnwatchThread", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "Separator4", "Message/Marks/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "MarkSpam", "Message/Marks/MarkSpam", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "MarkHam", "Message/Marks/MarkHam", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "Separator5", "Message/Marks/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "Lock", "Message/Marks/Lock", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message/Marks", "Unlock", "Message/Marks/Unlock", GTK_UI_MANAGER_MENUITEM)
@@ -1325,9 +1314,6 @@ MainWindow *main_window_create()
 	mainwin->toolbar = toolbar_create(TOOLBAR_MAIN,
 					  handlebox,
 					  (gpointer)mainwin);
-	toolbar_set_learn_button
-		(mainwin->toolbar,
-		 LEARN_SPAM);
 
 	/* vbox that contains body */
 	vbox_body = gtk_box_new(GTK_ORIENTATION_VERTICAL, BORDER_WIDTH);
@@ -2268,13 +2254,6 @@ SensitiveCondMask main_window_get_current_state(MainWindow *mainwin)
 		}
 	}
 
-	if (procmsg_spam_can_learn() &&
-	    (mainwin->summaryview->folder_item &&
-	     mainwin->summaryview->folder_item->folder->klass->type != F_UNKNOWN &&
-	     mainwin->summaryview->folder_item->folder->klass->type != F_NEWS)) {
-		UPDATE_STATE(M_CAN_LEARN_SPAM);
-	}
-
 	if (mainwin->summaryview->folder_item) {
 		UPDATE_STATE(M_FOLDER_SELECTED);
 	}
@@ -2414,8 +2393,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	SET_SENSITIVE("Menu/Message/DeleteThread", M_TARGET_EXIST, M_SUMMARY_ISLIST);
 	SET_SENSITIVE("Menu/Message/CancelNews", M_TARGET_EXIST, M_ALLOW_DELETE, M_NEWS);
 	SET_SENSITIVE("Menu/Message/Marks", M_TARGET_EXIST, M_SUMMARY_ISLIST);
-	SET_SENSITIVE("Menu/Message/Marks/MarkSpam", M_TARGET_EXIST, M_CAN_LEARN_SPAM);
-	SET_SENSITIVE("Menu/Message/Marks/MarkHam", M_TARGET_EXIST, M_CAN_LEARN_SPAM);
 	SET_SENSITIVE("Menu/Message/Marks/IgnoreThread", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/Message/Marks/UnignoreThread", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/Message/Marks/Lock", M_TARGET_EXIST);
@@ -3505,18 +3482,6 @@ static void mark_all_unread_cb(GtkAction *action, gpointer data)
 	summary_mark_all_unread(mainwin->summaryview, TRUE);
 }
 
-static void mark_as_spam_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	summary_mark_as_spam(mainwin->summaryview, TRUE, NULL);
-}
-
-static void mark_as_ham_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	summary_mark_as_spam(mainwin->summaryview, FALSE, NULL);
-}
-
 static void ignore_thread_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
@@ -4203,11 +4168,6 @@ static void forget_session_passwords_cb(GtkAction *action, gpointer data)
 	alertpanel_notice(ngettext("Forgotten %d password in %d accounts.\n",
 				   "Forgotten %d passwords in %d accounts.\n",
 				   fgtn), fgtn, accs);
-}
-
-void mainwindow_learn (MainWindow *mainwin, gboolean is_spam)
-{
-	summary_mark_as_spam(mainwin->summaryview, is_spam, NULL);
 }
 
 void mainwindow_jump_to(const gchar *target, gboolean popup)

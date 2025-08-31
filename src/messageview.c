@@ -140,9 +140,6 @@ static void compose_cb			(GtkAction	*action,
 static void reply_cb			(GtkAction	*action,
 					 gpointer	 data);
 
-static PrefsAccount *select_account_from_list
-					(GList		*ac_list,
-					 gboolean	 has_accounts);
 static void addressbook_open_cb		(GtkAction	*action,
 					 gpointer	 data);
 static void add_address_cb		(GtkAction	*action,
@@ -882,30 +879,6 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 		return 0;
 	}
 
-	if (messageview->toolbar)
-		toolbar_set_learn_button
-			(messageview->toolbar,
-			 MSG_IS_SPAM(msginfo->flags)?LEARN_HAM:LEARN_SPAM);
-	else
-		toolbar_set_learn_button
-			(messageview->mainwin->toolbar,
-			 MSG_IS_SPAM(msginfo->flags)?LEARN_HAM:LEARN_SPAM);
-
-	if (messageview->toolbar) {
-		if (messageview->toolbar->learn_spam_btn) {
-			gboolean can_learn = FALSE;
-			if (procmsg_spam_can_learn() &&
-			    (msginfo->folder &&
-			     msginfo->folder->folder->klass->type != F_UNKNOWN &&
-			     msginfo->folder->folder->klass->type != F_NEWS))
-				can_learn = TRUE;
-
-			gtk_widget_set_sensitive(
-				messageview->toolbar->learn_spam_btn,
-				can_learn);
-		}
-	}
-
 	noticeview_hide(messageview->noticeview);
 	mimeview_clear(messageview->mimeview);
 	messageview->updating = TRUE;
@@ -1364,59 +1337,6 @@ static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event,
 	return FALSE;
 }
 
-static void select_account_cb(GtkWidget *w, gpointer data)
-{
-	*(gint*)data = combobox_get_active_data(GTK_COMBO_BOX(w));
-}
-
-static PrefsAccount *select_account_from_list(GList *ac_list, gboolean has_accounts)
-{
-	GtkWidget *optmenu;
-	gint account_id;
-	AlertValue val;
-
-	cm_return_val_if_fail(ac_list != NULL, NULL);
-	cm_return_val_if_fail(ac_list->data != NULL, NULL);
-
-	optmenu = gtkut_account_menu_new(ac_list,
-			G_CALLBACK(select_account_cb),
-			&account_id);
-	if (!optmenu)
-		return NULL;
-	account_id = ((PrefsAccount *) ac_list->data)->account_id;
-	if (!has_accounts) {
-		gchar *tr;
-		gchar *text;
-		tr = g_strdup(C_("'%s' stands for 'To' then 'Cc'",
-		    "This message is asking for a return receipt notification\n"
-		    "but according to its '%s' and '%s' headers it was not\n"
-		    "officially addressed to you.\n"
-		    "It is advised to not send the return receipt."));
-		text = g_strdup_printf(tr,
-		  prefs_common_translated_header_name("To"),
-		  prefs_common_translated_header_name("Cc"));
-		val = alertpanel_with_widget(
-				_("Return Receipt Notification"),
-				text, NULL, _("_Cancel"), NULL, _("_Send Notification"),
-				NULL, NULL, ALERTFOCUS_FIRST, FALSE, optmenu);
-		g_free(tr);
-		g_free(text);
-	} else
-		val = alertpanel_with_widget(
-				_("Return Receipt Notification"),
-				_("More than one of your accounts uses the "
-				 "address that this message was sent to.\n"
-				 "Please choose which account you want to "
-				 "use for sending the receipt notification:"),
-				NULL, _("_Cancel"), NULL, _("_Send Notification"),
-				NULL, NULL, ALERTFOCUS_FIRST, FALSE, optmenu);
-
-	if (val != G_ALERTALTERNATE)
-		return NULL;
-	else
-		return account_find_from_id(account_id);
-}
-
 /*
  * \brief return selected messageview text, when nothing is
  * 	  selected and message was filtered, return complete text
@@ -1572,8 +1492,7 @@ static void print_mimeview(MimeView *mimeview, gint sel_start, gint sel_end, gin
 	if (!mimeview
 	||  !mimeview->textview
 	||  !mimeview->textview->text)
-		alertpanel_warning(_("Cannot print: the message doesn't "
-				     "contain text."));
+		alertpanel_warning("Cannot print: no message text");
 	else {
 		gtk_widget_realize(mimeview->textview->text);
 		if (partnum > 0) {
@@ -1591,8 +1510,7 @@ static void print_mimeview(MimeView *mimeview, gint sel_start, gint sel_end, gin
 				mimepart = mimeview_get_selected_part(mimeview);
 				if (mimepart == NULL
 				||  (mimepart->type != MIMETYPE_TEXT && mimepart->type != MIMETYPE_MESSAGE)) {
-					alertpanel_warning(_("Cannot print: the message doesn't "
-							     "contain text."));
+					alertpanel_warning(_("Cannot print: non-text MIME part"));
 					return;
 				}
 				mimeview_show_part_as_text(mimeview, mimepart);
@@ -2242,30 +2160,6 @@ void messageview_set_menu_sensitive(MessageView *messageview)
 	cm_menu_set_sensitive_full(messageview->ui_manager, "Menu/View/Goto/NextHistory", messageview_nav_has_next(messageview));
 
 	cm_menu_set_sensitive_full(messageview->ui_manager, "Menu/Message/CheckSignature", messageview->mimeview->signed_part);
-}
-
-void messageview_learn (MessageView *msgview, gboolean is_spam)
-{
-	if (is_spam) {
-		if (procmsg_spam_learner_learn(msgview->msginfo, NULL, TRUE) == 0)
-			procmsg_msginfo_set_flags(msgview->msginfo, MSG_SPAM, 0);
-		else
-			log_error(LOG_PROTOCOL, _("An error happened while learning.\n"));
-
-	} else {
-		if (procmsg_spam_learner_learn(msgview->msginfo, NULL, FALSE) == 0)
-			procmsg_msginfo_unset_flags(msgview->msginfo, MSG_SPAM, 0);
-		else
-			log_error(LOG_PROTOCOL, _("An error happened while learning.\n"));
-	}
-	if (msgview->toolbar)
-		toolbar_set_learn_button
-			(msgview->toolbar,
-			 MSG_IS_SPAM(msgview->msginfo->flags)?LEARN_HAM:LEARN_SPAM);
-	else
-		toolbar_set_learn_button
-			(msgview->mainwin->toolbar,
-			 MSG_IS_SPAM(msgview->msginfo->flags)?LEARN_HAM:LEARN_SPAM);
 }
 
 static void save_part_as_cb(GtkAction *action, gpointer data)

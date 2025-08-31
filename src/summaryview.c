@@ -658,9 +658,6 @@ SummaryView *summary_create(MainWindow *mainwin)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "WatchThread", "Message/Marks/WatchThread", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "UnwatchThread", "Message/Marks/UnwatchThread", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "Separator4", "Message/Marks/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "MarkSpam", "Message/Marks/MarkSpam", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "MarkHam", "Message/Marks/MarkHam", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "Separator5", "Message/Marks/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "Lock", "Message/Marks/Lock", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/Marks", "Unlock", "Message/Marks/Unlock", GTK_UI_MANAGER_MENUITEM)
 
@@ -1625,8 +1622,6 @@ void summary_set_menu_sensitive(SummaryView *summaryview)
 	SET_SENSITIVE("Menus/SummaryViewPopup/Marks/UnwatchThread", M_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Marks/Lock", M_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/Marks/Unlock", M_TARGET_EXIST);
-	SET_SENSITIVE("Menus/SummaryViewPopup/Marks/MarkSpam", M_TARGET_EXIST, M_CAN_LEARN_SPAM);
-	SET_SENSITIVE("Menus/SummaryViewPopup/Marks/MarkHam", M_TARGET_EXIST, M_CAN_LEARN_SPAM);
 
 	SET_SENSITIVE("Menus/SummaryViewPopup/View", M_SINGLE_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/View/OpenNewWindow", M_SINGLE_TARGET_EXIST);
@@ -3901,73 +3896,6 @@ void summary_mark_all_unread(SummaryView *summaryview, gboolean ask_if_needed)
 	summary_status_show(summaryview);
 }
 
-void summary_mark_as_spam(SummaryView *summaryview, guint action, GtkWidget *widget)
-{
-	GtkCMCTree *ctree = GTK_CMCTREE(summaryview->ctree);
-	GList *cur;
-	gboolean is_spam = action;
-	GSList *msgs = NULL;
-	gboolean immediate_exec = prefs_common.immediate_exec;
-	gboolean moved = FALSE;
-	gboolean froze = FALSE;
-
-
-	if (summary_is_locked(summaryview))
-		return;
-
-	prefs_common.immediate_exec = FALSE;
-	START_LONG_OPERATION(summaryview, FALSE);
-	folder_item_set_batch(summaryview->folder_item, TRUE);
-	for (cur = GTK_CMCLIST(ctree)->selection; cur != NULL && cur->data != NULL; cur = cur->next) {
-		GtkCMCTreeNode *row = GTK_CMCTREE_NODE(cur->data);
-		MsgInfo *msginfo = gtk_cmctree_node_get_row_data(ctree, row);
-		if (msginfo)
-			msgs = g_slist_prepend(msgs, msginfo);
-	}
-
-	if (procmsg_spam_learner_learn(NULL, msgs, is_spam) == 0) {
-		for (cur = GTK_CMCLIST(ctree)->selection; cur != NULL && cur->data != NULL; cur = cur->next) {
-			GtkCMCTreeNode *row = GTK_CMCTREE_NODE(cur->data);
-			MsgInfo *msginfo = gtk_cmctree_node_get_row_data(ctree, row);
-			if (!msginfo)
-				continue;
-			if (is_spam) {
-				summary_msginfo_change_flags(msginfo, MSG_SPAM, 0, MSG_NEW|MSG_UNREAD, 0);
-				if (procmsg_spam_get_folder(msginfo) != summaryview->folder_item) {
-					summary_move_row_to(summaryview, row,
-							procmsg_spam_get_folder(msginfo));
-					moved = TRUE;
-				}
-			} else {
-				summary_msginfo_unset_flags(msginfo, MSG_SPAM, 0);
-			}
-			summaryview->display_msg = prefs_common.always_show_msg;
-
-			summary_set_row_marks(summaryview, row);
-		}
-	} else {
-		log_error(LOG_PROTOCOL, _("An error happened while learning.\n"));
-	}
-
-	prefs_common.immediate_exec = immediate_exec;
-	folder_item_set_batch(summaryview->folder_item, FALSE);
-	END_LONG_OPERATION(summaryview);
-
-	if (prefs_common.immediate_exec && moved) {
-		summary_execute(summaryview);
-	}
-
-	if (!moved && msgs) {
-		MsgInfo *msginfo = (MsgInfo *)msgs->data;
-		toolbar_set_learn_button
-			(summaryview->mainwin->toolbar,
-			 MSG_IS_SPAM(msginfo->flags)?LEARN_HAM:LEARN_SPAM);
-	}
-	g_slist_free(msgs);
-
-	summary_status_show(summaryview);
-}
-
 static gboolean check_permission(SummaryView *summaryview, MsgInfo * msginfo)
 {
 	GList * cur;
@@ -4080,7 +4008,6 @@ void summary_delete(SummaryView *summaryview)
 	GtkCMCTreeNode *sel_last = NULL;
 	GtkCMCTreeNode *node;
 	AlertValue aval;
-	MsgInfo *msginfo;
 	gboolean froze = FALSE;
 
 	if (!item) return;
@@ -4106,12 +4033,6 @@ void summary_delete(SummaryView *summaryview)
 			END_LONG_OPERATION(summaryview);
 			return;
 		}
-	}
-
-	for (cur = GTK_CMCLIST(ctree)->selection; cur != NULL && cur->data != NULL;
-	     cur = cur->next) {
-		GtkCMCTreeNode *row = GTK_CMCTREE_NODE(cur->data);
-		msginfo = gtk_cmctree_node_get_row_data(ctree, row);
 	}
 
 	main_window_cursor_wait(summaryview->mainwin);
@@ -6027,9 +5948,6 @@ static void summary_selected(GtkCMCTree *ctree, GtkCMCTreeNode *row,
 	cm_return_if_fail(msginfo != NULL);
 
 	main_create_mailing_list_menu (summaryview->mainwin, msginfo);
-	toolbar_set_learn_button
-		(summaryview->mainwin->toolbar,
-		 MSG_IS_SPAM(msginfo->flags)?LEARN_HAM:LEARN_SPAM);
 
 	switch (column < 0 ? column : summaryview->col_state[column].type) {
 	case S_COL_MARK:
@@ -6049,11 +5967,6 @@ static void summary_selected(GtkCMCTree *ctree, GtkCMCTreeNode *row,
 		if (MSG_IS_UNREAD(msginfo->flags)) {
 			summary_mark_row_as_read(summaryview, row);
 			summary_status_show(summaryview);
-		} else if (MSG_IS_SPAM(msginfo->flags)) {
-				if (procmsg_spam_learner_learn(msginfo, NULL, FALSE) == 0)
-					summary_msginfo_unset_flags(msginfo, MSG_SPAM, 0);
-				else
-					log_error(LOG_PROTOCOL, _("An error happened while learning.\n"));
 		} else if (!MSG_IS_REPLIED(msginfo->flags) &&
 			 !MSG_IS_FORWARDED(msginfo->flags)) {
 			marked_unread = TRUE;
@@ -6268,13 +6181,6 @@ static void summary_start_drag(GtkWidget *widget, gint button, GdkEvent *event,
 				 GDK_ACTION_MOVE|GDK_ACTION_COPY|GDK_ACTION_DEFAULT, button, event,
 				 -1, -1);
 	gtk_drag_set_icon_default(context);
-}
-
-static gboolean summary_return_to_list(void *data)
-{
-	SummaryView *summaryview = (SummaryView *)data;
-	mainwindow_enter_folder(summaryview->mainwin);
-	return FALSE;
 }
 
 static void summary_drag_end	   (GtkWidget	    *widget,
@@ -7053,8 +6959,6 @@ static gboolean summary_update_msg(gpointer source, gpointer data)
 
 void summary_update_unread(SummaryView *summaryview, FolderItem *removed_item)
 {
-	guint new, unread, unreadmarked, marked, total;
-	guint replied, forwarded, locked, ignored, watched;
 	static gboolean tips_initialized = FALSE;
 
 	if (!tips_initialized)

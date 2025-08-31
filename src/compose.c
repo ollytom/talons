@@ -2261,9 +2261,6 @@ void compose_entry_append(Compose *compose, const gchar *address,
 	case COMPOSE_REPLYTO:
 		header = N_("Reply-To:");
 		break;
-	case COMPOSE_NEWSGROUPS:
-		header = N_("Newsgroups:");
-		break;
 	case COMPOSE_FOLLOWUPTO:
 		header = N_( "Followup-To:");
 		break;
@@ -6487,8 +6484,6 @@ static void compose_create_header_entry(Compose *compose)
 			COMPOSE_CC);
 	COMBOBOX_ADD(model, prefs_common_translated_header_name("Bcc:"),
 			COMPOSE_BCC);
-	COMBOBOX_ADD(model, prefs_common_translated_header_name("Newsgroups:"),
-			COMPOSE_NEWSGROUPS);
 	COMBOBOX_ADD(model, prefs_common_translated_header_name("Reply-To:"),
 			COMPOSE_REPLYTO);
 	COMBOBOX_ADD(model, prefs_common_translated_header_name("Followup-To:"),
