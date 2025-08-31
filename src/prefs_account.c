@@ -169,7 +169,6 @@ typedef struct ReceivePage
 	GtkWidget *imapdir_label;
 	GtkWidget *imapdir_entry;
 	GtkWidget *subsonly_checkbtn;
-	GtkWidget *low_bandwidth_checkbtn;
 	GtkWidget *imap_batch_size_spinbtn;
 
 	GtkWidget *autochk_checkbtn;
@@ -453,9 +452,6 @@ static PrefParam basic_param[] = {
 };
 
 static PrefParam receive_param[] = {
-	{"use_apop_auth", "FALSE", &tmp_ac_prefs.use_apop_auth, P_BOOL,
-	 NULL, NULL}, /* deprecated */
-
 	{"use_pop_auth", "FALSE", &tmp_ac_prefs.use_pop_auth, P_BOOL,
 	 &receive_page.pop_auth_checkbtn,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
@@ -496,10 +492,6 @@ static PrefParam receive_param[] = {
 
 	{"imap_subsonly", "TRUE", &tmp_ac_prefs.imap_subsonly, P_BOOL,
 	 &receive_page.subsonly_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"low_bandwidth", "FALSE", &tmp_ac_prefs.low_bandwidth, P_BOOL,
-	 &receive_page.low_bandwidth_checkbtn,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
 
 	{"imap_batch_size", "500", &tmp_ac_prefs.imap_batch_size, P_INT,
@@ -1294,7 +1286,6 @@ static void receive_create_widget_func(PrefsPage * _page,
  	GtkWidget *imapdir_label;
 	GtkWidget *imapdir_entry;
 	GtkWidget *subsonly_checkbtn;
-	GtkWidget *low_bandwidth_checkbtn;
 	GtkWidget *imap_batch_size_spinbtn;
 	GtkWidget *local_frame;
 	GtkWidget *local_vbox;
@@ -1507,11 +1498,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 	gtk_widget_show (hbox1);
 	gtk_box_pack_start (GTK_BOX (vbox2), hbox1, FALSE, FALSE, 4);
 
-	PACK_CHECK_BUTTON (hbox1, low_bandwidth_checkbtn,
-			   _("Bandwidth-efficient mode (prevents retrieving remote tags)"));
-	CLAWS_SET_TIP(low_bandwidth_checkbtn,
-			     _("This mode uses less bandwidth, but can be slower with some servers."));
-
 	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox1);
 	gtk_box_pack_start (GTK_BOX (vbox2), hbox1, FALSE, FALSE, 4);
@@ -1609,7 +1595,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 	page->imapdir_label		= imapdir_label;
 	page->imapdir_entry		= imapdir_entry;
 	page->subsonly_checkbtn		= subsonly_checkbtn;
-	page->low_bandwidth_checkbtn	= low_bandwidth_checkbtn;
 	page->imap_batch_size_spinbtn	= imap_batch_size_spinbtn;
 	page->local_frame		= local_frame;
 	page->local_inbox_label	= local_inbox_label;
@@ -4712,7 +4697,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(receive_page.imapdir_label);
 		gtk_widget_hide(receive_page.imapdir_entry);
 		gtk_widget_hide(receive_page.subsonly_checkbtn);
-		gtk_widget_hide(receive_page.low_bandwidth_checkbtn);
 		gtk_widget_hide(receive_page.imap_batch_size_spinbtn);
 		break;
 	case A_IMAP4:
@@ -4776,7 +4760,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_show(receive_page.imapdir_label);
 		gtk_widget_show(receive_page.imapdir_entry);
 		gtk_widget_show(receive_page.subsonly_checkbtn);
-		gtk_widget_show(receive_page.low_bandwidth_checkbtn);
 		gtk_widget_show(receive_page.imap_batch_size_spinbtn);
 		break;
 	case A_NONE:
@@ -4835,7 +4818,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(receive_page.imapdir_label);
 		gtk_widget_hide(receive_page.imapdir_entry);
 		gtk_widget_hide(receive_page.subsonly_checkbtn);
-		gtk_widget_hide(receive_page.low_bandwidth_checkbtn);
 		gtk_widget_hide(receive_page.imap_batch_size_spinbtn);
 		break;
 	case A_POP3:
@@ -4899,7 +4881,6 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_widget_hide(receive_page.imapdir_label);
 		gtk_widget_hide(receive_page.imapdir_entry);
 		gtk_widget_hide(receive_page.subsonly_checkbtn);
-		gtk_widget_hide(receive_page.low_bandwidth_checkbtn);
 		gtk_widget_hide(receive_page.imap_batch_size_spinbtn);
 		break;
 	}

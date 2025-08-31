@@ -1010,7 +1010,6 @@ static void account_clone(GtkWidget *widget, gpointer data)
 
         ACP_FDUP(imap_dir);
 	ACP_FASSIGN(imap_subsonly);
-	ACP_FASSIGN(low_bandwidth);
 
         ACP_FASSIGN(set_sent_folder);
         ACP_FDUP(sent_folder);

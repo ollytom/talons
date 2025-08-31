@@ -4402,11 +4402,6 @@ static gint get_list_of_uids(IMAPSession *session, Folder *folder, IMAPFolderIte
 
 	uidlist = NULL;
 
-	if (folder->account && folder->account->low_bandwidth) {
-		r = imap_threaded_search(folder, IMAP_SEARCH_TYPE_SIMPLE,
-				NULL, NULL, NULL, &lep_uidlist);
-	}
-
 	if (r == MAILIMAP_NO_ERROR) {
 		uidlist = imap_uid_list_from_lep(lep_uidlist, NULL);
 		mailimap_search_result_free(lep_uidlist);
@@ -5038,122 +5033,15 @@ static /*gint*/ void *imap_get_flags_thread(void *data)
 		seq_list = g_slist_append(NULL, set);
 	}
 
-	if (folder->account && folder->account->low_bandwidth) {
-		for (cur = seq_list; cur != NULL; cur = g_slist_next(cur)) {
-			struct mailimap_set * imapset;
-			clist * lep_uidlist;
-			int r;
-
-			imapset = cur->data;
-			if (reverse_seen) {
-				r = imap_threaded_search(folder, IMAP_SEARCH_TYPE_SEEN, NULL,
-							 NULL, full_search ? NULL:imapset, &lep_uidlist);
-			}
-			else {
-				r = imap_threaded_search(folder,
-							 IMAP_SEARCH_TYPE_UNSEEN, NULL,
-							 NULL, full_search ? NULL:imapset, &lep_uidlist);
-			}
-			if (r == MAILIMAP_NO_ERROR) {
-				GSList * uidlist;
-
-				uidlist = imap_uid_list_from_lep(lep_uidlist, NULL);
-				mailimap_search_result_free(lep_uidlist);
-
-				unseen = g_slist_concat(unseen, uidlist);
-			} else {
-				imap_handle_error(SESSION(session), NULL, r);
-				goto bail;
-			}
-
-			r = imap_threaded_search(folder, IMAP_SEARCH_TYPE_FLAGGED, NULL,
-						 NULL, full_search ? NULL:imapset, &lep_uidlist);
-			if (r == MAILIMAP_NO_ERROR) {
-				GSList * uidlist;
-
-				uidlist = imap_uid_list_from_lep(lep_uidlist, NULL);
-				mailimap_search_result_free(lep_uidlist);
-
-				flagged = g_slist_concat(flagged, uidlist);
-			} else {
-				imap_handle_error(SESSION(session), NULL, r);
-				goto bail;
-			}
-
-			if (fitem->opened || fitem->processing_pending || fitem == folder->inbox) {
-				r = imap_threaded_search(folder, IMAP_SEARCH_TYPE_ANSWERED, NULL,
-							 NULL, full_search ? NULL:imapset, &lep_uidlist);
-				if (r == MAILIMAP_NO_ERROR) {
-					GSList * uidlist;
-
-					uidlist = imap_uid_list_from_lep(lep_uidlist, NULL);
-					mailimap_search_result_free(lep_uidlist);
-
-					answered = g_slist_concat(answered, uidlist);
-				} else {
-					imap_handle_error(SESSION(session), NULL, r);
-					goto bail;
-				}
-
-				if (flag_ok(IMAP_FOLDER_ITEM(fitem), IMAP_FLAG_FORWARDED)) {
-					r = imap_threaded_search(folder, IMAP_SEARCH_TYPE_FORWARDED, NULL,
-								 NULL, full_search ? NULL:imapset, &lep_uidlist);
-					if (r == MAILIMAP_NO_ERROR) {
-						GSList * uidlist;
-
-						uidlist = imap_uid_list_from_lep(lep_uidlist, NULL);
-						mailimap_search_result_free(lep_uidlist);
-
-						forwarded = g_slist_concat(forwarded, uidlist);
-					} else {
-						imap_handle_error(SESSION(session), NULL, r);
-						goto bail;
-					}
-				}
-
-				if (flag_ok(IMAP_FOLDER_ITEM(fitem), IMAP_FLAG_SPAM)) {
-					r = imap_threaded_search(folder, IMAP_SEARCH_TYPE_SPAM, NULL,
-								 NULL, full_search ? NULL:imapset, &lep_uidlist);
-					if (r == MAILIMAP_NO_ERROR) {
-						GSList * uidlist;
-
-						uidlist = imap_uid_list_from_lep(lep_uidlist, NULL);
-						mailimap_search_result_free(lep_uidlist);
-
-						spam = g_slist_concat(spam, uidlist);
-					} else {
-						imap_handle_error(SESSION(session), NULL, r);
-						goto bail;
-					}
-				}
-
-				r = imap_threaded_search(folder, IMAP_SEARCH_TYPE_DELETED, NULL,
-							 NULL, full_search ? NULL:imapset, &lep_uidlist);
-				if (r == MAILIMAP_NO_ERROR) {
-					GSList * uidlist;
-
-					uidlist = imap_uid_list_from_lep(lep_uidlist, NULL);
-					mailimap_search_result_free(lep_uidlist);
-
-					deleted = g_slist_concat(deleted, uidlist);
-				} else {
-					imap_handle_error(SESSION(session), NULL, r);
-					goto bail;
-				}
-			}
-		}
-
+	r = imap_threaded_fetch_uid_flags(folder, 1, &lep_uidtab);
+	if (r == MAILIMAP_NO_ERROR) {
+		flags_hash = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
+		tags_hash = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
+		imap_flags_hash_from_lep_uid_flags_tab(lep_uidtab, flags_hash, tags_hash);
+		imap_fetch_uid_flags_list_free(lep_uidtab);
 	} else {
-		r = imap_threaded_fetch_uid_flags(folder, 1, &lep_uidtab);
-		if (r == MAILIMAP_NO_ERROR) {
-			flags_hash = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
-			tags_hash = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
-			imap_flags_hash_from_lep_uid_flags_tab(lep_uidtab, flags_hash, tags_hash);
-			imap_fetch_uid_flags_list_free(lep_uidtab);
-		} else {
-			imap_handle_error(SESSION(session), NULL, r);
-			goto bail;
-		}
+		imap_handle_error(SESSION(session), NULL, r);
+		goto bail;
 	}
 
 bail:
@@ -5170,58 +5058,16 @@ bail:
 		wasnew = (flags & MSG_NEW);
 		oldflags = flags & ~(MSG_NEW|MSG_UNREAD|MSG_REPLIED|MSG_FORWARDED|MSG_MARKED|MSG_DELETED|MSG_SPAM);
 
-		if (folder->account && folder->account->low_bandwidth) {
-			if (fitem->opened || fitem->processing_pending || fitem == folder->inbox) {
-				flags &= ~((reverse_seen ? 0 : MSG_UNREAD | MSG_NEW) | MSG_REPLIED | MSG_FORWARDED | MSG_MARKED | MSG_SPAM);
-			} else {
-				flags &= ~((reverse_seen ? 0 : MSG_UNREAD | MSG_NEW | MSG_MARKED));
-			}
-			if (reverse_seen)
-				flags |= MSG_UNREAD | (wasnew ? MSG_NEW : 0);
-			if (gslist_find_next_num(&unseen, msginfo->msgnum) == msginfo->msgnum) {
-				if (!reverse_seen) {
-					flags |= MSG_UNREAD | (wasnew ? MSG_NEW : 0);
-				} else {
-					flags &= ~(MSG_UNREAD | MSG_NEW);
-				}
-			}
-
-			if (gslist_find_next_num(&flagged, msginfo->msgnum) == msginfo->msgnum)
-				flags |= MSG_MARKED;
-			else
-				flags &= ~MSG_MARKED;
-
-			if (fitem->opened || fitem->processing_pending || fitem == folder->inbox) {
-				if (gslist_find_next_num(&answered, msginfo->msgnum) == msginfo->msgnum)
-					flags |= MSG_REPLIED;
-				else
-					flags &= ~MSG_REPLIED;
-				if (gslist_find_next_num(&forwarded, msginfo->msgnum) == msginfo->msgnum)
-					flags |= MSG_FORWARDED;
-				else
-					flags &= ~MSG_FORWARDED;
-				if (gslist_find_next_num(&spam, msginfo->msgnum) == msginfo->msgnum)
-					flags |= MSG_SPAM;
-				else
-					flags &= ~MSG_SPAM;
-				if (gslist_find_next_num(&deleted, msginfo->msgnum) == msginfo->msgnum)
-					flags |= MSG_DELETED;
-				else
-					flags &= ~MSG_DELETED;
-			}
-		} else {
-			if (flags_hash != NULL) {
-
-				flags = GPOINTER_TO_INT(g_hash_table_lookup(flags_hash,
-						GINT_TO_POINTER(msginfo->msgnum)));
-			}
-
-			if ((flags & MSG_UNREAD) == 0)
-				flags &= ~MSG_NEW;
-			else if (wasnew)
-				flags |= MSG_NEW;
-			flags |= oldflags;
+		if (flags_hash != NULL) {
+			flags = GPOINTER_TO_INT(g_hash_table_lookup(flags_hash,
+					GINT_TO_POINTER(msginfo->msgnum)));
 		}
+
+		if ((flags & MSG_UNREAD) == 0)
+			flags &= ~MSG_NEW;
+		else if (wasnew)
+			flags |= MSG_NEW;
+		flags |= oldflags;
 
 		g_hash_table_insert(msgflags, msginfo, GINT_TO_POINTER(flags));
 	}

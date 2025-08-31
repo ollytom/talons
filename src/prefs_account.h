@@ -90,8 +90,7 @@ struct _PrefsAccount
 
 	/* Receive */
 	gboolean use_pop_auth;
-        POPAuthType pop_auth_type;
-	gboolean use_apop_auth; /* deprecated */
+	POPAuthType pop_auth_type;
 	gboolean rmmail;
 	gint msg_leave_time;
 	gint msg_leave_hour;
@@ -189,7 +188,6 @@ struct _PrefsAccount
 
 	gchar *imap_dir;
 	gboolean imap_subsonly;
-	gboolean low_bandwidth;
 
 	gboolean set_sent_folder;
 	gchar *sent_folder;
@@ -200,7 +198,6 @@ struct _PrefsAccount
 	gboolean set_trash_folder;
 	gchar *trash_folder;
 
-	/* Default or not */
 	gboolean is_default;
 	/* Unique account ID */
 	gint account_id;
