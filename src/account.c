@@ -976,13 +976,6 @@ static void account_clone(GtkWidget *widget, gpointer data)
         ACP_FDUP(auto_bcc);
         ACP_FASSIGN(set_autoreplyto);
         ACP_FDUP(auto_replyto);
-	ACP_FASSIGN(compose_with_format);
-	ACP_FDUP(compose_subject_format);
-	ACP_FDUP(compose_body_format);
-	ACP_FASSIGN(reply_with_format);
-	ACP_FDUP(reply_body_format);
-	ACP_FASSIGN(forward_with_format);
-	ACP_FDUP(forward_body_format);
 
         /* privacy */
 	ACP_FDUP(default_privacy_system);

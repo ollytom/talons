@@ -143,13 +143,6 @@ struct _PrefsAccount
 	gchar    *auto_bcc;
 	gboolean  set_autoreplyto;
 	gchar    *auto_replyto;
-	gboolean  compose_with_format;
-	gchar	 *compose_subject_format;
-	gchar	 *compose_body_format;
-	gboolean  reply_with_format;
-	gchar	 *reply_body_format;
-	gboolean  forward_with_format;
-	gchar	 *forward_body_format;
 
 	/* Privacy */
 	gchar	 *default_privacy_system;

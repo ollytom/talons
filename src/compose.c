@@ -886,10 +886,7 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 
 	compose_add_field_list( compose, listAddress );
 
-	if (account->compose_with_format) {
-		subject_format = account->compose_subject_format;
-		body_format = account->compose_body_format;
-	} else if (prefs_common.compose_with_format) {
+	if (prefs_common.compose_with_format) {
 		subject_format = prefs_common.compose_subject_format;
 		body_format = prefs_common.compose_body_format;
 	}
@@ -1382,9 +1379,7 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 		   enabled (even if empty). */
 		quote = TRUE;
 		body_fmt = "";
-		if (account->reply_with_format) {
-			body_fmt = account->reply_body_format;
-		} else if (prefs_common.quotefmt && *prefs_common.quotefmt) {
+		if (prefs_common.quotefmt && *prefs_common.quotefmt) {
 			body_fmt = gettext(prefs_common.quotefmt);
 		}
 	}
@@ -1530,9 +1525,7 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 			full_msginfo = procmsg_msginfo_copy(msginfo);
 
 		gchar *body_fmt = "";
-		if (account->forward_with_format) {
-			body_fmt = account->forward_body_format;
-		} else if (prefs_common.fw_quotefmt && *prefs_common.fw_quotefmt) {
+		if (prefs_common.fw_quotefmt && *prefs_common.fw_quotefmt) {
 			body_fmt = gettext(prefs_common.fw_quotefmt);
 		}
 

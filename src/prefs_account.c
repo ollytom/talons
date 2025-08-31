@@ -336,7 +336,6 @@ static SendPage send_page;
 static Oauth2Page oauth2_page;
 #endif
 static ComposePage compose_page;
-static TemplatesPage templates_page;
 static PrivacyPage privacy_page;
 #ifdef USE_GNUTLS
 static SSLPage ssl_page;
@@ -638,38 +637,6 @@ static PrefParam compose_param[] = {
 	{"auto_replyto", NULL, &tmp_ac_prefs.auto_replyto, P_STRING,
 	 &compose_page.autoreplyto_entry,
 	 prefs_set_data_from_entry, prefs_set_entry},
-
-	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
-};
-
-static PrefParam templates_param[] = {
-	{"compose_with_format", "FALSE", &tmp_ac_prefs.compose_with_format, P_BOOL,
-	 &templates_page.checkbtn_compose_with_format,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"compose_subject_format", NULL, &tmp_ac_prefs.compose_subject_format, P_STRING,
-	 &templates_page.compose_subject_format,
-	 prefs_set_escaped_data_from_entry, prefs_set_entry_from_escaped},
-
-	{"compose_body_format", NULL, &tmp_ac_prefs.compose_body_format, P_STRING,
-	 &templates_page.compose_body_format,
-	 prefs_set_escaped_data_from_text, prefs_set_text_from_escaped},
-
-	{"reply_with_format", "FALSE", &tmp_ac_prefs.reply_with_format, P_BOOL,
-	 &templates_page.checkbtn_reply_with_format,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"reply_body_format", NULL, &tmp_ac_prefs.reply_body_format, P_STRING,
-	 &templates_page.reply_body_format,
-	 prefs_set_escaped_data_from_text, prefs_set_text_from_escaped},
-
-	{"forward_with_format", "FALSE", &tmp_ac_prefs.forward_with_format, P_BOOL,
-	 &templates_page.checkbtn_forward_with_format,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"forward_body_format", NULL, &tmp_ac_prefs.forward_body_format, P_STRING,
-	 &templates_page.forward_body_format,
-	 prefs_set_escaped_data_from_text, prefs_set_text_from_escaped},
 
 	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
 };
@@ -2236,78 +2203,6 @@ static void compose_create_widget_func(PrefsPage * _page,
 	page->page.widget = vbox1;
 }
 
-static void templates_create_widget_func(PrefsPage * _page,
-                                           GtkWindow * window,
-                                           gpointer data)
-{
-	TemplatesPage *page = (TemplatesPage *) _page;
-	PrefsAccount *ac_prefs = (PrefsAccount *) data;
-	GtkWidget *vbox;
-	GtkWidget *vbox2;
-	GtkWidget *notebook;
-
-	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_widget_show(vbox);
-
-	notebook = gtk_notebook_new();
-	gtk_widget_show(notebook);
-	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-
-	/* compose format */
-	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	gtk_widget_show (vbox2);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox2), VBOX_BORDER);
-
-	quotefmt_create_new_msg_fmt_widgets(
-				window,
-				vbox2,
-				&page->checkbtn_compose_with_format,
-				NULL,
-				&page->compose_subject_format,
-				&page->compose_body_format,
-				TRUE, NULL);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(C_("Templates", "New")));
-
-	/* reply format */
-	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	gtk_widget_show (vbox2);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox2), VBOX_BORDER);
-
-	quotefmt_create_reply_fmt_widgets(
-				window,
-				vbox2,
-				&page->checkbtn_reply_with_format,
-				NULL,
-				&page->reply_body_format,
-				TRUE, NULL);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(C_("Templates", "Reply")));
-
-	/* forward format */
-	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	gtk_widget_show (vbox2);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox2), VBOX_BORDER);
-
-	quotefmt_create_forward_fmt_widgets(
-				window,
-				vbox2,
-				&page->checkbtn_forward_with_format,
-				NULL,
-				&page->forward_body_format,
-				TRUE, NULL);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(C_("Templates", "Forward")));
-
-	tmp_ac_prefs = *ac_prefs;
-
-	if (new_account) {
-		prefs_set_dialog_to_default(templates_param);
-	} else
-		prefs_set_dialog(templates_param);
-
-	page->vbox = vbox;
-
-	page->page.widget = vbox;
-}
-
 static void privacy_create_widget_func(PrefsPage * _page,
                                            GtkWindow * window,
                                            gpointer data)
@@ -3081,12 +2976,6 @@ static gint prefs_compose_apply(void)
 	return 0;
 }
 
-static gint prefs_templates_apply(void)
-{
-	prefs_set_data_from_dialog(templates_param);
-	return 0;
-}
-
 static gint prefs_privacy_apply(void)
 {
 	prefs_set_data_from_dialog(privacy_param);
@@ -3176,11 +3065,6 @@ static void compose_destroy_widget_func(PrefsPage *_page)
 	/* ComposePage *page = (ComposePage *) _page; */
 }
 
-static void templates_destroy_widget_func(PrefsPage *_page)
-{
-	/* TemplatesPage *page = (TemplatesPage *) _page; */
-}
-
 static void privacy_destroy_widget_func(PrefsPage *_page)
 {
 	/* PrivacyPage *page = (PrivacyPage *) _page; */
@@ -3248,16 +3132,6 @@ static gboolean compose_can_close_func(PrefsPage *_page)
 		return TRUE;
 
 	return prefs_compose_apply() >= 0;
-}
-
-static gboolean templates_can_close_func(PrefsPage *_page)
-{
-	TemplatesPage *page = (TemplatesPage *) _page;
-
-	if (!page->page.page_open)
-		return TRUE;
-
-	return prefs_templates_apply() >= 0;
 }
 
 static gboolean privacy_can_close_func(PrefsPage *_page)
@@ -3346,27 +3220,6 @@ static void compose_save_func(PrefsPage *_page)
 		return;
 
 	if (prefs_compose_apply() >= 0)
-		cancelled = FALSE;
-}
-
-static void templates_save_func(PrefsPage *_page)
-{
-	TemplatesPage *page = (TemplatesPage *) _page;
-
-	if (!page->page.page_open)
-		return;
-
-	quotefmt_check_new_msg_formats(tmp_ac_prefs.compose_with_format,
-									NULL,
-									tmp_ac_prefs.compose_subject_format,
-									tmp_ac_prefs.compose_body_format);
-	quotefmt_check_reply_formats(tmp_ac_prefs.reply_with_format,
-									NULL,
-									tmp_ac_prefs.reply_body_format);
-	quotefmt_check_forward_formats(tmp_ac_prefs.forward_with_format,
-									NULL,
-									tmp_ac_prefs.forward_body_format);
-	if (prefs_templates_apply() >= 0)
 		cancelled = FALSE;
 }
 
@@ -3497,24 +3350,6 @@ static void register_compose_page(void)
 	prefs_account_register_page((PrefsPage *) &compose_page);
 }
 
-static void register_templates_page(void)
-{
-	static gchar *path[3];
-
-	path[0] = _("Account");
-	path[1] = _("Templates");
-	path[2] = NULL;
-
-	templates_page.page.path = path;
-	templates_page.page.weight = 1000.0;
-	templates_page.page.create_widget = templates_create_widget_func;
-	templates_page.page.destroy_widget = templates_destroy_widget_func;
-	templates_page.page.save_page = templates_save_func;
-	templates_page.page.can_close = templates_can_close_func;
-
-	prefs_account_register_page((PrefsPage *) &templates_page);
-}
-
 static void register_privacy_page(void)
 {
 	static gchar *path[3];
@@ -3641,7 +3476,6 @@ void prefs_account_init()
 	register_receive_page();
 	register_send_page();
 	register_compose_page();
-	register_templates_page();
 	register_privacy_page();
 #ifdef USE_GNUTLS
 	register_ssl_page();
@@ -3665,7 +3499,6 @@ PrefsAccount *prefs_account_new(void)
 	prefs_set_default(send_param);
 	prefs_set_default(oauth2_param);
 	prefs_set_default(compose_param);
-	prefs_set_default(templates_param);
 	prefs_set_default(privacy_param);
 	prefs_set_default(ssl_param);
 	prefs_set_default(advanced_param);
@@ -3697,7 +3530,6 @@ PrefsAccount *prefs_account_new_from_config(const gchar *label)
 	prefs_set_default(send_param);
 	prefs_set_default(oauth2_param);
 	prefs_set_default(compose_param);
-	prefs_set_default(templates_param);
 	prefs_set_default(privacy_param);
 	prefs_set_default(ssl_param);
 	prefs_set_default(advanced_param);
@@ -3709,7 +3541,6 @@ PrefsAccount *prefs_account_new_from_config(const gchar *label)
 	prefs_read_config(send_param, label, rcpath, NULL);
 	prefs_read_config(oauth2_param, label, rcpath, NULL);
 	prefs_read_config(compose_param, label, rcpath, NULL);
-	prefs_read_config(templates_param, label, rcpath, NULL);
 	prefs_read_config(privacy_param, label, rcpath, NULL);
 	prefs_read_config(ssl_param, label, rcpath, NULL);
 	prefs_read_config(advanced_param, label, rcpath, NULL);
@@ -3847,7 +3678,6 @@ void prefs_account_write_config_all(GList *account_list)
 		WRITE_PARAM(send_param)
 		WRITE_PARAM(oauth2_param)
 		WRITE_PARAM(compose_param)
-		WRITE_PARAM(templates_param)
 		WRITE_PARAM(privacy_param)
 		WRITE_PARAM(ssl_param)
 		WRITE_PARAM(advanced_param)
@@ -3893,7 +3723,6 @@ void prefs_account_free(PrefsAccount *ac_prefs)
 	prefs_free(send_param);
 	prefs_free(oauth2_param);
 	prefs_free(compose_param);
-	prefs_free(templates_param);
 	prefs_free(privacy_param);
 	prefs_free(ssl_param);
 	prefs_free(advanced_param);

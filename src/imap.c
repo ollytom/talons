@@ -4384,7 +4384,7 @@ static gint get_list_of_uids(IMAPSession *session, Folder *folder, IMAPFolderIte
 {
 	GSList *uidlist, *elem;
 	int r = -1;
-	clist * lep_uidlist;
+	clist *lep_uidlist = NULL;
 	gint ok, nummsgs = 0;
 
 	if (session == NULL) {
@@ -4932,19 +4932,6 @@ static gint compare_msginfo(gconstpointer a, gconstpointer b)
 	return ((MsgInfo *)a)->msgnum - ((MsgInfo *)b)->msgnum;
 }
 
-static guint gslist_find_next_num(MsgNumberList **list, guint num)
-{
-	GSList *elem;
-
-	g_return_val_if_fail(list != NULL, -1);
-
-	for (elem = *list; elem != NULL; elem = g_slist_next(elem))
-		if (GPOINTER_TO_INT(elem->data) >= num)
-			break;
-	*list = elem;
-	return elem != NULL ? GPOINTER_TO_INT(elem->data) : (gint)-1;
-}
-
 static gboolean flag_ok(IMAPFolderItem *item, guint flag)
 {
 	if (item->ok_flags && g_slist_find(item->ok_flags, GUINT_TO_POINTER(flag))) {
@@ -4993,8 +4980,7 @@ static /*gint*/ void *imap_get_flags_thread(void *data)
 	gboolean full_search = stuff->full_search;
 	GSList *sorted_list = NULL;
 	GSList *unseen = NULL, *answered = NULL, *flagged = NULL, *deleted = NULL, *forwarded = NULL, *spam = NULL;
-	GSList *seq_list, *cur;
-	gboolean reverse_seen = FALSE;
+	GSList *seq_list;
 	gboolean selected_folder;
 	gint exists_cnt, unseen_cnt;
 
@@ -5015,13 +5001,6 @@ static /*gint*/ void *imap_get_flags_thread(void *data)
 			stuff->done = TRUE;
 			return GINT_TO_POINTER(-1);
 		}
-
-		if (unseen_cnt > exists_cnt / 2)
-			reverse_seen = TRUE;
-	}
-	else {
-		if (fitem->unread_msgs > fitem->total_msgs / 2)
-			reverse_seen = TRUE;
 	}
 
 	sorted_list = g_slist_sort(g_slist_copy(msginfo_list), compare_msginfo);
