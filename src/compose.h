@@ -199,8 +199,6 @@ struct _Compose
 
 	gboolean sending;
 
-	gboolean return_receipt;
-
 	gboolean batch;
 
 	GSList *to_list;

@@ -105,7 +105,6 @@ struct _FolderItemComposePage
 	GtkWidget *window;
 	GtkWidget *table;
 	GtkWidget *no_save_warning;
-	GtkWidget *checkbtn_request_return_receipt;
 	GtkWidget *checkbtn_save_copy_to_folder;
 	GtkWidget *checkbtn_default_from;
 	GtkWidget *entry_default_from;
@@ -125,7 +124,6 @@ struct _FolderItemComposePage
 	GtkWidget *always_encrypt;
 
 	/* apply to sub folders */
-	GtkWidget *request_return_receipt_rec_checkbtn;
 	GtkWidget *save_copy_to_folder_rec_checkbtn;
 	GtkWidget *default_from_rec_checkbtn;
 	GtkWidget *default_to_rec_checkbtn;
@@ -767,7 +765,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	GtkWidget *label;
 
 	GtkWidget *no_save_warning = NULL;
-	GtkWidget *checkbtn_request_return_receipt = NULL;
 	GtkWidget *checkbtn_save_copy_to_folder = NULL;
 	GtkWidget *checkbtn_default_from = NULL;
 	GtkWidget *entry_default_from = NULL;
@@ -789,7 +786,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	GtkListStore *always_sign_menu;
 	GtkWidget *always_encrypt;
 	GtkListStore *always_encrypt_menu;
-	GtkWidget *request_return_receipt_rec_checkbtn = NULL;
 	GtkWidget *save_copy_to_folder_rec_checkbtn = NULL;
 	GtkWidget *default_from_rec_checkbtn = NULL;
 	GtkWidget *default_to_rec_checkbtn = NULL;
@@ -1095,7 +1091,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	page->window = GTK_WIDGET(window);
 	page->table = table;
 	page->no_save_warning = no_save_warning;
-	page->checkbtn_request_return_receipt = checkbtn_request_return_receipt;
 	page->checkbtn_save_copy_to_folder = checkbtn_save_copy_to_folder;
 	page->checkbtn_default_from = checkbtn_default_from;
 	page->entry_default_from = entry_default_from;
@@ -1114,7 +1109,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	page->always_sign = always_sign;
 	page->always_encrypt = always_encrypt;
 
-	page->request_return_receipt_rec_checkbtn = request_return_receipt_rec_checkbtn;
 	page->save_copy_to_folder_rec_checkbtn	  = save_copy_to_folder_rec_checkbtn;
 	page->default_from_rec_checkbtn		  = default_from_rec_checkbtn;
 	page->default_to_rec_checkbtn		  = default_to_rec_checkbtn;
@@ -1167,13 +1161,6 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 	cm_return_if_fail(prefs != NULL);
 
 	if (item_protocol(folder)) {
-		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->request_return_receipt_rec_checkbtn))) {
-			prefs->request_return_receipt =
-				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_request_return_receipt));
-			/* MIGRATION */
-			folder->ret_rcpt = prefs->request_return_receipt;
-		}
-
 		if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->save_copy_to_folder_rec_checkbtn))) {
 			prefs->save_copy_to_folder =
 				gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_save_copy_to_folder));
@@ -1225,7 +1212,6 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 		}
 
 	} else {
-		prefs->request_return_receipt = FALSE;
 		prefs->save_copy_to_folder = FALSE;
 		prefs->enable_default_from = FALSE;
 		prefs->enable_default_to = FALSE;
@@ -1270,8 +1256,7 @@ static gboolean compose_save_recurse_func(GNode *node, gpointer data)
 	   check boxes are selected - and optimise the checking by only doing
 	   it once */
 	if ((node == page->item->node) &&
-	    !(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->request_return_receipt_rec_checkbtn)) ||
-	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->save_copy_to_folder_rec_checkbtn)) ||
+	    !(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->save_copy_to_folder_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_from_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_to_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_account_rec_checkbtn)) ||

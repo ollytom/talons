@@ -368,7 +368,6 @@ FolderItem *folder_item_new(Folder *folder, const gchar *name, const gchar *path
 	item->hide_read_threads = prefs_common.folder_default_hide_read_threads;
 	item->hide_read_msgs = prefs_common.folder_default_hide_read_msgs;
 	item->hide_del_msgs = prefs_common.folder_default_hide_del_msgs;
-	item->ret_rcpt  = FALSE;
 	item->opened    = FALSE;
 	item->node = g_node_new(item);
 	item->folder = NULL;
@@ -587,8 +586,6 @@ void folder_item_set_xml(Folder *folder, FolderItem *item, XMLTag *tag)
 			item->hide_del_msgs =  *attr->value == '1' ? TRUE : FALSE;
 		else if (!strcmp(attr->name, "hidereadthreads"))
 			item->hide_read_threads =  *attr->value == '1' ? TRUE : FALSE;
-		else if (!strcmp(attr->name, "reqretrcpt"))
-			item->ret_rcpt =  *attr->value == '1' ? TRUE : FALSE;
 		else if (!strcmp(attr->name, "sort_key")) {
 			if (!strcmp(attr->value, "none"))
 				item->sort_key = SORT_BY_NONE;
@@ -674,8 +671,6 @@ XMLTag *folder_item_get_xml(Folder *folder, FolderItem *item)
 	xml_tag_add_attr(tag, xml_attr_new("hidereadmsgs", item->hide_read_msgs ? "1" : "0"));
 	xml_tag_add_attr(tag, xml_attr_new("hidedelmsgs", item->hide_del_msgs ? "1" : "0"));
 	xml_tag_add_attr(tag, xml_attr_new("hidereadthreads", item->hide_read_threads ? "1" : "0"));
-	if (item->ret_rcpt)
-		xml_tag_add_attr(tag, xml_attr_new("reqretrcpt", "1"));
 
 	if (item->sort_key != SORT_BY_NONE) {
 		xml_tag_add_attr(tag, xml_attr_new("sort_key", sort_key_str[item->sort_key]));
@@ -3161,7 +3156,6 @@ static FolderItem *folder_item_move_recursive(FolderItem *src, FolderItem *dest,
 	new_item->collapsed = src->collapsed;
 	new_item->thread_collapsed = src->thread_collapsed;
 	new_item->threaded  = src->threaded;
-	new_item->ret_rcpt  = src->ret_rcpt;
 	new_item->hide_read_msgs = src->hide_read_msgs;
 	new_item->hide_del_msgs = src->hide_del_msgs;
 	new_item->hide_read_threads = src->hide_read_threads;
@@ -4233,7 +4227,6 @@ static void folder_item_restore_persist_prefs(FolderItem *item, GHashTable *ppta
 	item->collapsed = pp->collapsed;
 	item->thread_collapsed = pp->thread_collapsed;
 	item->threaded  = pp->threaded;
-	item->ret_rcpt  = pp->ret_rcpt;
 	item->hide_read_msgs = pp->hide_read_msgs;
 	item->hide_del_msgs = pp->hide_del_msgs;
 	item->hide_read_threads = pp->hide_read_threads;
@@ -4263,7 +4256,6 @@ static void folder_get_persist_prefs_recursive(GNode *node, GHashTable *pptable)
    		pp->collapsed = item->collapsed;
 		pp->thread_collapsed = item->thread_collapsed;
 		pp->threaded  = item->threaded;
-		pp->ret_rcpt  = item->ret_rcpt;
 		pp->hide_read_msgs = item->hide_read_msgs;
 		pp->hide_del_msgs = item->hide_del_msgs;
 		pp->hide_read_threads = item->hide_read_threads;

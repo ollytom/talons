@@ -7352,8 +7352,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	compose->modified = FALSE;
 
-	compose->return_receipt = FALSE;
-
 	compose->to_list        = NULL;
 	compose->newsgroup_list = NULL;
 

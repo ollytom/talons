@@ -229,7 +229,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 
 	tmp_prefs.processing			= tmp_prop_list;
 
-	tmp_prefs.request_return_receipt	= src->prefs->request_return_receipt;
 	tmp_prefs.enable_default_from		= src->prefs->enable_default_from;
 	tmp_prefs.default_from			= g_strdup(src->prefs->default_from);
 	tmp_prefs.enable_default_to		= src->prefs->enable_default_to;
@@ -259,7 +258,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 	dest->collapsed = src->collapsed;
 	dest->thread_collapsed = src->thread_collapsed;
 	dest->threaded  = src->threaded;
-	dest->ret_rcpt  = src->ret_rcpt;
 	dest->hide_read_msgs = src->hide_read_msgs;
 	dest->hide_del_msgs = src->hide_del_msgs;
 	dest->hide_read_threads = src->hide_read_threads;

@@ -59,7 +59,6 @@ struct _FolderItemPrefs {
 	HTMLRenderType render_html;
 	gboolean skip_on_goto_unread_or_new;
 
-	gboolean request_return_receipt;
 	gboolean enable_default_from;
 	gchar *default_from;
 	gboolean enable_default_to;

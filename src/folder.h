@@ -750,7 +750,6 @@ struct _FolderItem
 	guint thread_collapsed      : 1; /* collapsed item       */
 	guint threaded       : 1; /* threaded folder view */
 	guint hide_read_msgs : 1; /* hide read messages   */
-	guint ret_rcpt       : 1; /* return receipt       */
 	guint search_match   : 1;
 	guint hide_del_msgs : 1; /* hide deleted messages   */
 	guint hide_read_threads : 1; /* hide threads with only read messages   */
@@ -791,7 +790,6 @@ struct _PersistPrefs
 	guint		thread_collapsed	: 1;
 	guint		threaded	: 1;
 	guint		hide_read_msgs	: 1; /* CLAWS */
-	guint		ret_rcpt	: 1; /* CLAWS */
 	guint		hide_del_msgs	: 1; /* CLAWS */
 	guint		hide_read_threads	: 1;
 };
