@@ -341,8 +341,6 @@ GSList *references_list_prepend		(GSList		*msgid_list,
 					 const gchar	*str);
 GSList *references_list_append		(GSList		*msgid_list,
 					 const gchar	*str);
-GSList *newsgroup_list_append		(GSList		*group_list,
-					 const gchar	*str);
 
 GList *add_history			(GList		*list,
 					 const gchar	*str);
@@ -367,8 +365,6 @@ gchar **strsplit_with_quote		(const gchar	*str,
 					 const gchar	*delim,
 					 gint		 max_tokens);
 
-gchar *get_abbrev_newsgroup_name	(const gchar	*group,
-					 gint		 len);
 gchar *trim_string			(const gchar	*str,
 					 gint		 len);
 

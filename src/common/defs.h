@@ -72,7 +72,6 @@
 #define TEMPLATE_DIR		"templates"
 #define TMP_DIR			"tmp"
 #define UIDL_DIR		"uidl"
-#define NEWSGROUP_LIST		".newsgroup_list"
 #define ADDRESS_BOOK		"addressbook.xml"
 #define ADDRBOOK_DIR		"addrbook"
 #define MANUAL_HTML_INDEX	"claws-mail-manual.html"

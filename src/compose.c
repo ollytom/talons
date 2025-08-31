@@ -4555,12 +4555,8 @@ gboolean compose_check_for_valid_recipient(Compose *compose) {
 	GSList *list;
 	gchar **strptr;
 
-	/* free to and newsgroup list */
-        slist_free_strings_full(compose->to_list);
+	slist_free_strings_full(compose->to_list);
 	compose->to_list = NULL;
-
-	slist_free_strings_full(compose->newsgroup_list);
-        compose->newsgroup_list = NULL;
 
 	/* search header entries for to */
 	for (list = compose->header_list; list; list = list->next) {
@@ -5594,9 +5590,9 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
                 return COMPOSE_QUEUE_ERROR_NO_MSG;
 	}
 
-	if (!compose->to_list && !compose->newsgroup_list) {
-	        g_warning("can't get recipient list");
-                return COMPOSE_QUEUE_ERROR_NO_MSG;
+	if (!compose->to_list) {
+		g_warning("can't get recipient list");
+		return COMPOSE_QUEUE_ERROR_NO_MSG;
         }
 
 	if (compose->to_list) {
@@ -5651,14 +5647,6 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 		for (cur = compose->to_list->next; cur != NULL;
 		     cur = cur->next)
 			err |= (fprintf(fp, ",<%s>", (gchar *)cur->data) < 0);
-		err |= (fprintf(fp, "\n") < 0);
-	}
-	/* write newsgroup list */
-	if (compose->newsgroup_list) {
-		err |= (fprintf(fp, "NG:") < 0);
-		err |= (fprintf(fp, "%s", (gchar *)compose->newsgroup_list->data) < 0);
-		for (cur = compose->newsgroup_list->next; cur != NULL; cur = cur->next)
-			err |= (fprintf(fp, ",%s", (gchar *)cur->data) < 0);
 		err |= (fprintf(fp, "\n") < 0);
 	}
 	/* account IDs */
@@ -6239,16 +6227,8 @@ static gchar *compose_get_header(Compose *compose)
 
 	/* Program version and system info */
 	if (compose->account->gen_xmailer &&
-	    g_slist_length(compose->to_list) && !IS_IN_CUSTOM_HEADER("X-Mailer") &&
-	    !compose->newsgroup_list) {
+	    g_slist_length(compose->to_list) && !IS_IN_CUSTOM_HEADER("X-Mailer")) {
 		g_string_append_printf(header, "X-Mailer: %s (GTK %d.%d.%d; %s)\n",
-			prog_version,
-			gtk_major_version, gtk_minor_version, gtk_micro_version,
-			TARGET_ALIAS);
-	}
-	if (compose->account->gen_xmailer &&
-	    g_slist_length(compose->newsgroup_list) && !IS_IN_CUSTOM_HEADER("X-Newsreader")) {
-		g_string_append_printf(header, "X-Newsreader: %s (GTK %d.%d.%d; %s)\n",
 			prog_version,
 			gtk_major_version, gtk_minor_version, gtk_micro_version,
 			TARGET_ALIAS);
@@ -7353,7 +7333,6 @@ static Compose *compose_create(PrefsAccount *account,
 	compose->modified = FALSE;
 
 	compose->to_list        = NULL;
-	compose->newsgroup_list = NULL;
 
 	compose->undostruct = undostruct;
 
@@ -7780,13 +7759,12 @@ static void compose_destroy(Compose *compose)
 	address_completion_end(compose->window);
 
 	slist_free_strings_full(compose->to_list);
-	slist_free_strings_full(compose->newsgroup_list);
 	slist_free_strings_full(compose->header_list);
 
 	slist_free_strings_full(extra_headers);
 	extra_headers = NULL;
 
-	compose->header_list = compose->newsgroup_list = compose->to_list = NULL;
+	compose->header_list = compose->to_list = NULL;
 
 	g_hash_table_destroy(compose->email_hashtable);
 

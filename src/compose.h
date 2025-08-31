@@ -202,7 +202,6 @@ struct _Compose
 	gboolean batch;
 
 	GSList *to_list;
-	GSList *newsgroup_list;
 
 	PrefsAccount *account;
 	FolderItem *folder;

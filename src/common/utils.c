@@ -758,40 +758,7 @@ GSList *references_list_append(GSList *msgid_list, const gchar *str)
 
 	list = references_list_prepend(NULL, str);
 	list = g_slist_reverse(list);
-	msgid_list = g_slist_concat(msgid_list, list);
-
-	return msgid_list;
-}
-
-GSList *newsgroup_list_append(GSList *group_list, const gchar *str)
-{
-	gchar *work;
-	gchar *workp;
-
-	if (!str) return group_list;
-
-	Xstrdup_a(work, str, return group_list);
-
-	workp = work;
-
-	while (workp && *workp) {
-		gchar *p, *next;
-
-		if ((p = strchr_with_skip_quote(workp, '"', ','))) {
-			*p = '\0';
-			next = p + 1;
-		} else
-			next = NULL;
-
-		g_strstrip(workp);
-		if (*workp)
-			group_list = g_slist_append(group_list,
-						    g_strdup(workp));
-
-		workp = next;
-	}
-
-	return group_list;
+	return g_slist_concat(msgid_list, list);
 }
 
 GList *add_history(GList *list, const gchar *str)
@@ -1067,34 +1034,6 @@ gchar **strsplit_with_quote(const gchar *str, const gchar *delim,
 	g_slist_free(string_list);
 
 	return str_array;
-}
-
-gchar *get_abbrev_newsgroup_name(const gchar *group, gint len)
-{
-	gchar *abbrev_group;
-	gchar *ap;
-	const gchar *p = group;
-	const gchar *last;
-
-	cm_return_val_if_fail(group != NULL, NULL);
-
-	last = group + strlen(group);
-	abbrev_group = ap = g_malloc(strlen(group) + 1);
-
-	while (*p) {
-		while (*p == '.')
-			*ap++ = *p++;
-		if ((ap - abbrev_group) + (last - p) > len && strchr(p, '.')) {
-			*ap++ = *p++;
-			while (*p != '.') p++;
-		} else {
-			strcpy(ap, p);
-			return abbrev_group;
-		}
-	}
-
-	*ap = '\0';
-	return abbrev_group;
 }
 
 gchar *trim_string(const gchar *str, gint len)
