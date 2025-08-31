@@ -225,7 +225,6 @@ gchar *advsearch_expand_search_string(const gchar *search_string)
 		{ "i",	"messageid",			1,	TRUE,	TRUE  },
 		{ "I",	"inreplyto",			1,	TRUE,	TRUE  },
 		{ "L",	"locked",			0,	FALSE,	FALSE },
-		{ "n",	"newsgroups",			1,	TRUE,	TRUE  },
 		{ "N",	"new",				0,	FALSE,	FALSE },
 		{ "O",	"~new",				0,	FALSE,	FALSE },
 		{ "r",	"replied",			0,	FALSE,	FALSE },

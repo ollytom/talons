@@ -2019,7 +2019,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 
 	GtkWidget *toolbar;
 	GtkWidget *icon_wid = NULL;
-	GtkWidget *icon_news;
 	GtkWidget *item;
 	ToolbarClawsActions *action_item;
 	GSList *cur;

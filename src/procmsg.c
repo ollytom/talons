@@ -1123,7 +1123,6 @@ MsgInfo *procmsg_msginfo_copy(MsgInfo *msginfo)
 	MEMBDUP(from);
 	MEMBDUP(to);
 	MEMBDUP(cc);
-	MEMBDUP(newsgroups);
 	MEMBDUP(subject);
 	MEMBDUP(msgid);
 	MEMBDUP(inreplyto);
@@ -1269,7 +1268,6 @@ void procmsg_msginfo_free(MsgInfo **msginfo_ptr)
 	FREENULL(msginfo->from);
 	FREENULL(msginfo->to);
 	FREENULL(msginfo->cc);
-	FREENULL(msginfo->newsgroups);
 	FREENULL(msginfo->subject);
 	FREENULL(msginfo->msgid);
 	FREENULL(msginfo->inreplyto);
@@ -1325,8 +1323,6 @@ guint procmsg_msginfo_memusage(MsgInfo *msginfo)
 		memusage += strlen(msginfo->to);
 	if (msginfo->cc)
 		memusage += strlen(msginfo->cc);
-	if (msginfo->newsgroups)
-		memusage += strlen(msginfo->newsgroups);
 	if (msginfo->subject)
 		memusage += strlen(msginfo->subject);
 	if (msginfo->msgid)

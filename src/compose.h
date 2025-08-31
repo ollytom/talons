@@ -45,7 +45,6 @@ typedef enum
 	COMPOSE_CC,
 	COMPOSE_BCC,
 	COMPOSE_REPLYTO,
-	COMPOSE_NEWSGROUPS,
 	COMPOSE_FOLLOWUPTO,
 	COMPOSE_INREPLYTO
 } ComposeEntryType;
@@ -166,7 +165,6 @@ struct _Compose
 	gchar	*replyto;
 	gchar	*cc;
 	gchar	*bcc;
-	gchar	*newsgroups;
 	gchar	*followup_to;
 
 	gchar	*ml_post;
@@ -183,7 +181,6 @@ struct _Compose
 	gboolean use_cc;
 	gboolean use_bcc;
 	gboolean use_replyto;
-	gboolean use_newsgroups;
 	gboolean use_followupto;
 	gboolean use_attach;
 

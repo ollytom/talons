@@ -292,11 +292,11 @@ PrefsAccount *account_find_from_smtp_server(const gchar *address,
  * account_find_from_address:
  * @address: Email address string.
  *
- * Find a mail (not news if newsgroups_ok is FALSE) account with the specified email address.
+ * Find a mail account with the specified email address.
  *
  * Return value: The found account, or NULL if not found.
  */
-PrefsAccount *account_find_from_address(const gchar *address, gboolean newsgroups_ok)
+PrefsAccount *account_find_from_address(const gchar *address)
 {
 	GList *cur;
 	PrefsAccount *ac;
@@ -305,8 +305,7 @@ PrefsAccount *account_find_from_address(const gchar *address, gboolean newsgroup
 
 	for (cur = account_list; cur != NULL; cur = cur->next) {
 		ac = (PrefsAccount *)cur->data;
-		if ((newsgroups_ok) && ac->address &&
-		    g_ascii_strcasecmp(address, ac->address) == 0)
+		if (ac->address && g_ascii_strcasecmp(address, ac->address) == 0)
 			return ac;
 	}
 
@@ -1327,7 +1326,7 @@ PrefsAccount *account_get_reply_account(MsgInfo *msginfo, gboolean reply_autosel
 				(msginfo, &from, "From:")) {
 				gchar *buf = from + strlen("From:");
 		        	extract_address(buf);
-		        	account = account_find_from_address(buf, FALSE);
+		        	account = account_find_from_address(buf);
 		        g_free(from);
 			}
 	}
@@ -1348,7 +1347,7 @@ PrefsAccount *account_get_reply_account(MsgInfo *msginfo, gboolean reply_autosel
 							(*next) = 0;
 						Xstrdup_a(to, cur, return NULL);
 						extract_address(to);
-						account = account_find_from_address(to, FALSE);
+						account = account_find_from_address(to);
 						if (next)
 							cur = next + 1;
 						else
@@ -1364,7 +1363,7 @@ PrefsAccount *account_get_reply_account(MsgInfo *msginfo, gboolean reply_autosel
 				(msginfo, &deliveredto, "Delivered-To:")) {
 				gchar *buf = deliveredto + strlen("Delivered-To:");
 		        	extract_address(buf);
-		        	account = account_find_from_address(buf, FALSE);
+		        	account = account_find_from_address(buf);
 		        g_free(deliveredto);
 			}
 		}

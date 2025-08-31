@@ -55,7 +55,6 @@ static gchar *quote_desc_strings[] = {
 	"%subject (%s)",			N_("Subject"), /* subject */
 	"%to (%t)",					N_("To"), /* to */
 	"%cc (%c)",					N_("Cc"), /* cc */
-	"%newsgroups (%n)",			N_("Newsgroups"), /* newsgroups */
 	"%references (%r)",			N_("References"), /* references */
 	"%messageid (%i)",			N_("Message-ID"), /* message-id */
 	"%msg (%M)",				N_("message body"), /* message */

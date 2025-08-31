@@ -201,7 +201,6 @@ struct _MsgInfo
 	gchar *from;
 	gchar *to;
 	gchar *cc;
-	gchar *newsgroups;
 	gchar *subject;
 	gchar *msgid;
 	gchar *inreplyto;

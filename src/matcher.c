@@ -108,8 +108,6 @@ static const MatchParser matchparser_tab[] = {
 	{MATCHCRITERIA_AGE_LOWER_HOURS, "age_lower_hours"},
 	{MATCHCRITERIA_DATE_AFTER, "date_after"},
 	{MATCHCRITERIA_DATE_BEFORE, "date_before"},
-	{MATCHCRITERIA_NEWSGROUPS, "newsgroups"},
-	{MATCHCRITERIA_NOT_NEWSGROUPS, "~newsgroups"},
 	{MATCHCRITERIA_MESSAGEID, "messageid"},
 	{MATCHCRITERIA_NOT_MESSAGEID, "~messageid"},
 	{MATCHCRITERIA_INREPLYTO, "inreplyto"},
@@ -751,10 +749,6 @@ static gboolean matcherprop_match(MatcherProp *prop,
 	case MATCHCRITERIA_NOT_PARTIAL:
 		/* FIXME: info->size is a goffset */
 		return (info->total_size == 0 || info->size == (goffset)info->total_size);
-	case MATCHCRITERIA_NEWSGROUPS:
-		return matcherprop_string_match(prop, info->newsgroups, context_str[CONTEXT_NEWSGROUPS]);
-	case MATCHCRITERIA_NOT_NEWSGROUPS:
-		return !matcherprop_string_match(prop, info->newsgroups, context_str[CONTEXT_NEWSGROUPS]);
 	case MATCHCRITERIA_MESSAGEID:
 		return matcherprop_string_match(prop, info->msgid, context_str[CONTEXT_MESSAGEID]);
 	case MATCHCRITERIA_NOT_MESSAGEID:
@@ -1839,7 +1833,6 @@ gchar *matching_build_command(const gchar *cmd, MsgInfo *info)
 	const gchar *const no_cc         = _("(none)") ;
 	const gchar *const no_date       = _("(none)") ;
 	const gchar *const no_msgid      = _("(none)") ;
-	const gchar *const no_newsgroups = _("(none)") ;
 	const gchar *const no_references = _("(none)") ;
 
 	size = STRLEN_ZERO(cmd) + 1;
@@ -1867,9 +1860,6 @@ gchar *matching_build_command(const gchar *cmd, MsgInfo *info)
 				break;
 			case 'i': /* message-id */
 				size += STRLEN_DEFAULT(info->msgid, no_msgid) - 2;
-				break;
-			case 'n': /* newsgroups */
-				size += STRLEN_DEFAULT(info->newsgroups, no_newsgroups) - 2;
 				break;
 			case 'r': /* references */
                                 /* FIXME: using the inreplyto header for reference */
@@ -1931,10 +1921,6 @@ gchar *matching_build_command(const gchar *cmd, MsgInfo *info)
 			case 'i': /* message-id */
 				add_str_default(&p, info->msgid,
 						no_msgid);
-				break;
-			case 'n': /* newsgroups */
-				add_str_default(&p, info->newsgroups,
-						no_newsgroups);
 				break;
 			case 'r': /* references */
                                 /* FIXME: using the inreplyto header for references */

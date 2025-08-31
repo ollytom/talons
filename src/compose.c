@@ -832,12 +832,12 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 		   if not, the account prefs will be guessed using other ways, but we'll keep
 		   the from anyway */
 		if (mailto_from) {
-			mailto_account = account_find_from_address(mailto_from, TRUE);
+			mailto_account = account_find_from_address(mailto_from);
 			if (mailto_account == NULL) {
 				gchar *tmp_from;
 				Xstrdup_a(tmp_from, mailto_from, return NULL);
 				extract_address(tmp_from);
-				mailto_account = account_find_from_address(tmp_from, TRUE);
+				mailto_account = account_find_from_address(tmp_from);
 			}
 		}
 		if (mailto_account)
@@ -1880,7 +1880,7 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 		}
 		if (!account && !procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
 											"S:")) {
-			account = account_find_from_address(queueheader_buf, FALSE);
+			account = account_find_from_address(queueheader_buf);
 			g_free(queueheader_buf);
 		}
 		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
@@ -1975,7 +1975,7 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 		gchar *from = NULL;
 		if (!procheader_get_header_from_msginfo(msginfo, &from, "FROM:")) {
 			extract_address(from);
-			account = account_find_from_address(from, FALSE);
+			account = account_find_from_address(from);
 		}
 		if (from)
 			g_free(from);
@@ -2548,10 +2548,6 @@ static gint compose_parse_header(Compose *compose, MsgInfo *msginfo)
 		g_free(hentry[H_BCC].body);
 		hentry[H_BCC].body = NULL;
 	}
-	if (hentry[H_NEWSGROUPS].body != NULL) {
-		compose->newsgroups = hentry[H_NEWSGROUPS].body;
-		hentry[H_NEWSGROUPS].body = NULL;
-	}
 	if (hentry[H_FOLLOWUP_TO].body != NULL) {
 		if (hentry[H_FOLLOWUP_TO].body[0] != '\0') {
 			compose->followup_to =
@@ -2960,7 +2956,7 @@ static void compose_reply_set_entry(Compose *compose, MsgInfo *msginfo,
 				Xstrdup_a(tmp1, msginfo->from, return);
 				extract_address(tmp1);
 				compose_entry_append(compose,
-				 (!account_find_from_address(tmp1, FALSE))
+				 (!account_find_from_address(tmp1))
 					  ? msginfo->from :
 					  msginfo->to,
 					  COMPOSE_TO, PREF_NONE);
@@ -3060,7 +3056,6 @@ static void compose_reedit_set_entry(Compose *compose, MsgInfo *msginfo)
 	SET_ADDRESS(COMPOSE_CC, compose->cc);
 	SET_ADDRESS(COMPOSE_BCC, compose->bcc);
 	SET_ADDRESS(COMPOSE_REPLYTO, compose->replyto);
-	SET_ADDRESS(COMPOSE_NEWSGROUPS, compose->newsgroups);
 	SET_ADDRESS(COMPOSE_FOLLOWUPTO, compose->followup_to);
 
 	compose_update_privacy_system_menu_item(compose, FALSE);
@@ -4574,7 +4569,7 @@ static gboolean compose_check_for_set_recipients(Compose *compose)
 	if (compose->account->set_autocc && compose->account->auto_cc) {
 		gboolean found_other = FALSE;
 		GSList *list;
-		/* search header entries for to and newsgroup entries */
+		/* search header entries for to */
 		for (list = compose->header_list; list; list = list->next) {
 			gchar *entry;
 			gchar *header;
@@ -4610,7 +4605,7 @@ static gboolean compose_check_for_set_recipients(Compose *compose)
 	if (compose->account->set_autobcc && compose->account->auto_bcc) {
 		gboolean found_other = FALSE;
 		GSList *list;
-		/* search header entries for to and newsgroup entries */
+		/* search header entries for to */
 		for (list = compose->header_list; list; list = list->next) {
 			gchar *entry;
 			gchar *header;
@@ -7765,7 +7760,6 @@ static void compose_destroy(Compose *compose)
 	g_free(compose->replyto);
 	g_free(compose->cc);
 	g_free(compose->bcc);
-	g_free(compose->newsgroups);
 	g_free(compose->followup_to);
 
 	g_free(compose->ml_post);
@@ -10480,7 +10474,7 @@ static PrefsAccount *compose_find_account(MsgInfo *msginfo)
 		gchar *to;
 		Xstrdup_a(to, msginfo->to, return NULL);
 		extract_address(to);
-		account = account_find_from_address(to, FALSE);
+		account = account_find_from_address(to);
 	}
 
 	if (!account && prefs_common.forward_account_autosel) {
@@ -10489,7 +10483,7 @@ static PrefsAccount *compose_find_account(MsgInfo *msginfo)
 				(msginfo, &cc, "Cc:")) {
 			gchar *buf = cc + strlen("Cc:");
 			extract_address(buf);
-			account = account_find_from_address(buf, FALSE);
+			account = account_find_from_address(buf);
 			g_free(cc);
 		}
 	}
@@ -10500,7 +10494,7 @@ static PrefsAccount *compose_find_account(MsgInfo *msginfo)
 				(msginfo, &deliveredto, "Delivered-To:")) {
 			gchar *buf = deliveredto + strlen("Delivered-To:");
 			extract_address(buf);
-			account = account_find_from_address(buf, FALSE);
+			account = account_find_from_address(buf);
 			g_free(deliveredto);
 		}
 	}
@@ -10733,7 +10727,7 @@ static MsgInfo *compose_msginfo_new_from_compose(Compose *compose)
 	if (compose->subject_entry)
 		newmsginfo->subject = gtk_editable_get_chars(GTK_EDITABLE(compose->subject_entry), 0, -1);
 
-	/* to, cc, reply-to, newsgroups */
+	/* to, cc, reply-to */
 	for (list = compose->header_list; list; list = list->next) {
 		gchar *header = gtk_editable_get_chars(
 								GTK_EDITABLE(
@@ -10757,16 +10751,6 @@ static MsgInfo *compose_msginfo_new_from_compose(Compose *compose)
 				gchar *tmp = g_strconcat(newmsginfo->cc, ", ", entry, NULL);
 				g_free(newmsginfo->cc);
 				newmsginfo->cc = tmp;
-			}
-		} else
-		if ( strcasecmp(header,
-						prefs_common_translated_header_name("Newsgroups:")) == 0 ) {
-			if ( newmsginfo->newsgroups == NULL ) {
-				newmsginfo->newsgroups = g_strdup(entry);
-			} else if (entry && *entry) {
-				gchar *tmp = g_strconcat(newmsginfo->newsgroups, ", ", entry, NULL);
-				g_free(newmsginfo->newsgroups);
-				newmsginfo->newsgroups = tmp;
 			}
 		}
 

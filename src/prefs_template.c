@@ -56,7 +56,6 @@ gboolean prefs_template_string_is_valid(gchar *string, gint *line, gboolean esca
 		dummyinfo.cc="John Doe <john@example.com>";
 		dummyinfo.msgid="<1234john@example.com>";
 		dummyinfo.inreplyto="<1234john@example.com>";
-		dummyinfo.newsgroups="alt.test";
 		dummyinfo.subject="subject";
 
 		quote_fmt_init(&dummyinfo, NULL, NULL, TRUE, account, FALSE);

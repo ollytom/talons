@@ -3034,7 +3034,7 @@ static inline void summary_set_header(SummaryView *summaryview, gchar *text[],
 
 		if (addr) {
 			extract_address(addr);
-			if (account_find_from_address(addr, FALSE)) {
+			if (account_find_from_address(addr)) {
 				should_swap = TRUE;
 			}
 			g_free(addr);
@@ -3074,10 +3074,7 @@ static inline void summary_set_header(SummaryView *summaryview, gchar *text[],
 	}
 
 	to_text = msginfo->to ? msginfo->to :
-		   (msginfo->cc ? msginfo->cc :
-		     (msginfo->newsgroups ? msginfo->newsgroups : NULL
-		     )
-		   );
+		   (msginfo->cc ? msginfo->cc : NULL);
 
 	if (!to_text)
 		to_text = _("(No Recipient)");

@@ -659,7 +659,6 @@ MsgCache *msgcache_read_cache(FolderItem *item, const gchar *cache_file)
 			GET_CACHE_DATA(msginfo->from, memusage);
 			GET_CACHE_DATA(msginfo->to, memusage);
 			GET_CACHE_DATA(msginfo->cc, memusage);
-			GET_CACHE_DATA(msginfo->newsgroups, memusage);
 			GET_CACHE_DATA(msginfo->subject, memusage);
 			GET_CACHE_DATA(msginfo->msgid, memusage);
 			GET_CACHE_DATA(msginfo->inreplyto, memusage);
@@ -715,7 +714,6 @@ MsgCache *msgcache_read_cache(FolderItem *item, const gchar *cache_file)
 			READ_CACHE_DATA(msginfo->from, fp, memusage);
 			READ_CACHE_DATA(msginfo->to, fp, memusage);
 			READ_CACHE_DATA(msginfo->cc, fp, memusage);
-			READ_CACHE_DATA(msginfo->newsgroups, fp, memusage);
 			READ_CACHE_DATA(msginfo->subject, fp, memusage);
 			READ_CACHE_DATA(msginfo->msgid, fp, memusage);
 			READ_CACHE_DATA(msginfo->inreplyto, fp, memusage);
@@ -871,7 +869,6 @@ static int msgcache_write_cache(MsgInfo *msginfo, FILE *fp)
 	WRITE_CACHE_DATA(msginfo->from, fp);
 	WRITE_CACHE_DATA(msginfo->to, fp);
 	WRITE_CACHE_DATA(msginfo->cc, fp);
-	WRITE_CACHE_DATA(msginfo->newsgroups, fp);
 	WRITE_CACHE_DATA(msginfo->subject, fp);
 	WRITE_CACHE_DATA(msginfo->msgid, fp);
 	WRITE_CACHE_DATA(msginfo->inreplyto, fp);

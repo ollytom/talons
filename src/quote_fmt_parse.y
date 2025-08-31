@@ -711,12 +711,7 @@ string:
 	};
 
 special:
-	SHOW_NEWSGROUPS
-	{
-		if (msginfo->newsgroups)
-			INSERT(msginfo->newsgroups);
-	}
-	| SHOW_DATE_EXPR OPARENT string CPARENT
+	SHOW_DATE_EXPR OPARENT string CPARENT
 	{
 		quote_fmt_show_date(msginfo, $3);
 	}
@@ -941,14 +936,6 @@ query:
 	{
 		remove_visibility();
 	}
-	| QUERY_NEWSGROUPS
-	{
-		add_visibility(msginfo->newsgroups != NULL);
-	}
-	OPARENT quote_fmt CPARENT
-	{
-		remove_visibility();
-	}
 	| QUERY_MESSAGEID
 	{
 		add_visibility(msginfo->msgid != NULL);
@@ -1082,14 +1069,6 @@ query_not:
 	| QUERY_NOT_TO
 	{
 		add_visibility(msginfo->to == NULL);
-	}
-	OPARENT quote_fmt CPARENT
-	{
-		remove_visibility();
-	}
-	| QUERY_NOT_NEWSGROUPS
-	{
-		add_visibility(msginfo->newsgroups == NULL);
 	}
 	OPARENT quote_fmt CPARENT
 	{

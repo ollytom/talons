@@ -681,15 +681,6 @@ static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 				msginfo->cc = g_strdup(tmp);
                         g_free(tmp);
 			break;
-		case H_NEWSGROUPS:
-			if (msginfo->newsgroups) {
-				p = msginfo->newsgroups;
-				msginfo->newsgroups =
-					g_strconcat(p, ",", hp, NULL);
-				g_free(p);
-			} else
-				msginfo->newsgroups = g_strdup(hp);
-			break;
 		case H_SUBJECT:
 			if (msginfo->subject) break;
 			msginfo->subject = conv_unmime_header(hp, NULL, FALSE);
