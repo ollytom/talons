@@ -98,26 +98,6 @@ static PrefParam param[] = {
 	{"skip_on_goto_unread_or_new", "FALSE", &tmp_prefs.skip_on_goto_unread_or_new, P_BOOL,
 	 NULL, NULL, NULL},
 
-	{"compose_with_format", "FALSE", &tmp_prefs.compose_with_format, P_BOOL,
-	 NULL, NULL, NULL},
-	{"compose_override_from_format", NULL, &tmp_prefs.compose_override_from_format, P_STRING,
-	 NULL, NULL, NULL},
-	{"compose_subject_format", NULL, &tmp_prefs.compose_subject_format, P_STRING,
-	 NULL, NULL, NULL},
-	{"compose_body_format", NULL, &tmp_prefs.compose_body_format, P_STRING,
-	 NULL, NULL, NULL},
-	{"reply_with_format", "FALSE", &tmp_prefs.reply_with_format, P_BOOL,
-	 NULL, NULL, NULL},
-	{"reply_override_from_format", NULL, &tmp_prefs.reply_override_from_format, P_STRING,
-	 NULL, NULL, NULL},
-	{"reply_body_format", NULL, &tmp_prefs.reply_body_format, P_STRING,
-	 NULL, NULL, NULL},
-	{"forward_with_format", "FALSE", &tmp_prefs.forward_with_format, P_BOOL,
-	 NULL, NULL, NULL},
-	{"forward_override_from_format", NULL, &tmp_prefs.forward_override_from_format, P_STRING,
-	 NULL, NULL, NULL},
-	{"forward_body_format", NULL, &tmp_prefs.forward_body_format, P_STRING,
-	 NULL, NULL, NULL},
 	{"config_version", "-1", &tmp_prefs.config_version, P_INT,
 	 NULL, NULL, NULL},
 	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
@@ -213,17 +193,6 @@ static FolderItemPrefs *folder_item_prefs_clear(FolderItemPrefs *prefs)
 	prefs->render_html = HTML_RENDER_DEFAULT;
 	prefs->promote_html_part = HTML_PROMOTE_DEFAULT;
 	prefs->skip_on_goto_unread_or_new = FALSE;
-
-	prefs->compose_with_format = FALSE;
-	prefs->compose_subject_format = NULL;
-	prefs->compose_body_format = NULL;
-	prefs->compose_override_from_format = NULL;
-	prefs->reply_with_format = FALSE;
-	prefs->reply_body_format = NULL;
-	prefs->reply_override_from_format = NULL;
-	prefs->forward_with_format = FALSE;
-	prefs->forward_body_format = NULL;
-	prefs->forward_override_from_format = NULL;
 	return prefs;
 }
 
@@ -244,13 +213,6 @@ void folder_item_prefs_free(FolderItemPrefs * prefs)
 	g_free(prefs->default_cc);
 	g_free(prefs->default_bcc);
 	g_free(prefs->default_replyto);
-	g_free(prefs->compose_subject_format);
-	g_free(prefs->compose_body_format);
-	g_free(prefs->compose_override_from_format);
-	g_free(prefs->reply_body_format);
-	g_free(prefs->reply_override_from_format);
-	g_free(prefs->forward_body_format);
-	g_free(prefs->forward_override_from_format);
 	g_free(prefs);
 }
 
@@ -300,17 +262,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 	tmp_prefs.always_encrypt    = src->prefs->always_encrypt;
 	tmp_prefs.save_copy_to_folder		= src->prefs->save_copy_to_folder;
 	tmp_prefs.color				= src->prefs->color;
-
-	tmp_prefs.compose_with_format = src->prefs->compose_with_format;
-	tmp_prefs.compose_subject_format = g_strdup(src->prefs->compose_subject_format);
-	tmp_prefs.compose_body_format = g_strdup(src->prefs->compose_body_format);
-	tmp_prefs.compose_override_from_format = g_strdup(src->prefs->compose_override_from_format);
-	tmp_prefs.reply_with_format = src->prefs->reply_with_format;
-	tmp_prefs.reply_body_format = g_strdup(src->prefs->reply_body_format);
-	tmp_prefs.reply_override_from_format = g_strdup(src->prefs->reply_override_from_format);
-	tmp_prefs.forward_with_format = src->prefs->forward_with_format;
-	tmp_prefs.forward_body_format = g_strdup(src->prefs->forward_body_format);
-	tmp_prefs.forward_override_from_format = g_strdup(src->prefs->forward_override_from_format);
 
 	*dest->prefs = tmp_prefs;
 	folder_item_prefs_save_config(dest);

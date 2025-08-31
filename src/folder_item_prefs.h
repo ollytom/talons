@@ -84,17 +84,6 @@ struct _FolderItemPrefs {
 	SignOrEncryptType always_encrypt;
 	gboolean save_copy_to_folder;
 	GdkRGBA color;
-
-	gboolean compose_with_format;
-	gchar *compose_override_from_format;
-	gchar *compose_subject_format;
-	gchar *compose_body_format;
-	gboolean reply_with_format;
-	gchar *reply_override_from_format;
-	gchar *reply_body_format;
-	gboolean forward_with_format;
-	gchar *forward_override_from_format;
-	gchar *forward_body_format;
 };
 
 void folder_item_prefs_read_config(FolderItem * item);

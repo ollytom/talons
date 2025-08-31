@@ -57,7 +57,6 @@
 
 typedef struct _FolderItemGeneralPage FolderItemGeneralPage;
 typedef struct _FolderItemComposePage FolderItemComposePage;
-typedef struct _FolderItemTemplatesPage FolderItemTemplatesPage;
 static gboolean can_save = TRUE;
 
 struct _FolderItemGeneralPage
@@ -145,39 +144,11 @@ struct _FolderItemComposePage
 	GtkWidget *always_encrypt_rec_checkbtn;
 };
 
-struct _FolderItemTemplatesPage
-{
-	PrefsPage page;
-
-	FolderItem *item;
-
-	GtkWidget *window;
-	GtkWidget *table;
-	GtkWidget *checkbtn_compose_with_format;
-	GtkWidget *compose_override_from_format;
-	GtkWidget *compose_subject_format;
-	GtkWidget *compose_body_format;
-	GtkWidget *checkbtn_reply_with_format;
-	GtkWidget *reply_override_from_format;
-	GtkWidget *reply_body_format;
-	GtkWidget *checkbtn_forward_with_format;
-	GtkWidget *forward_override_from_format;
-	GtkWidget *forward_body_format;
-
-	/* apply to sub folders */
-	GtkWidget *new_msg_format_rec_checkbtn;
-	GtkWidget *reply_format_rec_checkbtn;
-	GtkWidget *forward_format_rec_checkbtn;
-};
-
-
 static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage *page);
 static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage *page);
-static void templates_save_folder_prefs(FolderItem *folder, FolderItemTemplatesPage *page);
 
 static gboolean general_save_recurse_func(GNode *node, gpointer data);
 static gboolean compose_save_recurse_func(GNode *node, gpointer data);
-static gboolean templates_save_recurse_func(GNode *node, gpointer data);
 
 static void clean_cache_cb(GtkWidget *widget, gpointer data);
 static void folder_regexp_test_cb(GtkWidget *widget, gpointer data);
@@ -1423,264 +1394,6 @@ static void prefs_folder_item_compose_save_func(PrefsPage *page_)
 
 }
 
-static void prefs_folder_item_templates_create_widget_func(PrefsPage * page_,
-						   GtkWindow * window,
-                                		   gpointer data)
-{
-	FolderItemTemplatesPage *page = (FolderItemTemplatesPage *) page_;
-	FolderItem *item = (FolderItem *) data;
-
-	GtkWidget *notebook;
-	GtkWidget *vbox;
-	GtkWidget *page_vbox;
-	GtkWidget *no_save_warning;
-	GtkWidget *new_msg_format_rec_checkbtn;
-	GtkWidget *reply_format_rec_checkbtn;
-	GtkWidget *forward_format_rec_checkbtn;
-	GtkWidget *hbox;
-	GtkWidget *vbox_format;
-
-	page->item = item;
-
-	page_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_container_set_border_width (GTK_CONTAINER (page_vbox), VBOX_BORDER);
-	gtk_widget_show (page_vbox);
-
-	if (!can_save) {
-		no_save_warning = prefs_folder_no_save_warning_create_widget();
-		gtk_box_pack_start(GTK_BOX(page_vbox),
-				   no_save_warning, FALSE, FALSE, 0);
-	}
-
-	/* Notebook */
-	notebook = gtk_notebook_new();
-	gtk_widget_show(notebook);
-	gtk_box_pack_start(GTK_BOX(page_vbox), notebook, TRUE, TRUE, 4);
-
-	/* compose format */
-	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	gtk_widget_show (vbox);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox), VBOX_BORDER);
-
-	quotefmt_create_new_msg_fmt_widgets(
-				window,
-				vbox,
-				&page->checkbtn_compose_with_format,
-				&page->compose_override_from_format,
-				&page->compose_subject_format,
-				&page->compose_body_format,
-				FALSE, FALSE);
-	address_completion_register_entry(GTK_ENTRY(page->compose_override_from_format),
-			TRUE);
-
-	vbox_format = gtk_widget_get_parent(
-			gtk_widget_get_parent(page->compose_body_format));
-
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_end (GTK_BOX(vbox_format), hbox, FALSE, FALSE, 0);
-	quotefmt_add_info_button(window, hbox);
-
-	new_msg_format_rec_checkbtn = gtk_check_button_new_with_label(
-			_("Apply to subfolders"));
-	gtk_box_pack_end (GTK_BOX(hbox), new_msg_format_rec_checkbtn, FALSE, FALSE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new(C_("Templates", "New")));
-
-	/* reply format */
-	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	gtk_widget_show (vbox);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox), VBOX_BORDER);
-
-	quotefmt_create_reply_fmt_widgets(
-				window,
-				vbox,
-				&page->checkbtn_reply_with_format,
-				&page->reply_override_from_format,
-				&page->reply_body_format,
-				FALSE, FALSE);
-	address_completion_register_entry(GTK_ENTRY(page->reply_override_from_format),
-			TRUE);
-
-	vbox_format = gtk_widget_get_parent(
-			gtk_widget_get_parent(page->reply_body_format));
-
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_end (GTK_BOX(vbox_format), hbox, FALSE, FALSE, 0);
-	quotefmt_add_info_button(window, hbox);
-
-	reply_format_rec_checkbtn = gtk_check_button_new_with_label(
-			_("Apply to subfolders"));
-	gtk_box_pack_end (GTK_BOX(hbox), reply_format_rec_checkbtn, FALSE, FALSE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new(C_("Templates", "Reply")));
-
-	/* forward format */
-	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	gtk_widget_show (vbox);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox), VBOX_BORDER);
-
-	quotefmt_create_forward_fmt_widgets(
-				window,
-				vbox,
-				&page->checkbtn_forward_with_format,
-				&page->forward_override_from_format,
-				&page->forward_body_format,
-				FALSE, FALSE);
-	address_completion_register_entry(GTK_ENTRY(page->forward_override_from_format),
-			TRUE);
-
-	vbox_format = gtk_widget_get_parent(
-			gtk_widget_get_parent(page->forward_body_format));
-
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_pack_end (GTK_BOX(vbox_format), hbox, FALSE, FALSE, 0);
-	quotefmt_add_info_button(window, hbox);
-
-	forward_format_rec_checkbtn = gtk_check_button_new_with_label(
-			_("Apply to subfolders"));
-	gtk_box_pack_end (GTK_BOX(hbox), forward_format_rec_checkbtn, FALSE, FALSE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new(C_("Templates", "Forward")));
-
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(page->checkbtn_compose_with_format),
-			item->prefs->compose_with_format);
-	pref_set_entry_from_pref(GTK_ENTRY(page->compose_override_from_format),
-			item->prefs->compose_override_from_format);
-	pref_set_entry_from_pref(GTK_ENTRY(page->compose_subject_format),
-			item->prefs->compose_subject_format);
-	pref_set_textview_from_pref(GTK_TEXT_VIEW(page->compose_body_format),
-			item->prefs->compose_body_format);
-
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(page->checkbtn_reply_with_format),
-			item->prefs->reply_with_format);
-	pref_set_entry_from_pref(GTK_ENTRY(page->reply_override_from_format),
-			item->prefs->reply_override_from_format);
-	pref_set_textview_from_pref(GTK_TEXT_VIEW(page->reply_body_format),
-			item->prefs->reply_body_format);
-
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(page->checkbtn_forward_with_format),
-			item->prefs->forward_with_format);
-	pref_set_entry_from_pref(GTK_ENTRY(page->forward_override_from_format),
-			item->prefs->forward_override_from_format);
-	pref_set_textview_from_pref(GTK_TEXT_VIEW(page->forward_body_format),
-			item->prefs->forward_body_format);
-
-	gtk_widget_show_all(page_vbox);
-
-	page->window = GTK_WIDGET(window);
-
-	page->new_msg_format_rec_checkbtn = new_msg_format_rec_checkbtn;
-	page->reply_format_rec_checkbtn = reply_format_rec_checkbtn;
-	page->forward_format_rec_checkbtn = forward_format_rec_checkbtn;
-
-	page->page.widget = page_vbox;
-}
-
-static void prefs_folder_item_templates_destroy_widget_func(PrefsPage *page_)
-{
-	FolderItemTemplatesPage *page = (FolderItemTemplatesPage *) page_;
-
-	if (page->compose_override_from_format)
-		address_completion_unregister_entry(GTK_ENTRY(page->compose_override_from_format));
-	if (page->reply_override_from_format)
-		address_completion_unregister_entry(GTK_ENTRY(page->reply_override_from_format));
-	if (page->forward_override_from_format)
-		address_completion_unregister_entry(GTK_ENTRY(page->forward_override_from_format));
-}
-
-/** \brief  Save the prefs in page to folder.
- *
- *  If the folder is not the one  specified in page->item, then only those properties
- *  that have the relevant 'apply to sub folders' button checked are saved
- */
-static void templates_save_folder_prefs(FolderItem *folder, FolderItemTemplatesPage *page)
-{
-	FolderItemPrefs *prefs = folder->prefs;
-	gboolean all = FALSE;
-
-	if (folder->path == NULL)
-		return;
-
-	if (page->item == folder)
-		all = TRUE;
-
-	cm_return_if_fail(prefs != NULL);
-
-	/* save and check formats */
-
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->new_msg_format_rec_checkbtn))) {
-
-		prefs->compose_with_format =
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_compose_with_format));
-		prefs->compose_override_from_format = pref_get_pref_from_entry(
-				GTK_ENTRY(page->compose_override_from_format));
-		prefs->compose_subject_format = pref_get_pref_from_entry(
-				GTK_ENTRY(page->compose_subject_format));
-		prefs->compose_body_format = pref_get_pref_from_textview(
-				GTK_TEXT_VIEW(page->compose_body_format));
-		quotefmt_check_new_msg_formats(prefs->compose_with_format,
-						prefs->compose_override_from_format,
-						prefs->compose_subject_format,
-						prefs->compose_body_format);
-	}
-
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->reply_format_rec_checkbtn))) {
-		prefs->reply_with_format =
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_reply_with_format));
-		prefs->reply_override_from_format = pref_get_pref_from_entry(
-				GTK_ENTRY(page->reply_override_from_format));
-		prefs->reply_body_format = pref_get_pref_from_textview(
-				GTK_TEXT_VIEW(page->reply_body_format));
-		quotefmt_check_reply_formats(prefs->reply_with_format,
-										prefs->reply_override_from_format,
-										prefs->reply_body_format);
-	}
-
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->forward_format_rec_checkbtn))) {
-		prefs->forward_with_format =
-			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_forward_with_format));
-		prefs->forward_override_from_format = pref_get_pref_from_entry(
-				GTK_ENTRY(page->forward_override_from_format));
-		prefs->forward_body_format = pref_get_pref_from_textview(
-				GTK_TEXT_VIEW(page->forward_body_format));
-		quotefmt_check_forward_formats(prefs->forward_with_format,
-										prefs->forward_override_from_format,
-										prefs->forward_body_format);
-	}
-
-	folder_item_prefs_save_config(folder);
-}
-
-static gboolean templates_save_recurse_func(GNode *node, gpointer data)
-{
-	FolderItem *item = (FolderItem *) node->data;
-	FolderItemTemplatesPage *page = (FolderItemTemplatesPage *) data;
-
-	cm_return_val_if_fail(item != NULL, TRUE);
-	cm_return_val_if_fail(page != NULL, TRUE);
-
-	templates_save_folder_prefs(item, page);
-
-	/* optimise by not continuing if none of the 'apply to sub folders'
-	   check boxes are selected - and optimise the checking by only doing
-	   it once */
-	if ((node == page->item->node) &&
-	    !(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->new_msg_format_rec_checkbtn)) ||
-	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->reply_format_rec_checkbtn)) ||
-	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->forward_format_rec_checkbtn))))
-		return TRUE;
-	else
-		return FALSE;
-
-	return FALSE;
-}
-
-static void prefs_folder_item_templates_save_func(PrefsPage *page_)
-{
-	FolderItemTemplatesPage *page = (FolderItemTemplatesPage *) page_;
-
-	g_node_traverse(page->item->node, G_PRE_ORDER, G_TRAVERSE_ALL,
-			-1, templates_save_recurse_func, page);
-
-}
-
 static void clean_cache_cb(GtkWidget *widget, gpointer data)
 {
 	FolderItemGeneralPage *page = (FolderItemGeneralPage *) data;
@@ -1832,22 +1545,6 @@ static void register_compose_page(void)
 	prefs_folder_item_register_page((PrefsPage *) &folder_item_compose_page, NULL);
 }
 
-static void register_templates_page(void)
-{
-	static gchar *pfi_templates_path[2];
-	static FolderItemTemplatesPage folder_item_templates_page;
-
-	pfi_templates_path[0] = _("Templates");
-	pfi_templates_path[1] = NULL;
-
-        folder_item_templates_page.page.path = pfi_templates_path;
-        folder_item_templates_page.page.create_widget = prefs_folder_item_templates_create_widget_func;
-        folder_item_templates_page.page.destroy_widget = prefs_folder_item_templates_destroy_widget_func;
-        folder_item_templates_page.page.save_page = prefs_folder_item_templates_save_func;
-
-	prefs_folder_item_register_page((PrefsPage *) &folder_item_templates_page, NULL);
-}
-
 static GSList *prefs_pages = NULL;
 
 static void prefs_folder_item_address_completion_start(PrefsWindow *window)
@@ -1868,7 +1565,6 @@ void prefs_folder_item_open(FolderItem *item)
 	if (prefs_pages == NULL) {
 		register_general_page();
 		register_compose_page();
-		register_templates_page();
 	}
 
 	if (item->path) {

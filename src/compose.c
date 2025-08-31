@@ -864,36 +864,7 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 	if (mailto_from) {
 		gtk_entry_set_text(GTK_ENTRY(compose->from_name), mailto_from);
 		g_free(mailto_from);
-	} else
-		/* override from name according to folder properties */
-		if (item && item->prefs &&
-			item->prefs->compose_with_format &&
-			item->prefs->compose_override_from_format &&
-			*item->prefs->compose_override_from_format != '\0') {
-
-			gchar *tmp = NULL;
-			gchar *buf = NULL;
-
-			dummyinfo = compose_msginfo_new_from_compose(compose);
-
-			/* decode \-escape sequences in the internal representation of the quote format */
-			tmp = g_malloc(strlen(item->prefs->compose_override_from_format)+1);
-			pref_get_unescaped_pref(tmp, item->prefs->compose_override_from_format);
-			quote_fmt_init(dummyinfo, NULL, NULL, FALSE, compose->account, FALSE);
-			quote_fmt_scan_string(tmp);
-			quote_fmt_parse();
-
-			buf = quote_fmt_get_buffer();
-			if (buf == NULL)
-				alertpanel_error(_("New message From format error."));
-			else
-				gtk_entry_set_text(GTK_ENTRY(compose->from_name), buf);
-			quote_fmt_reset_vartable();
-			quote_fmtlex_destroy();
-
-			g_free(tmp);
-		}
-
+	}
 	compose->replyinfo = NULL;
 	compose->fwdinfo   = NULL;
 
@@ -915,10 +886,7 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 
 	compose_add_field_list( compose, listAddress );
 
-	if (item && item->prefs && item->prefs->compose_with_format) {
-		subject_format = item->prefs->compose_subject_format;
-		body_format = item->prefs->compose_body_format;
-	} else if (account->compose_with_format) {
+	if (account->compose_with_format) {
 		subject_format = account->compose_subject_format;
 		body_format = account->compose_body_format;
 	} else if (prefs_common.compose_with_format) {
@@ -1401,35 +1369,6 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 		return NULL;
 	}
 
-	/* override from name according to folder properties */
-	if (msginfo->folder && msginfo->folder->prefs &&
-		msginfo->folder->prefs->reply_with_format &&
-		msginfo->folder->prefs->reply_override_from_format &&
-		*msginfo->folder->prefs->reply_override_from_format != '\0') {
-
-		gchar *tmp = NULL;
-		gchar *buf = NULL;
-
-		/* decode \-escape sequences in the internal representation of the quote format */
-		tmp = g_malloc(strlen(msginfo->folder->prefs->reply_override_from_format)+1);
-		pref_get_unescaped_pref(tmp, msginfo->folder->prefs->reply_override_from_format);
-
-
-		quote_fmt_init(compose->replyinfo, NULL, NULL, FALSE, compose->account, FALSE);
-		quote_fmt_scan_string(tmp);
-		quote_fmt_parse();
-
-		buf = quote_fmt_get_buffer();
-		if (buf == NULL)
-			alertpanel_error(_("The \"From\" field of the \"Reply\" template contains an invalid email address."));
-		else
-			gtk_entry_set_text(GTK_ENTRY(compose->from_name), buf);
-		quote_fmt_reset_vartable();
-		quote_fmtlex_destroy();
-
-		g_free(tmp);
-	}
-
 	textview = (GTK_TEXT_VIEW(compose->text));
 	textbuf = gtk_text_view_get_buffer(textview);
 	compose_create_tags(textview, compose);
@@ -1442,18 +1381,11 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 		   (if enabled) or fallback to the global reply format, which is always
 		   enabled (even if empty). */
 		quote = TRUE;
-		if (msginfo->folder && msginfo->folder->prefs &&
-				msginfo->folder->prefs->reply_with_format) {
-			body_fmt = msginfo->folder->prefs->reply_body_format;
-
-		} else if (account->reply_with_format) {
+		body_fmt = "";
+		if (account->reply_with_format) {
 			body_fmt = account->reply_body_format;
-
-		} else {
-			if (prefs_common.quotefmt && *prefs_common.quotefmt)
-				body_fmt = gettext(prefs_common.quotefmt);
-			else
-				body_fmt = "";
+		} else if (prefs_common.quotefmt && *prefs_common.quotefmt) {
+			body_fmt = gettext(prefs_common.quotefmt);
 		}
 	}
 
@@ -1574,41 +1506,6 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 		g_free(buf2);
 	}
 
-	/* override from name according to folder properties */
-	if (msginfo->folder && msginfo->folder->prefs &&
-		msginfo->folder->prefs->forward_with_format &&
-		msginfo->folder->prefs->forward_override_from_format &&
-		*msginfo->folder->prefs->forward_override_from_format != '\0') {
-
-		gchar *tmp = NULL;
-		gchar *buf = NULL;
-		MsgInfo *full_msginfo = NULL;
-
-		if (!as_attach)
-			full_msginfo = procmsg_msginfo_get_full_info(msginfo);
-		if (!full_msginfo)
-			full_msginfo = procmsg_msginfo_copy(msginfo);
-
-		/* decode \-escape sequences in the internal representation of the quote format */
-		tmp = g_malloc(strlen(msginfo->folder->prefs->forward_override_from_format)+1);
-		pref_get_unescaped_pref(tmp, msginfo->folder->prefs->forward_override_from_format);
-
-		quote_fmt_init(full_msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-		quote_fmt_scan_string(tmp);
-		quote_fmt_parse();
-
-		buf = quote_fmt_get_buffer();
-		if (buf == NULL)
-			alertpanel_error(_("The \"From\" field of the \"Forward\" template contains an invalid email address."));
-		else
-			gtk_entry_set_text(GTK_ENTRY(compose->from_name), buf);
-		quote_fmt_reset_vartable();
-		quote_fmtlex_destroy();
-
-		g_free(tmp);
-		procmsg_msginfo_free(&full_msginfo);
-	}
-
 	textview = GTK_TEXT_VIEW(compose->text);
 	textbuf = gtk_text_view_get_buffer(textview);
 	compose_create_tags(textview, compose);
@@ -1626,29 +1523,17 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 
 		g_free(msgfile);
 	} else {
-		const gchar *body_fmt = NULL;
 		MsgInfo *full_msginfo;
 
 		full_msginfo = procmsg_msginfo_get_full_info(msginfo);
 		if (!full_msginfo)
 			full_msginfo = procmsg_msginfo_copy(msginfo);
 
-		/*
-		 * use the forward format of folder (if enabled), or the account's one
-		 * (if enabled) or fallback to the global forward format, which is always
-		 * enabled (even if empty).
-		 */
-		if (msginfo->folder && msginfo->folder->prefs &&
-				msginfo->folder->prefs->forward_with_format) {
-			body_fmt = msginfo->folder->prefs->forward_body_format;
-
-		} else if (account->forward_with_format) {
+		gchar *body_fmt = "";
+		if (account->forward_with_format) {
 			body_fmt = account->forward_body_format;
-		} else {
-			if (prefs_common.fw_quotefmt && *prefs_common.fw_quotefmt)
-				body_fmt = gettext(prefs_common.fw_quotefmt);
-			else
-				body_fmt = "";
+		} else if (prefs_common.fw_quotefmt && *prefs_common.fw_quotefmt) {
+			body_fmt = gettext(prefs_common.fw_quotefmt);
 		}
 
 		compose_quote_fmt(compose, full_msginfo,
@@ -1760,37 +1645,6 @@ static Compose *compose_forward_multiple(PrefsAccount *account, GSList *msginfo_
 		COMPOSE_PRIVACY_WARNING();
 
 	compose->updating = TRUE;
-
-	/* override from name according to folder properties */
-	if (msginfo_list->data) {
-		MsgInfo *msginfo = msginfo_list->data;
-
-		if (msginfo->folder && msginfo->folder->prefs &&
-			msginfo->folder->prefs->forward_with_format &&
-			msginfo->folder->prefs->forward_override_from_format &&
-			*msginfo->folder->prefs->forward_override_from_format != '\0') {
-
-			gchar *tmp = NULL;
-			gchar *buf = NULL;
-
-			/* decode \-escape sequences in the internal representation of the quote format */
-			tmp = g_malloc(strlen(msginfo->folder->prefs->forward_override_from_format)+1);
-			pref_get_unescaped_pref(tmp, msginfo->folder->prefs->forward_override_from_format);
-			quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-			quote_fmt_scan_string(tmp);
-			quote_fmt_parse();
-
-			buf = quote_fmt_get_buffer();
-			if (buf == NULL)
-				alertpanel_error(_("The \"From\" field of the \"Forward\" template contains an invalid email address."));
-			else
-				gtk_entry_set_text(GTK_ENTRY(compose->from_name), buf);
-			quote_fmt_reset_vartable();
-			quote_fmtlex_destroy();
-
-			g_free(tmp);
-		}
-	}
 
 	textview = GTK_TEXT_VIEW(compose->text);
 	textbuf = gtk_text_view_get_buffer(textview);
@@ -3844,7 +3698,6 @@ static gchar * compose_get_itemized_chars(GtkTextBuffer *buffer,
 {
 	GtkTextIter iter = *start;
 	gunichar wc;
-	gint len = 0;
 	GString *item_chars = g_string_new("");
 
 	if (gtk_text_iter_ends_line(&iter)) {
@@ -3853,7 +3706,6 @@ static gchar * compose_get_itemized_chars(GtkTextBuffer *buffer,
 	}
 
 	while (1) {
-		len++;
 		wc = gtk_text_iter_get_char(&iter);
 		if (!g_unichar_isspace(wc))
 			break;
@@ -4137,7 +3989,6 @@ static gboolean compose_beautify_paragraph(Compose *compose, GtkTextIter *par_it
 	gboolean modified = force;
 	gboolean removed = FALSE;
 	gboolean modified_before_remove = FALSE;
-	gint lines = 0;
 	gboolean start = TRUE;
 	gint itemized_len = 0, rem_item_len = 0;
 	gchar *itemized_chars = NULL;
@@ -4336,7 +4187,6 @@ static gboolean compose_beautify_paragraph(Compose *compose, GtkTextIter *par_it
 		} else {
 			/* move iter to next line start */
 			iter = break_pos;
-			lines++;
 		}
 
 colorize:
@@ -4701,7 +4551,6 @@ static void compose_select_account(Compose *compose, PrefsAccount *account,
 
 gboolean compose_check_for_valid_recipient(Compose *compose) {
 	gchar *recipient_headers_mail[] = {"To:", "Cc:", "Bcc:", NULL};
-	gchar *recipient_headers_news[] = {"Newsgroups:", NULL};
 	gboolean recipient_found = FALSE;
 	GSList *list;
 	gchar **strptr;
@@ -10855,15 +10704,6 @@ void compose_reply_from_messageview(MessageView *msgview, GSList *msginfo_list,
 	}
 }
 
-void compose_check_for_email_account(Compose *compose)
-{
-	PrefsAccount *ac = NULL, *curr = NULL;
-	GList *list;
-
-	if (!compose)
-		return;
-}
-
 void compose_reply_to_address(MessageView *msgview, MsgInfo *msginfo,
 				const gchar *address)
 {
@@ -10874,7 +10714,6 @@ void compose_reply_to_address(MessageView *msgview, MsgInfo *msginfo,
 	msginfo_list = g_slist_prepend(msginfo_list, msginfo);
 
 	compose = compose_reply_mode(COMPOSE_REPLY_TO_ADDRESS, msginfo_list, body);
-	compose_check_for_email_account(compose);
 	compose_set_folder_prefs(compose, msginfo->folder, FALSE);
 	compose_entry_append(compose, address, COMPOSE_TO, PREF_NONE);
 	compose_reply_set_subject(compose, msginfo);
