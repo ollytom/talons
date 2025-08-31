@@ -84,7 +84,6 @@ struct _FolderItemGeneralPage
 	GtkWidget *label_end_offlinesync;
 	GtkWidget *checkbtn_remove_old_offlinesync;
 	GtkWidget *render_html;
-	GtkWidget *promote_html_part;
 
 	/* apply to sub folders */
 	GtkWidget *simplify_subject_rec_checkbtn;
@@ -95,7 +94,6 @@ struct _FolderItemGeneralPage
 	GtkWidget *skip_on_goto_unread_or_new_rec_checkbtn;
 	GtkWidget *offlinesync_rec_checkbtn;
 	GtkWidget *render_html_rec_checkbtn;
-	GtkWidget *promote_html_part_rec_checkbtn;
 };
 
 struct _FolderItemComposePage
@@ -214,9 +212,7 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	GtkWidget *label_end_offlinesync;
 	GtkWidget *checkbtn_remove_old_offlinesync;
 	GtkWidget *render_html;
-	GtkWidget *promote_html_part;
 	GtkListStore *render_html_menu;
-	GtkListStore *promote_html_part_menu;
 
 	GtkWidget *simplify_subject_rec_checkbtn;
 
@@ -227,7 +223,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	GtkWidget *skip_on_goto_unread_or_new_rec_checkbtn;
 	GtkWidget *offlinesync_rec_checkbtn;
 	GtkWidget *render_html_rec_checkbtn;
-	GtkWidget *promote_html_part_rec_checkbtn;
 
 	gint wreq1, wreq2;
 
@@ -465,34 +460,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 
 	rowcount++;
 
-	/* Select HTML part by default? */
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, VSPACING_NARROW_2);
-	gtk_box_set_spacing(GTK_BOX(hbox), 8);
-	gtk_grid_attach(GTK_GRID(table), hbox, 0, rowcount, 1, 1);
-
-	label = gtk_label_new(_("Select the HTML part of multipart messages"));
-	gtk_box_pack_start (GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
-	promote_html_part = gtkut_sc_combobox_create (NULL, FALSE);
-	gtk_box_pack_start (GTK_BOX(hbox), promote_html_part, FALSE, FALSE, 0);
-
-	promote_html_part_menu = GTK_LIST_STORE(gtk_combo_box_get_model(
-				GTK_COMBO_BOX(promote_html_part)));
-	COMBOBOX_ADD (promote_html_part_menu, _("Default"), HTML_PROMOTE_DEFAULT);
-	COMBOBOX_ADD (promote_html_part_menu, _("No"), HTML_PROMOTE_NEVER);
-	COMBOBOX_ADD (promote_html_part_menu, _("Yes"), HTML_PROMOTE_ALWAYS);
-
-	combobox_select_by_data(GTK_COMBO_BOX(promote_html_part),
-			item->prefs->promote_html_part);
-
-	CLAWS_SET_TIP(hbox,
-			     _("\"Default\" will follow global preference (found in '/Configuration/Preferences/Message View/Text Options')"));
-
-	promote_html_part_rec_checkbtn = gtk_check_button_new();
-	gtk_grid_attach(GTK_GRID(table), promote_html_part_rec_checkbtn, 2, rowcount, 1, 1);
-
-	rowcount++;
-
 	/* Skip folder on 'goto unread (or new) message' */
 	checkbtn_skip_on_goto_unread_or_new = gtk_check_button_new_with_label(
 			     _("Skip folder when searching for unread or new messages"));
@@ -623,7 +590,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	page->label_end_offlinesync = label_end_offlinesync;
 	page->checkbtn_remove_old_offlinesync = checkbtn_remove_old_offlinesync;
 	page->render_html = render_html;
-	page->promote_html_part = promote_html_part;
 
 	page->simplify_subject_rec_checkbtn  = simplify_subject_rec_checkbtn;
 
@@ -634,7 +600,6 @@ static void prefs_folder_item_general_create_widget_func(PrefsPage * page_,
 	page->skip_on_goto_unread_or_new_rec_checkbtn = skip_on_goto_unread_or_new_rec_checkbtn;
 	page->offlinesync_rec_checkbtn	     = offlinesync_rec_checkbtn;
 	page->render_html_rec_checkbtn = render_html_rec_checkbtn;
-	page->promote_html_part_rec_checkbtn = promote_html_part_rec_checkbtn;
 
 	page->page.widget = table;
 
@@ -659,7 +624,6 @@ static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage 
 	SpecialFolderItemType type = F_NORMAL;
 	FolderView *folderview = mainwindow_get_mainwindow()->folderview;
 	HTMLRenderType render_html = HTML_RENDER_DEFAULT;
-	HTMLPromoteType promote_html_part = HTML_PROMOTE_DEFAULT;
 
 	if (folder->path == NULL)
 		return;
@@ -679,11 +643,6 @@ static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage 
 		combobox_get_active_data(GTK_COMBO_BOX(page->render_html));
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->render_html_rec_checkbtn)))
 		prefs->render_html = render_html;
-
-	promote_html_part =
-		combobox_get_active_data(GTK_COMBO_BOX(page->promote_html_part));
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->promote_html_part_rec_checkbtn)))
-		prefs->promote_html_part = promote_html_part;
 
 	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->simplify_subject_rec_checkbtn))) {
 		gboolean old_simplify_subject = prefs->enable_simplify_subject;
@@ -764,8 +723,7 @@ static gboolean general_save_recurse_func(GNode *node, gpointer data)
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->newmailcheck_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->offlinesync_rec_checkbtn)) ||
 		  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->skip_on_goto_unread_or_new_rec_checkbtn)) ||
-		  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->render_html_rec_checkbtn)) ||
-		  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->promote_html_part_rec_checkbtn))
+		  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->render_html_rec_checkbtn))
 			))
 		return TRUE;
 	else

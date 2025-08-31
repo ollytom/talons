@@ -323,7 +323,6 @@ struct _PrefsCommon
 	gboolean display_header;
 	gint line_space;
 	gboolean render_html;
-	gboolean promote_html_part;
 	gboolean hide_quoted;
 	gboolean respect_flowed_format;
 	gboolean show_all_headers;

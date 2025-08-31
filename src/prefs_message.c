@@ -49,7 +49,6 @@ typedef struct _MessagePage
 	GtkWidget *checkbtn_disphdr;
 
 	GtkWidget *checkbtn_html;
-	GtkWidget *checkbtn_promote_html_part;
 	GtkWidget *spinbtn_linespc;
 
 	GtkWidget *checkbtn_hide_quoted;
@@ -69,16 +68,12 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	GtkWidget *button_edit_disphdr;
 	GtkWidget *checkbtn_html;
-	GtkWidget *checkbtn_promote_html_part;
 	GtkWidget *hbox_linespc;
 	GtkWidget *label_linespc;
 	GtkAdjustment *spinbtn_linespc_adj;
 	GtkWidget *spinbtn_linespc;
 
 	GtkWidget *frame;
-	GtkWidget *vbox_scr;
-	GtkWidget *hbox_scr;
-	GtkWidget *label_scr;
 	GtkWidget *checkbtn_hide_quoted;
 
 	GtkWidget *checkbtn_attach_desc;
@@ -111,12 +106,8 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	SET_TOGGLE_SENSITIVITY(checkbtn_disphdr, button_edit_disphdr);
 
 	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("HTML messages"));
-
 	PACK_CHECK_BUTTON(vbox2, checkbtn_html,
 			  _("Render HTML messages as text"));
-
-	PACK_CHECK_BUTTON(vbox2, checkbtn_promote_html_part,
-			  _("Select the HTML part of multipart/alternative messages"));
 
 	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 32);
 	gtk_widget_show (hbox1);
@@ -145,15 +136,6 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 			    FALSE, FALSE, 0);
 	gtk_widget_show_all (hbox1);
 
-	vbox_scr = gtkut_get_options_frame(vbox1, &frame, _("Scroll"));
-	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 32);
-	gtk_widget_show (hbox1);
-	gtk_box_pack_start (GTK_BOX (vbox_scr), hbox1, FALSE, TRUE, 0);
-
-	hbox_scr = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox_scr);
-	gtk_box_pack_start (GTK_BOX (hbox1), hbox_scr, FALSE, FALSE, 0);
-
 	PACK_CHECK_BUTTON(vbox1, checkbtn_attach_desc,
 			  _("Show attachment descriptions (rather than names)"));
 
@@ -178,8 +160,6 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 		prefs_common.display_header);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_html),
 		prefs_common.render_html);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_promote_html_part),
-		prefs_common.promote_html_part);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_hide_quoted),
 		prefs_common.hide_quoted);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_attach_desc),
@@ -190,7 +170,6 @@ static void prefs_message_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_message->window = GTK_WIDGET(window);
 	prefs_message->checkbtn_disphdr = checkbtn_disphdr;
 	prefs_message->checkbtn_html = checkbtn_html;
-	prefs_message->checkbtn_promote_html_part = checkbtn_promote_html_part;
 	prefs_message->spinbtn_linespc = spinbtn_linespc;
 	prefs_message->checkbtn_hide_quoted = checkbtn_hide_quoted;
 	prefs_message->checkbtn_attach_desc = checkbtn_attach_desc;
@@ -206,8 +185,6 @@ static void prefs_message_save(PrefsPage *_page)
 		GTK_TOGGLE_BUTTON(page->checkbtn_disphdr));
 	prefs_common.render_html = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_html));
-	prefs_common.promote_html_part = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_promote_html_part));
 	prefs_common.hide_quoted = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_hide_quoted));
 	prefs_common.attach_desc = gtk_toggle_button_get_active(

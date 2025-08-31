@@ -824,13 +824,6 @@ static gboolean messageview_try_select_mimeinfo(MessageView *messageview, MsgInf
 				&& mimeview_has_viewer_for_content_type(messageview->mimeview, "text/calendar")) {
 			mimeview_select_mimepart_icon(messageview->mimeview, mimeinfo);
 			return TRUE;
-		} else if (!strcasecmp(mimeinfo->subtype, "html")
-				&& mimeinfo->disposition != DISPOSITIONTYPE_ATTACHMENT
-				&& ((msginfo->folder && msginfo->folder->prefs->promote_html_part == HTML_PROMOTE_ALWAYS)
-					|| ((msginfo->folder && msginfo->folder->prefs->promote_html_part == HTML_PROMOTE_DEFAULT)
-						&& prefs_common.promote_html_part))) {
-			mimeview_select_mimepart_icon(messageview->mimeview, mimeinfo);
-			return TRUE;
 		}
 	}
 	return FALSE;
@@ -1058,16 +1051,7 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 				}
 			}
 			messageview_find_part_depth_first(&context, MIMETYPE_TEXT, "html");
-			if (context.found &&
-			    (msginfo->folder->prefs->promote_html_part == HTML_PROMOTE_ALWAYS ||
-			     (msginfo->folder->prefs->promote_html_part == HTML_PROMOTE_DEFAULT &&
-			      prefs_common.promote_html_part))) { /* html found */
-				mimeinfo = context.found;
-				if (messageview_try_select_mimeinfo(messageview, msginfo, mimeinfo))
-					goto done;
-			} else
-				mimeinfo = root; /* nothing found */
-
+			mimeinfo = root;
 			if (!mimeview_show_part(messageview->mimeview, mimeinfo))
 				mimeview_select_mimepart_icon(messageview->mimeview, root);
 			goto done;
