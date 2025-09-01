@@ -188,20 +188,18 @@ static gint smtp_auth(SMTPSession *session)
 
 static gint smtp_auth_recv(SMTPSession *session, const gchar *msg)
 {
-	gchar buf[MESSAGEBUFSIZE], *tmp;
-
 	switch (session->auth_type) {
 	case SMTPAUTH_LOGIN:
 		session->state = SMTP_AUTH_LOGIN_USER;
 
 		if (!strncmp(msg, "334 ", 4)) {
+			char *tmp;
 			tmp = g_base64_encode(session->user, strlen(session->user));
-
 			if (session_send_msg(SESSION(session), tmp) < 0) {
-				g_free(tmp);
+				free(tmp);
 				return SM_ERROR;
 			}
-			g_free(tmp);
+			free(tmp);
 			log_print(LOG_PROTOCOL, "ESMTP> [USERID]\n");
 		} else {
 			/* Server rejects AUTH */
@@ -223,10 +221,9 @@ static gint smtp_auth_recv(SMTPSession *session, const gchar *msg)
 
 static gint smtp_auth_login_user_recv(SMTPSession *session, const gchar *msg)
 {
-	gchar *tmp;
-
 	session->state = SMTP_AUTH_LOGIN_PASS;
 
+	gchar *tmp;
 	if (!strncmp(msg, "334 ", 4)) {
 		tmp = g_base64_encode(session->pass, strlen(session->pass));
 	} else {
