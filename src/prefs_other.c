@@ -98,7 +98,6 @@ static void prefs_keybind_preset_changed(GtkComboBox *widget)
 		{"<Actions>/Menu/File/EmptyTrashes",			"<shift>D"},
 		{"<Actions>/Menu/File/SaveAs",				"<control>S"},
 		{"<Actions>/Menu/File/SavePartAs",			"Y"},
-		{"<Actions>/Menu/File/Print",				"<control>P"},
 		{"<Actions>/Menu/File/SynchroniseFolders",		"<shift><control>S"},
 		{"<Actions>/Menu/File/Exit",				"<control>Q"},
 		{"<Actions>/Menu/File/OfflineMode",			"<control>W"},
@@ -193,7 +192,6 @@ static void prefs_keybind_preset_changed(GtkComboBox *widget)
 		/* main */
 		{"<Actions>/Menu/File/EmptyTrashes",			"<shift>D"},
 		{"<Actions>/Menu/File/SaveAs",				"Y"},
-		{"<Actions>/Menu/File/Print",				"<control>numbersign"},
 		{"<Actions>/Menu/File/Exit",				"<shift>Q"},
 
 		{"<Actions>/Menu/Edit/Copy",				"<control>C"},
@@ -250,7 +248,6 @@ static void prefs_keybind_preset_changed(GtkComboBox *widget)
 	static struct KeyBind mutt_menurc[] = {
 		/* main */
 		{"<Actions>/Menu/File/SaveAs",				"S"}, /* save-message */
-		{"<Actions>/Menu/File/Print",				"P"}, /* print-message */
 		{"<Actions>/Menu/File/Exit",				"Q"}, /* quit */
 
 		{"<Actions>/Menu/Edit/Copy",				"<control>C"}, /* - */

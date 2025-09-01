@@ -636,7 +636,6 @@ SummaryView *summary_create(MainWindow *mainwin)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Separator5", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "View", "SummaryViewPopup/View", GTK_UI_MANAGER_MENU)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "SaveAs", "File/SaveAs", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup", "Print", "File/Print", GTK_UI_MANAGER_MENUITEM)
 
 	/* submenus - replyto */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menus/SummaryViewPopup/ReplyTo", "All", "SummaryViewPopup/ReplyTo/All", GTK_UI_MANAGER_MENUITEM)
@@ -1628,7 +1627,6 @@ void summary_set_menu_sensitive(SummaryView *summaryview)
 	SET_SENSITIVE("Menus/SummaryViewPopup/View/MessageSource", M_SINGLE_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/View/AllHeaders", M_SINGLE_TARGET_EXIST);
 	SET_SENSITIVE("Menus/SummaryViewPopup/SaveAs", M_TARGET_EXIST);
-	SET_SENSITIVE("Menus/SummaryViewPopup/Print", M_TARGET_EXIST);
 #undef SET_SENSITIVE
 
 	summary_lock(summaryview);
@@ -4482,40 +4480,6 @@ void summary_save_as(SummaryView *summaryview)
 
 	g_free(dest);
 	g_free(tmp);
-}
-
-void summary_print(SummaryView *summaryview)
-{
-	GtkCMCList *clist = GTK_CMCLIST(summaryview->ctree);
-	GList *cur;
-	gchar *msg = g_strdup_printf("You are about to print %d messages, one by one. Do you want to continue?",
-				       g_list_length(clist->selection));
-	if (g_list_length(clist->selection) > 9
-	&&  alertpanel(_("Warning"), msg, NULL, _("_Cancel"), NULL, _("_Yes"),
-		NULL, NULL, ALERTFOCUS_SECOND) != G_ALERTALTERNATE) {
-		g_free(msg);
-		return;
-	}
-	g_free(msg);
-
-	if (clist->selection == NULL) return;
-	for (cur = clist->selection;
-	     cur != NULL && cur->data != NULL;
-	     cur = cur->next) {
-		GtkCMCTreeNode *node = GTK_CMCTREE_NODE(cur->data);
-		MsgInfo *msginfo = gtk_cmctree_node_get_row_data(
-					GTK_CMCTREE(summaryview->ctree),
-					node);
-		gint sel_start = -1, sel_end = -1, partnum = 0;
-
-		if (node == summaryview->displayed) {
-			partnum = mimeview_get_selected_part_num(summaryview->messageview->mimeview);
-			textview_get_selection_offsets(summaryview->messageview->mimeview->textview,
-				&sel_start, &sel_end);
-		}
-		messageview_print(msginfo, summaryview->messageview->all_headers,
-			sel_start, sel_end, partnum);
-	}
 }
 
 gboolean summary_execute(SummaryView *summaryview)

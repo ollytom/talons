@@ -57,7 +57,6 @@
 #include "log.h"
 #include "privacy.h"
 #include "combobox.h"
-#include "printing.h"
 #include "quoted-printable.h"
 #include "version.h"
 #include "statusbar.h"
@@ -80,10 +79,6 @@ static gboolean key_pressed		(GtkWidget	*widget,
 static void save_as_cb			(GtkAction	*action,
 					 gpointer	 data);
 void messageview_save_as		(MessageView *messageview);
-static void page_setup_cb		(GtkAction	*action,
-					 gpointer	 data);
-static void print_cb			(GtkAction	*action,
-					 gpointer	 data);
 static void close_cb			(GtkAction	*action,
 					 gpointer	 data);
 static void copy_cb			(GtkAction	*action,
@@ -177,8 +172,6 @@ static GtkActionEntry msgview_entries[] =
 /* File menu */
 	{"File/SaveAs",                              NULL, N_("_Save email as..."), "<control>S", NULL, G_CALLBACK(save_as_cb) },
 	{"File/SavePartAs",                          NULL, N_("_Save part as..."), "Y", NULL, G_CALLBACK(save_part_as_cb) },
-	{"File/PageSetup",                           NULL, N_("Page setup..."), NULL, NULL, G_CALLBACK(page_setup_cb) },
-	{"File/Print",                               NULL, N_("_Print..."), "<control>P", NULL, G_CALLBACK(print_cb) },
 	{"File/---",                                 NULL, "---", NULL, NULL, NULL },
 	{"File/Close",                               NULL, N_("_Close"), "<control>W", NULL, G_CALLBACK(close_cb) },
 
@@ -417,8 +410,6 @@ static void messageview_add_toolbar(MessageView *msgview, GtkWidget *window)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/File", "SaveAs", "File/SaveAs", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/File", "SavePartAs", "File/SavePartAs", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/File", "Separator1", "File/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/File", "PageSetup", "File/PageSetup", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/File", "Print", "File/Print", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/File", "Separator2", "File/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/File", "Close", "File/Close", GTK_UI_MANAGER_MENUITEM)
 
@@ -1484,93 +1475,6 @@ void messageview_save_as(MessageView *messageview)
 	}
 	g_free(dest);
 	g_free(tmp);
-}
-
-static void print_mimeview(MimeView *mimeview, gint sel_start, gint sel_end, gint partnum)
-{
-	MainWindow *mainwin;
-	if (!mimeview
-	||  !mimeview->textview
-	||  !mimeview->textview->text)
-		alertpanel_warning("Cannot print: no message text");
-	else {
-		gtk_widget_realize(mimeview->textview->text);
-		if (partnum > 0) {
-			mimeview_select_part_num(mimeview, partnum);
-		}
-		if (mimeview->type == MIMEVIEW_VIEWER) {
-			MimeViewer *viewer = mimeview->mimeviewer;
-			if (viewer && viewer->print) {
-				viewer->print(viewer);
-				return;
-			} else {
-				/* Force text rendering if possible */
-				MimeInfo *mimepart;
-
-				mimepart = mimeview_get_selected_part(mimeview);
-				if (mimepart == NULL
-				||  (mimepart->type != MIMETYPE_TEXT && mimepart->type != MIMETYPE_MESSAGE)) {
-					alertpanel_warning(_("Cannot print: non-text MIME part"));
-					return;
-				}
-				mimeview_show_part_as_text(mimeview, mimepart);
-			}
-		}
-		if (sel_start != -1 && sel_end != -1) {
-			GtkTextIter start, end;
-			GtkTextView *text = GTK_TEXT_VIEW(mimeview->textview->text);
-			GtkTextBuffer *buffer = gtk_text_view_get_buffer(text);
-
-			gtk_text_buffer_get_iter_at_offset(buffer, &start, sel_start);
-			gtk_text_buffer_get_iter_at_offset(buffer, &end, sel_end);
-			gtk_text_buffer_select_range(buffer, &start, &end);
-		}
-		/* TODO: Get the real parent window, not the main window */
-		mainwin = mainwindow_get_mainwindow();
-		printing_print(GTK_TEXT_VIEW(mimeview->textview->text),
-			       mainwin ? GTK_WINDOW(mainwin->window) : NULL,
-				sel_start, sel_end,
-				(mimeview->textview->image
-					? GTK_IMAGE(mimeview->textview->image)
-					: NULL));
-	}
-}
-
-void messageview_print(MsgInfo *msginfo, gboolean all_headers,
-			gint sel_start, gint sel_end, gint partnum)
-{
-	MessageView *tmpview = messageview_create_with_new_window_visible(
-				mainwindow_get_mainwindow(), FALSE);
-
-	tmpview->all_headers = all_headers;
-	if (msginfo && messageview_show(tmpview, msginfo,
-		tmpview->all_headers) >= 0) {
-			print_mimeview(tmpview->mimeview,
-				sel_start, sel_end, partnum);
-	}
-	messageview_clear(tmpview);
-	messageview_destroy(tmpview);
-}
-
-static void page_setup_cb(GtkAction *action, gpointer data)
-{
-	MessageView *messageview = (MessageView *)data;
-	printing_page_setup(messageview ?
-			    GTK_WINDOW(messageview->window) : NULL);
-}
-
-static void print_cb(GtkAction *action, gpointer data)
-{
-	MessageView *messageview = (MessageView *)data;
-	gint sel_start = -1, sel_end = -1, partnum = 0;
-
-	if (!messageview->msginfo) return;
-
-	partnum = mimeview_get_selected_part_num(messageview->mimeview);
-	textview_get_selection_offsets(messageview->mimeview->textview,
-		&sel_start, &sel_end);
-	messageview_print(messageview->msginfo, messageview->all_headers,
-		sel_start, sel_end, partnum);
 }
 
 static void close_cb(GtkAction *action, gpointer data)

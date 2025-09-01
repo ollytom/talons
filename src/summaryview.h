@@ -264,7 +264,6 @@ GSList *summary_get_selection	  (SummaryView 		*summaryview);
 guint summary_get_selection_count (SummaryView		*summaryview);
 void summary_copy_to		  (SummaryView		*summaryview);
 void summary_save_as		  (SummaryView		*summaryview);
-void summary_print		  (SummaryView		*summaryview);
 void summary_mark		  (SummaryView		*summaryview);
 void summary_unmark		  (SummaryView		*summaryview);
 void summary_mark_as_read	  (SummaryView		*summaryview);

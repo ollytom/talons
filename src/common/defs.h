@@ -95,7 +95,6 @@
 #define OLD_MARK_FILE		".sylpheed_mark"
 #define MARK_FILE		".claws_mark"
 #define TAGS_FILE		".claws_tags"
-#define PRINTING_PAGE_SETUP_STORAGE_FILE "print_page_setup"
 #define CACHE_VERSION		24
 #define MARK_VERSION		2
 #define TAGS_VERSION		1

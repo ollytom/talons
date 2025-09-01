@@ -163,9 +163,6 @@ static void toolbar_unread_cb	   	(GtkWidget	*widget,
 static void toolbar_run_processing_cb	   	(GtkWidget	*widget,
 					    	 gpointer 	 data);
 
-static void toolbar_print_cb			(GtkWidget	*widget,
-					    	 gpointer 	 data);
-
 static void toolbar_actions_execute_cb	   	(GtkWidget     	*widget,
 				  	    	 gpointer      	 data);
 
@@ -235,7 +232,6 @@ struct {
 	{ "A_UNREAD", 			N_("Mark Message as unread")               },
 	{ "A_RUN_PROCESSING",	N_("Run folder processing rules")          },
 
-	{ "A_PRINT",	     	N_("Print")                                },
 	{ "A_GO_FOLDERS",   	N_("Open folder/Go to folder list")        },
 	{ "A_PREFERENCES",      N_("Preferences")                          },
 
@@ -360,7 +356,7 @@ GList *toolbar_get_action_items(ToolbarType source)
 					A_MARK,          A_UNMARK,        A_LOCK,          A_UNLOCK,
 					A_ALL_READ,      A_ALL_UNREAD,    A_READ,          A_UNREAD,
 					A_RUN_PROCESSING,
-					A_PRINT,         A_ADDRBOOK, A_GO_FOLDERS,
+					A_ADDRBOOK, A_GO_FOLDERS,
 					A_CANCEL_INC,    A_CANCEL_SEND,   A_CANCEL_ALL,    A_PREFERENCES };
 
 		for (i = 0; i < sizeof main_items / sizeof main_items[0]; i++)  {
@@ -494,7 +490,6 @@ const gchar *toolbar_get_short_text(int action) {
 	case A_UNREAD: 			return _("Unread");
 	case A_RUN_PROCESSING:	return _("Run proc. rules");
 
-	case A_PRINT:	 		return _("Print");
 	case A_GO_FOLDERS: 		return _("Folders");
 	case A_PREFERENCES:		return _("Preferences");
 
@@ -551,7 +546,6 @@ gint toolbar_get_icon(int action) {
 	case A_UNREAD:   		return STOCK_PIXMAP_MARK_UNREAD;
 	case A_RUN_PROCESSING:	return STOCK_PIXMAP_DIR_OPEN;
 
-	case A_PRINT:	 		return STOCK_PIXMAP_PRINTER_BTN;
 	case A_GO_FOLDERS: 		return STOCK_PIXMAP_GO_FOLDERS;
 	case A_PREFERENCES:		return STOCK_PIXMAP_PREFERENCES;
 
@@ -1616,28 +1610,6 @@ static void toolbar_cancel_all_cb(GtkWidget *widget, gpointer data)
 	toolbar_cancel_send_cb(widget, data);
 }
 
-static void toolbar_print_cb(GtkWidget *widget, gpointer data)
-{
-	ToolbarItem *toolbar_item = (ToolbarItem*)data;
-	MainWindow *mainwin;
-
-	cm_return_if_fail(toolbar_item != NULL);
-
-	switch (toolbar_item->type) {
-	case TOOLBAR_MAIN:
-		mainwin = (MainWindow *) toolbar_item->parent;
-		summary_print(mainwin->summaryview);
-		break;
-	case TOOLBAR_MSGVIEW:
-		/* TODO: see toolbar_next_unread_cb() if you need
-		 * this in the message view */
-		break;
-	default:
-		debug_print("toolbar event not supported\n");
-		break;
-	}
-}
-
 static void toolbar_send_cb(GtkWidget *widget, gpointer data)
 {
 	compose_toolbar_cb(A_SEND, data);
@@ -1896,7 +1868,6 @@ static void toolbar_buttons_cb(GtkWidget   *widget,
 		{ A_READ,				toolbar_read_cb				},
 		{ A_UNREAD,				toolbar_unread_cb			},
 		{ A_RUN_PROCESSING,		toolbar_run_processing_cb	},
-		{ A_PRINT,				toolbar_print_cb			},
 		{ A_DELETE_DUP,			toolbar_delete_dup_cb		},
 		{ A_GO_FOLDERS,			toolbar_go_folders_cb		},
 

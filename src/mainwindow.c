@@ -76,7 +76,6 @@
 #include "textview.h"
 #include "imap.h"
 #include "socket.h"
-#include "printing.h"
 #include "send_message.h"
 
 /* list of all instantiated MainWindow */
@@ -131,10 +130,6 @@ static void export_list_mbox_cb  (GtkAction	*action,
 static void empty_trash_cb	 (GtkAction	*action,
 				  gpointer	 data);
 static void save_as_cb		 (GtkAction	*action,
-				  gpointer	 data);
-static void page_setup_cb	 (GtkAction	*action,
-				  gpointer	 data);
-static void print_cb		 (GtkAction	*action,
 				  gpointer	 data);
 static void app_exit_cb		 (GtkAction	*action,
 				  gpointer	 data);
@@ -452,8 +447,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"File/SavePartAs",             NULL, N_("_Save part as..."), "Y", NULL, G_CALLBACK(save_part_as_cb) },
 	/* {"File/---",                 NULL, "---", NULL, NULL, NULL }, */
 
-	{"File/PageSetup",              NULL, N_("Page setup..."), NULL, NULL, G_CALLBACK(page_setup_cb) },
-	{"File/Print",                  NULL, N_("_Print..."), "<control>P", NULL, G_CALLBACK(print_cb) },
 	/* {"File/---",                 NULL, "---", NULL, NULL, NULL }, */
 	{"File/SynchroniseFolders",     NULL, N_("Synchronise folders"), "<shift><control>S", NULL, G_CALLBACK(sync_cb) },
 	/* {"File/---",                 NULL, "---", NULL, NULL, NULL }, */
@@ -999,9 +992,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "Separator4", "File/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "SaveAs", "File/SaveAs", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "SavePartAs", "File/SavePartAs", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "Separator5", "File/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "PageSetup", "File/PageSetup", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "Print", "File/Print", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "Separator6", "File/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "OfflineMode", "File/OfflineMode", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "SynchroniseFolders", "File/SynchroniseFolders", GTK_UI_MANAGER_MENUITEM)
@@ -2338,7 +2328,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 }
 	SET_SENSITIVE("Menu/File/SaveAs", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/File/SavePartAs", M_SINGLE_TARGET_EXIST);
-	SET_SENSITIVE("Menu/File/Print", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/File/Exit", M_UNLOCKED);
 
 	SET_SENSITIVE("Menu/Edit/SelectThread", M_TARGET_EXIST, M_SUMMARY_ISLIST);
@@ -3060,22 +3049,6 @@ static void save_as_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 	summary_save_as(mainwin->summaryview);
-}
-
-static void print_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	summary_print(mainwin->summaryview);
-}
-
-static void page_setup_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	GtkWindow *win;
-
-	win = (mainwin ? GTK_WINDOW(mainwin->window) : NULL);
-
-	printing_page_setup(win);
 }
 
 static void app_exit_cb(GtkAction *action, gpointer data)
