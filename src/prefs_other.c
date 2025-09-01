@@ -60,7 +60,6 @@ typedef struct _OtherPage
 	GtkWidget *checkbtn_gtk_enable_accels;
 	GtkWidget *checkbtn_real_time_sync;
 	GtkWidget *entry_attach_save_chmod;
-	GtkWidget *checkbtn_transhdr;
 } OtherPage;
 
 struct KeyBind {
@@ -350,7 +349,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkAdjustment *spinbtn_iotimeout_adj;
 
 	GtkWidget *vbox2;
-	GtkWidget *checkbtn_transhdr;
 	GtkWidget *checkbtn_askonclean;
 	GtkWidget *checkbtn_real_time_sync;
 	GtkWidget *label_attach_save_chmod;
@@ -430,11 +428,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_widget_show (vbox2);
 	gtk_box_pack_start (GTK_BOX (vbox1), vbox2, FALSE, FALSE, 0);
 
-	PACK_CHECK_BUTTON(vbox2, checkbtn_transhdr,
-			   _("Translate header names"));
-	CLAWS_SET_TIP(checkbtn_transhdr,
-			     _("The display of standard headers (such as 'From:', 'Subject:') "
-			     "will be translated into your language"));
 	PACK_CHECK_BUTTON (vbox2, checkbtn_askonclean,
 			   _("Ask before emptying trash"));
 	PACK_CHECK_BUTTON (vbox2, checkbtn_real_time_sync,
@@ -482,8 +475,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_iotimeout),
 		prefs_common.io_timeout_secs);
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_transhdr),
-		prefs_common.trans_hdr);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_real_time_sync),
 		prefs_common.real_time_sync);
 
@@ -495,7 +486,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_other->checkbtn_askonclean = checkbtn_askonclean;
 	prefs_other->checkbtn_warnqueued = checkbtn_warnqueued;
 	prefs_other->spinbtn_iotimeout = spinbtn_iotimeout;
-	prefs_other->checkbtn_transhdr = checkbtn_transhdr;
 	prefs_other->checkbtn_gtk_enable_accels = checkbtn_gtk_enable_accels;
 	prefs_other->checkbtn_real_time_sync = checkbtn_real_time_sync;
 	prefs_other->entry_attach_save_chmod = entry_attach_save_chmod;
@@ -523,8 +513,6 @@ static void prefs_other_save(PrefsPage *_page)
 		GTK_SPIN_BUTTON(page->spinbtn_iotimeout));
 	sock_set_io_timeout(prefs_common.io_timeout_secs);
 	imap_main_set_timeout(prefs_common.io_timeout_secs);
-	prefs_common.trans_hdr = gtk_toggle_button_get_active(
-			GTK_TOGGLE_BUTTON(page->checkbtn_transhdr));
 	prefs_common.real_time_sync =
 		gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_real_time_sync));

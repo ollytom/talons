@@ -209,22 +209,13 @@ static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *win
 	gtk_box_pack_start (GTK_BOX (hbox_warn_large_insert),
 			label_warn_large_insert_size, FALSE, FALSE, 0);
 
-	/* Replying */
-	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Replying"));
+	vbox2 = gtkut_get_options_frame(vbox1, &frame, "Replying");
+	PACK_CHECK_BUTTON (vbox2, checkbtn_reply_with_quote, "Quote reply by default");
+	PACK_CHECK_BUTTON (vbox2, checkbtn_default_reply_list, "Reply button invokes mailing list reply");
 
-	PACK_CHECK_BUTTON (vbox2, checkbtn_reply_with_quote,
-			   _("Reply will quote by default"));
-
-	PACK_CHECK_BUTTON (vbox2, checkbtn_default_reply_list,
-			   _("Reply button invokes mailing list reply"));
-
-	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Forwarding"));
-
-	PACK_CHECK_BUTTON (vbox2, checkbtn_forward_as_attachment,
-			   _("Forward as attachment"));
-
-	text = g_strdup_printf(_("Keep the original '%s' header when redirecting"),
-			prefs_common_translated_header_name("From"));
+	vbox2 = gtkut_get_options_frame(vbox1, &frame, "Forwarding");
+	PACK_CHECK_BUTTON (vbox2, checkbtn_forward_as_attachment, "Forward as attachment");
+	text = "Keep the original 'From' header when redirecting";
 	PACK_CHECK_BUTTON (vbox2, checkbtn_redirect_keep_from, text);
 	g_free(text);
 

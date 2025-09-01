@@ -838,7 +838,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		/* Default From */
 		tr = g_strdup(C_("folder properties: %s stands for a header name",
 				 	  "Default %s"));
-		text = g_strdup_printf(tr, prefs_common_translated_header_name("From:"));
+		text = g_strdup_printf(tr, "From:");
 		checkbtn_default_from = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_from, 0, rowcount, 1, 1);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_from),
@@ -863,7 +863,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		/* Default To */
 		tr = g_strdup(C_("folder properties: %s stands for a header name",
 				 	  "Default %s"));
-		text = g_strdup_printf(tr, prefs_common_translated_header_name("To:"));
+		text = g_strdup_printf(tr, "To:");
 		checkbtn_default_to = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_to, 0, rowcount, 1, 1);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_to),
@@ -888,7 +888,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		/* Default address to reply to */
 		tr = g_strdup(C_("folder properties: %s stands for a header name",
 				 	  "Default %s for replies"));
-		text = g_strdup_printf(tr, prefs_common_translated_header_name("To:"));
+		text = g_strdup_printf(tr, "To:");
 		checkbtn_default_reply_to = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_reply_to, 0, rowcount, 1, 1);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_reply_to),
@@ -913,7 +913,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		/* Default Cc */
 		tr = g_strdup(C_("folder properties: %s stands for a header name",
 				 	  "Default %s"));
-		text = g_strdup_printf(tr, prefs_common_translated_header_name("Cc:"));
+		text = g_strdup_printf(tr, "Cc:");
 		checkbtn_default_cc = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_cc, 0, rowcount, 1, 1);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_cc),
@@ -938,7 +938,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		/* Default Bcc */
 		tr = g_strdup(C_("folder properties: %s stands for a header name",
 				 	  "Default %s"));
-		text = g_strdup_printf(tr, prefs_common_translated_header_name("Bcc:"));
+		text = g_strdup_printf(tr, "Bcc:");
 		checkbtn_default_bcc = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_bcc, 0, rowcount, 1, 1);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_bcc),
@@ -963,7 +963,7 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 		/* Default Reply-to */
 		tr = g_strdup(C_("folder properties: %s stands for a header name",
 				 	  "Default %s"));
-		text = g_strdup_printf(tr, prefs_common_translated_header_name("Reply-To:"));
+		text = g_strdup_printf(tr, "Reply-To:");
 		checkbtn_default_replyto = gtk_check_button_new_with_label(text);
 		gtk_grid_attach(GTK_GRID(table), checkbtn_default_replyto, 0, rowcount, 1, 1);
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_default_replyto),

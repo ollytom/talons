@@ -337,8 +337,7 @@ static void addrgather_page_fields(gint pageNum, gchar *pageLbl)
 	gtk_container_set_border_width(GTK_CONTAINER(vboxf), 8);
 
 	for (i = 0; i < NUM_FIELDS; i++) {
-		PACK_CHECK_BUTTON(vboxf, checkHeader[i],
-			prefs_common_translated_header_name(_harv_headerNames_[i]));
+		PACK_CHECK_BUTTON(vboxf, checkHeader[i], _harv_headerNames_[i]);
 		addrgather_dlg.checkHeader[i] = checkHeader[i];
 	}
 

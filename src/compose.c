@@ -2272,7 +2272,6 @@ void compose_entry_append(Compose *compose, const gchar *address,
 		header = N_("To:");
 		break;
 	}
-	header = prefs_common_translated_header_name(header);
 
 	cur = begin = (gchar *)address;
 
@@ -4549,7 +4548,7 @@ gboolean compose_check_for_valid_recipient(Compose *compose) {
 		g_strstrip(header);
 		if (entry[0] != '\0') {
 			for (strptr = recipient_headers_mail; *strptr != NULL; strptr++) {
-				if (!g_ascii_strcasecmp(header, prefs_common_translated_header_name(*strptr))) {
+				if (!g_ascii_strcasecmp(header, *strptr)) {
 					compose->to_list = address_list_append(compose->to_list, entry);
 					recipient_found = TRUE;
 				}
@@ -4575,7 +4574,7 @@ static gboolean compose_check_for_set_recipients(Compose *compose)
 			g_strstrip(entry);
 			g_strstrip(header);
 			if (strcmp(entry, compose->account->auto_cc)
-			||  strcmp(header, prefs_common_translated_header_name("Cc:"))) {
+			||  strcmp(header, "Cc:")) {
 				found_other = TRUE;
 				g_free(entry);
 				break;
@@ -4590,7 +4589,7 @@ static gboolean compose_check_for_set_recipients(Compose *compose)
 				gtk_widget_show_all(compose->window);
 			}
 			text = g_strdup_printf(_("The only recipient is the default '%s' address. Send anyway?"),
-					   prefs_common_translated_header_name("Cc"));
+					   "Cc");
 			aval = alertpanel(_("Send"),
 					  text,
 					  NULL, _("_Cancel"), NULL, _("_Send"), NULL, NULL, ALERTFOCUS_SECOND);
@@ -4611,7 +4610,7 @@ static gboolean compose_check_for_set_recipients(Compose *compose)
 			g_strstrip(entry);
 			g_strstrip(header);
 			if (strcmp(entry, compose->account->auto_bcc)
-			||  strcmp(header, prefs_common_translated_header_name("Bcc:"))) {
+			||  strcmp(header, "Bcc:")) {
 				found_other = TRUE;
 				g_free(entry);
 				g_free(header);
@@ -4627,7 +4626,7 @@ static gboolean compose_check_for_set_recipients(Compose *compose)
 				gtk_widget_show_all(compose->window);
 			}
 			text = g_strdup_printf(_("The only recipient is the default '%s' address. Send anyway?"),
-					   prefs_common_translated_header_name("Bcc"));
+					   "Bcc");
 			aval = alertpanel(_("Send"),
 					  text,
 					  NULL, _("_Cancel"), NULL, _("_Send"), NULL, NULL, ALERTFOCUS_SECOND);
@@ -4694,8 +4693,8 @@ static gboolean compose_check_entries(Compose *compose, gboolean check_everythin
 			g_strstrip(header);
 			g_strstrip(entry);
 			if ((entry[0] != '\0') &&
-			    (!strcmp(header, prefs_common_translated_header_name("To:")) ||
-			     !strcmp(header, prefs_common_translated_header_name("Cc:")))) {
+			    (!strcmp(header, "To:") ||
+			     !strcmp(header, "Cc:"))) {
 				cnt++;
 			}
 			g_free(header);
@@ -4930,8 +4929,8 @@ static gint compose_redirect_write_headers_from_headerlist(Compose *compose,
 
 	debug_print("Writing redirect header\n");
 
-	cc_hdr = prefs_common_translated_header_name("Cc:");
- 	to_hdr = prefs_common_translated_header_name("To:");
+	cc_hdr = "Cc:";
+ 	to_hdr = "To:";
 
 	first_to_address = TRUE;
 	for (list = compose->header_list; list; list = list->next) {
@@ -5959,7 +5958,7 @@ static void compose_add_headerfield_from_headerlist(Compose *compose,
 	fieldstr = g_string_sized_new(64);
 
 	fieldname_w_colon = g_strconcat(fieldname, ":", NULL);
-	trans_fieldname = prefs_common_translated_header_name(fieldname_w_colon);
+	trans_fieldname = fieldname_w_colon;
 
 	for (list = compose->header_list; list; list = list->next) {
     		headerentry = ((ComposeHeaderEntry *)list->data);
@@ -6007,7 +6006,6 @@ static gchar *compose_get_manual_headers_info(Compose *compose)
 		gchar *tmp;
 		gchar *headername;
 		gchar *headername_wcolon;
-		const gchar *headername_trans;
 		gchar **string;
 		gboolean standard_header = FALSE;
 
@@ -6031,8 +6029,7 @@ static gchar *compose_get_manual_headers_info(Compose *compose)
 
 		string = std_headers;
 		while (*string != NULL) {
-			headername_trans = prefs_common_translated_header_name(*string);
-			if (!strcmp(headername_trans, headername_wcolon))
+			if (!strcmp(*string, headername_wcolon))
 				standard_header = TRUE;
 			string++;
 		}
@@ -6207,7 +6204,6 @@ static gchar *compose_get_header(Compose *compose)
 		gchar *tmp;
 		gchar *headername;
 		gchar *headername_wcolon;
-		const gchar *headername_trans;
 		gchar *headervalue;
 		gchar **string;
 		gboolean standard_header = FALSE;
@@ -6243,9 +6239,7 @@ static gchar *compose_get_header(Compose *compose)
 		if (*headervalue != '\0') {
 			string = std_headers;
 			while (*string != NULL && !standard_header) {
-				headername_trans = prefs_common_translated_header_name(*string);
-				/* support mixed translated and untranslated headers */
-				if (!strcmp(headername_trans, headername_wcolon) || !strcmp(*string, headername_wcolon))
+				if (!strcmp(*string, headername_wcolon))
 					standard_header = TRUE;
 				string++;
 			}
@@ -6434,15 +6428,15 @@ static void compose_create_header_entry(Compose *compose)
 
 	/* Combo box model */
 	model = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN);
-	COMBOBOX_ADD(model, prefs_common_translated_header_name("To:"),
+	COMBOBOX_ADD(model, "To:",
 			COMPOSE_TO);
-	COMBOBOX_ADD(model, prefs_common_translated_header_name("Cc:"),
+	COMBOBOX_ADD(model, "Cc:",
 			COMPOSE_CC);
-	COMBOBOX_ADD(model, prefs_common_translated_header_name("Bcc:"),
+	COMBOBOX_ADD(model, "Bcc:",
 			COMPOSE_BCC);
-	COMBOBOX_ADD(model, prefs_common_translated_header_name("Reply-To:"),
+	COMBOBOX_ADD(model, "Reply-To:",
 			COMPOSE_REPLYTO);
-	COMBOBOX_ADD(model, prefs_common_translated_header_name("Followup-To:"),
+	COMBOBOX_ADD(model, "Followup-To:",
 			COMPOSE_FOLLOWUPTO);
 	compose_add_extra_header_entries(model);
 
@@ -6464,7 +6458,7 @@ static void compose_create_header_entry(Compose *compose)
 				GTK_ENTRY(gtk_bin_get_child(GTK_BIN((compose->header_last->combo)))));
 		string = headers;
 		while (*string != NULL) {
-			if (!strcmp(prefs_common_translated_header_name(*string), last_header_entry))
+			if (!strcmp(*string, last_header_entry))
 				standard_header = TRUE;
 			string++;
 		}
@@ -6474,7 +6468,7 @@ static void compose_create_header_entry(Compose *compose)
 	if (!compose->header_last || !standard_header) {
 		switch(compose->account->protocol) {
 			default:
-				header = prefs_common_translated_header_name("To:");
+				header = "To:";
 				break;
 		}
 	}
@@ -6557,12 +6551,9 @@ static void compose_add_header_entry(Compose *compose, const gchar *header,
 	gchar *tmp = g_strdup(text), *email;
 	gboolean replyto_hdr;
 
-	replyto_hdr = (!strcasecmp(header,
-				prefs_common_translated_header_name("Reply-To:")) ||
-			!strcasecmp(header,
-				prefs_common_translated_header_name("Followup-To:")) ||
-			!strcasecmp(header,
-				prefs_common_translated_header_name("In-Reply-To:")));
+	replyto_hdr = (!strcasecmp(header, "Reply-To:") ||
+			!strcasecmp(header, "Followup-To:") ||
+			!strcasecmp(header, "In-Reply-To:"));
 
 	extract_address(tmp);
 	email = g_utf8_strdown(tmp, -1);
@@ -6577,7 +6568,7 @@ static void compose_add_header_entry(Compose *compose, const gchar *header,
 		return;
 	}
 
-	if (!strcasecmp(header, prefs_common_translated_header_name("In-Reply-To:")))
+	if (!strcasecmp(header, "In-Reply-To:"))
 		gtk_entry_set_text(GTK_ENTRY(
 			gtk_bin_get_child(GTK_BIN(last_header->combo))), header);
 	else
@@ -7306,7 +7297,7 @@ static Compose *compose_create(PrefsAccount *account,
 		compose_entry_append(compose, account->auto_replyto, COMPOSE_REPLYTO, PREF_ACCOUNT);
 
 	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options/ReplyMode", compose->mode == COMPOSE_REPLY);
-	gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN((compose->header_last->combo)))), prefs_common_translated_header_name("To:"));
+	gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN((compose->header_last->combo)))), "To:");
 
 	addressbook_set_target_compose(compose);
 
@@ -10686,7 +10677,7 @@ static MsgInfo *compose_msginfo_new_from_compose(Compose *compose)
 		gchar *entry = gtk_editable_get_chars(
 								GTK_EDITABLE(((ComposeHeaderEntry *)list->data)->entry), 0, -1);
 
-		if ( strcasecmp(header, prefs_common_translated_header_name("To:")) == 0 ) {
+		if ( strcasecmp(header, "To:") == 0 ) {
 			if ( newmsginfo->to == NULL ) {
 				newmsginfo->to = g_strdup(entry);
 			} else if (entry && *entry) {
@@ -10695,7 +10686,7 @@ static MsgInfo *compose_msginfo_new_from_compose(Compose *compose)
 				newmsginfo->to = tmp;
 			}
 		} else
-		if ( strcasecmp(header, prefs_common_translated_header_name("Cc:")) == 0 ) {
+		if ( strcasecmp(header, "Cc:") == 0 ) {
 			if ( newmsginfo->cc == NULL ) {
 				newmsginfo->cc = g_strdup(entry);
 			} else if (entry && *entry) {

@@ -179,7 +179,7 @@ void quotefmt_create_new_msg_fmt_widgets(GtkWindow *parent_window,
 		gtk_widget_show (hbox2_format);
 		gtk_box_pack_start (GTK_BOX (vbox_format), hbox2_format, FALSE, FALSE, 0);
 
-		label_from = gtk_label_new (prefs_common_translated_header_name("From"));
+		label_from = gtk_label_new ("From");
 		gtk_label_set_xalign(GTK_LABEL(label_from), 1.0);
 		gtk_widget_show (label_from);
 		gtk_box_pack_start (GTK_BOX (hbox2_format), label_from, FALSE, FALSE, 0);
@@ -197,7 +197,7 @@ void quotefmt_create_new_msg_fmt_widgets(GtkWindow *parent_window,
 	gtk_widget_show (hbox_format);
 	gtk_box_pack_start (GTK_BOX (vbox_format), hbox_format, FALSE, FALSE, 0);
 
-	label_subject = gtk_label_new (prefs_common_translated_header_name("Subject"));
+	label_subject = gtk_label_new ("Subject");
 	gtk_label_set_xalign(GTK_LABEL(label_subject), 1.0);
 	gtk_widget_show (label_subject);
 	gtk_box_pack_start (GTK_BOX (hbox_format), label_subject, FALSE, FALSE, 0);
@@ -289,7 +289,7 @@ void quotefmt_create_reply_fmt_widgets(GtkWindow *parent_window,
 		gtk_widget_show (hbox3);
 		gtk_box_pack_start (GTK_BOX (vbox_quote), hbox3, FALSE, FALSE, 0);
 
-		label_from = gtk_label_new (prefs_common_translated_header_name("From:"));
+		label_from = gtk_label_new ("From:");
 		gtk_label_set_xalign(GTK_LABEL(label_from), 1.0);
 		gtk_widget_show (label_from);
 		gtk_box_pack_start (GTK_BOX (hbox3), label_from, FALSE, FALSE, 0);
@@ -390,7 +390,7 @@ void quotefmt_create_forward_fmt_widgets(GtkWindow *parent_window,
 		gtk_widget_show (hbox3);
 		gtk_box_pack_start (GTK_BOX (vbox_quote), hbox3, FALSE, FALSE, 0);
 
-		label_from = gtk_label_new (prefs_common_translated_header_name("From:"));
+		label_from = gtk_label_new ("From:");
 		gtk_label_set_xalign(GTK_LABEL(label_from), 1.0);
 		gtk_widget_show (label_from);
 		gtk_box_pack_start (GTK_BOX (hbox3), label_from, FALSE, FALSE, 0);

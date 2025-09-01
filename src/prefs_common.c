@@ -222,14 +222,6 @@ static PrefParam param[] = {
 	 &prefs_common.display_folder_unread, P_INT,
 	 NULL, NULL, NULL},
 
-#ifdef ENABLE_NLS
-	{"translate_header", "TRUE", &prefs_common.trans_hdr, P_BOOL,
-	 NULL, NULL, NULL},
-#else
-	{"translate_header", "FALSE", &prefs_common.trans_hdr, P_BOOL,
-	 NULL, NULL, NULL},
-#endif
-
 	/* Display: Summary View */
 	{"default_sort_key", "3", &prefs_common.default_sort_key, P_ENUM,
 	 NULL, NULL, NULL},
@@ -1266,12 +1258,6 @@ gchar *pref_get_pref_from_entry(GtkEntry *entry)
 gboolean prefs_common_unsafe_ssl_certs(void)
 {
 	return prefs_common.unsafe_ssl_certs;
-}
-
-/* TODO(otl): delete this no-op */
-const gchar *prefs_common_translated_header_name(const gchar *header_name)
-{
-	return header_name;
 }
 
 const gchar *prefs_common_get_uri_cmd(void)

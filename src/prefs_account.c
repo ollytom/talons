@@ -2140,8 +2140,7 @@ static void compose_create_widget_func(PrefsPage * _page,
 	gtk_grid_set_row_spacing(GTK_GRID(table), VSPACING_NARROW_2);
 	gtk_grid_set_column_spacing(GTK_GRID(table), 8);
 
-	autocc_checkbtn = gtk_check_button_new_with_label (
-				prefs_common_translated_header_name("Cc:"));
+	autocc_checkbtn = gtk_check_button_new_with_label("Cc:");
 	gtk_widget_show (autocc_checkbtn);
 	gtk_grid_attach(GTK_GRID(table), autocc_checkbtn, 0, 0, 1, 1);
 
@@ -2153,8 +2152,7 @@ static void compose_create_widget_func(PrefsPage * _page,
 
 	SET_TOGGLE_SENSITIVITY (autocc_checkbtn, autocc_entry);
 
-	autobcc_checkbtn = gtk_check_button_new_with_label (
-				prefs_common_translated_header_name("Bcc:"));
+	autobcc_checkbtn = gtk_check_button_new_with_label("Bcc:");
 	gtk_widget_show (autobcc_checkbtn);
 	gtk_grid_attach(GTK_GRID(table), autobcc_checkbtn, 0, 1, 1, 1);
 
@@ -2166,8 +2164,7 @@ static void compose_create_widget_func(PrefsPage * _page,
 
 	SET_TOGGLE_SENSITIVITY (autobcc_checkbtn, autobcc_entry);
 
-	autoreplyto_checkbtn = gtk_check_button_new_with_label (
-				prefs_common_translated_header_name("Reply-To:"));
+	autoreplyto_checkbtn = gtk_check_button_new_with_label("Reply-To:");
 	gtk_widget_show (autoreplyto_checkbtn);
 	gtk_grid_attach(GTK_GRID(table), autoreplyto_checkbtn, 0, 2, 1, 1);
 
