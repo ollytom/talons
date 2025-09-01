@@ -21,7 +21,6 @@ libclawscommon_la_SOURCES = $(arch_sources) \
 	hooks.c \
 	log.c \
 	mgutils.c \
-	passcrypt.c \
 	prefs.c \
 	progressindicator.c \
 	quoted-printable.c \
@@ -49,7 +48,6 @@ clawscommoninclude_HEADERS = $(arch_headers) \
 	hooks.h \
 	log.h \
 	mgutils.h \
-	passcrypt.h \
 	prefs.h \
 	progressindicator.h \
 	quoted-printable.h \

@@ -451,7 +451,6 @@ claws_mail_LDADD = \
 	$(INTLLIBS) \
 	$(GTK_LIBS) \
 	$(GNUTLS_LIBS) \
-	$(NETTLE_LIBS) \
 	-lpthread \
 	$(LIBICONV) \
 	$(LIBETPAN_LIBS) \
@@ -471,8 +470,6 @@ AM_CPPFLAGS = \
 	$(IFLAGS) \
 	$(GTK_CFLAGS) \
 	$(GNUTLS_CFLAGS) \
-	$(NETTLE_CFLAGS) \
-	$(GPGME_CFLAGS) \
 	$(LIBETPAN_CPPFLAGS) \
 	$(VALGRIND_CFLAGS) \
 	-Ifence/zig-out/include

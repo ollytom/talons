@@ -41,7 +41,6 @@
 #include "utils.h"
 #include "log.h"
 #include "time.h"
-#include "common/passcrypt.h"
 #include "common/version.h"
 #include "file-utils.h"
 #include "prefs_common.h"

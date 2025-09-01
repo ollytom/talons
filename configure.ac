@@ -248,14 +248,6 @@ if test "x$enable_gnutls" != "xno"; then
         AC_SUBST(GNUTLS_CFLAGS)
 fi
 
-PKG_CHECK_MODULES(NETTLE, nettle)
-AC_SUBST(NETTLE_LIBS)
-AC_SUBST(NETTLE_CFLAGS)
-
-AC_ARG_WITH(passcrypt-key, [  --with-passcrypt-key=KEY     Key used to encode passwords (8 byte string)],
-	    with_passcrypt_key="$withval", with_passcrypt_key="passkey0")
-AC_SUBST(PASSCRYPT_KEY, $with_passcrypt_key)
-
 dnl RC dir (will be default at a certain point in time)
 AC_ARG_WITH(config-dir,    [  --with-config-dir=RCDIR      Local configuration dir (default: .claws-mail)],
 	      ac_cv_with_config_dir="$withval", ac_cv_with_config_dir="")
@@ -376,7 +368,6 @@ Makefile
 src/common/version.h
 src/Makefile
 src/common/Makefile
-src/common/passcrypt.h
 src/common/tests/Makefile
 src/gtk/Makefile
 src/etpan/Makefile

@@ -30,7 +30,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "common/passcrypt.h"
 #include "common/pkcs5_pbkdf2.h"
 #include "common/utils.h"
 #include "account.h"
@@ -342,6 +341,8 @@ gchar *password_decrypt_gnutls(const gchar *password,
 }
 
 #undef BUFSIZE
+
+#define PASSCRYPT_KEY "passkey0"
 
 gchar *password_encrypt(const gchar *password,
 		const gchar *encryption_passphrase)

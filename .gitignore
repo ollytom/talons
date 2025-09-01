@@ -93,7 +93,6 @@ Makefile.in
 /.settings
 /src/claws-mail
 /src/client-bindings.h
-/src/common/passcrypt.h
 /src/common/version.h
 /src/gtk/claws-marshal.c
 /src/gtk/claws-marshal.h
