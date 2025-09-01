@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -36,7 +36,7 @@
 /* if this is defined all attr.names and tag.names are stored
  * in a hash table */
 #if defined(SPARSE_MEMORY)
-#include "stringtable.h" 
+#include "stringtable.h"
 
 static StringTable *xml_string_table;
 static XMLTag  *xml_copy_tag		(XMLTag		*tag);
@@ -254,7 +254,7 @@ next:
 		buf[len - 1] = '\0';
 		g_strchomp(buf);
 	}
-	
+
 	if (strlen(buf) == 0) {
 		g_warning("xml_parse_next_tag(): tag name is empty in %s", file->path);
 		return -1;
@@ -474,25 +474,25 @@ XMLNode *xml_node_new(XMLTag *tag, const gchar *text)
 XMLTag *xml_tag_new(const gchar *tag)
 {
 	XMLTag *new_tag;
- 
+
 	new_tag = g_new(XMLTag, 1);
 	if (tag)
 		new_tag->tag = XML_STRING_ADD(tag);
 	else
 		new_tag->tag = NULL;
 	new_tag->attr = NULL;
- 
+
 	return new_tag;
 }
 
 XMLAttr *xml_attr_new(const gchar *name, const gchar *value)
 {
 	XMLAttr *new_attr;
- 
+
 	new_attr = g_new(XMLAttr, 1);
 	new_attr->name = XML_STRING_ADD(name);
 	new_attr->value = g_strdup(value);
- 
+
 	return new_attr;
 }
 
@@ -506,7 +506,7 @@ XMLAttr *xml_attr_new_int(const gchar *name, const gint value)
 	new_attr = g_new(XMLAttr, 1);
 	new_attr->name = XML_STRING_ADD(name);
 	new_attr->value = valuestr;
- 
+
 	return new_attr;
 }
 
@@ -515,7 +515,7 @@ XMLAttr *xml_attr_new_time_t(const gchar *name, const time_t value)
 	XMLAttr *new_attr;
 	gchar *valuestr;
 
-	valuestr = g_strdup_printf("%"CM_TIME_FORMAT, value);
+	valuestr = g_strdup_printf("%lld", value);
 
 	new_attr = g_new(XMLAttr, 1);
 	new_attr->name = XML_STRING_ADD(name);
@@ -732,7 +732,7 @@ static int xml_write_tree_recursive(GNode *node, FILE *fp)
 		TRY(fprintf(fp, " %s=\"", attr->name) > 0);
 		TRY(xml_file_put_escape_str(fp, attr->value) == 0);
 		TRY(fputs("\"", fp) != EOF);
-		
+
 	}
 
 	if (node->children) {
@@ -753,7 +753,7 @@ static int xml_write_tree_recursive(GNode *node, FILE *fp)
 		TRY(fprintf(fp, "</%s>\n", tag->tag) > 0);
 	} else
 		TRY(fputs(" />\n", fp) != EOF);
-	
+
 	return 0;
 }
 
@@ -768,7 +768,7 @@ static gpointer copy_node_func(gpointer nodedata, gpointer data)
 {
 	XMLNode *xmlnode = (XMLNode *) nodedata;
 	XMLNode *newxmlnode;
-	
+
 	newxmlnode = g_new0(XMLNode, 1);
 	newxmlnode->tag = xml_copy_tag(xmlnode->tag);
 	newxmlnode->element = g_strdup(xmlnode->element);

@@ -107,27 +107,6 @@ AC_SYS_LARGEFILE
 
 LDFLAGS="$LDFLAGS -Wl,--export-dynamic"
 
-AC_MSG_CHECKING([for time_t format specifier])
-_gcc_cflags_save=$CFLAGS
-CFLAGS="-Wformat -Werror"
-AC_COMPILE_IFELSE([
-	AC_LANG_PROGRAM([[
-		#include <stdio.h>
-		#include <time.h>
-		]],[[printf("%lld", time(NULL));]])],
-	[time_t_long_long=yes],
-	[time_t_long_long=no])
-CFLAGS=$_gcc_cflags_save
-
-if test x"$time_t_long_long" = xyes; then
-	time_t_fmt=lld
-else
-	time_t_fmt=ld
-fi
-AC_MSG_RESULT([$time_t_fmt])
-AC_DEFINE_UNQUOTED([CM_TIME_FORMAT], ["$time_t_fmt"],
-	[Define printf format specifier for time_t])
-
 AM_CFLAGS="-Wall"
 if test $USE_MAINTAINER_MODE = yes; then
 	AM_CFLAGS="$AM_CFLAGS -g"
@@ -141,7 +120,6 @@ AM_ICONV
 dnl floor and ceil are  in -lm
 LIBS="$LIBS -lm"
 
-dnl for gettext
 GETTEXT_PACKAGE=claws-mail
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Define text domain.])
@@ -213,10 +191,6 @@ AC_CHECK_SIZEOF(unsigned long, 4)
 dnl Checks for library functions.
 AC_FUNC_ALLOCA
 AC_CHECK_FUNCS(strcasestr)
-
-dnl *****************
-dnl ** common code **
-dnl *****************
 
 dnl check for glib
 PKG_CHECK_MODULES(GLIB, [glib-2.0 >= 2.50 gmodule-2.0 >= 2.50 gobject-2.0 >= 2.50 gthread-2.0 >= 2.50])
