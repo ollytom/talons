@@ -304,30 +304,6 @@ GTK_CFLAGS="$GTK_CFLAGS -DGTK_DISABLE_SINGLE_INCLUDES -DGSEAL_ENABLE"
 AC_SUBST(GTK_CFLAGS)
 AC_SUBST(GTK_LIBS)
 
-dnl
-dnl Check whether we need to pass -lresolv
-dnl
-t_oldLibs="$LIBS"
-LIBS="$LIBS"
-ac_cv_var__res_options=no
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
-	     #include <sys/socket.h>
-	     #include <netinet/in.h>
- 	     #include <arpa/nameser.h>
-	     #include <resolv.h>]], [[_res.options = RES_INIT;]])],[ac_cv_var__res_options=yes],[]);
-if test "$ac_cv_var__res_options" != "yes"; then
-	LIBRESOLV="-lresolv"
-fi
-LIBS="$t_oldLibs"
-
-if test "x$LIBRESOLV" = "x"; then
-	AC_CHECK_LIB(resolv, res_query, [LIBRESOLV=-lresolv])
-	LIBS="$t_oldLibs"
-fi
-AC_SUBST(LIBRESOLV)
-
-LIBS="$LIBS $LIBRESOLV"
-
 PKG_CHECK_MODULES([LIBETPAN], [libetpan >= 1.9.4])
 LIBETPAN_LIBS=`pkg-config --libs libetpan`
 AC_SUBST(LIBETPAN_LIBS)
@@ -397,7 +373,6 @@ AC_SUBST(FONTCONFIG_LIBS)
 
 AC_CONFIG_FILES([
 Makefile
-po/Makefile.in
 src/common/version.h
 src/Makefile
 src/common/Makefile

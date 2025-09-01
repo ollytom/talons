@@ -24,11 +24,9 @@
 #include "defs.h"
 
 #include <glib.h>
-#include <glib/gi18n.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
-#include <setjmp.h>
 #include <sys/types.h>
 
 #include "main.h"
@@ -96,9 +94,9 @@ typedef struct {
 	ItemFolder *folder;
 } FolderPathMatch;
 
-static gchar *list_titles[] = { N_("Name"),
-                                N_("Email Address"),
-                                N_("Remarks") };
+static gchar *list_titles[] = { "Name",
+                                "Email Address",
+                                "Remarks" };
 
 #define COL_NAME_WIDTH		164
 #define COL_ADDRESS_WIDTH	156
@@ -344,73 +342,73 @@ static GtkActionEntry addressbook_entries[] =
 {
 	{"Menu",				NULL, "Menu", NULL, NULL, NULL },
 /* menus */
-	{"Book",			NULL, N_("_Book"), NULL, NULL, NULL },
-	{"Edit",			NULL, N_("_Edit"), NULL, NULL, NULL },
-	{"Tools",			NULL, N_("_Tools"), NULL, NULL, NULL },
+	{"Book",			NULL, "_Book", NULL, NULL, NULL },
+	{"Edit",			NULL, "_Edit", NULL, NULL, NULL },
+	{"Tools",			NULL, "_Tools", NULL, NULL, NULL },
 
 /* Book menu */
-	{"Book/NewBook",		NULL, N_("New _Book"), "<control>B", NULL, G_CALLBACK(addressbook_new_book_cb) },
-	{"Book/NewFolder",		NULL, N_("New _Folder"), "<control>R", NULL, G_CALLBACK(addressbook_new_folder_cb) },
+	{"Book/NewBook",		NULL, "New _Book", "<control>B", NULL, G_CALLBACK(addressbook_new_book_cb) },
+	{"Book/NewFolder",		NULL, "New _Folder", "<control>R", NULL, G_CALLBACK(addressbook_new_folder_cb) },
 	{"Book/---",			NULL, "---", NULL, NULL, NULL },
 
-	{"Book/EditBook",		NULL, N_("_Edit book"), NULL, NULL, G_CALLBACK(addressbook_treenode_edit_cb) },
-	{"Book/DeleteBook",		NULL, N_("_Delete book"), NULL, NULL, G_CALLBACK(addressbook_treenode_delete_cb) },
+	{"Book/EditBook",		NULL, "_Edit book", NULL, NULL, G_CALLBACK(addressbook_treenode_edit_cb) },
+	{"Book/DeleteBook",		NULL, "_Delete book", NULL, NULL, G_CALLBACK(addressbook_treenode_delete_cb) },
 	/* {"Book/---",			NULL, "---", NULL, NULL, NULL }, */
-	{"Book/Save",			NULL, N_("_Save"), "<control>S", NULL, G_CALLBACK(addressbook_file_save_cb) },
-	{"Book/Close",			NULL, N_("_Close"), "<control>W", NULL, G_CALLBACK(close_cb) },
+	{"Book/Save",			NULL, "_Save", "<control>S", NULL, G_CALLBACK(addressbook_file_save_cb) },
+	{"Book/Close",			NULL, "_Close", "<control>W", NULL, G_CALLBACK(close_cb) },
 
 /* Adress menu */
-	{"Address/SelectAll",		NULL, N_("_Select all"), "<control>A", NULL, G_CALLBACK(addressbook_select_all_cb) },
+	{"Address/SelectAll",		NULL, "_Select all", "<control>A", NULL, G_CALLBACK(addressbook_select_all_cb) },
 	{"Address/---",			NULL, "---", NULL, NULL, NULL },
-	{"Address/Cut",			NULL, N_("C_ut"), "<control>X", NULL, G_CALLBACK(addressbook_clip_cut_cb) },
-	{"Address/Copy",		NULL, N_("_Copy"), "<control>C", NULL, G_CALLBACK(addressbook_clip_copy_cb) },
-	{"Address/Paste",		NULL, N_("_Paste"), "<control>V", NULL, G_CALLBACK(addressbook_clip_paste_cb) },
+	{"Address/Cut",			NULL, "C_ut", "<control>X", NULL, G_CALLBACK(addressbook_clip_cut_cb) },
+	{"Address/Copy",		NULL, "_Copy", "<control>C", NULL, G_CALLBACK(addressbook_clip_copy_cb) },
+	{"Address/Paste",		NULL, "_Paste", "<control>V", NULL, G_CALLBACK(addressbook_clip_paste_cb) },
 	/* {"Address/---",			NULL, "---", NULL, NULL, NULL }, */
-	{"Address/Edit",		NULL, N_("_Edit"), "<control>Return", NULL, G_CALLBACK(addressbook_edit_address_cb) },
-	{"Address/Delete",		NULL, N_("_Delete"), "<control>D", NULL, G_CALLBACK(addressbook_delete_address_cb) },
+	{"Address/Edit",		NULL, "_Edit", "<control>Return", NULL, G_CALLBACK(addressbook_edit_address_cb) },
+	{"Address/Delete",		NULL, "_Delete", "<control>D", NULL, G_CALLBACK(addressbook_delete_address_cb) },
 	/* {"Address/---",			NULL, "---", NULL, NULL, NULL }, */
-	{"Address/NewAddress",		NULL, N_("New _Address"), "<control>N", NULL, G_CALLBACK(addressbook_new_address_cb) },
-	{"Address/NewGroup",		NULL, N_("New _Group"), "<control>G", NULL, G_CALLBACK(addressbook_new_group_cb) },
+	{"Address/NewAddress",		NULL, "New _Address", "<control>N", NULL, G_CALLBACK(addressbook_new_address_cb) },
+	{"Address/NewGroup",		NULL, "New _Group", "<control>G", NULL, G_CALLBACK(addressbook_new_group_cb) },
 	/* {"Address/---",			NULL, "---", NULL, NULL, NULL }, */
-	{"Address/Mailto",		NULL, N_("_Mail To"), "<control>M", NULL, G_CALLBACK(addressbook_mail_to_cb) },
-	{"Address/Merge",		NULL, N_("_Merge"), "<control>E", NULL, G_CALLBACK(addressbook_merge_cb) },
+	{"Address/Mailto",		NULL, "_Mail To", "<control>M", NULL, G_CALLBACK(addressbook_mail_to_cb) },
+	{"Address/Merge",		NULL, "_Merge", "<control>E", NULL, G_CALLBACK(addressbook_merge_cb) },
 
 	{"Tools/---",			NULL, "---", NULL, NULL, NULL },
-	{"Tools/FindDuplicates",	NULL, N_("Find duplicates..."), NULL, NULL, G_CALLBACK(addressbook_find_duplicates_cb) },
+	{"Tools/FindDuplicates",	NULL, "Find duplicates...", NULL, NULL, G_CALLBACK(addressbook_find_duplicates_cb) },
 };
 
 static GtkActionEntry addressbook_tree_popup_entries[] =
 {
 	{"ABTreePopup",			NULL, "ABTreePopup", NULL, NULL, NULL },
-	{"ABTreePopup/EditBook",	NULL, N_("_Edit"), NULL, NULL, G_CALLBACK(addressbook_treenode_edit_cb) },
-	{"ABTreePopup/DeleteBook",	NULL, N_("_Delete"), NULL, NULL, G_CALLBACK(addressbook_treenode_delete_cb) },
+	{"ABTreePopup/EditBook",	NULL, "_Edit", NULL, NULL, G_CALLBACK(addressbook_treenode_edit_cb) },
+	{"ABTreePopup/DeleteBook",	NULL, "_Delete", NULL, NULL, G_CALLBACK(addressbook_treenode_delete_cb) },
 	{"ABTreePopup/---",		NULL, "---", NULL, NULL, NULL },
-	{"ABTreePopup/NewBook",		NULL, N_("New _Book"), NULL, NULL, G_CALLBACK(addressbook_new_book_cb) },
-	{"ABTreePopup/NewFolder",	NULL, N_("New _Folder"), NULL, NULL, G_CALLBACK(addressbook_new_folder_cb) },
-	{"ABTreePopup/NewGroup",	NULL, N_("New _Group"), NULL, NULL, G_CALLBACK(addressbook_new_group_cb) },
+	{"ABTreePopup/NewBook",		NULL, "New _Book", NULL, NULL, G_CALLBACK(addressbook_new_book_cb) },
+	{"ABTreePopup/NewFolder",	NULL, "New _Folder", NULL, NULL, G_CALLBACK(addressbook_new_folder_cb) },
+	{"ABTreePopup/NewGroup",	NULL, "New _Group", NULL, NULL, G_CALLBACK(addressbook_new_group_cb) },
 	/* {"ABTreePopup/---",		NULL, "---", NULL, NULL, NULL }, */
-	{"ABTreePopup/Cut",		NULL, N_("C_ut"), NULL, NULL, G_CALLBACK(addressbook_treenode_cut_cb) },
-	{"ABTreePopup/Copy",		NULL, N_("_Copy"), NULL, NULL, G_CALLBACK(addressbook_treenode_copy_cb) },
-	{"ABTreePopup/Paste",		NULL, N_("_Paste"), NULL, NULL, G_CALLBACK(addressbook_treenode_paste_cb) },
+	{"ABTreePopup/Cut",		NULL, "C_ut", NULL, NULL, G_CALLBACK(addressbook_treenode_cut_cb) },
+	{"ABTreePopup/Copy",		NULL, "_Copy", NULL, NULL, G_CALLBACK(addressbook_treenode_copy_cb) },
+	{"ABTreePopup/Paste",		NULL, "_Paste", NULL, NULL, G_CALLBACK(addressbook_treenode_paste_cb) },
 };
 
 static GtkActionEntry addressbook_list_popup_entries[] =
 {
 	{"ABListPopup",			NULL, "ABListPopup", NULL, NULL, NULL },
-	{"ABListPopup/SelectAll",	NULL, N_("_Select all"), NULL, NULL, G_CALLBACK(addressbook_select_all_cb) },
+	{"ABListPopup/SelectAll",	NULL, "_Select all", NULL, NULL, G_CALLBACK(addressbook_select_all_cb) },
 	{"ABListPopup/---",		NULL, "---", NULL, NULL, NULL },
-	{"ABListPopup/Edit",		NULL, N_("_Edit"), NULL, NULL, G_CALLBACK(addressbook_edit_address_cb) },
-	{"ABListPopup/Delete",		NULL, N_("_Delete"), NULL, NULL, G_CALLBACK(addressbook_delete_address_cb) },
+	{"ABListPopup/Edit",		NULL, "_Edit", NULL, NULL, G_CALLBACK(addressbook_edit_address_cb) },
+	{"ABListPopup/Delete",		NULL, "_Delete", NULL, NULL, G_CALLBACK(addressbook_delete_address_cb) },
 	/* {"ABListPopup/---",		NULL, "---", NULL, NULL, NULL }, */
-	{"ABListPopup/NewAddress",	NULL, N_("New _Address"), NULL, NULL, G_CALLBACK(addressbook_new_address_cb) },
-	{"ABListPopup/NewGroup",	NULL, N_("New _Group"), NULL, NULL, G_CALLBACK(addressbook_new_group_cb) },
+	{"ABListPopup/NewAddress",	NULL, "New _Address", NULL, NULL, G_CALLBACK(addressbook_new_address_cb) },
+	{"ABListPopup/NewGroup",	NULL, "New _Group", NULL, NULL, G_CALLBACK(addressbook_new_group_cb) },
 	/* {"ABListPopup/---",		NULL, "---", NULL, NULL, NULL }, */
-	{"ABListPopup/Cut",		NULL, N_("C_ut"), NULL, NULL, G_CALLBACK(addressbook_clip_cut_cb) },
-	{"ABListPopup/Copy",		NULL, N_("_Copy"), NULL, NULL, G_CALLBACK(addressbook_clip_copy_cb) },
-	{"ABListPopup/Paste",		NULL, N_("_Paste"), NULL, NULL, G_CALLBACK(addressbook_clip_paste_cb) },
+	{"ABListPopup/Cut",		NULL, "C_ut", NULL, NULL, G_CALLBACK(addressbook_clip_cut_cb) },
+	{"ABListPopup/Copy",		NULL, "_Copy", NULL, NULL, G_CALLBACK(addressbook_clip_copy_cb) },
+	{"ABListPopup/Paste",		NULL, "_Paste", NULL, NULL, G_CALLBACK(addressbook_clip_paste_cb) },
 	/* {"ABListPopup/---",		NULL, "---", NULL, NULL, NULL }, */
-	{"ABListPopup/Mailto",		NULL, N_("_Mail To"), NULL, NULL, G_CALLBACK(addressbook_mail_to_cb) },
-	{"ABListPopup/Merge",		NULL, N_("_Merge"), NULL, NULL, G_CALLBACK(addressbook_merge_cb) },
+	{"ABListPopup/Mailto",		NULL, "_Mail To", NULL, NULL, G_CALLBACK(addressbook_mail_to_cb) },
+	{"ABListPopup/Merge",		NULL, "_Merge", NULL, NULL, G_CALLBACK(addressbook_merge_cb) },
 };
 
 /**
@@ -422,24 +420,24 @@ struct _ErrMsgTableEntry {
 	gchar	*description;
 };
 
-static gchar *_errMsgUnknown_ = N_( "Unknown" );
+static gchar *_errMsgUnknown_ = "Unknown" ;
 
 /**
  * Lookup table of error messages for general errors. Note that a NULL
  * description signifies the end of the table.
  */
 static ErrMsgTableEntry _lutErrorsGeneral_[] = {
-	{ MGU_SUCCESS,		N_("Success") },
-	{ MGU_BAD_ARGS,		N_("Bad arguments") },
-	{ MGU_NO_FILE,		N_("File not specified") },
-	{ MGU_OPEN_FILE,	N_("Error opening file") },
-	{ MGU_ERROR_READ,	N_("Error reading file") },
-	{ MGU_EOF,		N_("End of file encountered") },
-	{ MGU_OO_MEMORY,	N_("Error allocating memory") },
-	{ MGU_BAD_FORMAT,	N_("Bad file format") },
-	{ MGU_ERROR_WRITE,	N_("Error writing to file") },
-	{ MGU_OPEN_DIRECTORY,	N_("Error opening directory") },
-	{ MGU_NO_PATH,      	N_("No path specified") },
+	{ MGU_SUCCESS,		"Success" },
+	{ MGU_BAD_ARGS,		"Bad arguments" },
+	{ MGU_NO_FILE,		"File not specified" },
+	{ MGU_OPEN_FILE,	"Error opening file" },
+	{ MGU_ERROR_READ,	"Error reading file" },
+	{ MGU_EOF,		"End of file encountered" },
+	{ MGU_OO_MEMORY,	"Error allocating memory" },
+	{ MGU_BAD_FORMAT,	"Bad file format" },
+	{ MGU_ERROR_WRITE,	"Error writing to file" },
+	{ MGU_OPEN_DIRECTORY,	"Error opening directory" },
+	{ MGU_NO_PATH,      	"No path specified" },
 	{ 0,			NULL }
 };
 
@@ -659,7 +657,7 @@ static void addressbook_sort_list(GtkCMCList *clist, const gint col,
 
 	for(pos = 0 ; pos < N_LIST_COLS ; pos++) {
 		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
-		label = gtk_label_new(gettext(list_titles[pos]));
+		label = gtk_label_new(list_titles[pos]);
 		gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
 		if(pos == col) {
@@ -804,11 +802,11 @@ static void addressbook_create(void)
 
 	debug_print("Creating addressbook window...\n");
 
-	index_titles[COL_SOURCES] = _("Sources");
+	index_titles[COL_SOURCES] = "Sources";
 
 	/* Address book window */
 	window = gtkut_window_new(GTK_WINDOW_TOPLEVEL, "addressbook");
-	gtk_window_set_title(GTK_WINDOW(window), _("Address book"));
+	gtk_window_set_title(GTK_WINDOW(window), "Address book");
 	gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	gtk_widget_realize(window);
@@ -985,7 +983,7 @@ static void addressbook_create(void)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
 	gtk_box_pack_start(GTK_BOX(clist_vbox), hbox, FALSE, FALSE, 0);
 
-	label = gtk_label_new(_("Search"));
+	label = gtk_label_new("Search");
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
 	entry = gtk_entry_new();
@@ -1031,18 +1029,18 @@ static void addressbook_create(void)
 
 	gtkut_stock_button_add_help(hbbox, &help_btn);
 
-	edit_btn = gtk_button_new_with_mnemonic(_("_Edit"));
+	edit_btn = gtk_button_new_with_mnemonic("_Edit");
 	gtk_widget_set_can_default(edit_btn, TRUE);
 	gtk_box_pack_start(GTK_BOX(hbbox), edit_btn, TRUE, TRUE, 0);
-	del_btn = gtk_button_new_with_mnemonic(_("_Delete"));
+	del_btn = gtk_button_new_with_mnemonic("_Delete");
 	gtk_widget_set_can_default(del_btn, TRUE);
 	gtk_box_pack_start(GTK_BOX(hbbox), del_btn, TRUE, TRUE, 0);
-	reg_btn = gtk_button_new_with_mnemonic(_("_New"));
+	reg_btn = gtk_button_new_with_mnemonic("_New");
 	gtk_widget_set_can_default(reg_btn, TRUE);
 	gtk_box_pack_start(GTK_BOX(hbbox), reg_btn, TRUE, TRUE, 0);
 
 
-	lup_btn = gtkut_stock_button("edit-find", _("_Find"));
+	lup_btn = gtkut_stock_button("edit-find", "_Find");
 	gtk_widget_set_can_default(lup_btn, TRUE);
 	gtk_box_pack_start(GTK_BOX(hbox), lup_btn, TRUE, TRUE, 0);
 
@@ -1306,9 +1304,9 @@ static void addressbook_del_clicked(GtkButton *button, gpointer data)
 	/* Test for read only */
 	iface = ds->interface;
 	if( iface->readOnly ) {
-		alertpanel( _("Delete address(es)"),
-			_("This address data is read-only and cannot be deleted."),
-			"window-close", _("_Close"), NULL, NULL, NULL, NULL, ALERTFOCUS_FIRST);
+		alertpanel("Delete address(es)",
+			"This address data is read-only and cannot be deleted.",
+			"window-close", "_Close", NULL, NULL, NULL, NULL, ALERTFOCUS_FIRST);
 		return;
 	}
 
@@ -1351,18 +1349,17 @@ static void addressbook_del_clicked(GtkButton *button, gpointer data)
 			}
 		}
 		if (group_delete) {
-			aval = alertpanel( _("Delete group"),
-					_("Really delete the group(s)?\n"
-					  "The addresses it contains will not be lost."),
-					NULL, _("_Cancel"), "edit-delete", _("D_elete"), NULL, NULL,
+			aval = alertpanel("Delete group",
+					"Really delete the group(s)?\nThe addresses it contains will not be lost.",
+					NULL, "_Cancel", "edit-delete", "D_elete", NULL, NULL,
 					ALERTFOCUS_SECOND );
 			if( aval != G_ALERTALTERNATE ) {
 				goto thaw_ret;
 			}
 		} else {
-			aval = alertpanel( _("Delete address(es)"),
-					_("Really delete the address(es)?"),
-					NULL, _("_Cancel"), "edit-delete", _("D_elete"), NULL, NULL,
+			aval = alertpanel("Delete address(es)",
+					"Really delete the address(es)?",
+					NULL, "_Cancel", "edit-delete", "D_elete", NULL, NULL,
 					ALERTFOCUS_SECOND );
 			if( aval != G_ALERTALTERNATE ) {
 				goto thaw_ret;
@@ -2054,7 +2051,7 @@ static void addressbook_clip_paste_cb( GtkAction *action, gpointer data ) {
 	ds = addressbook_find_datasource( GTK_CMCTREE_NODE(addrbook.treeSelected) );
 	if( ds == NULL ) return;
 	if( addrindex_ds_get_readonly( ds ) ) {
-		alertpanel_error( _("Cannot paste. Target address book is read-only.") );
+		alertpanel_error("Cannot paste. Target address book is read-only.");
 		return;
 	}
 
@@ -2064,7 +2061,7 @@ static void addressbook_clip_paste_cb( GtkAction *action, gpointer data ) {
 			folder = ADAPTER_FOLDER(pobj)->itemFolder;
 		}
 		else if( pobj->type == ADDR_ITEM_GROUP ) {
-			alertpanel_error( _("Cannot paste into an address group.") );
+			alertpanel_error("Cannot paste into an address group.");
 			return;
 		}
 	}
@@ -2790,12 +2787,10 @@ static void addressbook_treenode_delete_cb(GtkAction *action, gpointer data)
 	delType = ADDRTREE_DEL_NONE;
 	if( obj->type == ADDR_ITEM_FOLDER ) {
 		if( iface && iface->externalQuery ) {
-			message = g_strdup_printf( _(
-				"Do you want to delete the query " \
-				"results and addresses in '%s'?" ),
+			message = g_strdup_printf("Do you want to delete the query results and addresses in '%s'?",
 				obj->name );
-			aval = alertpanel( _("Delete"), message,
-				NULL, _("_Cancel"), "edit-delete", _("D_elete"), NULL, NULL,
+			aval = alertpanel("Delete", message,
+				NULL, "_Cancel", "edit-delete", "D_elete", NULL, NULL,
 				ALERTFOCUS_SECOND );
 			g_free(message);
 			if( aval == G_ALERTALTERNATE ) {
@@ -2803,13 +2798,10 @@ static void addressbook_treenode_delete_cb(GtkAction *action, gpointer data)
 			}
 		}
 		else {
-			message = g_strdup_printf
-				( _( "Do you want to delete '%s'? "
-			    	     "If you delete the folder only, the addresses it contains will be moved into the parent folder." ),
-			 	 obj->name );
-			aval = alertpanel( _("Delete folder"), message,
-				NULL, _("_Cancel"), "edit-delete", _("Delete _folder only"),
-				"edit-delete", _("Delete folder and _addresses"), ALERTFOCUS_SECOND);
+			message = g_strdup_printf("Do you want to delete '%s'? If you delete the folder only, the addresses it contains will be moved into the parent folder.", obj->name);
+			aval = alertpanel("Delete folder", message,
+				NULL, "_Cancel", "edit-delete", "Delete _folder only",
+				"edit-delete", "Delete folder and _addresses", ALERTFOCUS_SECOND);
 			g_free(message);
 			if( aval == G_ALERTALTERNATE ) {
 				delType = ADDRTREE_DEL_FOLDER_ONLY;
@@ -2820,17 +2812,15 @@ static void addressbook_treenode_delete_cb(GtkAction *action, gpointer data)
 		}
 	}
 	else if( obj->type == ADDR_ITEM_GROUP ) {
-		message = g_strdup_printf(_("Do you want to delete '%s'?\n"
-					    "The addresses it contains will not be lost."), obj->name);
-		aval = alertpanel(_("Delete"), message, NULL, _("_Cancel"),
-				"edit-delete", _("D_elete"), NULL, NULL, ALERTFOCUS_SECOND);
+		message = g_strdup_printf("Do you want to delete '%s'?\nThe addresses it contains will not be lost.", obj->name);
+		aval = alertpanel("Delete", message, NULL, "_Cancel",
+				"edit-delete", "D_elete", NULL, NULL, ALERTFOCUS_SECOND);
 		g_free(message);
 		if( aval == G_ALERTALTERNATE ) delType = ADDRTREE_DEL_FOLDER_ONLY;
 	} else {
-		message = g_strdup_printf(_("Do you want to delete '%s'?\n"
-					    "The addresses it contains will be lost."), obj->name);
-		aval = alertpanel(_("Delete"), message, NULL, _("_Cancel"),
-				"edit-delete", _("D_elete"), NULL, NULL, ALERTFOCUS_SECOND);
+		message = g_strdup_printf("Do you want to delete '%s'?\nThe addresses it contains will be lost.", obj->name);
+		aval = alertpanel("Delete", message, NULL, "_Cancel",
+				"edit-delete", "D_elete", NULL, NULL, ALERTFOCUS_SECOND);
 		g_free(message);
 		if( aval == G_ALERTALTERNATE ) delType = ADDRTREE_DEL_DATA;
 	}
@@ -2941,7 +2931,7 @@ static void addressbook_new_address_from_folder_post_cb( ItemPerson *person )
 /**
  * Label (a format string) that is used to name each folder.
  */
-static gchar *_queryFolderLabel_ = N_( "Search '%s'" );
+static gchar *_queryFolderLabel_ = "Search '%s'";
 
 /**
  * Search ctree widget callback function.
@@ -3846,11 +3836,11 @@ static gboolean addressbook_convert( AddressIndex *addrIndex ) {
 				errFlag = FALSE;
 			}
 			else {
-				msg = _( "New user, could not save index file." );
+				msg = "New user, could not save index file.";
 			}
 		}
 		else {
-			msg = _( "New user, could not save address book files." );
+			msg = "New user, could not save address book files.";
 		}
 	}
 	else {
@@ -3860,13 +3850,12 @@ static gboolean addressbook_convert( AddressIndex *addrIndex ) {
 			addrindex_set_file_name( addrIndex, ADDRESSBOOK_INDEX_FILE );
 			addrindex_save_data( addrIndex );
 			if( addrIndex->retVal == MGU_SUCCESS ) {
-				msg = _( "Old address book converted successfully." );
+				msg = "Old address book converted successfully.";
 				retVal = TRUE;
 				errFlag = FALSE;
 			}
 			else {
-				msg = _("Old address book converted,\n"
-					"could not save new address index file." );
+				msg = "Old address book converted,\ncould not save new address index file.";
 			}
 		}
 		else {
@@ -3878,31 +3867,28 @@ static gboolean addressbook_convert( AddressIndex *addrIndex ) {
 				addrindex_set_file_name( addrIndex, ADDRESSBOOK_INDEX_FILE );
 				addrindex_save_data( addrIndex );
 				if( addrIndex->retVal == MGU_SUCCESS ) {
-					msg = _("Could not convert address book,\n"
-						"but created empty new address book files." );
+					msg = "Could not convert address book,\nbut created empty new address book files.";
 					retVal = TRUE;
 					errFlag = FALSE;
 				}
 				else {
-					msg = _("Could not convert address book,\n"
-						"could not save new address index file." );
+					msg = "Could not convert address book,\ncould not save new address index file.";
 				}
 			}
 			else {
-				msg = _("Could not convert address book\n"
-					"and could not create new address book files." );
+				msg = "Could not convert address book\nand could not create new address book files.";
 			}
 		}
 	}
 	if (errFlag) {
 		debug_print( "Error\n%s\n", msg );
-		alertpanel_full(_("Addressbook conversion error"), msg,
-				"window-close-symbolic", _("_Close"), NULL, NULL, NULL, NULL,
+		alertpanel_full("Addressbook conversion error", msg,
+				"window-close-symbolic", "_Close", NULL, NULL, NULL, NULL,
 				ALERTFOCUS_FIRST, FALSE, NULL, ALERT_ERROR);
 	} else if (msg) {
 		debug_print( "Warning\n%s\n", msg );
-		alertpanel_full(_("Addressbook conversion error"), msg,
-				"window-close-symbolic", _("_Close"), NULL, NULL, NULL, NULL,
+		alertpanel_full("Addressbook conversion error", msg,
+				"window-close-symbolic", "_Close", NULL, NULL, NULL, NULL,
 				ALERTFOCUS_FIRST, FALSE, NULL, ALERT_WARNING);
 	}
 
@@ -4016,9 +4002,9 @@ void addressbook_read_file( void ) {
 		/* Error reading address book */
 		debug_print( "Could not read address index.\n" );
 		addrindex_print_index( addrIndex, stdout );
-		alertpanel_full(_("Addressbook Error"),
-				_("Could not read address index"),
-				"window-close-symbolic", _("_Close"), NULL, NULL, NULL, NULL,
+		alertpanel_full("Addressbook Error",
+				"Could not read address index",
+				"window-close-symbolic", "_Close", NULL, NULL, NULL, NULL,
 				ALERTFOCUS_FIRST, FALSE, NULL, ALERT_ERROR);
 	}
 	debug_print( "done.\n" );
@@ -4281,7 +4267,7 @@ static void addressbook_refresh_current( void ) {
  * Message that is displayed whilst a query is executing in a background
  * thread.
  */
-static gchar *_tempMessage_ = N_( "Busy searching..." );
+static gchar *_tempMessage_ = "Busy searching...";
 
 /**
  * Search completion callback function. This removes the query from the idle
@@ -4504,7 +4490,7 @@ static void addrbookctl_build_map( GtkWidget *window ) {
 	atci->showInTree = TRUE;
 	atci->treeExpand = TRUE;
 	atci->treeLeaf = FALSE;
-	atci->displayName = _( "Interface" );
+	atci->displayName = "Interface";
 	atci->menuCommand = NULL;
 	g_hash_table_insert( _addressBookTypeHash_, &atci->objectType, atci );
 	_addressBookTypeList_ = g_list_append( _addressBookTypeList_, atci );
@@ -4516,7 +4502,7 @@ static void addrbookctl_build_map( GtkWidget *window ) {
 	atci->showInTree = TRUE;
 	atci->treeExpand = TRUE;
 	atci->treeLeaf = FALSE;
-	atci->displayName = _("Address Books");
+	atci->displayName = "Address Books";
 	atci->menuCommand = "Menu/Book/NewBook";
 	g_hash_table_insert( _addressBookTypeHash_, &atci->objectType, atci );
 	_addressBookTypeList_ = g_list_append( _addressBookTypeList_, atci );
@@ -4528,7 +4514,7 @@ static void addrbookctl_build_map( GtkWidget *window ) {
 	atci->showInTree = FALSE;
 	atci->treeExpand = FALSE;
 	atci->treeLeaf = FALSE;
-	atci->displayName = _( "Person" );
+	atci->displayName = "Person";
 	atci->menuCommand = NULL;
 	g_hash_table_insert( _addressBookTypeHash_, &atci->objectType, atci );
 	_addressBookTypeList_ = g_list_append( _addressBookTypeList_, atci );
@@ -4540,7 +4526,7 @@ static void addrbookctl_build_map( GtkWidget *window ) {
 	atci->showInTree = FALSE;
 	atci->treeExpand = FALSE;
 	atci->treeLeaf = TRUE;
-	atci->displayName = _( "Email Address" );
+	atci->displayName = "Email Address";
 	atci->menuCommand = NULL;
 	g_hash_table_insert( _addressBookTypeHash_, &atci->objectType, atci );
 	_addressBookTypeList_ = g_list_append( _addressBookTypeList_, atci );
@@ -4552,7 +4538,7 @@ static void addrbookctl_build_map( GtkWidget *window ) {
 	atci->showInTree = TRUE;
 	atci->treeExpand = FALSE;
 	atci->treeLeaf = FALSE;
-	atci->displayName = _( "Group" );
+	atci->displayName = "Group";
 	atci->menuCommand = NULL;
 	g_hash_table_insert( _addressBookTypeHash_, &atci->objectType, atci );
 	_addressBookTypeList_ = g_list_append( _addressBookTypeList_, atci );
@@ -4564,7 +4550,7 @@ static void addrbookctl_build_map( GtkWidget *window ) {
 	atci->showInTree = TRUE;
 	atci->treeExpand = FALSE;
 	atci->treeLeaf = FALSE;
-	atci->displayName = _( "Folder" );
+	atci->displayName = "Folder";
 	atci->menuCommand = NULL;
 	g_hash_table_insert( _addressBookTypeHash_, &atci->objectType, atci );
 	_addressBookTypeList_ = g_list_append( _addressBookTypeList_, atci );

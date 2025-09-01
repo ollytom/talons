@@ -1,3 +1,0 @@
-src/common/uuencode.c
-src/plugins/vcalendar/libical/libical/icalyacc.c
-src/quote_fmt_parse.c

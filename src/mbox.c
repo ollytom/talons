@@ -121,11 +121,9 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, PrefsAccount *account)
 			long cur_offset_mb = ftell(mbox_fp) / (1024 * 1024);
 			if (printed)
 				statusbar_pop_all();
-			statusbar_print_all(
-					ngettext("Importing from mbox... (%ld MB imported)",
-						"Importing from mbox... (%ld MB imported)", cur_offset_mb), cur_offset_mb);
+			statusbar_print_all("Importing from mbox... (%ld MB imported)", cur_offset_mb);
 			statusbar_progress_all(cur_offset_mb, src_stat.st_size / (1024*1024), 1);
-			printed=TRUE;
+			printed = TRUE;
 			GTK_EVENTS_FLUSH();
 		}
 

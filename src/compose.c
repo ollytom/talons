@@ -1379,7 +1379,7 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 		quote = TRUE;
 		body_fmt = "";
 		if (prefs_common.quotefmt && *prefs_common.quotefmt) {
-			body_fmt = gettext(prefs_common.quotefmt);
+			body_fmt = prefs_common.quotefmt;
 		}
 	}
 
@@ -1525,7 +1525,7 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 
 		gchar *body_fmt = "";
 		if (prefs_common.fw_quotefmt && *prefs_common.fw_quotefmt) {
-			body_fmt = gettext(prefs_common.fw_quotefmt);
+			body_fmt = prefs_common.fw_quotefmt;
 		}
 
 		compose_quote_fmt(compose, full_msginfo,
@@ -2445,7 +2445,7 @@ static MailField compose_entries_set(Compose *compose, const gchar *mailto, Comp
 	}
 
 	if (attach) {
-		gint i = 0, att = 0;
+		gint i = 0;
 		gchar *warn_files = NULL;
 		while (attach[i] != NULL) {
 			gchar *utf8_filename = conv_filename_to_utf8(attach[i]);
@@ -2456,7 +2456,6 @@ static MailField compose_entries_set(Compose *compose, const gchar *mailto, Comp
 							utf8_filename);
 					g_free(warn_files);
 					warn_files = tmp;
-					att++;
 				}
 				g_free(utf8_filename);
 			} else {
@@ -2465,9 +2464,7 @@ static MailField compose_entries_set(Compose *compose, const gchar *mailto, Comp
 			i++;
 		}
 		if (warn_files) {
-			alertpanel_notice(ngettext(
-			"The following file has been attached: \n%s",
-			"The following files have been attached: \n%s", att), warn_files);
+			alertpanel_notice("Attachments:\n%s", warn_files);
 			g_free(warn_files);
 		}
 	}
@@ -5941,40 +5938,6 @@ static gchar *compose_quote_list_of_addresses(gchar *str)
 	(compose->account->add_customhdr && \
 	 custom_header_find(compose->account->customhdr_list, header) != NULL)
 
-static const gchar *compose_untranslated_header_name(gchar *header_name)
-{
-	/* return the untranslated header name, if header_name is a known
-	   header name, in either its translated or untranslated form, with
-	   or without trailing colon. otherwise, returns header_name. */
-	gchar *translated_header_name;
-	gchar *translated_header_name_wcolon;
-	const gchar *untranslated_header_name;
-	const gchar *untranslated_header_name_wcolon;
-	gint i;
-
-	cm_return_val_if_fail(header_name != NULL, NULL);
-
-	for (i = 0; HEADERS[i].header_name != NULL; i++) {
-		untranslated_header_name = HEADERS[i].header_name;
-		untranslated_header_name_wcolon = HEADERS[i].header_name_w_colon;
-
-		translated_header_name = gettext(untranslated_header_name);
-		translated_header_name_wcolon = gettext(untranslated_header_name_wcolon);
-
-		if (!strcmp(header_name, untranslated_header_name) ||
-			!strcmp(header_name, translated_header_name)) {
-			return untranslated_header_name;
-		} else {
-			if (!strcmp(header_name, untranslated_header_name_wcolon) ||
-				!strcmp(header_name, translated_header_name_wcolon)) {
-				return untranslated_header_name_wcolon;
-			}
-		}
-	}
-	debug_print("compose_untranslated_header_name: unknown header '%s'\n", header_name);
-	return header_name;
-}
-
 static void compose_add_headerfield_from_headerlist(Compose *compose,
 						    GString *header,
 					            const gchar *fieldname,
@@ -6287,9 +6250,7 @@ static gchar *compose_get_header(Compose *compose)
 				string++;
 			}
 			if (!standard_header && !IS_IN_CUSTOM_HEADER(headername)) {
-				/* store untranslated header name */
-				g_string_append_printf(header, "%s %s\n",
-						compose_untranslated_header_name(headername_wcolon), headervalue);
+				g_string_append_printf(header, "%s %s\n", headername_wcolon, headervalue);
 			}
 		}
 		g_free(headername);
@@ -9430,8 +9391,7 @@ static void attach_uri_list(Compose *compose, GtkSelectionData *data)
 		if (prefs_common.notify_pasted_attachments) {
 			gchar *msg;
 
-			msg = g_strdup_printf(ngettext("The following file has been attached: \n%s",
-						"The following files have been attached: \n%s", att), warn_files);
+			msg = g_strdup_printf("Attached:\n%s", warn_files);
 			val = alertpanel_full(_("Notice"), msg,
 						NULL, _("_Close"), NULL, NULL, NULL, NULL,
 						ALERTFOCUS_FIRST, TRUE, NULL, ALERT_NOTICE);
@@ -10144,7 +10104,6 @@ static void compose_insert_drag_received_cb (GtkWidget		*widget,
 	Compose *compose = (Compose *)user_data;
 	GList *list, *tmp;
 	GdkAtom type;
-	guint num_files;
 	gchar *msg;
 
 	/* strangely, testing data->type == gdk_atom_intern("text/uri-list", TRUE)
@@ -10155,7 +10114,6 @@ static void compose_insert_drag_received_cb (GtkWidget		*widget,
 		const gchar* ddata = (const gchar *)gtk_selection_data_get_data(data);
 
 		list = uri_list_extract_filenames(ddata);
-		num_files = g_list_length(list);
 		if (list == NULL && strstr(ddata, "://")) {
 			/* Assume a list of no files, and data has ://, is a remote link */
 			gchar *tmpdata = g_strstrip(g_strdup(ddata));
@@ -10171,14 +10129,7 @@ static void compose_insert_drag_received_cb (GtkWidget		*widget,
 		}
 		switch (prefs_common.compose_dnd_mode) {
 			case COMPOSE_DND_ASK:
-				msg = g_strdup_printf(
-						ngettext(
-							"Do you want to insert the contents of the file "
-							"into the message body, or attach it to the email?",
-							"Do you want to insert the contents of the %d files "
-							"into the message body, or attach them to the email?",
-							num_files),
-						num_files);
+				msg = g_strdup_printf("Insert to the message body or attach to the email?");
 				val = alertpanel_full(_("Insert or attach?"), msg,
 						      NULL, _("_Cancel"), NULL, _("_Insert"), NULL, _("_Attach"),
 						      ALERTFOCUS_SECOND, TRUE, NULL, ALERT_QUESTION);

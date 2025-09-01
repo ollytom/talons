@@ -535,7 +535,6 @@ int imap_threaded_connect(Folder * folder, const char * server, int port)
 	param.server = server;
 	param.port = port;
 
-	refresh_resolvers();
 	threaded_run(folder, &param, &result, connect_run);
 
 	debug_print("connect ok %i with imap %p\n", result.error, imap);
@@ -590,7 +589,6 @@ int imap_threaded_connect_ssl(Folder * folder, const char * server, int port)
 	if (folder->account)
 		accept_if_valid = TRUE;
 
-	refresh_resolvers();
 	if (threaded_run(folder, &param, &result, connect_ssl_run))
 		return MAILIMAP_ERROR_INVAL;
 

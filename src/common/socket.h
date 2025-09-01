@@ -83,7 +83,6 @@ struct _SockInfo
 	gboolean use_tls_sni;
 };
 
-void refresh_resolvers			(void);
 gint sock_init				(void);
 gint sock_cleanup			(void);
 

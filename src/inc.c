@@ -600,7 +600,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 	IncState inc_state;
 	gint new_msgs = 0;
 	gchar *msg;
-	gchar *fin_msg;
 	FolderItem *processing, *inbox;
 	GSList *msglist, *msglist_element;
 	gboolean cancelled = FALSE;
@@ -684,9 +683,7 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 		case INC_SUCCESS:
 			if (pop3_session->cur_total_num > 0)
 				msg = g_strdup_printf(
-					ngettext("Done (%d message (%s) received)",
-						 "Done (%d messages (%s) received)",
-					 pop3_session->cur_total_num),
+					"Done (%d messages (%s) received)",
 					 pop3_session->cur_total_num,
 					 to_human_readable((goffset)pop3_session->cur_total_recv_bytes));
 			else
@@ -768,55 +765,39 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 
 		if (inc_state != INC_SUCCESS && inc_state != INC_CANCEL) {
 			if (inc_dialog->show_dialog)
-				manage_window_focus_in
-					(inc_dialog->dialog->window,
-					 NULL, NULL);
+				manage_window_focus_in(inc_dialog->dialog->window, NULL, NULL);
 			inc_put_error(inc_state, pop3_session);
 			if (inc_dialog->show_dialog)
-				manage_window_focus_out
-					(inc_dialog->dialog->window,
-					 NULL, NULL);
-			if (inc_state == INC_NO_SPACE ||
-			    inc_state == INC_IO_ERROR)
+				manage_window_focus_out(inc_dialog->dialog->window, NULL, NULL);
+			if (inc_state == INC_NO_SPACE || inc_state == INC_IO_ERROR)
 				break;
 		}
 		folder_item_free_cache(processing, TRUE);
 
 		inc_session_destroy(session);
-		inc_dialog->queue_list =
-			g_list_remove(inc_dialog->queue_list, session);
+		inc_dialog->queue_list = g_list_remove(inc_dialog->queue_list, session);
 	}
 
 #undef SET_PIXMAP_AND_TEXT
 
-	if (new_msgs > 0)
-		fin_msg = g_strdup_printf(ngettext("Finished (%d new message)",
-					  	   "Finished (%d new messages)",
-					  	   new_msgs), new_msgs);
-	else
-		fin_msg = g_strdup_printf(_("Finished (no new messages)"));
-
+	char fin_msg[BUFSIZ];
+	snprintf(fin_msg, sizeof(fin_msg), "Finished (%d new)", new_msgs);
 	progress_dialog_set_label(inc_dialog->dialog, fin_msg);
 
 	while (inc_dialog->queue_list != NULL) {
 		session = inc_dialog->queue_list->data;
 		inc_session_destroy(session);
-		inc_dialog->queue_list =
-			g_list_remove(inc_dialog->queue_list, session);
+		inc_dialog->queue_list = g_list_remove(inc_dialog->queue_list, session);
 	}
 
-	if (prefs_common.close_recv_dialog || !inc_dialog->show_dialog)
+	if (prefs_common.close_recv_dialog || !inc_dialog->show_dialog) {
 		inc_progress_dialog_destroy(inc_dialog);
-	else {
-		gtk_window_set_title(GTK_WINDOW(inc_dialog->dialog->window),
-				     fin_msg);
-		gtk_button_set_label(GTK_BUTTON(inc_dialog->dialog->cancel_btn),
-				     _("_Close"));
+	} else {
+		gtk_window_set_title(GTK_WINDOW(inc_dialog->dialog->window), fin_msg);
+		gtk_button_set_label(GTK_BUTTON(inc_dialog->dialog->cancel_btn), "_Close");
 		gtk_button_set_image(GTK_BUTTON(inc_dialog->dialog->cancel_btn),
 			gtk_image_new_from_icon_name("window-close-symbolic", GTK_ICON_SIZE_BUTTON));
 	}
-
-	g_free(fin_msg);
 
 	return new_msgs;
 }
@@ -1031,16 +1012,10 @@ static void inc_progress_dialog_set_progress(IncProgressDialog *inc_dialog,
 	statusbar_progress_all(pop3_session->cur_msg, pop3_session->count, 1);
 
 	if (pop3_session->cur_total_num > 0) {
-		g_snprintf(buf, sizeof(buf),
-			   ngettext("Retrieving (%d message (%s) received)",
-			   	    "Retrieving (%d messages (%s) received)",
-				    pop3_session->cur_total_num),
-			   pop3_session->cur_total_num,
-			   to_human_readable
-			   ((goffset)pop3_session->cur_total_recv_bytes));
-		progress_dialog_list_set_status(inc_dialog->dialog,
-						inc_dialog->cur_row,
-						buf);
+		int n = pop3_session->cur_total_num;
+		char *recv = to_human_readable((goffset)pop3_session->cur_total_recv_bytes);
+		g_snprintf(buf, sizeof(buf), "Retrieving messages (%d (%s) received)", n, recv),
+		progress_dialog_list_set_status(inc_dialog->dialog, inc_dialog->cur_row, buf);
 	}
 }
 
@@ -1585,7 +1560,8 @@ gboolean inc_offline_should_override(gboolean force_ask, const gchar *msg)
 			 return FALSE;
 
 		if (!force_ask) {
-			gchar *unit = _("seconds");
+			char buf[8];
+			char *unit = "seconds";
 
 			/* show the offline override time (length) using the must appropriate unit:
 			   the biggest unit possible (hours, minutes, seconds), provided that there
@@ -1595,34 +1571,30 @@ gboolean inc_offline_should_override(gboolean force_ask, const gchar *msg)
 				if (((length % 3600) % 60) == 0) { /* no seconds left? */
 					if ((length % 3600) > 0) { /* minutes left? */
 						length = length / 60;
-						unit = ngettext("minute", "minutes", length);
+						unit = "minute";
 					} else {
 						length = length / 3600;
-						unit = ngettext("hour", "hours", length);
+						unit = "hour";
 					}
 				} /* else: seconds */
 			} else {
 				if ((length / 60) > 0) { /* minutes left? */
 					if ((length % 60) == 0) {
 						length = length / 60;
-						unit = ngettext("minute", "minutes", length);
+						unit = "minute";
 					}
 				} /* else: seconds */
 			}
-			tmp = g_strdup_printf(
-				_("%s%sYou're working offline. Override for %d %s?"),
-				msg?msg:"",
-				msg?"\n\n":"",
-				length, unit);
+			strlcpy(buf, unit, sizeof(buf));
+			if (length > 1)
+				strlcat(buf, "s", sizeof(buf));
+			tmp = g_strdup_printf("%s\nWorking offline. Override for %d %s?", msg, length, buf);
 		} else
-			tmp = g_strdup_printf(
-				_("%s%sYou're working offline. Override?"),
-				msg?msg:"",
-				msg?"\n\n":"");
+			tmp = g_strdup_printf("%sWorking offline. Override?", msg),
 
 		answer = alertpanel(_("Offline warning"),
 			       tmp,
-			       NULL, _("_No"), NULL, _("_Yes"),
+			       NULL, "Cancel", NULL, "Override",
 			       NULL, !force_ask? _("On_ly once"):NULL, ALERTFOCUS_SECOND);
 		g_free(tmp);
 		if (answer == G_ALERTALTERNATE) {

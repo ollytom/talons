@@ -430,16 +430,12 @@ static void prefs_summary_column_set_dialog(SummaryColumnState *state)
 
 	for (pos = 0; pos < N_SUMMARY_COLS; pos++) {
 		type = state[pos].type;
-		name = gettext(col_name[type]);
+		name = col_name[type];
 
 		if (state[pos].visible)
-			prefs_summary_column_insert_column(shown_store,
-							   -1, name,
-							   type);
+			prefs_summary_column_insert_column(shown_store, -1, name, type);
 		else
-			prefs_summary_column_insert_column(stock_store,
-							    -1, name,
-							    type);
+			prefs_summary_column_insert_column(stock_store, -1, name, type);
 	}
 }
 
@@ -484,7 +480,6 @@ static void prefs_summary_column_add(void)
 	GtkListStore *stock_store, *shown_store;
 	GtkTreeIter stock_sel, shown_sel, shown_add;
 	gboolean shown_sel_valid;
-	gchar *name;
 	SummaryColumnType type;
 
 	stock_store = GTK_LIST_STORE(gtk_tree_view_get_model
@@ -514,10 +509,8 @@ static void prefs_summary_column_add(void)
 	gtk_list_store_insert_after(shown_store, &shown_add,
 				    shown_sel_valid ? &shown_sel : NULL);
 
-	name = gettext(col_name[type]);
-
 	gtk_list_store_set(shown_store, &shown_add,
-			   SUMCOL_NAME, name,
+			   SUMCOL_NAME, col_name[type],
 			   SUMCOL_TYPE, type,
 			   -1);
 
@@ -533,7 +526,6 @@ static void prefs_summary_column_remove(void)
 	GtkListStore *stock_store, *shown_store;
 	GtkTreeIter shown_sel, stock_sel, stock_add;
 	gboolean stock_sel_valid;
-	gchar *name;
 	SummaryColumnType type;
 
 	stock_store = GTK_LIST_STORE(gtk_tree_view_get_model
@@ -563,10 +555,8 @@ static void prefs_summary_column_remove(void)
 	gtk_list_store_insert_after(stock_store, &stock_add,
 				    stock_sel_valid ? &stock_sel : NULL);
 
-	name = gettext(col_name[type]);
-
 	gtk_list_store_set(stock_store, &stock_add,
-			   SUMCOL_NAME, name,
+			   SUMCOL_NAME, col_name[type],
 			   SUMCOL_TYPE, type,
 			   -1);
 
@@ -864,7 +854,6 @@ static void drag_data_received(GtkTreeView *tree_view, GdkDragContext *context,
 						GTK_TREE_VIEW(source)),
 						&sel_model, &isel)) {
 			type = *((gint *) gtk_selection_data_get_data(data));
-			name = gettext(col_name[type]);
 			gtk_list_store_remove(GTK_LIST_STORE(sel_model), &isel);
 
 			/* get insertion position */
@@ -890,7 +879,7 @@ static void drag_data_received(GtkTreeView *tree_view, GdkDragContext *context,
 						      &isel);
 
 			gtk_list_store_set(GTK_LIST_STORE(model), &isel,
-					   SUMCOL_NAME, name,
+					   SUMCOL_NAME, col_name[type],
 					   SUMCOL_TYPE, type, -1);
 			gtk_tree_path_free(dst);
 		}

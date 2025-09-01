@@ -292,7 +292,7 @@ gint toolbar_ret_val_from_descr(const gchar *descr)
 	gint i;
 
 	for (i = 0; i < N_ACTION_VAL; i++) {
-		if (g_utf8_collate(gettext(toolbar_text[i].descr), descr) == 0)
+		if (g_utf8_collate(toolbar_text[i].descr, descr) == 0)
 				return i;
 	}
 
@@ -303,7 +303,7 @@ gchar *toolbar_ret_descr_from_val(gint val)
 {
 	cm_return_val_if_fail(val >=0 && val < N_ACTION_VAL, NULL);
 
-	return gettext(toolbar_text[val].descr);
+	return toolbar_text[val].descr;
 }
 
 static gint toolbar_ret_val_from_text(const gchar *text)
@@ -364,7 +364,7 @@ GList *toolbar_get_action_items(ToolbarType source)
 					A_CANCEL_INC,    A_CANCEL_SEND,   A_CANCEL_ALL,    A_PREFERENCES };
 
 		for (i = 0; i < sizeof main_items / sizeof main_items[0]; i++)  {
-			items = g_list_append(items, gettext(toolbar_text[main_items[i]].descr));
+			items = g_list_append(items, toolbar_text[main_items[i]].descr);
 		}
 	}
 	else if (source == TOOLBAR_COMPOSE) {
@@ -377,7 +377,7 @@ GList *toolbar_get_action_items(ToolbarType source)
 					A_CLOSE };
 
 		for (i = 0; i < sizeof comp_items / sizeof comp_items[0]; i++)
-			items = g_list_append(items, gettext(toolbar_text[comp_items[i]].descr));
+			items = g_list_append(items, toolbar_text[comp_items[i]].descr);
 	}
 	else if (source == TOOLBAR_MSGVIEW) {
 		gint msgv_items[] =   {
@@ -387,7 +387,7 @@ GList *toolbar_get_action_items(ToolbarType source)
 					A_ADDRBOOK, A_CLOSE };
 
 		for (i = 0; i < sizeof msgv_items / sizeof msgv_items[0]; i++)
-			items = g_list_append(items, gettext(toolbar_text[msgv_items[i]].descr));
+			items = g_list_append(items, toolbar_text[msgv_items[i]].descr);
 	}
 
 	return items;
@@ -410,7 +410,7 @@ static void toolbar_parse_item(XMLFile *file, ToolbarType source, gboolean *rewr
 		if (g_utf8_collate(name, TOOLBAR_ICON_FILE) == 0)
 			item->file = g_strdup (value);
 		else if (g_utf8_collate(name, TOOLBAR_ICON_TEXT) == 0)
-			item->text = g_strdup (*value ? gettext(value):"");
+			item->text = g_strdup (*value ? value:"");
 		else if (g_utf8_collate(name, TOOLBAR_ICON_ACTION) == 0)
 			item->index = toolbar_ret_val_from_text(value);
 

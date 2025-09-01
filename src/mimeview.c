@@ -1740,35 +1740,20 @@ static AlertValue mimeview_save_all_error_ask(gint n)
 static void mimeview_save_all_info(gint errors, gint total)
 {
 	AlertValue aval;
+	char msg[BUFSIZ];
 
 	if (!errors && prefs_common.show_save_all_success) {
-		gchar *msg = g_strdup_printf(
-				ngettext("%d file saved successfully.",
-					"%d files saved successfully.",
-					total),
-				total);
-		aval = alertpanel_full(_("Notice"), msg, NULL, _("_Close"),
+		snprintf(msg, sizeof(msg), "%d saved.", total);
+		aval = alertpanel_full("Notice", msg, NULL, "_Close",
 				       NULL, NULL, NULL, NULL, ALERTFOCUS_FIRST,
 				       TRUE, NULL, ALERT_NOTICE);
-		g_free(msg);
 		if (aval & G_ALERTDISABLE)
 			prefs_common.show_save_all_success = FALSE;
 	} else if (prefs_common.show_save_all_failure) {
-		gchar *msg1 = g_strdup_printf(
-				ngettext("%d file saved successfully",
-					"%d files saved successfully",
-					total - errors),
-				total - errors);
-		gchar *msg2 = g_strdup_printf(
-				ngettext("%s, %d file failed.",
-					"%s, %d files failed.",
-					errors),
-				msg1, errors);
-		aval = alertpanel_full(_("Warning"), msg2, NULL, _("_Close"),
+		snprintf(msg, sizeof(msg), "%d saved, %d failed.", total-errors, errors);
+		aval = alertpanel_full("Warning", msg, NULL, "_Close",
 				       NULL, NULL, NULL, NULL, ALERTFOCUS_FIRST,
 				       TRUE, NULL, ALERT_WARNING);
-		g_free(msg2);
-		g_free(msg1);
 		if (aval & G_ALERTDISABLE)
 			prefs_common.show_save_all_failure = FALSE;
 	}

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -35,7 +35,6 @@ GtkActionGroup *cm_menu_create_action_group(const gchar *name, GtkActionEntry *e
 					    gint num_entries, gpointer data)
 {
 	GtkActionGroup *group = gtk_action_group_new(name);
-	gtk_action_group_set_translate_func(group, menu_translate, NULL, NULL);
 	gtk_action_group_add_actions(group, entries, num_entries, data);
 	gtk_ui_manager_insert_action_group(gtkut_ui_manager(), group, 0);
 	return group;
@@ -45,19 +44,9 @@ GtkActionGroup *cm_menu_create_action_group_full(GtkUIManager *manager, const gc
 					    gint num_entries, gpointer data)
 {
 	GtkActionGroup *group = gtk_action_group_new(name);
-	gtk_action_group_set_translate_func(group, menu_translate, NULL, NULL);
 	gtk_action_group_add_actions(group, entries, num_entries, data);
 	gtk_ui_manager_insert_action_group(manager, group, 0);
 	return group;
-}
-
-gchar *menu_translate(const gchar *path, gpointer data)
-{
-	gchar *retval;
-
-	retval = gettext(path);
-
-	return retval;
 }
 
 void cm_menu_set_sensitive(gchar *menu, gboolean sensitive)
@@ -142,7 +131,7 @@ GtkWidget *cm_menu_item_new_label_from_url(gchar *url)
 			"</span>", NULL));
 		return newlabel;
 	}
-	
+
 	return gtk_menu_item_new_with_label(url);
 }
 

@@ -3317,7 +3317,6 @@ static void online_switch_clicked (GtkButton *btn, gpointer data)
 		cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/File/OfflineMode", FALSE);
 		prefs_common.work_offline = FALSE;
 		inc_autocheck_timer_set();
-		refresh_resolvers();
 		hooks_invoke(OFFLINE_SWITCH_HOOKLIST, NULL);
 	}
 }
@@ -3674,41 +3673,26 @@ static void attract_by_subject_cb(GtkAction *action, gpointer data)
 
 void mainwindow_delete_duplicated(MainWindow *mainwin)
 {
-	FolderItem *item;
-
-	item = folderview_get_selected_item(mainwin->folderview);
-	if (item) {
-		gint result;
-
-		main_window_cursor_wait(mainwin);
-		STATUSBAR_PUSH(mainwin, _("Deleting duplicated messages..."));
-		result = folderutils_delete_duplicates(item, prefs_common.immediate_exec ?
-					      DELETE_DUPLICATES_REMOVE : DELETE_DUPLICATES_SETFLAG);
-		STATUSBAR_POP(mainwin);
-		main_window_cursor_normal(mainwin);
-
-		switch (result) {
-		case -1:
-			break;
-		case 0:
-			alertpanel_notice(_("No duplicate message found in selected folder.\n"));
-			break;
-		default: {
-				gchar *msg;
-
-				if (prefs_common.immediate_exec) {
-					msg = ngettext("Deleted %d duplicate message in selected folder.\n",
-							       "Deleted %d duplicate messages in selected folder.\n",
-							   result);
-				} else {
-					msg = ngettext("Marked %d duplicate message for deletion in selected folder.\n",
-							       "Marked %d duplicate messages for deletion in selected folder.\n",
-							   result);
-				}
-				alertpanel_notice(msg, result);
-			}
-		}
+	FolderItem *item = folderview_get_selected_item(mainwin->folderview);
+	if (!item)
+		return;
+	main_window_cursor_wait(mainwin);
+	STATUSBAR_PUSH(mainwin, "Deleting duplicate messages...");
+	int dupes = folderutils_delete_duplicates(item, prefs_common.immediate_exec ?
+				      DELETE_DUPLICATES_REMOVE : DELETE_DUPLICATES_SETFLAG);
+	STATUSBAR_POP(mainwin);
+	main_window_cursor_normal(mainwin);
+	if (dupes < 0) {
+		return;
+	} else if (dupes == 0) {
+		alertpanel_notice("No duplicates found in selected folder.\n");
+		return;
 	}
+
+	char *msg = "Marked %d duplicates for deletion in selected folder.\n";
+	if (prefs_common.immediate_exec)
+		msg = "Deleted %d duplicates in selected folder.\n";
+	alertpanel_notice(msg, dupes);
 }
 
 static void delete_duplicated_cb(GtkAction *action, gpointer data)
@@ -3744,14 +3728,10 @@ void mainwindow_delete_duplicated_all(MainWindow *mainwin)
 	STATUSBAR_POP(mainwin);
 	main_window_cursor_normal(mainwin);
 
-	if (data.dups > 0) {
-		alertpanel_notice(ngettext("Deleted %d duplicate message in %d folders.\n",
-				   "Deleted %d duplicate messages in %d folders.\n",
-				   data.dups),
-				   data.dups, data.folders);
-	} else {
-		alertpanel_notice(_("No duplicate message found in %d folders.\n"), data.folders);
-	}
+	if (data.dups > 0)
+		alertpanel_notice("Deleted %d duplicates in %d folders.\n", data.dups, data.folders);
+	else
+		alertpanel_notice("No duplicates in %d folders.\n", data.folders);
 }
 
 static void delete_duplicated_all_cb(GtkAction *action, gpointer mw)
@@ -4165,9 +4145,7 @@ static void forget_session_passwords_cb(GtkAction *action, gpointer data)
 		++accs;
 	}
 	main_window_unlock(mainwin);
-	alertpanel_notice(ngettext("Forgotten %d password in %d accounts.\n",
-				   "Forgotten %d passwords in %d accounts.\n",
-				   fgtn), fgtn, accs);
+	alertpanel_notice("Forgotten %d passwords in %d accounts.\n", fgtn, accs);
 }
 
 void mainwindow_jump_to(const gchar *target, gboolean popup)

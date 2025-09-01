@@ -415,7 +415,7 @@ static void prefs_folder_column_set_dialog(FolderColumnState *state)
 
 	for (pos = 0; pos < N_FOLDER_COLS; pos++) {
 		type = state[pos].type;
-		name = gettext(col_name[type]);
+		name = col_name[type];
 
 		if (state[pos].visible)
 			prefs_folder_column_insert_column(shown_store,
@@ -499,10 +499,8 @@ static void prefs_folder_column_add(void)
 	gtk_list_store_insert_after(shown_store, &shown_add,
 				    shown_sel_valid ? &shown_sel : NULL);
 
-	name = gettext(col_name[type]);
-
 	gtk_list_store_set(shown_store, &shown_add,
-			   SUMCOL_NAME, name,
+			   SUMCOL_NAME, col_name[type],
 			   SUMCOL_TYPE, type,
 			   -1);
 
@@ -548,10 +546,8 @@ static void prefs_folder_column_remove(void)
 	gtk_list_store_insert_after(stock_store, &stock_add,
 				    stock_sel_valid ? &stock_sel : NULL);
 
-	name = gettext(col_name[type]);
-
 	gtk_list_store_set(stock_store, &stock_add,
-			   SUMCOL_NAME, name,
+			   SUMCOL_NAME, col_name[type],
 			   SUMCOL_TYPE, type,
 			   -1);
 
@@ -849,7 +845,7 @@ static void drag_data_received(GtkTreeView *tree_view, GdkDragContext *context,
 						GTK_TREE_VIEW(source)),
 						&sel_model, &isel)) {
 			type = *((gint *) gtk_selection_data_get_data(data));
-			name = gettext(col_name[type]);
+			name = col_name[type];
 			gtk_list_store_remove(GTK_LIST_STORE(sel_model), &isel);
 
 			/* get insertion position */

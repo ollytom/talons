@@ -219,7 +219,7 @@ static gboolean addrgather_dlg_harvest() {
 
 	addrharvest_free( harvester );
 
-	addrgather_dlg_status_show(_("Addresses collected successfully."));
+	addrgather_dlg_status_show("Addresses collected successfully.");
 
 	/* Display summary page */
 	gtk_notebook_set_current_page(
@@ -286,7 +286,7 @@ static void addrgather_page_fields(gint pageNum, gchar *pageLbl)
 	gtk_grid_set_column_spacing(GTK_GRID(table), HSPACING_NARROW);
 
 	/* First row */
-	label = gtk_label_new(_("Current folder:"));
+	label = gtk_label_new("Current folder:");
 	gtk_grid_attach(GTK_GRID(table), label, 0, 0, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(label), 1.0);
 
@@ -295,7 +295,7 @@ static void addrgather_page_fields(gint pageNum, gchar *pageLbl)
 	gtk_label_set_xalign(GTK_LABEL(labelFolder), 0.0);
 
 	/* Second row */
-	label = gtk_label_new(_("Address book name:"));
+	label = gtk_label_new("Address book name:");
 	gtk_grid_attach(GTK_GRID(table), label, 0, 1, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(label), 1.0);
 
@@ -307,11 +307,11 @@ static void addrgather_page_fields(gint pageNum, gchar *pageLbl)
 
 
 	/* Third row */
-	label = gtk_label_new(_("Address book folder size:"));
+	label = gtk_label_new("Address book folder size:");
 	gtk_grid_attach(GTK_GRID(table), label, 0, 2, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(label), 1.0);
 	CLAWS_SET_TIP(label,
-			_("Maximum amount of entries per folder within the newly created address book"));
+			"Maximum amount of entries per folder within the newly created address book");
 
 	hboxs = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	adjFolder = GTK_ADJUSTMENT(gtk_adjustment_new(DFL_FOLDER_SIZE, MIN_FOLDER_SIZE, G_MAXINT, 1, 10, 0));
@@ -321,9 +321,9 @@ static void addrgather_page_fields(gint pageNum, gchar *pageLbl)
 	gtk_grid_attach(GTK_GRID(table), hboxs, 1, 2, 1, 1);
 
 	CLAWS_SET_TIP(spinbtnFolder,
-			_("Maximum amount of entries per folder within the newly created address book"));
+			"Maximum amount of entries per folder within the newly created address book");
 	/* Fourth row */
-	frameHeader = gtk_frame_new(_("Process these mail header fields"));
+	frameHeader = gtk_frame_new("Process these mail header fields");
 	gtk_widget_show(frameHeader);
 	gtk_grid_attach(GTK_GRID(table), frameHeader, 0, 3, 1, 1);
 	gtk_widget_set_hexpand(frameHeader, TRUE);
@@ -399,13 +399,13 @@ static void addrgather_page_finish( gint pageNum, gchar *pageLbl ) {
 
 	/* Columns for the treeview */
 	rdr = gtk_cell_renderer_text_new();
-	col = gtk_tree_view_column_new_with_attributes(_("Header Name"), rdr,
+	col = gtk_tree_view_column_new_with_attributes("Header Name", rdr,
 			"markup", ADDRGATHER_COL_HEADER,
 			NULL);
 	gtk_tree_view_column_set_min_width(col, FIELDS_COL_WIDTH_HEADER);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(viewCount), col);
 
-	col = gtk_tree_view_column_new_with_attributes(_("Address Count"), rdr,
+	col = gtk_tree_view_column_new_with_attributes("Address Count", rdr,
 			"text", ADDRGATHER_COL_COUNT,
 			NULL);
 	gtk_tree_view_column_set_min_width(col, FIELDS_COL_WIDTH_COUNT);
@@ -462,8 +462,8 @@ static void addrgather_dlg_create(void)
 	gtk_box_pack_start(GTK_BOX(hsbox), statusbar, TRUE, TRUE, 0);
 
 	/* Button panel */
-	gtkut_stock_button_set_create(&hbbox, &btnCancel, NULL, _("_Cancel"),
-				      &btnOk, NULL, _("_OK"),
+	gtkut_stock_button_set_create(&hbbox, &btnCancel, NULL, "Cancel",
+				      &btnOk, NULL, "OK",
 				      NULL, NULL, NULL);
 	gtk_box_pack_end(GTK_BOX(vbox), hbbox, FALSE, FALSE, 0);
 
@@ -492,8 +492,8 @@ static void addrgather_dlg_create(void)
 								 "Collect Email Address Dialog");
 
 	/* Create notebook pages */
-	addrgather_page_fields(PAGE_FIELDS, _("Header Fields"));
-	addrgather_page_finish(PAGE_FINISH, _("Finish"));
+	addrgather_page_fields(PAGE_FIELDS, "Header Fields");
+	addrgather_page_finish(PAGE_FINISH, "Finish");
 	gtk_widget_show_all(addrgather_dlg.window);
 }
 
@@ -543,11 +543,11 @@ AddressBookFile *addrgather_dlg_execute(FolderItem *folderItem, AddressIndex *ad
 	/* Apply window title */
 	if (sourceInd) {
 		gtk_window_set_title(GTK_WINDOW(addrgather_dlg.window),
-				     _("Collect email addresses from selected messages"));
+				     "Collect email addresses from selected messages");
 		gtk_widget_set_sensitive(addrgather_dlg.checkRecurse, FALSE);
 	} else {
 		gtk_window_set_title(GTK_WINDOW(addrgather_dlg.window),
-				     _("Collect email addresses from folder"));
+				     "Collect email addresses from folder");
 		gtk_widget_set_sensitive(addrgather_dlg.checkRecurse, TRUE);
 	}
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(addrgather_dlg.checkRecurse), FALSE);

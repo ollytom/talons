@@ -165,7 +165,7 @@ static void legend_create(void)
 		gtk_widget_set_valign(icon_label, GTK_ALIGN_CENTER);
 		gtk_grid_attach(GTK_GRID(table), icon_label, j, k, 1, 1);
 
-		desc_label = gtk_label_new(gettext(legend_icon_desc[i]));
+		desc_label = gtk_label_new(legend_icon_desc[i]);
 		gtk_label_set_xalign(GTK_LABEL(desc_label), 0.0);
 		gtk_label_set_line_wrap(GTK_LABEL(desc_label), TRUE);
 		gtk_grid_attach(GTK_GRID(table), desc_label, j+1, k, 1, 1);

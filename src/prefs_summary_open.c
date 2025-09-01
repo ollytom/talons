@@ -569,7 +569,7 @@ static void prefs_summary_open_insert_action(GtkListStore *store,
 	gtk_list_store_append(store, &iter);
 	gtk_list_store_set(store, &iter,
 			   PREFS_SUMMARY_OPEN_HEADER,
-			   gettext(name),
+			   name,
 			   PREFS_SUMMARY_OPEN_DATA, GINT_TO_POINTER(dp),
 			   -1);
 }

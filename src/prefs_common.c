@@ -988,7 +988,7 @@ void prefs_common_read_config(void)
 
 	g_free(rcpath);
 
-	tmp = g_strdup(gettext(prefs_common.date_format));
+	tmp = g_strdup(prefs_common.date_format);
 	g_free(prefs_common.date_format);
 	prefs_common.date_format = tmp;
 
@@ -1268,21 +1268,10 @@ gboolean prefs_common_unsafe_ssl_certs(void)
 	return prefs_common.unsafe_ssl_certs;
 }
 
-/**
-   return the translated name of a header, if the translate_header option is
-   set, otherwise return the untranslated header name (header_name itself).
-   this function is provided for convenience, it's an interface to
-   prefs_common.trans_hdr.
-   works with header names either with or without trailing colon, provided
-   that gettext found such header name in the sources (they should all be
-   found in src/gtk/headers.h anyway).
-*/
+/* TODO(otl): delete this no-op */
 const gchar *prefs_common_translated_header_name(const gchar *header_name)
 {
-	if (header_name == NULL || *header_name == '\0')
-		return header_name;
-
-	return prefs_common.trans_hdr ? gettext(header_name) : header_name;
+	return header_name;
 }
 
 const gchar *prefs_common_get_uri_cmd(void)

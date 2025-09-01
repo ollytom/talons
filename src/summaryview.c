@@ -2464,7 +2464,7 @@ static void summary_status_show(SummaryView *summaryview)
 
 	if (n_selected) {
 		sel = g_strdup_printf(" (%s)", to_human_readable((goffset)sel_size));
-		itstr = g_strdup_printf(ngettext(" item selected"," items selected", n_selected));
+		itstr = strdup(" items selected");
 	} else {
 		sel = g_strdup("");
 		itstr = g_strdup("");
@@ -2520,29 +2520,11 @@ static void summary_set_column_titles(SummaryView *summaryview)
 
 	for (pos = 0; pos < N_SUMMARY_COLS; pos++) {
 		type = summaryview->col_state[pos].type;
+		title = col_label[type];
 
 		/* CLAWS: mime and unread are single char headers */
 		justify = (type == S_COL_NUMBER || type == S_COL_SIZE)
 			? GTK_JUSTIFY_RIGHT : GTK_JUSTIFY_LEFT;
-
-		switch (type) {
-		case S_COL_SUBJECT:
-		case S_COL_FROM:
-		case S_COL_TO:
-		case S_COL_DATE:
-		case S_COL_NUMBER:
-			if(type == S_COL_FROM && item != NULL &&
-					FOLDER_SHOWS_TO_HDR(item) &&
-					!summaryview->col_state[summaryview->col_pos[S_COL_TO]].visible)
-				type = S_COL_TO;
-			if(type == S_COL_NUMBER)
-				title = gettext(col_label[type]);
-			else
-				title = prefs_common_translated_header_name(col_label[type]);
-			break;
-		default:
-			title = gettext(col_label[type]);
-		}
 
 		if (type == S_COL_MIME) {
 			label = gtk_image_new_from_pixbuf(clipxpm);
@@ -4016,16 +3998,11 @@ void summary_delete(SummaryView *summaryview)
 	START_LONG_OPERATION(summaryview, FALSE);
 
 	if (!prefs_common.live_dangerously) {
-		gchar *buf = NULL;
 		guint num = g_list_length(GTK_CMCLIST(summaryview->ctree)->selection);
-		buf = g_strdup_printf(ngettext(
-			"Do you really want to delete the selected message?",
-			"Do you really want to delete the %d selected messages?", num),
-			num);
-		aval = alertpanel(ngettext("Delete message", "Delete messages", num),
-				  buf,
-				  NULL, _("_Cancel"), NULL, _("_Delete"), NULL, NULL, ALERTFOCUS_SECOND);
-		g_free(buf);
+		char buf[BUFSIZ];
+		snprintf(buf, sizeof(buf), "Delete the selected %d messages?", num);
+		aval = alertpanel("Delete messages", buf,
+				  NULL, "_Cancel", NULL, "_Delete", NULL, NULL, ALERTFOCUS_SECOND);
 		if (aval != G_ALERTALTERNATE) {
 			END_LONG_OPERATION(summaryview);
 			return;
@@ -4225,18 +4202,11 @@ void summary_move_selected_to(SummaryView *summaryview, FolderItem *to_folder)
 
 void summary_move_to(SummaryView *summaryview)
 {
-	FolderItem *to_folder;
+	if (!summaryview->folder_item) return;
 
-	if (!summaryview->folder_item ||
-	    FOLDER_TYPE(summaryview->folder_item->folder) == F_NEWS) return;
-
-	to_folder = foldersel_folder_sel(NULL, FOLDER_SEL_MOVE, NULL, FALSE,
-			ngettext(
-				"Select folder to move selected message to",
-				"Select folder to move selected messages to",
-				g_list_length(GTK_CMCLIST(summaryview->ctree)->selection))
-	);
-	summary_move_selected_to(summaryview, to_folder);
+	char *title = "Select destination folder";
+	FolderItem *dst = foldersel_folder_sel(NULL, FOLDER_SEL_MOVE, NULL, FALSE, title);
+	summary_move_selected_to(summaryview, dst);
 }
 
 static void summary_copy_row_to(SummaryView *summaryview, GtkCMCTreeNode *row,
@@ -4282,14 +4252,12 @@ void summary_copy_selected_to(SummaryView *summaryview, FolderItem *to_folder)
 	if (summary_is_locked(summaryview)) return;
 
 	if (summaryview->folder_item == to_folder) {
-		alertpanel_error
-			(_("Destination to copy is same as current folder."));
+		alertpanel_error("Destination to copy is same as current folder.");
 		return;
 	}
 
 	if (to_folder->no_select) {
-		alertpanel_error(_("The destination folder can only be used to "
-				   "store subfolders."));
+		alertpanel_error("The destination folder can only be used to store subfolders.");
 		return;
 	}
 
@@ -4302,26 +4270,20 @@ void summary_copy_selected_to(SummaryView *summaryview, FolderItem *to_folder)
 
 	END_LONG_OPERATION(summaryview);
 
-	if (prefs_common.immediate_exec)
+	if (prefs_common.immediate_exec) {
 		summary_execute(summaryview);
-	else {
-		summary_status_show(summaryview);
+		return;
 	}
+	summary_status_show(summaryview);
 }
 
 void summary_copy_to(SummaryView *summaryview)
 {
-	FolderItem *to_folder;
-
 	if (!summaryview->folder_item) return;
 
-	to_folder = foldersel_folder_sel(NULL, FOLDER_SEL_COPY, NULL, FALSE,
-			ngettext(
-				"Select folder to copy selected message to",
-				"Select folder to copy selected messages to",
-				g_list_length(GTK_CMCLIST(summaryview->ctree)->selection))
-	);
-	summary_copy_selected_to(summaryview, to_folder);
+	char *title = "Select destination folder";
+	FolderItem *dst = foldersel_folder_sel(NULL, FOLDER_SEL_COPY, NULL, FALSE, title);
+	summary_copy_selected_to(summaryview, dst);
 }
 
 void summary_add_address(SummaryView *summaryview)
@@ -4462,10 +4424,8 @@ void summary_save_as(SummaryView *summaryview)
 	if (!filename)
 		return;
 
-	if (prefs_common.attach_save_dir && *prefs_common.attach_save_dir) {
-        filepath = g_strconcat(prefs_common.attach_save_dir, G_DIR_SEPARATOR_S,
-				   filename, NULL);
-	}
+	if (prefs_common.attach_save_dir && *prefs_common.attach_save_dir)
+		filepath = g_strconcat(prefs_common.attach_save_dir, G_DIR_SEPARATOR_S, filename, NULL);
 	dest = filesel_select_file_save(_("Save as"), filepath ? filepath : filename);
 	if (filepath)
 		g_free(filepath);
@@ -4475,10 +4435,9 @@ void summary_save_as(SummaryView *summaryview)
 		return;
 
 	if (is_file_exist(dest)) {
-		aval = alertpanel(_("Append or Overwrite"),
-				  _("Append or overwrite existing file?"),
-				  NULL, _("_Append"), NULL, _("_Overwrite"),
-				  NULL, _("_Cancel"), ALERTFOCUS_FIRST);
+		aval = alertpanel("Append or Overwrite?", "",
+				  NULL, "_Append", NULL, "_Overwrite",
+				  NULL, "_Cancel", ALERTFOCUS_FIRST);
 		if (aval != 0 && aval != 1)
 			return;
 	}
@@ -4488,10 +4447,10 @@ void summary_save_as(SummaryView *summaryview)
 
 	if ( aval==0 ) { /* append */
 		if (append_file(src, dest, TRUE) < 0)
-			alertpanel_error(_("Couldn't save the file '%s'."), tmp);
+			alertpanel_error("Couldn't save the file '%s'.", tmp);
 	} else { /* overwrite */
 		if (copy_file(src, dest, TRUE) < 0)
-			alertpanel_error(_("Couldn't save the file '%s'."), tmp);
+			alertpanel_error("Couldn't save the file '%s'.", tmp);
 	}
 	g_free(src);
 
@@ -4506,7 +4465,7 @@ void summary_save_as(SummaryView *summaryview)
 			if (!msginfo) break;
 			src = procmsg_get_message_file(msginfo);
 			if (append_file(src, dest, TRUE) < 0) {
-				alertpanel_error(_("Couldn't save the file '%s'."), tmp);
+				alertpanel_error("Couldn't save the file '%s'.", tmp);
 			}
 			g_free(src);
 		}
@@ -4529,9 +4488,7 @@ void summary_print(SummaryView *summaryview)
 {
 	GtkCMCList *clist = GTK_CMCLIST(summaryview->ctree);
 	GList *cur;
-	gchar *msg = g_strdup_printf(_("You are about to print %d "
-				       "messages, one by one. Do you "
-				       "want to continue?"),
+	gchar *msg = g_strdup_printf("You are about to print %d messages, one by one. Do you want to continue?",
 				       g_list_length(clist->selection));
 	if (g_list_length(clist->selection) > 9
 	&&  alertpanel(_("Warning"), msg, NULL, _("_Cancel"), NULL, _("_Yes"),
@@ -4987,7 +4944,7 @@ static void summary_thread_build(SummaryView *summaryview)
 	summary_lock(summaryview);
 
 	debug_print("Building threads...\n");
-	STATUSBAR_PUSH(summaryview->mainwin, _("Building threads..."));
+	STATUSBAR_PUSH(summaryview->mainwin, "Building threads...");
 	main_window_cursor_wait(summaryview->mainwin);
 
 	g_signal_handlers_block_by_func(G_OBJECT(ctree),
@@ -5241,53 +5198,53 @@ static gchar *summaryview_get_tooltip_text(SummaryView *summaryview, MsgInfo *in
 	switch(summaryview->col_state[column].type) {
 		case S_COL_STATUS:
 			if (MSG_IS_IGNORE_THREAD(flags)) {
-				return _("Ignored thread");
+				return "Ignored thread";
 			} else if (MSG_IS_WATCH_THREAD(flags)) {
-				return _("Watched thread");
+				return "Watched thread";
 			} else if (MSG_IS_SPAM(flags)) {
-				return _("Spam");
+				return "Spam";
 			} else if (MSG_IS_NEW(flags)) {
-				return _("New");
+				return "New";
 			} else if (MSG_IS_UNREAD(flags)) {
-				return _("Unread");
+				return "Unread";
 			} else if (MSG_IS_REPLIED(flags) && MSG_IS_FORWARDED(flags)) {
-				return _("Replied but also forwarded - click to see reply");
+				return "Replied but also forwarded - click to see reply";
 			} else if (MSG_IS_REPLIED(flags)) {
-				return _("Replied - click to see reply");
+				return "Replied - click to see reply";
 			} else if (MSG_IS_FORWARDED(flags)) {
-				return _("Forwarded");
+				return "Forwarded";
 			} else {
 				return NULL;
 			}
 		case S_COL_MARK:
 			if (MSG_IS_DELETED(flags)) {
-				return _("Deleted");
+				return "Deleted";
 			} else if (MSG_IS_MARKED(flags)) {
-				return _("Marked");
+				return "Marked";
 			} else if (MSG_IS_MOVE(flags)) {
-				return _("To be moved");
+				return "To be moved";
 			} else if (MSG_IS_COPY(flags)) {
-				return _("To be copied");
+				return "To be copied";
 			} else {
 				return NULL;
 			}
 		case S_COL_LOCKED:
 			if (MSG_IS_LOCKED(flags)) {
-				return _("Locked");
+				return "Locked";
 			} else {
 				return NULL;
 			}
 		case S_COL_MIME:
 			if (MSG_IS_WITH_ATTACHMENT(flags) && MSG_IS_SIGNED(flags)) {
-				return _("Signed, has attachment(s)");
+				return "Signed, has attachment(s)";
 			} else if (MSG_IS_SIGNED(flags)) {
-				return _("Signed");
+				return "Signed";
 			} else if (MSG_IS_WITH_ATTACHMENT(flags) && MSG_IS_ENCRYPTED(flags)) {
-				return _("Encrypted, has attachment(s)");
+				return "Encrypted, has attachment(s)";
 			} else if (MSG_IS_ENCRYPTED(flags)) {
-				return _("Encrypted");
+				return "Encrypted";
 			} else if (MSG_IS_WITH_ATTACHMENT(flags)) {
-				return _("Has attachment(s)");
+				return "Has attachment(s)";
 			} else {
 				return NULL;
 			}
@@ -6878,7 +6835,7 @@ static regex_t *summary_compile_simplify_regexp(gchar *simplify_subject_regexp)
 	err = regcomp(preg, simplify_subject_regexp, REG_EXTENDED);
 	if (err) {
 		regerror(err, preg, buf, BUFFSIZE);
-		alertpanel_error(_("Regular expression (regexp) error:\n%s"), buf);
+		alertpanel_error("Regular expression error:\n%s", buf);
 		regfree(preg);
 		g_free(preg);
 		preg = NULL;
@@ -7040,7 +6997,7 @@ gint summaryview_export_mbox_list(SummaryView *summaryview)
 /* return values: -2 skipped, -1 error, 0 OK */
 {
 	GSList *list = summary_get_selected_msg_list(summaryview);
-	gchar *mbox = filesel_select_file_save(_("Export to mbox file"), NULL);
+	gchar *mbox = filesel_select_file_save("Export to mbox file", NULL);
 	gint ret;
 
 	if (mbox == NULL)

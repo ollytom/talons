@@ -73,8 +73,7 @@ static void description_create(DescriptionWindow * dwindow)
 
 	dwindow->window = gtkut_window_new(GTK_WINDOW_TOPLEVEL, "description_window");
 
-	gtk_window_set_title(GTK_WINDOW(dwindow->window),
-			     gettext(dwindow->title));
+	gtk_window_set_title(GTK_WINDOW(dwindow->window), dwindow->title);
 	gtk_container_set_border_width(GTK_CONTAINER(dwindow->window), 8);
 	gtk_window_set_resizable(GTK_WINDOW(dwindow->window), TRUE);
 	gtk_window_set_type_hint(GTK_WINDOW(dwindow->window), GDK_WINDOW_TYPE_HINT_DIALOG);
@@ -101,7 +100,7 @@ static void description_create(DescriptionWindow * dwindow)
 				       colend++;
 				       j++;
 				}
-				label = gtk_label_new(gettext(dwindow->symbol_table[i+col]));
+				label = gtk_label_new(dwindow->symbol_table[i+col]);
 				gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_LEFT);
 				gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
 				gtk_label_set_use_markup(GTK_LABEL(label), TRUE);
@@ -138,7 +137,7 @@ static void description_create(DescriptionWindow * dwindow)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-	label = gtk_label_new(gettext(dwindow->description));
+	label = gtk_label_new(dwindow->description);
 	gtk_widget_set_size_request(GTK_WIDGET(label), width-2, -1);
 	gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_LEFT);
 	gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);

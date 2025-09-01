@@ -32,10 +32,6 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <resolv.h>
-#ifndef _PATH_RESCONF
-#  define _PATH_RESCONF "/etc/resolv.conf"
-#endif
 #include <netdb.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -177,27 +173,6 @@ gint sock_set_io_timeout(guint sec)
 {
 	io_timeout = sec;
 	return 0;
-}
-
-void refresh_resolvers(void)
-{
-#ifdef G_OS_UNIX
-	static time_t resolv_conf_changed = (time_t)NULL;
-	GStatBuf s;
-
-	/* This makes the glibc re-read resolv.conf, if it changed
-	 * since our startup. Maybe that should be #ifdef'ed, I don't
-	 * know if it'd work on BSDs.
-	 * Why doesn't the glibc do it by itself?
-	 */
-	if (g_stat(_PATH_RESCONF, &s) == 0) {
-		if (s.st_mtime > resolv_conf_changed) {
-			resolv_conf_changed = s.st_mtime;
-			res_init();
-		}
-	} /* else
-		we'll have bigger problems. */
-#endif /*G_OS_UNIX*/
 }
 
 #define SOCKET_IS_VALID(s) 	(s != -1)
@@ -506,7 +481,7 @@ static gint fd_check_io(gint fd, GIOCondition cond)
 		return 0;
 	} else {
 		g_warning("socket IO timeout");
-		log_error(LOG_PROTOCOL, _("Socket IO timeout.\n"));
+		log_error(LOG_PROTOCOL, "Socket IO timeout.\n");
 		return -1;
 	}
 }
@@ -535,7 +510,7 @@ static gint sock_connect_with_timeout(gint sock,
 		alarm(0);
 		signal(SIGALRM, prev_handler);
 		errno = ETIMEDOUT;
-		log_error(LOG_PROTOCOL, _("Connection timed out.\n"));
+		log_error(LOG_PROTOCOL, "Connection timed out.\n");
 		return -1;
 	}
 	alarm(timeout_secs);
@@ -562,8 +537,6 @@ static gint sock_connect_by_getaddrinfo(const gchar *hostname, gushort	port)
 	gint sock = -1, gai_error;
 	struct addrinfo hints, *res, *ai;
 	gchar port_str[6];
-
-	refresh_resolvers();
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = AI_ADDRCONFIG;
@@ -655,7 +628,7 @@ static gboolean sock_connect_async_cb(GIOChannel *source,
 
 	if (val != 0) {
 		close(fd);
-		log_error(LOG_PROTOCOL, _("%s:%d: connection failed (%s).\n"),
+		log_error(LOG_PROTOCOL, "%s:%d: connection failed (%s).\n",
 			  conn_data->hostname, conn_data->port,
 			  g_strerror(val));
 		sock_connect_address_list_async(conn_data);
@@ -886,7 +859,7 @@ static gboolean sock_get_address_info_async_cb(GIOChannel *source,
 
 		if (ai_member[0] == AF_UNSPEC) {
 			g_warning("DNS lookup failed");
-			log_error(LOG_PROTOCOL, _("%s:%d: unknown host.\n"),
+			log_error(LOG_PROTOCOL, "%s:%d: unknown host.\n",
 				lookup_data->hostname, lookup_data->port);
 			break;
 		}
@@ -969,7 +942,7 @@ static void address_info_async_child(void *opaque)
 		gchar len = 0;
                 g_warning("getaddrinfo for %s:%s failed: %s",
                           parm->hostname, port_str, gai_strerror(gai_err));
-		log_error(LOG_PROTOCOL, _("%s:%s: host lookup failed (%s).\n"),
+		log_error(LOG_PROTOCOL, "%s:%s: host lookup failed (%s).\n",
 			  parm->hostname, port_str, gai_strerror(gai_err));
 	        fd_write_all(parm->pipe_fds[1], &len,
                      sizeof(len));
@@ -1026,8 +999,6 @@ static SockLookupData *sock_get_address_info_async(const gchar *hostname,
 						   gpointer data)
 {
 	SockLookupData *lookup_data = NULL;
-
-	refresh_resolvers();
 
         lookup_data = g_new0(SockLookupData, 1);
         lookup_data->hostname = g_strdup(hostname);
@@ -1240,7 +1211,7 @@ gint fd_write_all(gint fd, const gchar *buf, gint len)
 		n = write(fd, buf, len);
 
 		if (n <= 0) {
-			log_error(LOG_PROTOCOL, _("write on fd%d: %s\n"), fd, g_strerror(errno));
+			log_error(LOG_PROTOCOL, "write on fd%d: %s\n", fd, g_strerror(errno));
 			return -1;
 		}
 		len -= n;
@@ -1285,14 +1256,6 @@ gint sock_write_all(SockInfo *sock, const gchar *buf, gint len)
 	if (ret < 0)
 		sock->state = CONN_DISCONNECTED;
 	return ret;
-}
-
-static gint fd_recv(gint fd, gchar *buf, gint len, gint flags)
-{
-	if (fd_check_io(fd, G_IO_IN) < 0)
-		return -1;
-
-	return recv(fd, buf, len, flags);
 }
 
 gint fd_gets(gint fd, gchar *buf, gint len)
