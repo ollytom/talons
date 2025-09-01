@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef PROCTYPES_H
@@ -36,9 +36,6 @@ typedef struct _MsgFileInfo     	MsgFileInfo;
 
 struct _MsgInfoUpdate;
 typedef struct _MsgInfoUpdate 		MsgInfoUpdate;
-
-struct _MailFilteringData;
-typedef struct _MailFilteringData	MailFilteringData;
 
 struct _AvatarCaptureData;
 typedef struct _AvatarCaptureData	AvatarCaptureData;

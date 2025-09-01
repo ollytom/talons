@@ -19,10 +19,6 @@
 #ifndef __PROCMSG_H__
 #define __PROCMSG_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <stdio.h>
 #include <time.h>
@@ -160,7 +156,6 @@ typedef enum {
 	MSGINFO_UPDATE_DELETED = 1 << 1
 } MsgInfoUpdateFlags;
 
-#include "prefs_account.h"
 #include "folder.h"
 
 struct _MsgFlags
@@ -271,15 +266,6 @@ struct _MsgFileInfo
 struct _MsgInfoUpdate {
 	MsgInfo	*msginfo;
 	MsgInfoUpdateFlags flags;
-};
-
-struct _MailFilteringData
-{
-	MsgInfo	*msginfo;
-	GSList  *msglist;
-	GSList  *filtered;
-	GSList  *unfiltered;
-	PrefsAccount *account;
 };
 
 struct	_AvatarCaptureData
