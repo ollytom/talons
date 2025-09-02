@@ -56,8 +56,6 @@ typedef struct _ReceivePage
 	GtkWidget *spinbtn_autochk_min;
 	GtkWidget *spinbtn_autochk_hour;
 	GtkWidget *checkbtn_chkonstartup;
-	GtkWidget *checkbtn_openinbox;
-	GtkWidget *checkbtn_scan_after_inc;
 	GtkWidget *checkbtn_newmail_auto;
 	GtkWidget *checkbtn_newmail_manu;
 	GtkWidget *entry_newmail_notify_cmd;
@@ -118,8 +116,6 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *label_autochk1;
 	GtkWidget *label_autochk0;
 	GtkWidget *checkbtn_chkonstartup;
-	GtkWidget *checkbtn_openinbox;
-	GtkWidget *checkbtn_scan_after_inc;
 
 	GtkWidget *frame;
 	GtkWidget *vbox3;
@@ -243,14 +239,7 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	PACK_CHECK_BUTTON (vbox2, checkbtn_show_recv_err_dialog,
 			   _("Show error dialog on receive error"));
 
- 	vbox2 = gtkut_get_options_frame(vbox1, &frame,
-					_("After receiving new mail"));
-
- 	PACK_CHECK_BUTTON (vbox2, checkbtn_openinbox, _("Go to Inbox"));
- 	PACK_CHECK_BUTTON (vbox2, checkbtn_scan_after_inc,
- 			   _("Update all local folders"));
-
- 	vbox3 = gtkut_get_options_frame(vbox2, &frame, _("Run command"));
+ 	vbox3 = gtkut_get_options_frame(vbox1, &frame, _("Run command after receiving new mail"));
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox);
@@ -303,10 +292,6 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 		prefs_common.close_recv_dialog);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_chkonstartup),
 		prefs_common.chk_on_startup);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_openinbox),
-		prefs_common.open_inbox_on_inc);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_scan_after_inc),
-		prefs_common.scan_all_after_inc);
 
 	gtk_entry_set_text(GTK_ENTRY(entry_incext),
 		prefs_common.extinc_cmd);
@@ -327,8 +312,6 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_receive->spinbtn_autochk_min = spinbtn_autochk_min;
 	prefs_receive->spinbtn_autochk_hour = spinbtn_autochk_hour;
 	prefs_receive->checkbtn_chkonstartup = checkbtn_chkonstartup;
-	prefs_receive->checkbtn_openinbox = checkbtn_openinbox;
-	prefs_receive->checkbtn_scan_after_inc = checkbtn_scan_after_inc;
 	prefs_receive->checkbtn_newmail_auto = checkbtn_newmail_auto;
 	prefs_receive->checkbtn_newmail_manu = checkbtn_newmail_manu;
 	prefs_receive->entry_newmail_notify_cmd = entry_newmail_notify_cmd;
@@ -369,10 +352,6 @@ static void prefs_receive_save(PrefsPage *_page)
 		GTK_TOGGLE_BUTTON(page->checkbtn_close_recv_dialog));
 	prefs_common.chk_on_startup = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_chkonstartup));
-	prefs_common.open_inbox_on_inc = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_openinbox));
-	prefs_common.scan_all_after_inc = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_scan_after_inc));
 
 	prefs_common.newmail_notify_auto = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_newmail_auto));

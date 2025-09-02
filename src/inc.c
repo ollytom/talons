@@ -76,9 +76,6 @@ static GdkPixbuf *okpix;
 
 #define MESSAGEBUFSIZE	8192
 
-static void inc_finished		(MainWindow		*mainwin,
-					 gboolean		 new_messages,
-					 gboolean		 autocheck);
 static gint inc_account_mail_real	(MainWindow		*mainwin,
 					 PrefsAccount		*account);
 
@@ -138,38 +135,7 @@ static gint inc_spool_account(PrefsAccount *account);
 static void inc_autocheck_timer_set_interval	(guint		 interval);
 static gint inc_autocheck_func			(gpointer	 data);
 
-static void inc_notify_cmd		(gint new_msgs,
- 					 gboolean notify);
-
-/**
- * inc_finished:
- * @mainwin: Main window.
- * @new_messages: TRUE if some messages have been received.
- *
- * Update the folder view and the summary view after receiving
- * messages.  If @new_messages is FALSE, this function avoids unneeded
- * updating.
- **/
-static void inc_finished(MainWindow *mainwin, gboolean new_messages, gboolean autocheck)
-{
-	if (prefs_common.scan_all_after_inc)
-		folderview_check_new(NULL);
-
-	if (!autocheck && new_messages && prefs_common.open_inbox_on_inc) {
-		FolderItem *item = NULL;
-
-		if (cur_account && cur_account->inbox)
-			item = folder_find_item_from_identifier(cur_account->inbox);
-		if (item == NULL && cur_account && cur_account->folder)
-			item = cur_account->folder->inbox;
-		if (item == NULL)
-			item = folder_get_default_inbox();
-
-		folderview_unselect(mainwin->folderview);
-		folderview_select(mainwin->folderview, item);
-	}
-	statusbar_progress_all(0,0,0);
-}
+static void inc_notify_cmd(gint new_msgs, gboolean notify);
 
 void inc_mail(MainWindow *mainwin, gboolean notify)
 {
@@ -202,7 +168,7 @@ void inc_mail(MainWindow *mainwin, gboolean notify)
 			new_msgs += account_new_msgs;
 	}
 
-	inc_finished(mainwin, new_msgs > 0, FALSE);
+	statusbar_progress_all(0,0,0);
 	main_window_unlock(mainwin);
  	inc_notify_cmd(new_msgs, notify);
 	inc_autocheck_timer_set();
@@ -295,7 +261,7 @@ gint inc_account_mail(MainWindow *mainwin, PrefsAccount *account)
 
 	new_msgs = inc_account_mail_real(mainwin, account);
 
-	inc_finished(mainwin, new_msgs > 0, FALSE);
+	statusbar_progress_all(0,0,0);
 	main_window_unlock(mainwin);
 	inc_autocheck_timer_set();
 
@@ -320,7 +286,7 @@ void inc_account_list_mail(MainWindow *mainwin, GList *account_list, gboolean au
 	main_window_lock(mainwin);
 
 	if (!account_list) {
-		inc_finished(mainwin, new_msgs > 0, autocheck);
+		statusbar_progress_all(0,0,0);
 		main_window_unlock(mainwin);
  		inc_notify_cmd(new_msgs, notify);
 		return;
@@ -393,7 +359,7 @@ void inc_account_list_mail(MainWindow *mainwin, GList *account_list, gboolean au
 		new_msgs += inc_start(inc_dialog);
 	}
 
-	inc_finished(mainwin, new_msgs > 0, autocheck);
+	statusbar_progress_all(0,0,0);
 	main_window_unlock(mainwin);
  	inc_notify_cmd(new_msgs, notify);
 }
