@@ -47,14 +47,11 @@
 #if HAVE_SYS_WAIT_H
 #  include <sys/wait.h>
 #endif
+#include <wchar.h>
+#include <wctype.h>
 #include <signal.h>
 #include <errno.h>
 #include <libgen.h>
-
-#if (HAVE_WCTYPE_H && HAVE_WCHAR_H)
-#  include <wchar.h>
-#  include <wctype.h>
-#endif
 
 #include "claws.h"
 #include "main.h"

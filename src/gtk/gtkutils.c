@@ -30,13 +30,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <sys/stat.h>
+#include <wchar.h>
+#include <wctype.h>
 
 #include "combobox.h"
-
-#if (HAVE_WCTYPE_H && HAVE_WCHAR_H)
-#  include <wchar.h>
-#  include <wctype.h>
-#endif
 
 #include "defs.h"
 #include "gtkutils.h"

@@ -27,9 +27,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
-#if HAVE_WCHAR_H
-#  include <wchar.h>
-#endif
+#include <wchar.h>
 
 #include "gtkcmctree.h"
 

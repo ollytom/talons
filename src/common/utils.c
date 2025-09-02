@@ -47,10 +47,8 @@
 #include <sys/param.h>
 #include <sys/socket.h>
 
-#if (HAVE_WCTYPE_H && HAVE_WCHAR_H)
-#  include <wchar.h>
-#  include <wctype.h>
-#endif
+#include <wchar.h>
+#include <wctype.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/stat.h>

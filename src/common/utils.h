@@ -42,9 +42,7 @@
 #if HAVE_ALLOCA_H
 #  include <alloca.h>
 #endif
-#if HAVE_WCHAR_H
-#  include <wchar.h>
-#endif
+#include <wchar.h>
 
 /* The Hurd doesn't have these limits */
 #ifndef PATH_MAX
