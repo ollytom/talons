@@ -30,10 +30,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <errno.h>
-
-#if HAVE_LOCALE_H
-#  include <locale.h>
-#endif
+#include <locale.h>
 
 #include "codeconv.h"
 #include "unmime.h"

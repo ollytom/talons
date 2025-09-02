@@ -133,8 +133,6 @@ static gboolean msgcache_msginfo_free_func(gpointer num, gpointer msginfo, gpoin
 
 void msgcache_destroy(MsgCache *cache)
 {
-	cm_return_if_fail(cache != NULL);
-
 	g_hash_table_foreach_remove(cache->msgnum_table, msgcache_msginfo_free_func, NULL);
 	g_hash_table_destroy(cache->msgid_table);
 	g_hash_table_destroy(cache->msgnum_table);
@@ -144,9 +142,6 @@ void msgcache_destroy(MsgCache *cache)
 void msgcache_add_msg(MsgCache *cache, MsgInfo *msginfo)
 {
 	MsgInfo *newmsginfo;
-
-	cm_return_if_fail(cache != NULL);
-	cm_return_if_fail(msginfo != NULL);
 
 	newmsginfo = procmsg_msginfo_new_ref(msginfo);
 	g_hash_table_insert(cache->msgnum_table, &newmsginfo->msgnum, newmsginfo);
@@ -163,8 +158,6 @@ void msgcache_add_msg(MsgCache *cache, MsgInfo *msginfo)
 void msgcache_remove_msg(MsgCache *cache, guint msgnum)
 {
 	MsgInfo *msginfo;
-
-	cm_return_if_fail(cache != NULL);
 
 	msginfo = (MsgInfo *) g_hash_table_lookup(cache->msgnum_table, &msgnum);
 	if(!msginfo)
@@ -187,9 +180,6 @@ void msgcache_remove_msg(MsgCache *cache, guint msgnum)
 void msgcache_update_msg(MsgCache *cache, MsgInfo *msginfo)
 {
 	MsgInfo *oldmsginfo, *newmsginfo;
-
-	cm_return_if_fail(cache != NULL);
-	cm_return_if_fail(msginfo != NULL);
 
 	oldmsginfo = g_hash_table_lookup(cache->msgnum_table, &msginfo->msgnum);
 	if(oldmsginfo && oldmsginfo->msgid)
@@ -218,8 +208,6 @@ MsgInfo *msgcache_get_msg(MsgCache *cache, guint num)
 {
 	MsgInfo *msginfo;
 
-	cm_return_val_if_fail(cache != NULL, NULL);
-
 	msginfo = g_hash_table_lookup(cache->msgnum_table, &num);
 	if(!msginfo)
 		return NULL;
@@ -231,9 +219,6 @@ MsgInfo *msgcache_get_msg(MsgCache *cache, guint num)
 MsgInfo *msgcache_get_msg_by_id(MsgCache *cache, const gchar *msgid)
 {
 	MsgInfo *msginfo;
-
-	cm_return_val_if_fail(cache != NULL, NULL);
-	cm_return_val_if_fail(msgid != NULL, NULL);
 
 	msginfo = g_hash_table_lookup(cache->msgid_table, msgid);
 	if(!msginfo)
@@ -254,8 +239,6 @@ static void msgcache_get_msg_list_func(gpointer key, gpointer value, gpointer us
 MsgInfoList *msgcache_get_msg_list(MsgCache *cache)
 {
 	MsgInfoList *msg_list = NULL;
-	cm_return_val_if_fail(cache != NULL, NULL);
-
 	g_hash_table_foreach((GHashTable *)cache->msgnum_table, msgcache_get_msg_list_func, (gpointer)&msg_list);
 	cache->last_access = time(NULL);
 
@@ -265,14 +248,12 @@ MsgInfoList *msgcache_get_msg_list(MsgCache *cache)
 
 time_t msgcache_get_last_access_time(MsgCache *cache)
 {
-	cm_return_val_if_fail(cache != NULL, 0);
 
 	return cache->last_access;
 }
 
 gint msgcache_get_memory_usage(MsgCache *cache)
 {
-	cm_return_val_if_fail(cache != NULL, 0);
 
 	return cache->memusage;
 }
@@ -394,8 +375,6 @@ static FILE *msgcache_open_data_file(const gchar *file, guint version,
 {
 	FILE *fp;
 	gint32 data_ver = 0;
-
-	cm_return_val_if_fail(file != NULL, NULL);
 
 	if (mode == DATA_WRITE) {
 		int w_err = 0, wrote = 0;
@@ -569,9 +548,6 @@ MsgCache *msgcache_read_cache(FolderItem *item, const gchar *cache_file)
 	gint tmp_len = 0, map_len = -1;
 	char *cache_data = NULL;
 	struct stat st;
-
-	cm_return_val_if_fail(cache_file != NULL, NULL);
-	cm_return_val_if_fail(item != NULL, NULL);
 
 	swapping = TRUE;
 
@@ -934,8 +910,6 @@ gint msgcache_write(const gchar *cache_file, const gchar *mark_file, const gchar
 	struct write_fps write_fps;
 	gchar *new_cache = NULL, *new_mark = NULL;
 	int w_err = 0, wrote = 0;
-
-	cm_return_val_if_fail(cache != NULL, -1);
 
 	if (cache_file)
 		new_cache = g_strconcat(cache_file, ".new", NULL);

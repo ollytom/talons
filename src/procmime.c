@@ -28,9 +28,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <string.h>
-#if HAVE_LOCALE_H
-#  include <locale.h>
-#endif
+#include <locale.h>
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>

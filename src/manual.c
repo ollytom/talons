@@ -26,10 +26,7 @@
 
 #include <glib.h>
 #include <string.h>
-
-#if HAVE_LOCALE_H
-#  include <locale.h>
-#endif
+#include <locale.h>
 
 #include "prefs_common.h"
 #include "manual.h"

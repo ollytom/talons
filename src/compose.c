@@ -44,9 +44,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
-#if HAVE_SYS_WAIT_H
-#  include <sys/wait.h>
-#endif
+#include <sys/wait.h>
 #include <wchar.h>
 #include <wctype.h>
 #include <signal.h>

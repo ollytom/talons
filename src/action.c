@@ -38,9 +38,6 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
-#if HAVE_SYS_WAIT_H
-#  include <sys/wait.h>
-#endif
 #include <signal.h>
 #include <unistd.h>
 
@@ -194,9 +191,6 @@ ActionType action_get_type(const gchar *action_str)
 	const gchar *p;
 	gboolean in_filtering_action = FALSE;
 	ActionType action_type = ACTION_NONE;
-
-	cm_return_val_if_fail(action_str,  ACTION_ERROR);
-	cm_return_val_if_fail(*action_str, ACTION_ERROR);
 
 	p = action_str;
 
@@ -364,8 +358,6 @@ static gchar *parse_action_cmd(gchar *action, MsgInfo *msginfo,
 static gboolean parse_append_filename(GString *cmd, MsgInfo *msginfo)
 {
 	gchar *filename;
-
-	cm_return_val_if_fail(msginfo, FALSE);
 
 	filename = procmsg_get_message_file(msginfo);
 
@@ -584,13 +576,8 @@ static void compose_actions_execute(Compose *compose, guint action_nb, GtkWidget
 	gchar *buf, *action;
 	ActionType action_type;
 
-	cm_return_if_fail(action_nb < g_slist_length(prefs_common.actions_list));
-
 	buf = (gchar *)g_slist_nth_data(prefs_common.actions_list, action_nb);
-	cm_return_if_fail(buf != NULL);
 	action = strstr(buf, ": ");
-	cm_return_if_fail(action != NULL);
-
 	/* Point to the beginning of the command-line */
 	action += 2;
 
@@ -661,12 +648,7 @@ static void message_actions_execute(MessageView *msgview, guint action_nb,
 	guint body_pos = 0;
 	ActionType action_type;
 
-	cm_return_if_fail(action_nb < g_slist_length(prefs_common.actions_list));
-
 	buf = (gchar *)g_slist_nth_data(prefs_common.actions_list, action_nb);
-
-	cm_return_if_fail(buf);
-	cm_return_if_fail((action = strstr(buf, ": ")));
 
 	/* Point to the beginning of the command-line */
 	action += 2;
@@ -764,8 +746,6 @@ static gboolean execute_actions(gchar *action, GSList *msg_list,
 	gchar *user_hidden_str = NULL;
 	GtkTextIter start_iter, end_iter;
 	gboolean is_selection = FALSE;
-
-	cm_return_val_if_fail(action && *action, FALSE);
 
 	action_type = action_get_type(action);
 
@@ -1239,8 +1219,6 @@ static void update_io_dialog(Children *children)
 static void actions_io_size_allocate_cb(GtkWidget *widget,
 					 GtkAllocation *allocation)
 {
-	cm_return_if_fail(allocation != NULL);
-
 	gtk_window_get_size(GTK_WINDOW(widget),
 		&prefs_common.actionsiodialog_width, &prefs_common.actionsiodialog_height);
 }

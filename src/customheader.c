@@ -101,8 +101,6 @@ void custom_header_free(CustomHeader *ch)
 
 gboolean custom_header_is_allowed(const gchar *header)
 {
-	cm_return_val_if_fail(header != NULL, FALSE);
-
 	if (g_ascii_strcasecmp(header, "Date")         != 0 &&
 	    g_ascii_strcasecmp(header, "From")         != 0 &&
 	    g_ascii_strcasecmp(header, "To")           != 0 &&

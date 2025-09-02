@@ -44,8 +44,6 @@ if test \( "x$EXTRA_RELEASE" != "x" \); then
     VERSION=${VERSION}${EXTRA_RELEASE}${EXTRA_GTK3_VERSION}
 fi
 
-dnl AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
-dnl AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 AC_SUBST(MAJOR_VERSION)
@@ -82,17 +80,13 @@ AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_HEADERS(claws-features.h)
 
 AM_MAINTAINER_MODE
-AC_USE_SYSTEM_EXTENSIONS
 
-dnl Checks for programs.
-dnl AC_ARG_PROGRAM
 AC_PROG_CC
 AC_SEARCH_LIBS([strerror],[cposix])
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_CPP
-dnl AC_PROG_RANLIB
 AC_PROG_LEX(noyywrap)
 AC_PROG_YACC
 AC_LIB_PREFIX
@@ -114,7 +108,6 @@ fi
 
 AC_SUBST(AM_CFLAGS)
 
-dnl Checks for iconv
 AM_ICONV
 
 dnl floor and ceil are  in -lm
@@ -135,17 +128,9 @@ AC_ARG_ENABLE(oauth2,
 		[  --disable-oauth2                Do not build OAuth2 support],
 		    [enable_oauth2=$enableval], [enable_oauth2=yes])
 
-AC_ARG_ENABLE(valgrind,
-		[  --disable-valgrind              Do not build valgrind support for debugging],
-		[enable_valgrind=$enableval], [enable_valgrind=yes])
-
 AC_ARG_ENABLE(tests,
 				[  --enable-tests                   Build unit tests],
 				[enable_tests=$enableval], [enable_tests=no])
-
-AC_ARG_ENABLE(more-addressbook-debug,
-        [  --enable-more-addressbook-debug Build with additional addressbook debug calls],
-        [enable_more_addressbook_debug=$enableval], [enable_more_addressbook_debug=no])
 
 dnl Set PACKAGE_DATA_DIR in config.h.
 if test "x${datarootdir}" = 'x${prefix}/share'; then
@@ -170,26 +155,7 @@ if test "$ac_cv_va_opt" = yes; then
 	AC_DEFINE([HAVE_VA_OPT], [1], [Define if __VA_OPT__ macro works])
 fi
 
-dnl Checks for header files.
-AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(fcntl.h sys/file.h unistd.h paths.h \
-		 sys/param.h sys/select.h locale.h netdb.h)
-AC_CHECK_HEADER([execinfo.h], [AC_DEFINE(HAVE_BACKTRACE,1,[Has backtrace*() needed for retrieving stack traces])])
-AC_SEARCH_LIBS(backtrace_symbols, [execinfo])
-
-dnl Checks for typedefs, structures, and compiler characteristics.
-AC_TYPE_OFF_T
-AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_STRUCT_TM
-
-AC_CHECK_SIZEOF(unsigned short, 2)
-AC_CHECK_SIZEOF(unsigned int, 4)
-AC_CHECK_SIZEOF(unsigned long, 4)
-
-dnl Checks for library functions.
 AC_FUNC_ALLOCA
-AC_CHECK_FUNCS(strcasestr)
 
 dnl check for glib
 PKG_CHECK_MODULES(GLIB, [glib-2.0 >= 2.50 gmodule-2.0 >= 2.50 gobject-2.0 >= 2.50 gthread-2.0 >= 2.50])
@@ -277,23 +243,6 @@ LIBETPAN_CFLAGS=`pkg-config --cflags libetpan`
 AC_SUBST(LIBETPAN_CFLAGS)
 CPPFLAGS="$CPPFLAGS $LIBETPAN_CFLAGS"
 
-AC_MSG_CHECKING([whether to use valgrind])
-if test x$enable_valgrind = xyes; then
-	AC_MSG_RESULT(yes)
-	PKG_CHECK_MODULES([VALGRIND], [valgrind >= 2.4.0],
-	[
-		AC_DEFINE(HAVE_VALGRIND, 1, Define if you want valgrind support)
-		enable_valgrind=yes
-	],
-	[
-		AC_MSG_NOTICE([valgrind support deactivated as valgrind >= 2.4.0 was not found])
-		enable_valgrind=no
-	])
-else
-	AC_MSG_RESULT(no)
-fi
-AM_CONDITIONAL(CLAWS_VALGRIND, test x"$enable_valgrind" = x"yes")
-
 AC_MSG_CHECKING([whether to build unit tests])
 if test x$enable_tests = xyes; then
 	AC_MSG_RESULT(yes)
@@ -301,17 +250,6 @@ else
 	AC_MSG_RESULT(no)
 fi
 AM_CONDITIONAL(BUILD_TESTS, test "x$enable_tests" = "xyes")
-
-more_debug_output_modules=""
-
-AC_MSG_CHECKING([whether to build addressbook with more debug calls])
-if test x$enable_more_addressbook_debug = xyes; then
-	more_debug_output_modules="$more_debug_output_modules AddressBook"
-	AC_MSG_RESULT(yes)
-	AC_DEFINE(DEBUG_ADDRBOOK, 1, [Define if you want additional addressbook debug calls])
-else
-	AC_MSG_RESULT(no)
-fi
 
 PKG_CHECK_MODULES(EXPAT, expat, HAVE_EXPAT=yes, HAVE_EXPAT=no)
 
@@ -332,10 +270,6 @@ PKG_CHECK_MODULES(CAIRO, cairo >= 1.12.0, HAVE_CAIRO=yes, HAVE_CAIRO=no)
 AC_SUBST(CAIRO_CFLAGS)
 AC_SUBST(CAIRO_LIBS)
 
-PKG_CHECK_MODULES(FONTCONFIG, fontconfig, HAVE_FONTCONFIG=yes, HAVE_FONTCONFIG=no)
-AC_SUBST(FONTCONFIG_CFLAGS)
-AC_SUBST(FONTCONFIG_LIBS)
-
 AC_CONFIG_FILES([
 Makefile
 src/common/version.h
@@ -355,14 +289,6 @@ echo "gnuTLS               : $enable_gnutls"
 echo "OAuth2               : $enable_oauth2"
 echo "iconv                : $am_cv_func_iconv"
 echo "Unit tests           : $enable_tests"
-echo "Valgrind support     : $enable_valgrind"
-
-if test -n "$more_debug_output_modules"; then
-	echo "Extra debug output enabled for:"
-	for module in $more_debug_output_modules; do
-		echo "            - $module"
-	done
-fi
 
 echo ""
 echo "The binary will be installed in $prefix/bin"

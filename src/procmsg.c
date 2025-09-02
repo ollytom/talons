@@ -23,6 +23,7 @@
 #include <glib/gi18n.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/param.h>
 #include <ctype.h>
 #include <math.h>
 

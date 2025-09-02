@@ -23,16 +23,6 @@
 #include "claws-features.h"
 #endif
 
-#include <glib.h>
-
-#if HAVE_PATHS_H
-#  include <paths.h>
-#endif
-
-#if HAVE_SYS_PARAM_H
-#  include <sys/param.h>
-#endif
-
 #define INBOX_DIR		"inbox"
 #define OUTBOX_DIR		"sent"
 #define QUEUE_DIR		"queue"
@@ -111,25 +101,15 @@
 #define DEFAULT_IMAGE_VIEWER_CMD "display '%s'"
 #define DEFAULT_AUDIO_PLAYER_CMD "play '%s'"
 
-#ifdef _PATH_MAILDIR
-#  define DEFAULT_SPOOL_PATH	_PATH_MAILDIR
-#else
-#  define DEFAULT_SPOOL_PATH	"/var/spool/mail"
-#endif
-
 #define BUFFSIZE			8192
 
 #define RFC822_DATE_BUFFSIZE	128
-
-#ifndef MAXPATHLEN
-#  define MAXPATHLEN			4095
-#endif
 
 #define BORDER_WIDTH			2
 #define CTREE_INDENT			18
 #define FOLDER_SPACING			4
 #define MAX_ENTRY_LENGTH		8191
-#define COLOR_DIM			((gdouble)35000 / 65535)
+#define COLOR_DIM			((double)35000 / 65535)
 #define UI_REFRESH_INTERVAL		50000	/* usec */
 #define FOLDER_UPDATE_INTERVAL		1500	/* msec */
 #define PROGRESS_UPDATE_INTERVAL	200	/* msec */

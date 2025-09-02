@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "main.h"
 #include "inc.h"

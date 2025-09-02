@@ -35,7 +35,6 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h>
 #include "ssl_certificate.h"
 #include "utils.h"
 #include "log.h"

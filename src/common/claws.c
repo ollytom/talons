@@ -24,6 +24,7 @@
 
 #include "defs.h"
 #include <stdlib.h>
+#include <locale.h>
 #include <glib.h>
 #ifdef ENABLE_NLS
 #include <glib/gi18n.h>
@@ -32,9 +33,6 @@
 #define N_(a) (a)
 #endif
 
-#if HAVE_LOCALE_H
-#  include <locale.h>
-#endif
 
 #include "claws.h"
 #include "utils.h"

@@ -55,9 +55,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <sys/types.h>
-#if HAVE_SYS_WAIT_H
-#  include <sys/wait.h>
-#endif
+#include <sys/wait.h>
 #include <time.h>
 #include <regex.h>
 
@@ -259,16 +257,6 @@ gchar *strcrlftrunc(gchar *str)
 
 	return str;
 }
-
-#ifndef HAVE_STRCASESTR
-/* Similar to `strstr' but this function ignores the case of both strings.  */
-gchar *strcasestr(const gchar *haystack, const gchar *needle)
-{
-	size_t haystack_len = strlen(haystack);
-
-	return strncasestr(haystack, haystack_len, needle);
-}
-#endif /* HAVE_STRCASESTR */
 
 gchar *strncasestr(const gchar *haystack, gint haystack_len, const gchar *needle)
 {

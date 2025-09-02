@@ -33,9 +33,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#if HAVE_SYS_WAIT_H
 #include <sys/wait.h>
-#endif
 
 #include "main.h"
 #include "summaryview.h"
