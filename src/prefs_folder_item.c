@@ -44,7 +44,6 @@
 #include "gtkutils.h"
 #include "folder_item_prefs.h"
 #include "string_match.h"
-#include "quote_fmt.h"
 #include "combobox.h"
 #include "stock_pixmap.h"
 #include "file-utils.h"

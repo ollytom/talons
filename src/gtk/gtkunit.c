@@ -19,9 +19,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
-#include "claws-features.h"
-
 #include "gtkunit.h"
 
 #include <string.h>

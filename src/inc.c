@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include "defs.h"
 
 #include <fcntl.h>
@@ -60,9 +55,7 @@
 #include "hooks.h"
 #include "logwindow.h"
 #include "passwordstore.h"
-#ifdef USE_OAUTH2
 #include "oauth2.h"
-#endif
 
 static GList *inc_dialog_list = NULL;
 
@@ -549,14 +542,9 @@ static void inc_session_destroy(IncSession *session)
 
 static gint pop3_get_port(Pop3Session *pop3_session)
 {
-#ifdef USE_GNUTLS
 	return pop3_session->ac_prefs->set_popport ?
 		pop3_session->ac_prefs->popport :
 		pop3_session->ac_prefs->ssl_pop == SSL_TUNNEL ? 995 : 110;
-#else
-	return pop3_session->ac_prefs->set_popport ?
-		pop3_session->ac_prefs->popport : 110;
-#endif
 }
 
 static gint inc_start(IncProgressDialog *inc_dialog)
@@ -583,11 +571,10 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 			manage_window_focus_in
 				(inc_dialog->dialog->window,
 				 NULL, NULL);
-#ifdef USE_OAUTH2
+
 		if(pop3_session->ac_prefs->use_pop_auth &&
 		   pop3_session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2)
 		     oauth2_check_passwds (pop3_session->ac_prefs);
-#endif
 
 		if (password_get(pop3_session->user,
 					pop3_session->ac_prefs->recv_server,
@@ -793,25 +780,10 @@ static IncState inc_pop3_session_do(IncSession *session)
 	account_name = ac->account_name;
 	port = pop3_get_port(pop3_session);
 
-#ifdef USE_GNUTLS
 	SESSION(pop3_session)->ssl_type = ac->ssl_pop;
 	if (ac->ssl_pop != SSL_NONE)
 		SESSION(pop3_session)->nonblocking =
 			ac->use_nonblocking_ssl;
-#else
-	if (ac->ssl_pop != SSL_NONE) {
-		if (alertpanel_full(_("Insecure connection"),
-			_("This connection is configured to be secured "
-			  "using TLS, but TLS is not available "
-			  "in this build of Claws Mail. \n\n"
-			  "Do you want to continue connecting to this "
-			  "server? The communication would not be "
-			  "secure."),
-			NULL, _("_Cancel"), NULL, _("Con_tinue connecting"), NULL, NULL,
-			ALERTFOCUS_FIRST, FALSE, NULL, ALERT_WARNING) != G_ALERTALTERNATE)
-			return INC_CANCEL;
-	}
-#endif
 
 	buf = g_strdup_printf(_("Account '%s': Connecting to POP3 server: %s:%d..."),
 				account_name, server, port);

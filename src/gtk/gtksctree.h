@@ -4,7 +4,7 @@
 #define __GTK_SCTREE_H__
 
 #include <gtk/gtk.h>
-#include "gtk/gtkcmctree.h"
+#include "gtkcmctree.h"
 
 /* This code is based on "gtkflist.{h,c}" from mc-4.5.42 .*/
 
@@ -44,10 +44,10 @@ struct _GtkSCTree {
 
 struct _GtkSCTreeClass {
     	GtkCMCTreeClass parent_class;
-    
+
     	/* Signal: invoke the popup menu for rows */
     	void (* row_popup_menu) (GtkSCTree *sctree, GdkEventButton *event);
-    
+
     	/* Signal: invoke the popup menu for empty areas */
     	void (* empty_popup_menu) (GtkSCTree *sctree, GdkEventButton *event);
 
@@ -61,8 +61,8 @@ struct _GtkSCTreeClass {
 
 GType gtk_sctree_get_type (void);
 
-GtkWidget *gtk_sctree_new_with_titles	(gint		 columns, 
-					 gint		 tree_column, 
+GtkWidget *gtk_sctree_new_with_titles	(gint		 columns,
+					 gint		 tree_column,
 					 gchar		*titles[]);
 void gtk_sctree_select			(GtkSCTree	*sctree,
 					 GtkCMCTreeNode	*node);
@@ -124,7 +124,7 @@ void gtk_sctree_set_use_markup		    (GtkSCTree		*sctree,
  * Returns true if the coordinates are inside a tree expander on
  * one of the rows. */
 gboolean
-gtk_sctree_is_hot_spot (GtkSCTree *ctree, 
-		       gint      x, 
+gtk_sctree_is_hot_spot (GtkSCTree *ctree,
+		       gint      x,
 		       gint      y);
 #endif /* __GTK_SCTREE_H__ */

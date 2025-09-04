@@ -14,10 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
-
-#include "config.h"
 
 #include <glib.h>
 #include <string.h>
@@ -25,7 +23,7 @@
 #include "stringtable.h"
 #include "utils.h"
 
-/* alfons - hashed string table (I wasn't content with GStringChunk; 
+/* alfons - hashed string table (I wasn't content with GStringChunk;
  * can't recall why :-) */
 
 #if 0
@@ -109,7 +107,7 @@ void string_table_free_string(StringTable *table, const gchar *str)
 			string_entry_free(entry);
 		} else {
 			XXX_DEBUG ("ref-- for %s (%d)\n", entry->string,
-				   entry->ref_count); 
+				   entry->ref_count);
 		}
 	}
 }

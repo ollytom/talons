@@ -22,8 +22,6 @@
 #include "claws-features.h"
 #endif
 
-#ifdef USE_OAUTH2
-
 #include "defs.h"
 #include <glib.h>
 #ifdef ENABLE_NLS
@@ -901,5 +899,3 @@ gint oauth2_init (OAUTH2Data *OAUTH2Data)
 
 	 return (0);
 }
-
-#endif	/* USE_OAUTH2 */

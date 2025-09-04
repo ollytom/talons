@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include "defs.h"
 
 #include <glib.h>
@@ -54,9 +49,7 @@
 #include "hooks.h"
 #include "passwordstore.h"
 #include "file-utils.h"
-#ifdef USE_OAUTH2
 #include "oauth2.h"
-#endif
 
 enum {
 	ACCOUNT_IS_DEFAULT,
@@ -1413,7 +1406,6 @@ static void account_list_store_insert_account_item(GtkListStore *list_store,
 		ac_prefs->recv_at_getall;
 	gchar *protocol, *server;
 
-#ifdef USE_GNUTLS
 	protocol = ac_prefs->protocol == A_POP3 ?
 		  (ac_prefs->ssl_pop == SSL_TUNNEL ?
 		   "POP (TLS)" :
@@ -1426,12 +1418,6 @@ static void account_list_store_insert_account_item(GtkListStore *list_store,
 		   "IMAP (STARTTLS)" : "IMAP") :
 		   ac_prefs->protocol == A_LOCAL ? "Local" :
 		   ac_prefs->protocol == A_NONE ?  "SMTP" : "-";
-#else
-	protocol = ac_prefs->protocol == A_POP3  ? "POP" :
-		   ac_prefs->protocol == A_IMAP4 ? "IMAP" :
-		   ac_prefs->protocol == A_LOCAL ? "Local" :
-		   ac_prefs->protocol == A_NONE ?  "SMTP" : "-";
-#endif
 
 	server= ac_prefs->protocol == A_LOCAL ?  "-" :
 		   ac_prefs->protocol == A_NONE ? ac_prefs->smtp_server :

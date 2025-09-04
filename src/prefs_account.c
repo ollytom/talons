@@ -56,22 +56,17 @@
 #include "smtp.h"
 #include "imap.h"
 #include "pop.h"
-#ifdef USE_OAUTH2
 #include "oauth2.h"
-#endif
 #include "remotefolder.h"
 #include "combobox.h"
 #include "setup.h"
-#include "quote_fmt.h"
 #include "hooks.h"
 #include "privacy.h"
 #include "inputdialog.h"
-#include "ssl_certificate.h"
+#include "common/ssl_certificate.h"
 #include "passwordstore.h"
 #include "file-utils.h"
-#ifdef USE_GNUTLS
 #include <gnutls/gnutls.h>
-#endif
 
 static gboolean cancelled;
 static gboolean new_account;
@@ -84,12 +79,10 @@ static GtkWidget *entry_sigpath;
 static GtkWidget *signature_browse_button;
 static GtkWidget *signature_edit_button;
 
-#ifdef USE_GNUTLS
 static GtkWidget *entry_in_cert_file;
 static GtkWidget *entry_out_cert_file;
 static GtkWidget *in_ssl_cert_browse_button;
 static GtkWidget *out_ssl_cert_browse_button;
-#endif
 
 struct AutocheckWidgets {
 	GtkWidget *autochk_hour_spinbtn;
@@ -99,11 +92,9 @@ struct AutocheckWidgets {
 
 static GSList *prefs_pages = NULL;
 
-#ifdef USE_OAUTH2
 static GTask *oauth2_listener_task;
 static int oauth2_listener_cancel = 0;
 static int oauth2_listener_closed = 0;
-#endif
 
 typedef struct BasicPage
 {
@@ -196,7 +187,6 @@ typedef struct SendPage
 	GtkWidget *pop_auth_minutes_lbl;
 } SendPage;
 
-#ifdef USE_OAUTH2
 typedef struct Oauth2Page
 {
 	PrefsPage page;
@@ -214,7 +204,6 @@ typedef struct Oauth2Page
 	GtkWidget *oauth2_client_id_entry;
 	GtkWidget *oauth2_client_secret_entry;
 } Oauth2Page;
-#endif
 
 typedef struct
 {
@@ -332,14 +321,10 @@ typedef struct AdvancedPage
 static BasicPage basic_page;
 static ReceivePage receive_page;
 static SendPage send_page;
-#ifdef USE_OAUTH2
 static Oauth2Page oauth2_page;
-#endif
 static ComposePage compose_page;
 static PrivacyPage privacy_page;
-#ifdef USE_GNUTLS
 static SSLPage ssl_page;
-#endif
 static AdvancedPage advanced_page;
 
 struct BasicProtocol {
@@ -357,14 +342,12 @@ static char *protocol_names[] = {
 	N_("None (SMTP only)")
 };
 
-#ifdef USE_OAUTH2
 struct Oauth2Listener {
 	int success;
   	Oauth2Service service;
 	OAUTH2Data *OAUTH2Data;
 	gchar *trim_text;
 };
-#endif
 
 static void prefs_account_protocol_set_data_from_optmenu(PrefParam *pparam);
 static void prefs_account_protocol_set_optmenu		(PrefParam *pparam);
@@ -379,7 +362,7 @@ static void prefs_account_smtp_auth_type_set_data_from_optmenu (PrefParam *ppara
 static void prefs_account_smtp_auth_type_set_optmenu	(PrefParam *pparam);
 static void prefs_account_pop_auth_type_set_data_from_optmenu (PrefParam *pparam);
 static void prefs_account_pop_auth_type_set_optmenu	(PrefParam *pparam);
-#ifdef USE_OAUTH2
+
 static void prefs_account_oauth2_provider_set_data_from_optmenu	(PrefParam *pparam);
 static void prefs_account_oauth2_provider_set_optmenu	(PrefParam *pparam);
 static void prefs_account_oauth2_copy_url                       (GtkButton *button, gpointer data);
@@ -389,7 +372,7 @@ static int  prefs_account_oauth2_get_line(int sock, char *buf, int size);
 static void prefs_account_oauth2_set_sensitivity(void);
 static void prefs_account_oauth2_set_auth_sensitivity(void);
 static void prefs_account_oauth2_obtain_tokens(GtkButton *button, gpointer data);
-#endif
+
 static void prefs_account_set_autochk_interval_from_widgets(PrefParam *pparam);
 static void prefs_account_set_autochk_interval_to_widgets(PrefParam *pparam);
 
@@ -559,7 +542,6 @@ static PrefParam send_param[] = {
 };
 
 static PrefParam oauth2_param[] = {
-#ifdef USE_OAUTH2
 	{"oauth2_auth_provider", "0", &tmp_ac_prefs.oauth2_provider, P_ENUM,
 	 &oauth2_page.oauth2_auth_optmenu,
 	 prefs_account_oauth2_provider_set_data_from_optmenu,
@@ -576,23 +558,6 @@ static PrefParam oauth2_param[] = {
 
 	{"oauth2_client_secret", NULL, &tmp_ac_prefs.oauth2_client_secret, P_STRING,
 	 &oauth2_page.oauth2_client_secret_entry, prefs_set_data_from_entry, prefs_set_entry},
-#else
-	{"oauth2_auth_provider", "0", &tmp_ac_prefs.oauth2_provider, P_ENUM,
-	 NULL, NULL, NULL},
-
-	{"oauth2_date", 0, &tmp_ac_prefs.oauth2_date, P_INT,
-	 NULL, NULL, NULL},
-
-	{"oauth2_authcode", NULL, &tmp_ac_prefs.oauth2_authcode, P_PASSWORD,
-	 NULL, NULL, NULL},
-
-	{"oauth2_client_id", NULL, &tmp_ac_prefs.oauth2_client_id, P_STRING,
-	 NULL, NULL, NULL},
-
-	{"oauth2_client_secret", NULL, &tmp_ac_prefs.oauth2_client_secret, P_STRING,
-	 NULL, NULL, NULL},
-
-#endif
 
 	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
 };
@@ -683,7 +648,6 @@ static PrefParam privacy_param[] = {
 };
 
 static PrefParam ssl_param[] = {
-#ifdef USE_GNUTLS
 	{"ssl_pop", "1", &tmp_ac_prefs.ssl_pop, P_ENUM,
 	 &ssl_page.pop_nossl_radiobtn,
 	 prefs_account_enum_set_data_from_radiobtn,
@@ -717,31 +681,6 @@ static PrefParam ssl_param[] = {
 
 	{"out_ssl_client_cert_pass", "", &tmp_ac_prefs.out_ssl_client_cert_pass, P_PASSWORD,
 	 NULL, NULL, NULL},
-#else
-	{"ssl_pop", "0", &tmp_ac_prefs.ssl_pop, P_ENUM,
-	 NULL, NULL, NULL},
-
-	{"ssl_imap", "0", &tmp_ac_prefs.ssl_imap, P_ENUM,
-	 NULL, NULL, NULL},
-
-	{"ssl_smtp", "0", &tmp_ac_prefs.ssl_smtp, P_ENUM,
-	 NULL, NULL, NULL},
-
-	{"in_ssl_client_cert_file", "", &tmp_ac_prefs.in_ssl_client_cert_file, P_STRING,
-	 NULL, NULL, NULL},
-
-	{"in_ssl_client_cert_pass", "", &tmp_ac_prefs.in_ssl_client_cert_pass, P_PASSWORD,
-	 NULL, NULL, NULL},
-
-	{"out_ssl_client_cert_file", "", &tmp_ac_prefs.out_ssl_client_cert_file, P_STRING,
-	 NULL, NULL, NULL},
-
-	{"out_ssl_client_cert_pass", "", &tmp_ac_prefs.out_ssl_client_cert_pass, P_PASSWORD,
-	 NULL, NULL, NULL},
-
-	{"use_nonblocking_ssl", "1", &tmp_ac_prefs.use_nonblocking_ssl, P_BOOL,
-	 NULL, NULL, NULL},
-#endif /* USE_GNUTLS */
 
 	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
 };
@@ -779,13 +718,11 @@ static PrefParam advanced_param[] = {
 	 &advanced_page.domain_entry,
 	 prefs_set_data_from_entry, prefs_set_entry},
 
-#ifdef USE_GNUTLS
 	{"gnutls_set_priority", "FALSE", &tmp_ac_prefs.set_gnutls_priority, P_BOOL,
 	 NULL, NULL, NULL},
 
 	{"gnutls_priority", NULL, &tmp_ac_prefs.gnutls_priority, P_STRING,
 	 NULL, NULL, NULL},
-#endif
 
 	{"set_tunnelcmd", "FALSE", &tmp_ac_prefs.set_tunnelcmd, P_BOOL,
 	 &advanced_page.tunnelcmd_checkbtn,
@@ -836,19 +773,15 @@ static void prefs_account_sigfile_radiobtn_cb	(GtkWidget	*widget, gpointer	 data
 static void prefs_account_sigcmd_radiobtn_cb	(GtkWidget	*widget, gpointer	 data);
 
 static void prefs_account_signature_browse_cb	(GtkWidget	*widget, gpointer	 data);
-#ifdef USE_GNUTLS
 static void prefs_account_in_cert_browse_cb	(GtkWidget	*widget, gpointer	 data);
 
 static void prefs_account_out_cert_browse_cb	(GtkWidget	*widget, gpointer	 data);
-#endif
 static void prefs_account_signature_edit_cb	(GtkWidget	*widget, gpointer	 data);
 
 static void pop_bfr_smtp_tm_set_sens		(GtkWidget	*widget, gpointer	 data);
 
-#if (defined USE_GNUTLS)
 static void auto_configure_cb			(GtkWidget	*widget, gpointer	 data);
 
-#endif
 static void prefs_account_edit_custom_header	(void);
 
 static void prefs_account_receive_itv_spinbutton_value_changed_cb(GtkWidget *w, gpointer data);
@@ -1057,14 +990,12 @@ static void basic_create_widget_func(PrefsPage * _page,
 	auto_configure_lbl = gtk_label_new("");
 	gtk_label_set_justify(GTK_LABEL(auto_configure_lbl), GTK_JUSTIFY_LEFT);
 	gtk_box_pack_start(GTK_BOX (optmenubox), auto_configure_lbl, FALSE, FALSE, 0);
-#if (defined USE_GNUTLS)
 	gtk_widget_show(auto_configure_btn);
 	gtk_widget_show(auto_configure_lbl);
 	g_signal_connect (G_OBJECT (auto_configure_btn), "clicked",
 			  G_CALLBACK (auto_configure_cb), NULL);
 	g_signal_connect (G_OBJECT (auto_configure_cancel_btn), "clicked",
 			  G_CALLBACK (auto_configure_cb), NULL);
-#endif
 
 	no_imap_warn_icon = gtk_image_new_from_icon_name
                         ("dialog-warning-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
@@ -1335,9 +1266,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 	COMBOBOX_ADD (menu2, _("Select"), 0);
 	COMBOBOX_ADD (menu2, NULL, 0);
 	COMBOBOX_ADD (menu2, "OAuth2", POPAUTH_OAUTH2);
-#ifndef USE_OAUTH2
-	gtk_list_store_set(menu2, &iter, COMBOBOX_SENS, FALSE, -1);
-#endif
 
 	SET_TOGGLE_SENSITIVITY (pop_auth_checkbtn, vbox5);
 
@@ -1433,9 +1361,6 @@ static void receive_create_widget_func(PrefsPage * _page,
 	COMBOBOX_ADD (menu, "PLAIN", IMAP_AUTH_PLAIN);
 	COMBOBOX_ADD (menu, "LOGIN", IMAP_AUTH_LOGIN);
 	COMBOBOX_ADD (menu, "OAUTH2", IMAP_AUTH_OAUTH2);
-#ifndef USE_OAUTH2
-	gtk_list_store_set(menu, &iter, COMBOBOX_SENS, FALSE, -1);
-#endif
 
 	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox1);
@@ -1684,9 +1609,6 @@ static void send_create_widget_func(PrefsPage * _page,
 	COMBOBOX_ADD (menu, "PLAIN", SMTPAUTH_PLAIN);
 	COMBOBOX_ADD (menu, "LOGIN", SMTPAUTH_LOGIN);
 	COMBOBOX_ADD (menu, "OAUTH2", SMTPAUTH_OAUTH2);
-#ifndef USE_OAUTH2
-	gtk_list_store_set(menu, &iter, COMBOBOX_SENS, FALSE, -1);
-#endif
 	gtk_list_store_set(menu, &iter, COMBOBOX_SENS, FALSE, -1);
 
 	PACK_SPACER(vbox4, vbox_spc, VSPACING_NARROW_2);
@@ -1816,7 +1738,6 @@ static void send_create_widget_func(PrefsPage * _page,
 	page->page.widget = vbox1;
 }
 
-#ifdef USE_OAUTH2
 static void oauth2_create_widget_func(PrefsPage * _page,
                                            GtkWindow * window,
                                            gpointer data)
@@ -2033,7 +1954,6 @@ static void oauth2_create_widget_func(PrefsPage * _page,
 		}
 	}
 }
-#endif
 
 static void compose_create_widget_func(PrefsPage * _page,
                                            GtkWindow * window,
@@ -2311,8 +2231,6 @@ static void privacy_create_widget_func(PrefsPage * _page,
 			   MENU_VAL_ID,					\
 			   GINT_TO_POINTER (data));			\
 }
-
-#ifdef USE_GNUTLS
 
 #define CREATE_RADIO_BUTTONS(box,					\
 			     btn1, btn1_label, btn1_data,		\
@@ -2609,7 +2527,6 @@ static void ssl_create_widget_func(PrefsPage * _page,
 }
 
 #undef CREATE_RADIO_BUTTONS
-#endif /* USE_GNUTLS */
 
 static void advanced_create_widget_func(PrefsPage * _page,
                                            GtkWindow * window,
@@ -2901,10 +2818,8 @@ static gint prefs_basic_apply(void)
 			gtk_entry_get_text(GTK_ENTRY(basic_page.pass_entry)),
 			FALSE);
 
-#ifdef USE_OAUTH2
 	/* Manual password change - reset expiry on OAUTH2 tokens*/
 	passwd_store_set_account(tmp_ac_prefs.account_id, PWS_ACCOUNT_OAUTH2_EXPIRY, "0", FALSE);
-#endif
 
 	if (protocol == A_IMAP4) {
 		new_id = g_strdup_printf("#imap/%s", tmp_ac_prefs.account_name);
@@ -2943,16 +2858,13 @@ static gint prefs_send_apply(void)
 			PWS_ACCOUNT_SEND,
 			gtk_entry_get_text(GTK_ENTRY(send_page.smtp_pass_entry)),
 			FALSE);
-#ifdef USE_OAUTH2
 	/* Manual password change - reset expiry on OAUTH2 tokens*/
 	if (tmp_ac_prefs.use_smtp_auth && tmp_ac_prefs.smtp_auth_type == SMTPAUTH_OAUTH2)
 		passwd_store_set_account(tmp_ac_prefs.account_id, PWS_ACCOUNT_OAUTH2_EXPIRY, "0", FALSE);
-#endif
 
 	return 0;
 }
 
-#ifdef USE_OAUTH2
 static gint prefs_oauth2_apply(void)
 {
 	prefs_set_data_from_dialog(oauth2_param);
@@ -2965,7 +2877,6 @@ static gint prefs_oauth2_apply(void)
 
  	return 0;
 }
-#endif
 
 static gint prefs_compose_apply(void)
 {
@@ -2979,7 +2890,6 @@ static gint prefs_privacy_apply(void)
 	return 0;
 }
 
-#ifdef USE_GNUTLS
 static gint prefs_ssl_apply(void)
 {
 	prefs_set_data_from_dialog(ssl_param);
@@ -2996,7 +2906,6 @@ static gint prefs_ssl_apply(void)
 
 	return 0;
 }
-#endif
 
 static gint prefs_advanced_apply(void)
 {
@@ -3045,7 +2954,6 @@ static void send_destroy_widget_func(PrefsPage *_page)
 	/* SendPage *page = (SendPage *) _page; */
 }
 
-#ifdef USE_OAUTH2
 static void oauth2_destroy_widget_func(PrefsPage *_page)
 {
 	/* Oauth2Page *page = (Oauth2Page *) _page; */
@@ -3055,7 +2963,6 @@ static void oauth2_destroy_widget_func(PrefsPage *_page)
 		oauth2_listener_cancel = 1;
 	}
 }
-#endif
 
 static void compose_destroy_widget_func(PrefsPage *_page)
 {
@@ -3067,12 +2974,10 @@ static void privacy_destroy_widget_func(PrefsPage *_page)
 	/* PrivacyPage *page = (PrivacyPage *) _page; */
 }
 
-#ifdef USE_GNUTLS
 static void ssl_destroy_widget_func(PrefsPage *_page)
 {
 	/* SSLPage *page = (SSLPage *) _page; */
 }
-#endif
 
 static void advanced_destroy_widget_func(PrefsPage *_page)
 {
@@ -3109,7 +3014,6 @@ static gboolean send_can_close_func(PrefsPage *_page)
 	return prefs_send_apply() >= 0;
 }
 
-#ifdef USE_OAUTH2
 static gboolean oauth2_can_close_func(PrefsPage *_page)
 {
 	Oauth2Page *page = (Oauth2Page *) _page;
@@ -3119,7 +3023,6 @@ static gboolean oauth2_can_close_func(PrefsPage *_page)
 
 	return prefs_oauth2_apply() >= 0;
 }
-#endif
 
 static gboolean compose_can_close_func(PrefsPage *_page)
 {
@@ -3141,7 +3044,6 @@ static gboolean privacy_can_close_func(PrefsPage *_page)
 	return prefs_privacy_apply() >= 0;
 }
 
-#ifdef USE_GNUTLS
 static gboolean ssl_can_close_func(PrefsPage *_page)
 {
 	SSLPage *page = (SSLPage *) _page;
@@ -3151,7 +3053,6 @@ static gboolean ssl_can_close_func(PrefsPage *_page)
 
 	return prefs_ssl_apply() >= 0;
 }
-#endif
 
 static gboolean advanced_can_close_func(PrefsPage *_page)
 {
@@ -3196,7 +3097,6 @@ static void send_save_func(PrefsPage *_page)
 		cancelled = FALSE;
 }
 
-#ifdef USE_OAUTH2
 static void oauth2_save_func(PrefsPage *_page)
 {
 	Oauth2Page *page = (Oauth2Page *) _page;
@@ -3207,7 +3107,6 @@ static void oauth2_save_func(PrefsPage *_page)
 	if (prefs_oauth2_apply() >= 0)
 		cancelled = FALSE;
 }
-#endif
 
 static void compose_save_func(PrefsPage *_page)
 {
@@ -3231,7 +3130,6 @@ static void privacy_save_func(PrefsPage *_page)
 		cancelled = FALSE;
 }
 
-#ifdef USE_GNUTLS
 static void ssl_save_func(PrefsPage *_page)
 {
 	SSLPage *page = (SSLPage *) _page;
@@ -3242,7 +3140,6 @@ static void ssl_save_func(PrefsPage *_page)
 	if (prefs_ssl_apply() >= 0)
 		cancelled = FALSE;
 }
-#endif
 
 static void advanced_save_func(PrefsPage *_page)
 {
@@ -3309,7 +3206,6 @@ static void register_send_page(void)
 	prefs_account_register_page((PrefsPage *) &send_page);
 }
 
-#ifdef USE_OAUTH2
 static void register_oauth2_page(void)
 {
 	static gchar *path[3];
@@ -3327,7 +3223,6 @@ static void register_oauth2_page(void)
 
 	prefs_account_register_page((PrefsPage *) &oauth2_page);
 }
-#endif
 
 static void register_compose_page(void)
 {
@@ -3365,7 +3260,6 @@ static void register_privacy_page(void)
 	prefs_account_register_page((PrefsPage *) &privacy_page);
 }
 
-#ifdef USE_GNUTLS
 static void register_ssl_page(void)
 {
 	static gchar *path[3];
@@ -3447,7 +3341,6 @@ static gboolean sslcert_get_password(gpointer source, gpointer data)
 
 	return TRUE;
 }
-#endif
 
 static void register_advanced_page(void)
 {
@@ -3474,14 +3367,10 @@ void prefs_account_init()
 	register_send_page();
 	register_compose_page();
 	register_privacy_page();
-#ifdef USE_GNUTLS
 	register_ssl_page();
 	hooks_register_hook(SSLCERT_GET_CLIENT_CERT_HOOKLIST, sslcert_get_client_cert_hook, NULL);
 	hooks_register_hook(SSL_CERT_GET_PASSWORD, sslcert_get_password, NULL);
-#endif
-#ifdef USE_OAUTH2
 	register_oauth2_page();
-#endif
 	register_advanced_page();
 }
 
@@ -3856,7 +3745,6 @@ static void prefs_account_select_folder_cb(GtkWidget *widget, gpointer data)
 	}
 }
 
-#if (defined USE_GNUTLS)
 static void auto_configure_cb (GtkWidget *widget, gpointer data)
 {
 	gchar *address = NULL;
@@ -3956,7 +3844,6 @@ static void auto_configure_cb (GtkWidget *widget, gpointer data)
 
 	g_free(address);
 }
-#endif
 
 static void prefs_account_sigfile_radiobtn_cb(GtkWidget *widget, gpointer data)
 {
@@ -3987,7 +3874,6 @@ static void prefs_account_signature_browse_cb(GtkWidget *widget, gpointer data)
 	g_free(utf8_filename);
 }
 
-#ifdef USE_GNUTLS
 static void prefs_account_in_cert_browse_cb(GtkWidget *widget, gpointer data)
 {
 	gchar *filename;
@@ -4021,7 +3907,6 @@ static void prefs_account_out_cert_browse_cb(GtkWidget *widget, gpointer data)
 	gtk_entry_set_text(GTK_ENTRY(entry_out_cert_file), utf8_filename);
 	g_free(utf8_filename);
 }
-#endif
 
 static void prefs_account_signature_edit_cb(GtkWidget *widget, gpointer data)
 {
@@ -4181,7 +4066,6 @@ static void prefs_account_pop_auth_type_set_optmenu(PrefParam *pparam)
 	combobox_select_by_data(optmenu, type);
 }
 
-#ifdef USE_OAUTH2
 static void prefs_account_oauth2_provider_set_data_from_optmenu(PrefParam *pparam)
 {
 	*((Oauth2Service *)pparam->data) =
@@ -4338,7 +4222,6 @@ static void prefs_account_oauth2_obtain_tokens(GtkButton *button, gpointer data)
 	g_free(trim_text);
 	g_free(OAUTH2Data);
 }
-#endif
 
 static void prefs_account_set_autochk_interval_to_widgets(PrefParam *pparam)
 {
@@ -4511,11 +4394,9 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 				 TRUE);
 		}
 
-#ifdef USE_GNUTLS
 		gtk_widget_hide(ssl_page.pop_frame);
 		gtk_widget_hide(ssl_page.imap_frame);
 		gtk_widget_show(ssl_page.send_frame);
-#endif
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
@@ -4574,11 +4455,9 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 				 FALSE);
 		}
 
-#ifdef USE_GNUTLS
 		gtk_widget_hide(ssl_page.pop_frame);
 		gtk_widget_show(ssl_page.imap_frame);
 		gtk_widget_show(ssl_page.send_frame);
-#endif
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_show(advanced_page.imapport_hbox);
 		gtk_widget_show(advanced_page.tunnelcmd_checkbtn);
@@ -4632,11 +4511,9 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 		gtk_toggle_button_set_active
 			(GTK_TOGGLE_BUTTON(receive_page.recvatgetall_checkbtn), FALSE);
 
-#ifdef USE_GNUTLS
 		gtk_widget_hide(ssl_page.pop_frame);
 		gtk_widget_hide(ssl_page.imap_frame);
 		gtk_widget_show(ssl_page.send_frame);
-#endif
 		gtk_widget_hide(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
@@ -4695,11 +4572,9 @@ static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)
 				 TRUE);
 		}
 
-#ifdef USE_GNUTLS
 		gtk_widget_show(ssl_page.pop_frame);
 		gtk_widget_hide(ssl_page.imap_frame);
 		gtk_widget_show(ssl_page.send_frame);
-#endif
 		gtk_widget_show(advanced_page.popport_hbox);
 		gtk_widget_hide(advanced_page.imapport_hbox);
 		gtk_widget_hide(advanced_page.tunnelcmd_checkbtn);
@@ -4790,8 +4665,7 @@ gchar *prefs_account_generate_msgid(PrefsAccount *account)
 	now = (prefs_common.hide_timezone)? g_date_time_new_now_utc() :
 					    g_date_time_new_now_local();
 	tmbuf = g_date_time_format(now, "%Y%m%d%H%M%S");
-	buf = g_strdup_printf("%s.%08x%s",
-			tmbuf, (guint)rand(), addr);
+	buf = g_strdup_printf("%s.%08x%s", tmbuf, (guint)rand(), addr);
 	g_date_time_unref(now);
 	g_free(tmbuf);
 	g_free(addr);
@@ -4850,7 +4724,6 @@ static void prefs_account_receive_itv_spinbutton_value_changed_cb(GtkWidget *w, 
 	}
 }
 
-#ifdef USE_OAUTH2
 //Automation of the oauth2 authorisation process to receive loopback callback generated by redirect in browser
 static void prefs_account_oauth2_listener(GTask *task, gpointer source, gpointer task_data, GCancellable *cancellable)
 {
@@ -5041,4 +4914,3 @@ static int prefs_account_oauth2_get_line(int sock, char *buf, int size)
 
         return (i);
 }
-#endif

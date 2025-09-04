@@ -14,13 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
-
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
 
 #include "defs.h"
 #include <stdlib.h>
@@ -90,15 +85,14 @@ gboolean claws_init(int *argc, char ***argv)
 	if (claws_initialized)
 		return TRUE;
 
-#ifdef USE_GNUTLS
 	ssl_init();
-#endif
+
 	startup_dir = g_get_current_dir();
 
 	parse_parameter(argc, argv);
 
 	debug_print("Starting Claws Mail version %s\n", VERSION);
-	
+
 	setlocale(LC_ALL, "");
 #ifdef ENABLE_NLS
 	bindtextdomain(PACKAGE, get_locale_dir () );
@@ -130,10 +124,7 @@ gboolean claws_init(int *argc, char ***argv)
 
 void claws_done(void)
 {
-
-#ifdef USE_GNUTLS
 	ssl_done();
-#endif
 }
 
 const gchar *claws_get_startup_dir(void)

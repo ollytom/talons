@@ -76,7 +76,7 @@ gboolean manual_available(ManualType type)
 
 	switch (type) {
 		case MANUAL_MANUAL_CLAWS:
-			dir = get_local_path_with_locale(MANUALDIR);
+			dir = get_local_path_with_locale("/dev/null"); // TODO: was MANUALDIR
 			if (dir != NULL) {
 				uri = g_strconcat(dir, G_DIR_SEPARATOR_S, MANUAL_HTML_INDEX, NULL);
 				g_free(dir);
@@ -101,7 +101,7 @@ void manual_open(ManualType type, gchar *url_anchor)
 
 	switch (type) {
 		case MANUAL_MANUAL_CLAWS:
-			dir = get_local_path_with_locale(MANUALDIR);
+			dir = get_local_path_with_locale("/dev/null"); // TODO: was MANUALDIR
 			if (dir != NULL) {
 				gchar *tmp_anchor = NULL;
 				if (url_anchor && *url_anchor != '\0')

@@ -14,10 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
-
-#include "config.h"
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -34,7 +32,7 @@ gint manage_window_focus_in(GtkWidget *widget, GdkEventFocus *event,
 
 	if (!GTK_IS_WINDOW(widget))
 		return FALSE;
-	
+
 /*	title = gtk_window_get_title(GTK_WINDOW(widget));
 	 debug_print("Focus in event: window: %p - %s\n", widget,
 		    title ? title : "no title"); */

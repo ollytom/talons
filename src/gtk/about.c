@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include "defs.h"
 
 #include <glib.h>
@@ -376,21 +371,13 @@ static GtkWidget *about_create_child_page_features(void)
 	stock_pixbuf_gdk(STOCK_PIXMAP_CHECKBOX_ON, &active_pixbuf);
 	stock_pixbuf_gdk(STOCK_PIXMAP_CHECKBOX_OFF, &inactive_pixbuf);
 
-#if USE_GNUTLS
 	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
-#else
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, inactive_pixbuf);
-#endif
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" GnuTLS "), -1,
 						 "bold", NULL);
 	gtk_text_buffer_insert(buffer, &iter,
 		(gchar *)C_("GnuTLS", "adds support for encrypted connections to servers\n"), -1);
 
-#if HAVE_ICONV
 	gtk_text_buffer_insert_pixbuf(buffer, &iter, active_pixbuf);
-#else
-	gtk_text_buffer_insert_pixbuf(buffer, &iter, inactive_pixbuf);
-#endif
 	gtk_text_buffer_insert_with_tags_by_name(buffer, &iter, (" iconv "), -1,
 						 "bold", NULL);
 	gtk_text_buffer_insert(buffer, &iter,
@@ -492,7 +479,8 @@ static gboolean release_notes_available(void)
 	gboolean ret = FALSE;
 	gchar *path = NULL;
 
-	path = g_strconcat(DOCDIR, G_DIR_SEPARATOR_S, RELEASE_NOTES_FILE, NULL);
+	// path = g_strconcat(DOCDIR, G_DIR_SEPARATOR_S, RELEASE_NOTES_FILE, NULL);
+	path = "/dev/null";
 	ret = (is_file_exist(path));
 	g_free(path);
 
@@ -525,7 +513,8 @@ static GtkWidget *about_create_child_page_release_notes(void)
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text));
 	gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
 
-	path = g_strconcat(DOCDIR, G_DIR_SEPARATOR_S, RELEASE_NOTES_FILE, NULL);
+	// path = g_strconcat(DOCDIR, G_DIR_SEPARATOR_S, RELEASE_NOTES_FILE, NULL);
+	path = "/dev/null";
 	if ((fp = g_fopen(path, "rb")) == NULL) {
 		if (ENOENT != errno) FILE_OP_ERROR(path, "g_fopen");
 		g_free(path);

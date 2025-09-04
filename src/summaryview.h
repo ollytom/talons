@@ -67,8 +67,7 @@ typedef enum
 #include "mainwindow.h"
 #include "compose.h"
 #include "folder.h"
-#include "gtksctree.h"
-#include "quicksearch.h"
+#include "gtk/gtksctree.h"
 
 extern GtkTargetEntry summary_drag_types[3];
 
@@ -97,7 +96,6 @@ struct _SummaryView
 	GtkWidget *toggle_eventbox;
 	GtkWidget *toggle_arrow;
 	GtkWidget *toggle_search;
-	GtkWidget *quick_search_pixmap;
 	GtkWidget *popupmenu;
 	GtkWidget *headerpopupmenu;
 	GtkWidget *tags_menu;
@@ -120,7 +118,6 @@ struct _SummaryView
 	FolderView   *folderview;
 	MessageView  *messageview;
 	MessageView  *ext_messageview;
-	QuickSearch  *quicksearch;
 
 	FolderItem *folder_item;
 
@@ -309,7 +306,6 @@ void summary_set_prefs_from_folderitem
 void summary_save_prefs_to_folderitem
                                   (SummaryView *summaryview, FolderItem *item);
 gint summaryview_export_mbox_list (SummaryView *summaryview);
-void summaryview_activate_quicksearch(SummaryView *summaryview, gboolean show);
 void summary_set_menu_sensitive	(SummaryView		*summaryview);
 void summary_relayout(SummaryView *summaryview);
 void summary_update_unread(SummaryView *summaryview, FolderItem *removed_item);

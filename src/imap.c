@@ -38,13 +38,9 @@
 #include <ctype.h>
 #include <time.h>
 #include <errno.h>
-#if HAVE_ICONV
-#  include <iconv.h>
-#endif
+#include <iconv.h>
 
-#ifdef USE_GNUTLS
-#  include "ssl.h"
-#endif
+#include "ssl.h"
 
 #include "folder.h"
 #include "session.h"
@@ -61,15 +57,13 @@
 #include "claws.h"
 #include "statusbar.h"
 #include "msgcache.h"
-#include "imap-thread.h"
+#include "etpan/imap-thread.h"
 #include "account.h"
 #include "tags.h"
 #include "main.h"
 #include "passwordstore.h"
 #include "file-utils.h"
-#ifdef USE_OAUTH2
 #include "oauth2.h"
-#endif
 
 typedef struct _IMAPFolder	IMAPFolder;
 typedef struct _IMAPSession	IMAPSession;
@@ -144,9 +138,7 @@ struct _IMAPNameSpace
 
 
 #define IMAP4_PORT	143
-#ifdef USE_GNUTLS
 #define IMAPS_PORT	993
-#endif
 
 #define IMAP_CMD_LIMIT	1000
 
@@ -217,14 +209,6 @@ static gint 	imap_copy_msgs		(Folder 	*folder,
 					 FolderItem 	*dest,
 		    			 MsgInfoList 	*msglist,
 					 GHashTable 	*relation);
-
-static gint	search_msgs		(Folder			*folder,
-					 FolderItem		*container,
-					 MsgNumberList		**msgs,
-					 gboolean		*on_server,
-					 MatcherList		*predicate,
-					 SearchProgressNotify	progress_cb,
-					 gpointer		progress_data);
 
 static gint 	imap_remove_msg		(Folder 	*folder,
 					 FolderItem 	*item,
@@ -341,9 +325,7 @@ static gint imap_cmd_login	(IMAPSession	*session,
 				 const gchar	*pass,
 				 const gchar 	*type);
 static gint imap_cmd_noop	(IMAPSession	*session);
-#ifdef USE_GNUTLS
 static gint imap_cmd_starttls	(IMAPSession	*session);
-#endif
 static gint imap_cmd_select	(IMAPSession	*session,
 				 const gchar	*folder,
 				 gint		*exists,
@@ -450,7 +432,6 @@ FolderClass *imap_get_class(void)
 		imap_class.type = F_IMAP;
 		imap_class.idstr = "imap";
 		imap_class.uistr = "IMAP";
-		imap_class.supports_server_search = TRUE;
 
 		/* Folder functions */
 		imap_class.new_folder = imap_folder_new;
@@ -482,7 +463,6 @@ FolderClass *imap_get_class(void)
 		imap_class.add_msgs = imap_add_msgs;
 		imap_class.copy_msg = imap_copy_msg;
 		imap_class.copy_msgs = imap_copy_msgs;
-		imap_class.search_msgs = search_msgs;
 		imap_class.remove_msg = imap_remove_msg;
 		imap_class.remove_msgs = imap_remove_msgs;
 		imap_class.expunge = imap_expunge;
@@ -730,11 +710,9 @@ static void imap_handle_error(Session *session, const gchar *server, int libetpa
 	case MAILIMAP_ERROR_SASL:
 		MY_LOG_WARNING(g_strconcat(_("IMAP error on %s:"), " ", _("SASL error"), "\n", NULL), session_server)
 		break;
-#ifdef USE_GNUTLS
 	case MAILIMAP_ERROR_SSL:
 		MY_LOG_WARNING(g_strconcat(_("IMAP error on %s:"), " ", _("TLS error"), "\n", NULL), session_server)
 		break;
-#endif
 	default:
 		MY_LOG_WARNING(g_strconcat(_("IMAP error on %s:"), " ", _("Unknown error [%d]"), "\n", NULL),
 			session_server, libetpan_errcode)
@@ -898,11 +876,9 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 	case IMAP_AUTH_PLAIN:
 		ok = imap_cmd_login(session, user, pass, "PLAIN");
 		break;
-#ifdef USE_GNUTLS
 	case IMAP_AUTH_OAUTH2:
 		ok = imap_cmd_login(session, user, pass, "XOAUTH2");
 		break;
-#endif
 	case IMAP_AUTH_LOGIN:
 		ok = imap_cmd_login(session, user, pass, "LOGIN");
 		break;
@@ -921,9 +897,7 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 				"\t SCRAM-SHA-384 %d\n"
 				"\t SCRAM-SHA-512 %d\n"
 				"\t PLAIN %d\n"
-#ifdef USE_GNUTLS
 				"\t OAUTH2 %d\n"
-#endif
 				"\t LOGIN %d\n"
 				"\t GSSAPI %d\n",
 			imap_has_capability(session, "ANONYMOUS"),
@@ -933,9 +907,7 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 			imap_has_capability(session, "SCRAM-SHA-384"),
 			imap_has_capability(session, "SCRAM-SHA-512"),
 			imap_has_capability(session, "PLAIN"),
-#ifdef USE_GNUTLS
 			imap_has_capability(session, "XOAUTH2"),
-#endif
 			imap_has_capability(session, "LOGIN"),
 			imap_has_capability(session, "GSSAPI"));
 		if (ok == MAILIMAP_ERROR_LOGIN && imap_has_capability(session, "SCRAM-SHA-512"))
@@ -956,10 +928,8 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 			ok = imap_cmd_login(session, user, pass, "GSSAPI");
 		if (ok == MAILIMAP_ERROR_LOGIN) /* we always try plaintext login before giving up */
 			ok = imap_cmd_login(session, user, pass, "plaintext");
-#ifdef USE_GNUTLS
 		if (ok == MAILIMAP_ERROR_LOGIN && imap_has_capability(session, "XOAUTH2"))
 			ok = imap_cmd_login(session, user, pass, "XOAUTH2");
-#endif
 	}
 
 	if (ok == MAILIMAP_NO_ERROR)
@@ -1006,12 +976,10 @@ static gint imap_auth(IMAPSession *session, const gchar *user, const gchar *pass
 				     "compiled with SASL support and the "
 				     "LOGIN SASL plugin is installed.");
 		}
-#ifdef USE_GNUTLS
 		if (type == IMAP_AUTH_OAUTH2) {
 			ext_info = _("\n\nOAuth2 error. Check and correct your OAuth2 "
 				     "account preferences.");
 		}
-#endif
 		if (time(NULL) - last_login_err > 10) {
 			if (prefs_common.show_recv_err_dialog) {
 				alertpanel_error_log(_("Connection to %s failed: "
@@ -1176,29 +1144,11 @@ static IMAPSession *imap_session_new(Folder * folder,
 	int authenticated = FALSE;
 	gchar *buf;
 
-#ifdef USE_GNUTLS
-	/* FIXME: IMAP over SSL only... */
 	SSLType ssl_type;
 
 	port = account->set_imapport ? account->imapport
 		: account->ssl_imap == SSL_TUNNEL ? IMAPS_PORT : IMAP4_PORT;
 	ssl_type = account->ssl_imap;
-#else
-	if (account->ssl_imap != SSL_NONE) {
-		if (alertpanel_full(_("Insecure connection"),
-			_("This connection is configured to be secured "
-			  "using TLS, but TLS is not available "
-			  "in this build of Claws Mail. \n\n"
-			  "Do you want to continue connecting to this "
-			  "server? The communication would not be "
-			  "secure."),
-			  NULL, _("_Cancel"), NULL, _("Con_tinue connecting"), NULL, NULL,
-			  ALERTFOCUS_FIRST, FALSE, NULL, ALERT_WARNING) != G_ALERTALTERNATE)
-			return NULL;
-	}
-	port = account->set_imapport ? account->imapport
-		: IMAP4_PORT;
-#endif
 
 	imap_init(folder);
 	IMAP_FOLDER(folder)->max_set_size = account->imap_batch_size;
@@ -1231,11 +1181,9 @@ static IMAPSession *imap_session_new(Folder * folder,
 		authenticated = FALSE;
 	}
 	else {
-#ifdef USE_GNUTLS
 		if (r == MAILIMAP_ERROR_SSL)
 			log_error(LOG_PROTOCOL, _("TLS handshake failed\n"));
 		else
-#endif
 			imap_handle_error(NULL, account->recv_server, r);
 
 		if(prefs_common.show_recv_err_dialog) {
@@ -1267,7 +1215,6 @@ static IMAPSession *imap_session_new(Folder * folder,
 	session->folder = folder;
 	IMAP_FOLDER(session->folder)->last_seen_separator = 0;
 
-#ifdef USE_GNUTLS
 	if (account->ssl_imap == SSL_STARTTLS) {
 		gint ok;
 
@@ -1287,7 +1234,6 @@ static IMAPSession *imap_session_new(Folder * folder,
 		session->cmd_count = 1;
 	}
 	SESSION(session)->use_tls_sni = account->use_tls_sni;
-#endif
 
 	log_message(LOG_PROTOCOL, "IMAP connection is %s-authenticated\n",
 		    (session->authenticated) ? "pre" : "un");
@@ -1304,10 +1250,8 @@ static gint imap_session_authenticate(IMAPSession *session,
 	gboolean failed = FALSE;
 	gint ok = MAILIMAP_NO_ERROR;
 	g_return_val_if_fail(account->userid != NULL, MAILIMAP_ERROR_BAD_STATE);
-#ifdef USE_OAUTH2
 	if(account->imap_auth_type == IMAP_AUTH_OAUTH2)
 	        oauth2_check_passwds (account);
-#endif
 	if (!password_get(account->userid, account->recv_server, "imap",
 			 SESSION(session)->port, &acc_pass)) {
 		acc_pass = passwd_store_get_account(account->account_id,
@@ -2013,426 +1957,6 @@ static gint imap_copy_msgs(Folder *folder, FolderItem *dest,
 	ret = imap_do_copy_msgs(folder, dest, msglist, relation, FALSE);
 	return ret;
 }
-
-static gboolean imap_matcher_type_is_local(gint matchertype)
-{
-	switch (matchertype) {
-	case MATCHCRITERIA_FROM:
-	case MATCHCRITERIA_TO:
-	case MATCHCRITERIA_CC:
-	case MATCHCRITERIA_TO_OR_CC:
-	case MATCHCRITERIA_SUBJECT:
-	case MATCHCRITERIA_REFERENCES:
-	case MATCHCRITERIA_MESSAGEID:
-	case MATCHCRITERIA_INREPLYTO:
-	case MATCHCRITERIA_AGE_GREATER:
-	case MATCHCRITERIA_AGE_LOWER:
-	case MATCHCRITERIA_FORWARDED:
-	case MATCHCRITERIA_SPAM:
-	case MATCHCRITERIA_UNREAD:
-	case MATCHCRITERIA_NEW:
-	case MATCHCRITERIA_MARKED:
-	case MATCHCRITERIA_REPLIED:
-	case MATCHCRITERIA_DELETED:
-	case MATCHCRITERIA_SIZE_GREATER:
-	case MATCHCRITERIA_SIZE_SMALLER:
-	case MATCHCRITERIA_SIZE_EQUAL:
-		return TRUE;
-	}
-	return FALSE;
-}
-
-static IMAPSearchKey* search_make_key(MatcherProp* match, gboolean* is_all)
-{
-	if (match->matchtype == MATCHTYPE_MATCHCASE || match->matchtype == MATCHTYPE_MATCH) {
-		IMAPSearchKey* result = NULL;
-		gboolean invert = FALSE;
-		gint matchertype = match->criteria;
-
-		if (is_all) {
-			*is_all = FALSE;
-		}
-
-		switch (matchertype) {
-		case MATCHCRITERIA_NOT_NEW: invert = TRUE; matchertype = MATCHCRITERIA_NEW; break;
-		case MATCHCRITERIA_NOT_MARKED: invert = TRUE; matchertype = MATCHCRITERIA_MARKED; break;
-		case MATCHCRITERIA_NOT_FORWARDED: invert = TRUE; matchertype = MATCHCRITERIA_FORWARDED; break;
-		case MATCHCRITERIA_NOT_SPAM: invert = TRUE; matchertype = MATCHCRITERIA_SPAM; break;
-		case MATCHCRITERIA_NOT_SUBJECT: invert = TRUE; matchertype = MATCHCRITERIA_SUBJECT; break;
-		case MATCHCRITERIA_NOT_FROM: invert = TRUE; matchertype = MATCHCRITERIA_FROM; break;
-		case MATCHCRITERIA_NOT_TO: invert = TRUE; matchertype = MATCHCRITERIA_TO; break;
-		case MATCHCRITERIA_NOT_CC: invert = TRUE; matchertype = MATCHCRITERIA_CC; break;
-		case MATCHCRITERIA_NOT_REFERENCES: invert = TRUE; matchertype = MATCHCRITERIA_REFERENCES; break;
-		case MATCHCRITERIA_NOT_HEADER: invert = TRUE; matchertype = MATCHCRITERIA_HEADER; break;
-		case MATCHCRITERIA_NOT_TAG: invert = TRUE; matchertype = MATCHCRITERIA_TAG; break;
-		case MATCHCRITERIA_NOT_HEADERS_PART: invert = TRUE; matchertype = MATCHCRITERIA_HEADERS_PART; break;
-		case MATCHCRITERIA_NOT_HEADERS_CONT: invert = TRUE; matchertype = MATCHCRITERIA_HEADERS_CONT; break;
-		case MATCHCRITERIA_NOT_MESSAGE: invert = TRUE; matchertype = MATCHCRITERIA_MESSAGE; break;
-		case MATCHCRITERIA_NOT_BODY_PART: invert = TRUE; matchertype = MATCHCRITERIA_BODY_PART; break;
-		case MATCHCRITERIA_NOT_TO_AND_NOT_CC: invert = TRUE; matchertype = MATCHCRITERIA_TO_OR_CC; break;
-		case MATCHCRITERIA_NOT_MESSAGEID: invert = TRUE; matchertype = MATCHCRITERIA_MESSAGEID; break;
-		case MATCHCRITERIA_NOT_INREPLYTO: invert = TRUE; matchertype = MATCHCRITERIA_INREPLYTO; break;
-		}
-
-		/*
-		 * this aborts conversion even for predicates understood by the following code.
-		 * while that might seem wasteful, claws local search for information listed below
-		 * has proven faster than IMAP search plus network roundtrips. once this changes,
-		 * consider removing these exceptions.
-		 */
-		if (imap_matcher_type_is_local(matchertype))
-			return NULL;
-
-		/* the Message-ID header is also cached */
-		if (matchertype == MATCHCRITERIA_HEADER && g_strcmp0("Message-ID", match->header) == 0) {
-			return NULL;
-		}
-
-		switch (matchertype) {
-		case MATCHCRITERIA_FORWARDED:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_TAG, NULL, RTAG_FORWARDED, 0);
-			break;
-
-		case MATCHCRITERIA_SPAM:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_TAG, NULL, RTAG_JUNK, 0);
-			break;
-
-		case MATCHCRITERIA_MESSAGEID:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_HEADER, "Message-ID", match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_INREPLYTO:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_HEADER, "In-Reply-To", match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_REFERENCES:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_HEADER, "References", match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_TO_OR_CC:
-			result = imap_search_or(
-					imap_search_new(IMAP_SEARCH_CRITERIA_TO, NULL, match->expr, 0),
-					imap_search_new(IMAP_SEARCH_CRITERIA_CC, NULL, match->expr, 0)
-					);
-			break;
-
-		case MATCHCRITERIA_HEADERS_PART:
-		case MATCHCRITERIA_HEADERS_CONT:
-			result = imap_search_and(
-					imap_search_not(imap_search_new(IMAP_SEARCH_CRITERIA_BODY, NULL, match->expr, 0)),
-					imap_search_new(IMAP_SEARCH_CRITERIA_MESSAGE, NULL, match->expr, 0)
-					);
-			break;
-
-		case MATCHCRITERIA_SIZE_EQUAL:
-			result = imap_search_and(
-					imap_search_not(imap_search_new(IMAP_SEARCH_CRITERIA_SIZE_SMALLER, NULL, NULL, match->value)),
-					imap_search_not(imap_search_new(IMAP_SEARCH_CRITERIA_SIZE_GREATER, NULL, NULL, match->value))
-					);
-			break;
-
-		case MATCHCRITERIA_NOT_UNREAD:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_READ, NULL, NULL, 0);
-			break;
-
-		case MATCHCRITERIA_UNREAD:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_UNREAD, NULL, NULL, 0);
-			break;
-
-		case MATCHCRITERIA_NEW:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_NEW, NULL, NULL, 0);
-			break;
-
-		case MATCHCRITERIA_MARKED:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_MARKED, NULL, NULL, 0);
-			break;
-
-		case MATCHCRITERIA_DELETED:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_DELETED, NULL, NULL, 0);
-			break;
-
-		case MATCHCRITERIA_REPLIED:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_REPLIED, NULL, NULL, 0);
-			break;
-
-		case MATCHCRITERIA_TAG:
-			{
-				gchar *tmp = imap_utf8_to_modified_utf7(match->expr, TRUE);
-				result = imap_search_new(IMAP_SEARCH_CRITERIA_TAG, NULL, tmp, 0);
-				g_free(tmp);
-			}
-			break;
-
-		case MATCHCRITERIA_SUBJECT:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_SUBJECT, NULL, match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_FROM:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_FROM, NULL, match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_TO:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_TO, NULL, match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_CC:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_CC, NULL, match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_AGE_GREATER:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_AGE_GREATER, NULL, NULL, match->value);
-			break;
-
-		case MATCHCRITERIA_AGE_LOWER:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_AGE_LOWER, NULL, NULL, match->value);
-			break;
-
-		case MATCHCRITERIA_BODY_PART:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_BODY, NULL, match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_MESSAGE:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_MESSAGE, NULL, match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_HEADER:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_HEADER, match->header, match->expr, 0);
-			break;
-
-		case MATCHCRITERIA_SIZE_GREATER:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_SIZE_GREATER, NULL, NULL, match->value);
-			break;
-
-		case MATCHCRITERIA_SIZE_SMALLER:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_SIZE_SMALLER, NULL, NULL, match->value);
-			break;
-
-		default:
-			result = imap_search_new(IMAP_SEARCH_CRITERIA_ALL, NULL, NULL, 0);
-			if (is_all) {
-				*is_all = TRUE;
-			}
-			break;
-		}
-
-		if (invert) {
-			result = imap_search_not(result);
-			if (is_all && *is_all) {
-				*is_all = FALSE;
-			}
-		}
-
-		return result;
-	}
-
-	return NULL;
-}
-
-static void imap_change_search_charset(IMAPFolder *folder)
-{
-	/* If server supports charset in searches, but the last used one failed,
-	 * changed to the next preferred charset. If none are still available,
-	 * disable charset searches.
-	 * Charsets are tried in the following order:
-	 * UTF-8, locale's charset, UTF-7.
-	 */
-
-	if (folder->search_charset_supported) {
-		if (folder->search_charset && !strcmp(folder->search_charset, conv_get_locale_charset_str_no_utf8()))
-			folder->search_charset = "UTF-8";
-		else if (folder->search_charset && !strcmp(folder->search_charset, "UTF-8"))
-			folder->search_charset = "UTF-7";
-		else {
-			folder->search_charset = NULL;
-			folder->search_charset_supported = FALSE;
-		}
-	}
-}
-
-static MatcherProp *imap_matcher_prop_set_charset(IMAPFolder *folder,
-						  MatcherProp *utf8_prop,
-						  gchar **charset)
-{
-	/* If the match is going to be done locally, or the criteria is on
-	 * tag (special-cased to modified-UTF-7), or the expression searched
-	 * is ASCII, don't bother converting.
-	 */
-	if (imap_matcher_type_is_local(utf8_prop->criteria)
-	 || utf8_prop->criteria == MATCHCRITERIA_TAG
-	 || utf8_prop->criteria == MATCHCRITERIA_NOT_TAG
-	 || utf8_prop->expr == NULL
-	 || is_ascii_str(utf8_prop->expr))
-		return matcherprop_new(utf8_prop->criteria,
-			       utf8_prop->header,
-			       utf8_prop->matchtype,
-			       utf8_prop->expr,
-			       utf8_prop->value);
-	else {
-		gchar *conv_expr = NULL;
-
-		/* If the search is server-side and the server doesn't support
-		 * searching with the charsets we handle, bail out.
-		 */
-		if (folder->search_charset_supported == FALSE)
-			return NULL;
-
-		/* Else, convert. */
-		if (*charset == NULL)
-			*charset = g_strdup(folder->search_charset);
-
-		conv_expr = conv_codeset_strdup(utf8_prop->expr, CS_UTF_8, *charset);
-
-		if (conv_expr == NULL)
-			conv_expr = g_strdup(utf8_prop->expr);
-
-		return matcherprop_new(utf8_prop->criteria,
-			       utf8_prop->header,
-			       utf8_prop->matchtype,
-			       conv_expr,
-			       utf8_prop->value);
-	}
-}
-
-static gint	search_msgs		(Folder			*folder,
-					 FolderItem		*container,
-					 MsgNumberList		**msgs,
-					 gboolean		*on_server,
-					 MatcherList		*predicate,
-					 SearchProgressNotify	progress_cb,
-					 gpointer		progress_data)
-{
-	IMAPSearchKey* key = NULL;
-	GSList* cur;
-	int result = -1;
-	clist* uidlist = NULL;
-	gboolean server_filtering_useless = FALSE;
-        IMAPSession *session;
-	gchar *charset_to_use = NULL;
-
-	if (on_server == NULL || !*on_server) {
-		return folder_item_search_msgs_local(folder, container, msgs, on_server,
-				predicate, progress_cb, progress_data);
-	}
-
-	for (cur = predicate->matchers; cur != NULL; cur = cur->next) {
-		IMAPSearchKey* matcherPart = NULL;
-		MatcherProp* prop = (MatcherProp*) cur->data;
-		gboolean is_all;
-		MatcherProp *imap_prop = imap_matcher_prop_set_charset(IMAP_FOLDER(folder), prop, &charset_to_use);
-
-		if (imap_prop == NULL) {
-			/* Couldn't convert matcherprop to IMAP - probably not ascii
-			 * and server doesn't support the charsets we do. */
-			 return -1;
-		}
-
-		matcherPart = search_make_key(imap_prop, &is_all);
-
-		matcherprop_free(imap_prop);
-
-		if (on_server) {
-			*on_server &= matcherPart != NULL && prop->matchtype == MATCHTYPE_MATCHCASE;
-		}
-
-		if (matcherPart) {
-			if (key == NULL) {
-				key = matcherPart;
-				server_filtering_useless = is_all;
-			} else if (predicate->bool_and) {
-				key = imap_search_and(key, matcherPart);
-				server_filtering_useless &= is_all;
-			} else {
-				key = imap_search_or(key, matcherPart);
-				server_filtering_useless |= is_all;
-			}
-		}
-	}
-
-	if (server_filtering_useless) {
-		imap_search_free(key);
-		key = NULL;
-	}
-
-	if (key == NULL && progress_cb != NULL) {
-		GSList* cur;
-		GSList* list;
-		int count = 0;
-
-		progress_cb(progress_data, TRUE, 0, 0, container->total_msgs);
-		progress_cb(progress_data, TRUE, container->total_msgs, 0, container->total_msgs);
-
-		list = folder_item_get_msg_list(container);
-		for (cur = list; cur != NULL; cur = cur->next) {
-			*msgs = g_slist_prepend(*msgs, GUINT_TO_POINTER(((MsgInfo*) cur->data)->msgnum));
-			count++;
-		}
-		procmsg_msg_list_free(list);
-
-		*msgs = g_slist_reverse(*msgs);
-
-		return count;
-	}
-
-	session = imap_session_get(folder);
-        if (!session) {
-                return -1;
-        }
-	result = imap_select(session, IMAP_FOLDER(folder), FOLDER_ITEM(container),
-			 NULL, NULL, NULL, NULL, NULL, TRUE);
-	if (result != MAILIMAP_NO_ERROR)
-		return -1;
-
-	if (progress_cb)
-		progress_cb(progress_data, TRUE, 0, 0, container->total_msgs);
-	result = imap_threaded_search(folder, IMAP_SEARCH_TYPE_KEYED, key, charset_to_use, NULL, &uidlist);
-	if (progress_cb)
-		progress_cb(progress_data, TRUE, container->total_msgs, 0, container->total_msgs);
-
-	if (result == MAILIMAP_ERROR_PROTOCOL) {
-		debug_print("Server side search unavailable, using local search\n");
-		imap_handle_error(SESSION(session), NULL, result);
-		result = folder_item_search_msgs_local(folder, container, msgs,	NULL,
-						       predicate, progress_cb, progress_data);
-		if (result < 0) {
-			debug_print("search_msgs - got protocol error, aborting\n");
-			alertpanel_error_log(_("Search failed due to server error."));
-			return -1;
-		}
-
-		return result;
-	}
-
-	if (result == MAILIMAP_NO_ERROR) {
-		gint result = 0;
-
-		*msgs = imap_uid_list_from_lep(uidlist, &result);
-
-		mailimap_search_result_free(uidlist);
-
-		if (charset_to_use != NULL)
-			g_free(charset_to_use);
-
-		return result;
-	} else if (charset_to_use != NULL) {
-		/* If search failed and was on an 8-bit string, try the next
-		 * available charset to search if there still are some.
-		 */
-		g_free(charset_to_use);
-
-		imap_change_search_charset(IMAP_FOLDER(folder));
-		if (IMAP_FOLDER(folder)->search_charset_supported)
-			return search_msgs(folder, container, msgs, on_server, predicate,
-				   progress_cb, progress_data);
-		else {
-			imap_handle_error(SESSION(session), NULL, result);
-			return -1;
-		}
-	} else {
-		imap_handle_error(SESSION(session), NULL, result);
-		return -1;
-	}
-}
-
 
 static gint imap_do_remove_msgs(Folder *folder, FolderItem *dest,
 			        MsgInfoList *msglist, GHashTable *relation)
@@ -3962,7 +3486,6 @@ static gint imap_cmd_login(IMAPSession *session,
 	if (!strcmp(type, "plaintext") && imap_has_capability(session, "LOGINDISABLED")) {
 		ok = MAILIMAP_ERROR_BAD_STATE;
 		if (imap_has_capability(session, "STARTTLS")) {
-#ifdef USE_GNUTLS
 			log_warning(LOG_PROTOCOL, _("Server requires STARTTLS to log in.\n"));
 			ok = imap_cmd_starttls(session);
 			if (ok != MAILIMAP_NO_ERROR) {
@@ -3977,14 +3500,6 @@ static gint imap_cmd_login(IMAPSession *session,
 					return r;
 				}
 			}
-#else
-			log_error(LOG_PROTOCOL, _("Connection to %s failed: "
-					"server requires STARTTLS, but Claws Mail "
-					"has been compiled without STARTTLS "
-					"support.\n"),
-					SESSION(session)->server);
-			return MAILIMAP_ERROR_LOGIN;
-#endif
 		} else {
 			log_error(LOG_PROTOCOL, _("Server logins are disabled.\n"));
 			return MAILIMAP_ERROR_LOGIN;
@@ -4046,7 +3561,6 @@ static gint imap_cmd_noop(IMAPSession *session)
 	return MAILIMAP_NO_ERROR;
 }
 
-#ifdef USE_GNUTLS
 static gint imap_cmd_starttls(IMAPSession *session)
 {
 	int r;
@@ -4060,7 +3574,6 @@ static gint imap_cmd_starttls(IMAPSession *session)
 	}
 	return MAILIMAP_NO_ERROR;
 }
-#endif
 
 static gint imap_cmd_select(IMAPSession *session, const gchar *folder,
 			    gint *exists, gint *recent, gint *unseen,

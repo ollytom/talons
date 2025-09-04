@@ -35,13 +35,13 @@
 #include "prefs_gtk.h"
 
 #include "gtk/gtkutils.h"
+#include "gtk/manage_window.h"
 #include "gtk/prefswindow.h"
 #include "combobox.h"
 
-#include "manage_window.h"
-#include "imap-thread.h"
+#include "etpan/imap-thread.h"
 
-#include "file-utils.h"
+#include "common/file-utils.h"
 
 typedef struct _OtherPage
 {
@@ -105,8 +105,6 @@ static void prefs_keybind_preset_changed(GtkComboBox *widget)
 		{"<Actions>/Menu/Edit/Copy",				"<control>C"},
 		{"<Actions>/Menu/Edit/SelectAll",			"<control>A"},
 		{"<Actions>/Menu/Edit/Find",				"<control>F"},
-		{"<Actions>/Menu/Edit/SearchFolder",			"<shift><control>F"},
-		{"<Actions>/Menu/Edit/QuickSearch",			"slash"},
 
 		{"<Actions>/Menu/View/ShowHide/MenuBar",		"<control>F12"},
 		{"<Actions>/Menu/View/ShowHide/MessageView",		"V"},

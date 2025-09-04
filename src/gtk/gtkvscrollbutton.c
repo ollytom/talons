@@ -19,7 +19,7 @@
  * Modified by the GTK+ Team and others 1997-1999.  See the AUTHORS
  * file for a list of people on the GTK+ Team.  See the ChangeLog
  * files for a list of changes.  These files are distributed with
- * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
+ * GTK+ at ftp://ftp.gtk.org/pub/gtk/.
  */
 
  /*
@@ -27,11 +27,6 @@
   * on GtkRange widget code.
   * Modified by the Sylpheed Team and others 2003
   */
-
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -235,11 +230,8 @@ void gtk_vscrollbutton_set_adjustment(GtkVScrollbutton *scrollbutton,
 
     if (scrollbutton->adjustment != adjustment) {
 	if (scrollbutton->adjustment) {
-	    g_signal_handlers_disconnect_matched(scrollbutton->adjustment,
-	    					 G_SIGNAL_MATCH_DATA,
-	    					 0, 0, NULL, NULL, 
-						 (gpointer) scrollbutton);
-	    g_object_unref(G_OBJECT(scrollbutton->adjustment));
+		g_signal_handlers_disconnect_matched(scrollbutton->adjustment, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, (gpointer) scrollbutton);
+		g_object_unref(G_OBJECT(scrollbutton->adjustment));
 	}
 
 	scrollbutton->adjustment = adjustment;
@@ -323,10 +315,10 @@ gboolean gtk_vscrollbutton_scroll(GtkVScrollbutton *scrollbutton)
 	    scrollbutton->timer = 0;
 	}
 	break;
-    
+
     default:
 	break;
-    
+
     }
 
 	if (new_value != value) {
@@ -401,7 +393,7 @@ static gboolean gtk_real_vscrollbutton_timer(GtkVScrollbutton *scrollbutton)
 	return_val = FALSE;
 	if (scrollbutton->need_timer)
 	    scrollbutton->timer =
-		g_timeout_add(SCROLL_TIMER_LENGTH, 
+		g_timeout_add(SCROLL_TIMER_LENGTH,
 			      (GSourceFunc) gtk_real_vscrollbutton_timer,
 			      (gpointer) scrollbutton);
 	else {
@@ -421,11 +413,11 @@ static void gtk_vscrollbutton_set_sensitivity   (GtkAdjustment    *adjustment,
 	gfloat value;
 	if (!gtk_widget_get_realized(GTK_WIDGET(scrollbutton))) return;
 	if (scrollbutton->button != 0) return; /* not while something is pressed */
-	
+
 	value = gtk_adjustment_get_value(adjustment);
-	gtk_widget_set_sensitive(scrollbutton->upbutton, 
+	gtk_widget_set_sensitive(scrollbutton->upbutton,
 				 (value > gtk_adjustment_get_lower(adjustment)));
-	gtk_widget_set_sensitive(scrollbutton->downbutton, 
+	gtk_widget_set_sensitive(scrollbutton->downbutton,
 				 (value < (gtk_adjustment_get_upper(adjustment) -
                            gtk_adjustment_get_page_size(adjustment))));
 }

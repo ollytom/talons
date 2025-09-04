@@ -45,7 +45,6 @@
 #include "description_window.h"
 #include "manual.h"
 #include "menu.h"
-#include "matcher_parser.h"
 #include "prefs_toolbar.h"
 #include "file-utils.h"
 

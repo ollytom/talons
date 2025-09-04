@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __SEND_MESSAGE_H__
@@ -25,9 +25,7 @@
 #include "prefs_account.h"
 
 #define SMTP_PORT	25
-#ifdef USE_GNUTLS
 #define SSMTP_PORT	465
-#endif
 
 gint send_message		(const gchar	*file,
 				 PrefsAccount	*ac_prefs,

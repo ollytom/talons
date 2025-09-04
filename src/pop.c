@@ -39,9 +39,7 @@
 #include "file-utils.h"
 #include "oauth2.h"
 
-#ifdef USE_OAUTH2
 #include "defs.h"
-#endif
 
 typedef enum {
 	POP3_TOTALLY_RECEIVED	= 0,
@@ -53,10 +51,8 @@ static gint pop3_greeting_recv		(Pop3Session *session,
 					 const gchar *msg);
 static gint pop3_getauth_user_send	(Pop3Session *session);
 static gint pop3_getauth_pass_send	(Pop3Session *session);
-#ifdef USE_GNUTLS
 static gint pop3_stls_send		(Pop3Session *session);
 static gint pop3_stls_recv		(Pop3Session *session);
-#endif
 static gint pop3_getrange_stat_send	(Pop3Session *session);
 static gint pop3_getrange_stat_recv	(Pop3Session *session,
 					 const gchar *msg);
@@ -108,7 +104,6 @@ static gint pop3_greeting_recv(Pop3Session *session, const gchar *msg)
 	return PS_SUCCESS;
 }
 
-#ifdef USE_GNUTLS
 static gint pop3_stls_send(Pop3Session *session)
 {
 	session->state = POP3_STLS;
@@ -124,7 +119,6 @@ static gint pop3_stls_recv(Pop3Session *session)
 	}
 	return PS_SUCCESS;
 }
-#endif /* USE_GNUTLS */
 
 static gint pop3_getauth_user_send(Pop3Session *session)
 {
@@ -144,7 +138,6 @@ static gint pop3_getauth_pass_send(Pop3Session *session)
 	return PS_SUCCESS;
 }
 
-#ifdef USE_OAUTH2
 static gint pop3_getauth_oauth2_send_generic(Pop3Session *session)
 {
 	gchar buf[MESSAGEBUFSIZE], *b64buf, *out;
@@ -215,7 +208,6 @@ static gint pop3_getauth_oauth2_send(Pop3Session *session)
 		 : pop3_getauth_oauth2_send_generic(session)
 		 );
 }
-#endif
 
 static gint pop3_getrange_stat_send(Pop3Session *session)
 {
@@ -516,10 +508,8 @@ static void pop3_gen_send(Pop3Session *session, const gchar *format, ...)
 
 	if (!g_ascii_strncasecmp(buf, "PASS ", 5))
 		log_print(LOG_PROTOCOL, "POP> PASS ********\n");
-#ifdef USE_OAUTH2
 	else if  (!g_ascii_strncasecmp(buf, "AUTH XOAUTH2", 12))
 		log_print(LOG_PROTOCOL, "POP> AUTH XOAUTH2  ********\n");
-#endif
 	else if (length > 128)
 		log_print(LOG_PROTOCOL, "POP> %.128s... (truncated from %d)\n", buf, length);
 	else
@@ -548,12 +538,10 @@ Session *pop3_session_new(PrefsAccount *account)
 	SESSION(session)->ssl_cert_auto_accept = TRUE;
 	SESSION(session)->destroy = pop3_session_destroy;
 
-#ifdef USE_GNUTLS
 	if (account->set_gnutls_priority && account->gnutls_priority &&
 			strlen(account->gnutls_priority) != 0)
 		SESSION(session)->gnutls_priority = g_strdup(account->gnutls_priority);
 	SESSION(session)->use_tls_sni = account->use_tls_sni;
-#endif
 
 	session->state = POP3_READY;
 	session->ac_prefs = account;
@@ -563,7 +551,6 @@ Session *pop3_session_new(PrefsAccount *account)
 	session->error_val = PS_SUCCESS;
 	session->error_msg = NULL;
 
-#ifdef USE_OAUTH2
 	if(session->ac_prefs->use_pop_auth && session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2){
 	       //Set up for two stage sessions - link provider selected in ac_prefs to the config file
 	       GList *oauth2_providers_list = oauth2_providers_get_list();
@@ -573,7 +560,6 @@ Session *pop3_session_new(PrefsAccount *account)
 	       debug_print("POP - Oauth2 name: %s Two stage POP: %i\n", oa2->oa2_name, oa2->oa2_two_stage_pop);
 	       session->two_stage_pop = oa2->oa2_two_stage_pop;
 	}
-#endif
 
 	return SESSION(session);
 }
@@ -901,12 +887,10 @@ static Pop3ErrorValue pop3_ok(Pop3Session *session, const gchar *msg)
 			ok = PS_ERROR;
 		} else {
 			switch (session->state) {
-#ifdef USE_GNUTLS
 			case POP3_STLS:
 				log_error(LOG_PROTOCOL, _("couldn't start STARTTLS session\n"));
 				ok = PS_ERROR;
 				break;
-#endif
 			case POP3_GETAUTH_USER:
 			case POP3_GETAUTH_PASS:
 				log_error(LOG_PROTOCOL, _("error occurred on authentication\n"));
@@ -964,42 +948,30 @@ static gint pop3_session_recv_msg(Session *session, const gchar *msg)
 	case POP3_READY:
 	case POP3_GREETING:
 		pop3_greeting_recv(pop3_session, body);
-#ifdef USE_GNUTLS
 		if (pop3_session->ac_prefs->ssl_pop == SSL_STARTTLS)
 			val = pop3_stls_send(pop3_session);
 		else
-#endif
-#ifdef USE_OAUTH2
 		if (pop3_session->ac_prefs->use_pop_auth && pop3_session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2)
 			val = pop3_getauth_oauth2_send(pop3_session);
 		else
-#endif
 			val = pop3_getauth_user_send(pop3_session);
 		break;
-#ifdef USE_GNUTLS
 	case POP3_STLS:
 		if (pop3_stls_recv(pop3_session) != PS_SUCCESS)
 			return -1;
-#ifdef USE_OAUTH2
 		else if (pop3_session->ac_prefs->use_pop_auth && pop3_session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2)
 			val = pop3_getauth_oauth2_send(pop3_session);
-#endif
 		else
 			val = pop3_getauth_user_send(pop3_session);
 		break;
-#endif
 	case POP3_GETAUTH_USER:
 		val = pop3_getauth_pass_send(pop3_session);
 		break;
-#ifdef USE_OAUTH2
 	case POP3_GETAUTH_USER_PHASE2:
 		val = pop3_getauth_oauth2_send_microsoft_2(pop3_session);
 		break;
-#endif
 	case POP3_GETAUTH_PASS:
-#ifdef USE_OAUTH2
 	case POP3_GETAUTH_OAUTH2:
-#endif
 		if (!pop3_session->pop_before_smtp)
 			val = pop3_getrange_stat_send(pop3_session);
 		else

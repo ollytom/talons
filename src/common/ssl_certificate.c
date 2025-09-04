@@ -16,12 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
-#ifdef USE_GNUTLS
 #include <gnutls/gnutls.h>
 #include <gnutls/x509.h>
 #include <gnutls/pkcs12.h>
@@ -99,7 +93,6 @@ char * readable_fingerprint(unsigned char *src, int len)
 	return ret;
 }
 
-#if USE_GNUTLS
 static gnutls_x509_crt_t x509_crt_copy(gnutls_x509_crt_t src)
 {
     int ret;
@@ -140,7 +133,6 @@ static gnutls_x509_crt_t x509_crt_copy(gnutls_x509_crt_t src)
     free(tmp.data);
     return dest;
 }
-#endif
 
 static SSLCertificate *ssl_certificate_new(gnutls_x509_crt_t x509_cert, const gchar *host, gushort port)
 {
@@ -1079,5 +1071,3 @@ gchar *ssl_certificate_get_subject_cn(SSLCertificate *cert)
 
 	return g_strdup(subject_cn);
 }
-
-#endif /* USE_GNUTLS */

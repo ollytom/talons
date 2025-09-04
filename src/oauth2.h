@@ -14,14 +14,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
-#ifdef USE_OAUTH2
+#ifndef _OAUTH2_H_
+#define _OAUTH2_H_
 
 #include <glib.h>
 
@@ -85,4 +82,4 @@ typedef struct _Oauth2Info  Oauth2Info;
 
 void account_read_oauth2_all (void);
 
-#endif	/* USE_OAUTH2 */
+#endif /* _OAUTH2_H_ */

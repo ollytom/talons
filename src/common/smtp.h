@@ -115,10 +115,7 @@ struct _SMTPSession
 	ESMTPFlag esmtp_flags;
 
 	void *dialog;
-
-#ifdef USE_GNUTLS
 	gboolean tls_init_done;
-#endif
 };
 
 Session *smtp_session_new	(void *prefs_account);

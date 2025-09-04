@@ -53,7 +53,6 @@
 #include "procmsg.h"
 #include "msgcache.h"
 #include "textview.h"
-#include "matcher_parser.h" /* CLAWS */
 #include "procheader.h"
 
 typedef struct _Children		Children;
@@ -693,20 +692,6 @@ static gboolean execute_filtering_actions(gchar *action, GSList *msglist)
 	if (NULL == (send = strrchr(sbegin, '}')))
 		return FALSE;
 	action_string = g_strndup(sbegin, send - sbegin);
-
-	action_list = matcher_parser_get_action_list(action_string);
-	if (action_list == NULL) {
-		gchar *tmp = g_strdup(action_string);
-
-		g_strstrip(tmp);
-		if (*tmp == '\0')
-			alertpanel_error(_("There is no filtering action set"));
-		else
-			alertpanel_error(_("Invalid filtering action(s):\n%s"), tmp);
-		g_free(action_string);
-		g_free(tmp);
-		return FALSE;
-	}
 	g_free(action_string);
 
 	if (summaryview) {

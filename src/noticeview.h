@@ -1,4 +1,4 @@
-/* 
+/*
  * Claws Mail -- a GTK based, lightweight, and fast e-mail client
  * Copyright (C) 2002-2012 Hiroyuki Yamamoto & The Claws Mail Team
  *
@@ -49,10 +49,10 @@ void		 noticeview_set_icon	(NoticeView	*noticeview,
 					 StockPixmap	 icon);
 void		 noticeview_set_text	(NoticeView	*noticeview,
 					 const gchar	*text);
-void		 noticeview_set_button_text 
+void		 noticeview_set_button_text
 					(NoticeView	*noticeview,
 					 const gchar    *text);
-void		 noticeview_set_2ndbutton_text 
+void		 noticeview_set_2ndbutton_text
 					(NoticeView	*noticeview,
 					 const gchar    *text);
 gboolean	 noticeview_is_visible  (NoticeView	*noticeview);

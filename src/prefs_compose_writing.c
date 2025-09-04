@@ -40,8 +40,6 @@
 
 #include "manage_window.h"
 
-#include "quote_fmt.h"
-#include "prefs_template.h"
 #include "alertpanel.h"
 #include "combobox.h"
 
@@ -217,7 +215,6 @@ static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *win
 	PACK_CHECK_BUTTON (vbox2, checkbtn_forward_as_attachment, "Forward as attachment");
 	text = "Keep the original 'From' header when redirecting";
 	PACK_CHECK_BUTTON (vbox2, checkbtn_redirect_keep_from, text);
-	g_free(text);
 
 	/* dnd insert or attach */
 	label_dnd_insert_or_attach = gtk_label_new (_("When dropping files into the Write window"));

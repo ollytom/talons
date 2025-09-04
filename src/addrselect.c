@@ -21,8 +21,6 @@
  * Address list item selection objects.
  */
 
-#include "config.h"
-
 #include <stdio.h>
 #include <glib.h>
 

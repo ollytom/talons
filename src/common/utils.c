@@ -28,11 +28,6 @@
  *  ?h=glib-2-30&id=9eb65dd3ed5e1a9638595cbe10699c7606376511
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include "defs.h"
 
 #include <glib.h>
@@ -1375,7 +1370,8 @@ const gchar *get_locale_dir(void)
 {
 	static gchar *loc_dir;
 	if (!loc_dir)
-		loc_dir = LOCALEDIR;
+		loc_dir = "/dev/null";
+		// loc_dir = LOCALEDIR;
 	return loc_dir;
 }
 

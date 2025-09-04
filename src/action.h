@@ -47,7 +47,7 @@ typedef enum
 
 ActionType action_get_type	(const gchar	*action_str);
 
-void actions_execute		(gpointer	data, 
+void actions_execute		(gpointer	data,
 				 guint		action_nb,
 				 GtkWidget	*widget,
 				 gint		source);

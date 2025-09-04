@@ -14,13 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
-
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
 
 #include <glib.h>
 #include <string.h>
@@ -62,7 +57,7 @@ gchar *unmime_header(const gchar *encoded_str, gboolean addr_field)
 			g_string_append(outbuf, p);
 			break;
 		}
-		
+
 		quote_p = p;
 		while ((quote_p = strchr(quote_p, '"')) != NULL) {
 			if (quote_p && quote_p < eword_begin_p) {
@@ -156,7 +151,7 @@ gchar *unmime_header(const gchar *encoded_str, gboolean addr_field)
 
 		p = eword_end_p + 2;
 	}
-	
+
 	out_len = outbuf->len;
 	out_str = g_string_free(outbuf, FALSE);
 

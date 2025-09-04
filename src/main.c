@@ -16,12 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
-#include "defs.h"
+#include "common/defs.h"
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -56,7 +51,6 @@
 #include "prefs_ext_prog.h"
 #include "prefs_message.h"
 #include "prefs_receive.h"
-#include "prefs_quote.h"
 #include "prefs_summaries.h"
 #include "prefs_themes.h"
 #include "prefs_other.h"
@@ -88,21 +82,14 @@
 #include "matcher.h"
 #include "hooks.h"
 #include "menu.h"
-#include "quicksearch.h"
-#include "advsearch.h"
 #include "avatars.h"
 #include "passwordstore.h"
 #include "file-utils.h"
-
-#ifdef USE_OAUTH2
 #include "oauth2.h"
-#endif
 
-#include "imap-thread.h"
+#include "etpan/imap-thread.h"
 #include "stock_pixmap.h"
-#ifdef USE_GNUTLS
-#  include "ssl.h"
-#endif
+#include "ssl.h"
 
 #include "version.h"
 
@@ -352,18 +339,14 @@ static void main_dump_features_list(gboolean show_debug_only)
 		debug_print("Compiled-in features:\n");
 	else
 		g_print("Compiled-in features:\n");
-#if USE_GNUTLS
 	if (show_debug_only)
 		debug_print(" GnuTLS\n");
 	else
 		g_print(" GnuTLS\n");
-#endif
-#if HAVE_ICONV
 	if (show_debug_only)
 		debug_print(" iconv\n");
 	else
 		g_print(" iconv\n");
-#endif
 	if (show_debug_only)
 		debug_print(" libetpan %d.%d\n", LIBETPAN_VERSION_MAJOR, LIBETPAN_VERSION_MINOR);
 	else
@@ -424,7 +407,7 @@ int main(int argc, char *argv[])
 	CHDIR_RETURN_VAL_IF_FAIL(get_home_dir(), 1);
 
 	if (!is_dir_exist(get_rc_dir())) {
-		if (copy_dir(SYSCONFDIR "/skel/.claws-mail", get_rc_dir()) < 0) {
+		if (copy_dir("/etc/skel/.claws-mail", get_rc_dir()) < 0) {
 			if (!is_dir_exist(get_rc_dir()) && make_dir(get_rc_dir()) < 0) {
 				exit(1);
 			}
@@ -476,13 +459,11 @@ int main(int argc, char *argv[])
 	prefs_ext_prog_init();
 	prefs_wrapping_init();
 	prefs_compose_writing_init();
-	prefs_quote_init();
 	prefs_summaries_init();
 	prefs_message_init();
 	prefs_other_init();
 	prefs_receive_init();
 	prefs_send_init();
-	matcher_init();
 
 	codeconv_set_allow_jisx0201_kana(prefs_common.allow_jisx0201_kana);
 	codeconv_set_broken_are_utf8(prefs_common.broken_are_utf8);
@@ -518,9 +499,7 @@ int main(int argc, char *argv[])
 
 	prefs_account_init();
 	account_read_config_all();
-#ifdef USE_OAUTH2
 	account_read_oauth2_all();
-#endif
 
 	imap_main_init(prefs_common.skip_ssl_cert_check);
 	imap_main_set_timeout(prefs_common.io_timeout_secs);
@@ -561,9 +540,6 @@ int main(int argc, char *argv[])
 	folder_set_missing_folders();
 	folderview_set(folderview);
 
-	prefs_matcher_read_config();
-	quicksearch_set_search_strings(mainwin->summaryview->quicksearch);
-
 	/* make one all-folder processing before using claws */
 	main_window_cursor_wait(mainwin);
 	folder_func_to_all_folders(initial_processing, (gpointer *)mainwin);
@@ -591,11 +567,6 @@ int main(int argc, char *argv[])
 	prefs_toolbar_init();
 
 	num_folder_class = g_list_length(folder_get_list());
-
-	if (g_list_length(folder_get_list()) != num_folder_class) {
-		debug_print("new folders loaded, reloading processing rules\n");
-		prefs_matcher_read_config();
-	}
 
 	if (never_ran) {
 		prefs_common_write_config();
@@ -767,7 +738,6 @@ static void exit_claws(MainWindow *mainwin)
 
 	main_window_destroy_all();
 
-	matcher_done();
 	prefs_toolbar_done();
 	avatars_done();
 
@@ -776,7 +746,6 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_ext_prog_done();
 	prefs_wrapping_done();
 	prefs_compose_writing_done();
-	prefs_quote_done();
 	prefs_summaries_done();
 	prefs_message_done();
 	prefs_other_done();
@@ -1077,7 +1046,6 @@ static void parse_cmd_opt(int argc, char *argv[])
 			g_print("%s\n", _("  --help -h              display this help"));
 			g_print("%s\n", _("  --version -v           output version information"));
 			g_print("%s\n", _("  --version-full -V      output version and built-in features information"));
-			g_print("%s\n", _("  --config-dir           output configuration directory"));
 			g_print("%s\n", _("  --alternate-config-dir directory\n"
 			                  "                         use specified configuration directory"));
 			g_print("%s\n", _("  --geometry -geometry [WxH][+X+Y]\n"
@@ -1085,9 +1053,6 @@ static void parse_cmd_opt(int argc, char *argv[])
 
 			g_free(base);
 			exit(1);
-		} else if (!strcmp(argv[i], "--config-dir")) {
-			g_print(RC_DIR "\n");
-			exit(0);
 		} else if (!strcmp(argv[i], "--alternate-config-dir")) {
 		    if (i+1 < argc) {
 				set_rc_dir(argv[i+1]);
@@ -1645,84 +1610,6 @@ static void lock_socket_input_cb(gpointer data,
 	} else if (!STRNCMP(buf, "import ")) {
 		const gchar *mbox_file = buf + 7;
 		mainwindow_import_mbox(mbox_file);
-	} else if (!STRNCMP(buf, "search ")) {
-		FolderItem* folderItem = NULL;
-		GSList *messages = NULL;
-		gchar *folder_name = NULL;
-		gchar *request = NULL;
-		AdvancedSearch *search;
-		gboolean recursive;
-		AdvancedSearchType searchType = ADVANCED_SEARCH_EXTENDED;
-
-		search = advsearch_new();
-
-		folder_name = g_strdup(buf+7);
-		strretchomp(folder_name);
-
-		if (fd_gets(sock, buf, sizeof(buf) - 1) <= 0)
-			goto search_exit;
-		buf[sizeof(buf) - 1] = '\0';
-
-		switch (toupper(buf[0])) {
-		case 'S': searchType = ADVANCED_SEARCH_SUBJECT; break;
-		case 'F': searchType = ADVANCED_SEARCH_FROM; break;
-		case 'T': searchType = ADVANCED_SEARCH_TO; break;
-		case 'M': searchType = ADVANCED_SEARCH_MIXED; break;
-		case 'G': searchType = ADVANCED_SEARCH_TAG; break;
-		case 'E': searchType = ADVANCED_SEARCH_EXTENDED; break;
-		}
-
-		if (fd_gets(sock, buf, sizeof(buf) - 1) <= 0)
-			goto search_exit;
-
-		buf[sizeof(buf) - 1] = '\0';
-		request = g_strdup(buf);
-		strretchomp(request);
-
-		recursive = TRUE;
-		if (fd_gets(sock, buf, sizeof(buf) - 1) > 0)
-			recursive = buf[0] != '0';
-
-		buf[sizeof(buf) - 1] = '\0';
-
-		debug_print("search: %s %i %s %i\n", folder_name, searchType, request, recursive);
-
-		folderItem = folder_find_item_from_identifier(folder_name);
-
-		if (folderItem == NULL) {
-			debug_print("Unknown folder item : '%s', searching folder\n",folder_name);
-			Folder* folder = folder_find_from_path(folder_name);
-			if (folder != NULL)
-				folderItem = FOLDER_ITEM(folder->node->data);
-			else
-				debug_print("Unknown folder: '%s'\n",folder_name);
-		} else {
-			debug_print("%s %s\n",folderItem->name, folderItem->path);
-		}
-
-		if (folderItem != NULL) {
-			advsearch_set(search, searchType, request);
-			advsearch_search_msgs_in_folders(search, &messages, folderItem, recursive);
-		} else {
-			g_print("Folder '%s' not found.\n'", folder_name);
-		}
-
-		GSList *cur;
-		for (cur = messages; cur != NULL; cur = cur->next) {
-			MsgInfo* msg = (MsgInfo *)cur->data;
-			gchar *file = procmsg_get_message_file_path(msg);
-			CM_FD_WRITE_ALL(file);
-			CM_FD_WRITE_ALL("\n");
-			g_free(file);
-		}
-		CM_FD_WRITE_ALL(".\n");
-
-search_exit:
-		g_free(folder_name);
-		g_free(request);
-		advsearch_free(search);
-		if (messages != NULL)
-			procmsg_msg_list_free(messages);
 	} else if (!STRNCMP(buf, "exit")) {
 		if (prefs_common.clean_on_exit && !prefs_common.ask_on_clean) {
 			procmsg_empty_all_trash();

@@ -109,7 +109,7 @@ struct _PrivacySystem {
 
 	gboolean	   can_sign;
 	gboolean	 (*sign)		(MimeInfo *mimeinfo,
-						 PrefsAccount *account, 
+						 PrefsAccount *account,
 						 const gchar *from_addr);
 
 	gboolean	   can_encrypt;

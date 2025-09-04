@@ -5,8 +5,6 @@
 *.loT
 *.o
 *.swp
-Makefile
-Makefile.in
 /ChangeLog
 /*.tar.gz
 /*.tar.bz2
@@ -117,5 +115,5 @@ Makefile.in
 /TAGS
 /version
 .zig-cache
+zig-out
 src/fence/zig-out/
-*~

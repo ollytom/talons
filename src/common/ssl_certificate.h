@@ -1,6 +1,6 @@
 /*
  * Claws Mail -- a GTK based, lightweight, and fast e-mail client
- * Copyright (C) 1999-2012 Colin Leroy <colin@colino.net> 
+ * Copyright (C) 1999-2012 Colin Leroy <colin@colino.net>
  * and the Claws Mail team
  *
  * This program is free software; you can redistribute it and/or modify
@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __SSL_CERTIFICATE_H__
@@ -25,7 +25,6 @@
 #include "claws-features.h"
 #endif
 
-#ifdef USE_GNUTLS
 #include <gnutls/gnutls.h>
 #include <gnutls/x509.h>
 
@@ -66,11 +65,10 @@ char *ssl_certificate_check_signer (SSLCertificate *cert, guint status);
 
 gnutls_x509_crt_t ssl_certificate_get_x509_from_pem_file(const gchar *file);
 gnutls_x509_privkey_t ssl_certificate_get_pkey_from_pem_file(const gchar *file);
-void ssl_certificate_get_x509_and_pkey_from_p12_file(const gchar *file, 
+void ssl_certificate_get_x509_and_pkey_from_p12_file(const gchar *file,
 			const gchar *password, gnutls_x509_crt_t *crt, gnutls_x509_privkey_t *key);
 size_t gnutls_i2d_X509(gnutls_x509_crt_t x509_cert, unsigned char **output);
 size_t gnutls_i2d_PrivateKey(gnutls_x509_privkey_t pkey, unsigned char **output);
 gboolean ssl_certificate_check_subject_cn(SSLCertificate *cert);
 gchar *ssl_certificate_get_subject_cn(SSLCertificate *cert);
-#endif /* USE_GNUTLS */
 #endif /* SSL_CERTIFICATE_H */

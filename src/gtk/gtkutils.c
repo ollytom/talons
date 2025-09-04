@@ -16,17 +16,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
-#include "gtk/gtksctree.h"
+#include "gtksctree.h"
 #include <stdlib.h>
 #include <stdarg.h>
 #include <sys/stat.h>
@@ -1284,7 +1279,6 @@ claws_input_add    (gint	      source,
   return result;
 }
 
-#if defined USE_GNUTLS
 static void auto_configure_done(const gchar *hostname, gint port, gboolean ssl, AutoConfigureData *data)
 {
 	gboolean smtp = strcmp(data->tls_service, "submission") == 0 ? TRUE : FALSE;
@@ -1465,7 +1459,6 @@ gboolean auto_configure_service_sync(const gchar *service, const gchar *domain, 
 	g_object_unref(resolver);
 	return result;
 }
-#endif
 
 gboolean gtkut_pointer_is_grabbed(GtkWidget *widget)
 {

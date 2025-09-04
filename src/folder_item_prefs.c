@@ -225,8 +225,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 	tmp_prefs.render_html                   = src->prefs->render_html;
 	tmp_prefs.skip_on_goto_unread_or_new    = src->prefs->skip_on_goto_unread_or_new;
 
-	prefs_matcher_read_config();
-
 	tmp_prefs.processing			= tmp_prop_list;
 
 	tmp_prefs.enable_default_from		= src->prefs->enable_default_from;
@@ -253,7 +251,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 
 	*dest->prefs = tmp_prefs;
 	folder_item_prefs_save_config(dest);
-	prefs_matcher_write_config();
 
 	dest->collapsed = src->collapsed;
 	dest->thread_collapsed = src->thread_collapsed;

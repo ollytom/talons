@@ -217,7 +217,6 @@ claws_input_add    (gint	      source,
 	}									\
 }
 
-#if defined USE_GNUTLS
 typedef struct _AutoConfigureData {
 	const gchar *ssl_service;
 	const gchar *tls_service;
@@ -242,7 +241,6 @@ typedef struct _AutoConfigureData {
 
 void auto_configure_service(AutoConfigureData *data);
 gboolean auto_configure_service_sync(const gchar *service, const gchar *domain, gchar **srvhost, guint16 *srvport);
-#endif
 
 gboolean gtkut_pointer_is_grabbed(GtkWidget *widget);
 

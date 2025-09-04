@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <glib/gi18n.h>
 
@@ -48,9 +43,7 @@
 #include "socket.h"
 #include "utils.h"
 #include "log.h"
-#ifdef USE_GNUTLS
-#  include "ssl.h"
-#endif
+#include "ssl.h"
 
 #if USE_GIO
 #error USE_GIO is currently not supported
@@ -109,7 +102,6 @@ static guint io_timeout = 60;
 
 static GList *sock_connect_data_list = NULL;
 
-#ifdef USE_GNUTLS
 static gboolean ssl_sock_prepare	(GSource	*source,
 					 gint		*timeout);
 static gboolean ssl_sock_check		(GSource	*source);
@@ -124,7 +116,6 @@ GSourceFuncs ssl_watch_funcs = {
 	NULL,
 	NULL
 };
-#endif
 
 static gint sock_connect_with_timeout	(gint			 sock,
 					 const struct sockaddr	*serv_addr,
@@ -371,7 +362,6 @@ gboolean sock_is_nonblocking_mode(SockInfo *sock)
 }
 
 
-#ifdef USE_GNUTLS
 static gboolean ssl_sock_prepare(GSource *source, gint *timeout)
 {
 	*timeout = 1;
@@ -415,7 +405,6 @@ static gboolean ssl_sock_dispatch(GSource *source, GSourceFunc callback,
 
 	return sock->callback(sock, sock->condition, sock->data);
 }
-#endif
 
 static gboolean sock_watch_cb(GIOChannel *source, GIOCondition condition,
 			      gpointer data)
@@ -438,9 +427,7 @@ guint sock_add_watch(SockInfo *sock, GIOCondition condition, SockFunc func,
 	sock->condition = condition;
 	sock->data = data;
 
-#ifdef USE_GNUTLS
-	if (sock->ssl)
-	{
+	if (sock->ssl) {
 		GSource *source = g_source_new(&ssl_watch_funcs,
 					       sizeof(SockSource));
 		((SockSource *) source)->sock = sock;
@@ -450,7 +437,6 @@ guint sock_add_watch(SockInfo *sock, GIOCondition condition, SockFunc func,
 		g_source_unref (source); /* Refcount back down to 1 */
 		return sock->g_source;
 	}
-#endif
 
 	return g_io_add_watch(sock->sock_ch, condition, sock_watch_cb, sock);
 }
@@ -1090,7 +1076,6 @@ static gint fd_read(gint fd, gchar *buf, gint len)
 	return read(fd, buf, len);
 }
 
-#if USE_GNUTLS
 static gint ssl_read(gnutls_session_t ssl, gchar *buf, gint len)
 {
 	gint r;
@@ -1131,7 +1116,6 @@ static gint ssl_read(gnutls_session_t ssl, gchar *buf, gint len)
 	}
 
 }
-#endif
 
 gint sock_read(SockInfo *sock, gchar *buf, gint len)
 {
@@ -1139,11 +1123,9 @@ gint sock_read(SockInfo *sock, gchar *buf, gint len)
 
 	cm_return_val_if_fail(sock != NULL, -1);
 
-#ifdef USE_GNUTLS
 	if (sock->ssl)
 		ret = ssl_read(sock->ssl, buf, len);
 	else
-#endif
 		ret = fd_read(sock->sock, buf, len);
 
 	if (ret < 0)
@@ -1158,7 +1140,6 @@ gint fd_write(gint fd, const gchar *buf, gint len)
 	return write(fd, buf, len);
 }
 
-#if USE_GNUTLS
 static gint ssl_write(gnutls_session_t ssl, const gchar *buf, gint len)
 {
 	gint ret;
@@ -1180,19 +1161,15 @@ static gint ssl_write(gnutls_session_t ssl, const gchar *buf, gint len)
 	}
 }
 
-#endif
-
 gint sock_write(SockInfo *sock, const gchar *buf, gint len)
 {
 	gint ret;
 
 	cm_return_val_if_fail(sock != NULL, -1);
 
-#ifdef USE_GNUTLS
 	if (sock->ssl)
 		ret = ssl_write(sock->ssl, buf, len);
 	else
-#endif
 		ret = fd_write(sock->sock, buf, len);
 
 	if (ret < 0)
@@ -1222,7 +1199,6 @@ gint fd_write_all(gint fd, const gchar *buf, gint len)
 	return wrlen;
 }
 
-#ifdef USE_GNUTLS
 static gint ssl_write_all(gnutls_session_t ssl, const gchar *buf, gint len)
 {
 	gint n, wrlen = 0;
@@ -1238,7 +1214,6 @@ static gint ssl_write_all(gnutls_session_t ssl, const gchar *buf, gint len)
 
 	return wrlen;
 }
-#endif
 
 gint sock_write_all(SockInfo *sock, const gchar *buf, gint len)
 {
@@ -1246,11 +1221,9 @@ gint sock_write_all(SockInfo *sock, const gchar *buf, gint len)
 
 	cm_return_val_if_fail(sock != NULL, -1);
 
-#ifdef USE_GNUTLS
 	if (sock->ssl)
 		ret = ssl_write_all(sock->ssl, buf, len);
 	else
-#endif
 		ret = fd_write_all(sock->sock, buf, len);
 
 	if (ret < 0)
@@ -1278,13 +1251,11 @@ gint sock_close(SockInfo *sock, gboolean close_fd)
 	if (sock->sock_ch)
 		g_io_channel_unref(sock->sock_ch);
 
-#ifdef USE_GNUTLS
 	if (sock->ssl)
 		ssl_done_socket(sock);
 	if (sock->g_source != 0 && g_main_context_find_source_by_id(NULL, sock->g_source) != NULL)
 		g_source_remove(sock->g_source);
 	sock->g_source = 0;
-#endif
 	if (close_fd)
 		ret = close(sock->sock);
 

@@ -16,7 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "defs.h"
 
 #include <glib.h>
@@ -31,7 +30,6 @@
 #include "mainwindow.h"
 #include "folderview.h"
 #include "summaryview.h"
-#include "summary_search.h"
 #include "inputdialog.h"
 #include "manage_window.h"
 #include "alertpanel.h"
@@ -51,7 +49,6 @@
 #include "hooks.h"
 #include "folderutils.h"
 #include "prefs_folder_column.h"
-#include "quicksearch.h"
 #include "manual.h"
 #include "log.h"
 #include "gtkcmctree.h"
@@ -181,8 +178,6 @@ static void folderview_empty_trash_cb	(GtkAction 	*action,
 static void folderview_send_queue_cb	(GtkAction 	*action,
 					 gpointer	 data);
 
-static void folderview_search_cb	(GtkAction 	*action,
-					 gpointer	 data);
 static void folderview_startup_folder_cb(GtkAction	*action,
 					 gpointer	 data);
 
@@ -243,7 +238,6 @@ static GtkActionEntry folderview_common_popup_entries[] =
 	{"FolderViewPopup/MarkAllReadRec",   NULL, N_("Mark all read recursi_vely"), NULL, NULL, G_CALLBACK(mark_all_read_recursive_cb) },
 	{"FolderViewPopup/MarkAllUnreadRec", NULL, N_("Mark all unread recursi_vely"), NULL, NULL, G_CALLBACK(mark_all_unread_recursive_cb) },
 	{"FolderViewPopup/---",              NULL, "---", NULL, NULL , NULL},
-	{"FolderViewPopup/SearchFolder",     NULL, N_("_Search folder..."), NULL, NULL, G_CALLBACK(folderview_search_cb) },
 	{"FolderViewPopup/OpenFolder",       NULL, N_("Open on start-up"), NULL, NULL, G_CALLBACK(folderview_startup_folder_cb) },
 	{"FolderViewPopup/Properties",       NULL, N_("_Properties..."), NULL, NULL, G_CALLBACK(folderview_property_cb) },
 	{"FolderViewPopup/EmptyTrash",       NULL, N_("Empty _trash..."), NULL, NULL, G_CALLBACK(folderview_empty_trash_cb) },
@@ -1733,8 +1727,7 @@ static gboolean folderview_update_item_claws(gpointer source, gpointer data)
 		if ((update_info->update_flags & F_ITEM_UPDATE_CONTENT) &&
 		     update_info->item == folderview->summaryview->folder_item &&
 		     update_info->item != NULL)
-			if (!quicksearch_has_sat_predicate(folderview->summaryview->quicksearch))
-				summary_show(folderview->summaryview, update_info->item, FALSE);
+			summary_show(folderview->summaryview, update_info->item, FALSE);
 	}
 
 	return FALSE;
@@ -1883,7 +1876,6 @@ static void folderview_set_sens_and_popup_menu(FolderView *folderview, gint row,
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "MarkAllReadRec", "FolderViewPopup/MarkAllReadRec", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "MarkAllUnreadRec", "FolderViewPopup/MarkAllUnreadRec", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "Separator1", "FolderViewPopup/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "SearchFolder", "FolderViewPopup/SearchFolder", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "OpenFolder", "FolderViewPopup/OpenFolder", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(ui_manager, "/Popup/FolderViewPopup", "Properties", "FolderViewPopup/Properties", GTK_UI_MANAGER_MENUITEM)
 
@@ -1915,8 +1907,6 @@ static void folderview_set_sens_and_popup_menu(FolderView *folderview, gint row,
 		(item->unread_msgs != (item->total_msgs - item->ignored_msgs)));
 	SET_SENS("FolderViewPopup/MarkAllReadRec", folderview_have_unread_children(folderview,item));
 	SET_SENS("FolderViewPopup/MarkAllUnreadRec", folderview_have_read_children(folderview,item));
-	SET_SENS("FolderViewPopup/SearchFolder", item->total_msgs > 0 &&
-		 folderview->selected == folderview->opened);
 	SET_SENS("FolderViewPopup/Properties", TRUE);
 
 	if (item->node->parent != NULL) {
@@ -2039,9 +2029,6 @@ static gboolean folderview_key_pressed(GtkWidget *widget, GdkEventKey *event,
 	FolderItem *item;
 
 	if (!event) return FALSE;
-
-	if (quicksearch_has_focus(folderview->summaryview->quicksearch))
-		return FALSE;
 
 	switch (event->keyval) {
 	case GDK_KEY_Right:
@@ -2473,12 +2460,6 @@ static void folderview_send_queue_cb(GtkAction *action, gpointer data)
 			g_free(errstr);
 		}
 	}
-}
-
-static void folderview_search_cb(GtkAction *action, gpointer data)
-{
-	FolderView *folderview = (FolderView *)data;
-	summary_search(folderview->summaryview);
 }
 
 static void folderview_startup_folder_cb(GtkAction *action, gpointer data)

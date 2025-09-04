@@ -17,11 +17,6 @@
  *
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include "defs.h"
 
 #include <glib.h>
@@ -67,10 +62,8 @@ void session_init(Session *session, const void *prefs_account, gboolean is_smtp)
 	session->sock = NULL;
 	session->server = NULL;
 	session->port = 0;
-#ifdef USE_GNUTLS
 	session->ssl_type = SSL_NONE;
 	session->use_tls_sni = TRUE;
-#endif
 	session->nonblocking = TRUE;
 	session->state = SESSION_READY;
 	session->last_access_time = time(NULL);
@@ -171,7 +164,6 @@ static gint session_connect_cb(SockInfo *sock, gpointer data)
 	sock->is_smtp = session->is_smtp;
 	sock->ssl_cert_auto_accept = TRUE;
 
-#ifdef USE_GNUTLS
 	sock->gnutls_priority = session->gnutls_priority;
 	sock->use_tls_sni = session->use_tls_sni;
 
@@ -186,7 +178,6 @@ static gint session_connect_cb(SockInfo *sock, gpointer data)
 			return -1;
 		}
 	}
-#endif
 
 	/* we could have gotten a timeout while waiting for user input in
 	 * an SSL certificate dialog */
@@ -242,9 +233,7 @@ void session_destroy(Session *session)
 	g_byte_array_free(session->read_data_buf, TRUE);
 	g_free(session->read_data_terminator);
 	g_free(session->write_buf);
-#ifdef USE_GNUTLS
 	g_free(session->gnutls_priority);
-#endif
 	g_date_time_unref(session->tv_prev);
 	debug_print("session (%p): destroyed\n", session);
 
@@ -378,7 +367,6 @@ static gint session_close(Session *session)
 	return 0;
 }
 
-#ifdef USE_GNUTLS
 gint session_start_tls(Session *session)
 {
 	gboolean nb_mode;
@@ -411,7 +399,6 @@ gint session_start_tls(Session *session)
 
 	return 0;
 }
-#endif
 
 gint session_send_msg(Session *session, const gchar *msg)
 {

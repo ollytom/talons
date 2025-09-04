@@ -17,11 +17,6 @@
  *
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #ifdef ENABLE_NLS
 #include <glib/gi18n.h>
@@ -39,12 +34,8 @@
 static void smtp_session_destroy(Session *session);
 
 static gint smtp_auth(SMTPSession *session);
-#ifdef USE_GNUTLS
 static gint smtp_starttls(SMTPSession *session);
-#endif
-#ifdef USE_OAUTH2
 static gint smtp_auth_oauth2(SMTPSession *session);
-#endif
 static gint smtp_auth_login(SMTPSession *session);
 static gint smtp_auth_plain(SMTPSession *session);
 
@@ -80,10 +71,7 @@ Session *smtp_session_new(void *prefs_account)
 	SESSION(session)->destroy          = smtp_session_destroy;
 
 	session->state                     = SMTP_READY;
-
-#ifdef USE_GNUTLS
 	session->tls_init_done             = FALSE;
-#endif
 
 	session->hostname                  = NULL;
 	session->user                      = NULL;
@@ -168,13 +156,13 @@ static gint smtp_auth(SMTPSession *session)
                  &&
 		  (session->avail_auth_type & SMTPAUTH_PLAIN) != 0)
 		smtp_auth_plain(session);
-#ifdef USE_OAUTH2
+
 	else if ((session->forced_auth_type == SMTPAUTH_OAUTH2
 		  || session->forced_auth_type == 0)
                  &&
 		  (session->avail_auth_type & SMTPAUTH_OAUTH2) != 0)
 		smtp_auth_oauth2(session);
-#endif
+
 	else if (session->forced_auth_type == 0) {
 		log_warning(LOG_PROTOCOL, _("No SMTP AUTH method available\n"));
 		return SM_AUTHFAIL;
@@ -271,10 +259,8 @@ static gint smtp_ehlo_recv(SMTPSession *session, const gchar *msg)
 				session->avail_auth_type |= SMTPAUTH_PLAIN;
 			if (strcasestr(p, "LOGIN"))
 				session->avail_auth_type |= SMTPAUTH_LOGIN;
-#ifdef USE_GNUTLS
 			if (strcasestr(p, "XOAUTH2"))
 				session->avail_auth_type |= SMTPAUTH_OAUTH2;
-#endif
 		}
 		if (g_ascii_strncasecmp(p, "SIZE", 4) == 0) {
 			p += 5;
@@ -296,7 +282,6 @@ static gint smtp_ehlo_recv(SMTPSession *session, const gchar *msg)
 	return SM_ERROR;
 }
 
-#ifdef USE_GNUTLS
 static gint smtp_starttls(SMTPSession *session)
 {
 	session->state = SMTP_STARTTLS;
@@ -307,7 +292,6 @@ static gint smtp_starttls(SMTPSession *session)
 
 	return SM_OK;
 }
-#endif
 
 static gint smtp_auth_plain(SMTPSession *session)
 {
@@ -337,7 +321,6 @@ static gint smtp_auth_plain(SMTPSession *session)
 	return SM_OK;
 }
 
-#ifdef USE_OAUTH2
 static gint smtp_auth_oauth2(SMTPSession *session)
 {
 	gchar buf[MESSAGEBUFSIZE], *b64buf, *out;
@@ -366,7 +349,6 @@ static gint smtp_auth_oauth2(SMTPSession *session)
 
 	return SM_OK;
 }
-#endif
 
 static gint smtp_auth_login(SMTPSession *session)
 {
@@ -486,9 +468,7 @@ static gint smtp_session_recv_msg(Session *session, const gchar *msg)
 	case SMTP_AUTH_PLAIN:
 	case SMTP_AUTH_LOGIN_USER:
 	case SMTP_AUTH_LOGIN_PASS:
-#ifdef USE_GNUTLS
         case SMTP_AUTH_OAUTH2:
-#endif
 	default:
 		log_print(LOG_PROTOCOL, "SMTP< %s\n", msg);
 		break;
@@ -539,12 +519,8 @@ static gint smtp_session_recv_msg(Session *session, const gchar *msg)
 	case SMTP_READY:
 		if (strstr(msg, "ESMTP"))
 			smtp_session->is_esmtp = TRUE;
-#ifdef USE_GNUTLS
 		if (smtp_session->user || session->ssl_type != SSL_NONE ||
 		    smtp_session->is_esmtp)
-#else
-		if (smtp_session->user || smtp_session->is_esmtp)
-#endif
 			ret = smtp_ehlo(smtp_session);
 		else
 			ret = smtp_helo(smtp_session);
@@ -567,29 +543,24 @@ static gint smtp_session_recv_msg(Session *session, const gchar *msg)
 			smtp_session->error_val = SM_ERROR;
 			return -1;
 		}
-#ifdef USE_GNUTLS
 		if (session->ssl_type == SSL_STARTTLS &&
 		    smtp_session->tls_init_done == FALSE) {
 			ret = smtp_starttls(smtp_session);
 			break;
 		}
-#endif
 		if (smtp_session->user) {
 			if (smtp_auth(smtp_session) != SM_OK) {
-#ifdef USE_GNUTLS
 				if (session->ssl_type == SSL_NONE
 				&&  smtp_session->tls_init_done == FALSE
 				&&  (smtp_session->avail_auth_type & SMTPAUTH_TLS_AVAILABLE))
 					ret = smtp_starttls(smtp_session);
 				else
-#endif
 					ret = smtp_from(smtp_session);
 			}
 		} else
 			ret = smtp_from(smtp_session);
 		break;
 	case SMTP_STARTTLS:
-#ifdef USE_GNUTLS
 		if (session_start_tls(session) < 0) {
 			log_warning(LOG_PROTOCOL, _("couldn't start STARTTLS session\n"));
 			smtp_session->state = SMTP_ERROR;
@@ -598,7 +569,6 @@ static gint smtp_session_recv_msg(Session *session, const gchar *msg)
 		}
 		smtp_session->tls_init_done = TRUE;
 		ret = smtp_ehlo(smtp_session);
-#endif
 		break;
 	case SMTP_AUTH:
 		ret = smtp_auth_recv(smtp_session, msg);
@@ -608,9 +578,7 @@ static gint smtp_session_recv_msg(Session *session, const gchar *msg)
 		break;
 	case SMTP_AUTH_PLAIN:
 	case SMTP_AUTH_LOGIN_PASS:
-#ifdef USE_GNUTLS
         case SMTP_AUTH_OAUTH2:
-#endif
 	case SMTP_FROM:
 		if (smtp_session->cur_to)
 			ret = smtp_rcpt(smtp_session);

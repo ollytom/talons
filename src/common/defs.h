@@ -29,7 +29,7 @@
 #define DRAFT_DIR		"draft"
 #define TRASH_DIR		"trash"
 #define TAGS_DIR		"tagsdb"
-#define RC_DIR			CFG_RC_DIR
+#define RC_DIR			".claws-mail"
 #define OLD_GTK2_RC_DIR		".sylpheed-claws"
 #define OLDER_GTK2_RC_DIR	".sylpheed-gtk2"
 #define OLD_GTK1_RC_DIR		".sylpheed"

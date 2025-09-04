@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __INC_H__
@@ -27,7 +27,7 @@
 #include <glib.h>
 
 #include "mainwindow.h"
-#include "progressdialog.h"
+#include "gtk/progressdialog.h"
 #include "prefs_account.h"
 #include "session.h"
 #include "pop.h"

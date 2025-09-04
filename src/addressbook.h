@@ -40,7 +40,7 @@ gboolean addressbook_add_contact	( const gchar *name,
 					  const gchar *address,
 					  const gchar *remarks,
 					  GdkPixbuf *picture );
-					  
+
 gchar *addressbook_folder_selection( const gchar *folderpath);
 gboolean addressbook_peek_folder_exists( gchar *folderpath,
 										 AddressDataSource **book,

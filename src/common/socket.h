@@ -28,9 +28,7 @@
 
 typedef struct _SockInfo	SockInfo;
 
-#ifdef USE_GNUTLS
-#  include "ssl.h"
-#endif
+#include "ssl.h"
 
 typedef enum
 {
@@ -51,18 +49,11 @@ typedef gboolean (*SockFunc)		(SockInfo	*sock,
 struct _SockInfo
 {
 	gint sock;
-#if USE_GNUTLS
 	gnutls_session_t ssl;
 	gnutls_certificate_credentials_t xcred;
-#if GNUTLS_VERSION_NUMBER < 0x030000
-	gnutls_x509_crt_t client_crt;
-	gnutls_x509_privkey_t client_key;
-#else
 	gnutls_pcert_st client_crt;
 	gnutls_privkey_t client_key;
-#endif /* GNUTLS_VERSION_NUMBER < 0x030000 */
 	gchar *gnutls_priority;
-#endif
 	guint g_source;
 	GIOChannel *sock_ch;
 

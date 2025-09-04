@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <glib/gi18n.h>
 #include "imap-thread.h"
@@ -541,7 +536,7 @@ int imap_threaded_connect(Folder * folder, const char * server, int port)
 
 	return result.error;
 }
-#ifdef USE_GNUTLS
+
 static void connect_ssl_run(struct etpan_thread_op * op)
 {
 	int r;
@@ -602,7 +597,7 @@ int imap_threaded_connect_ssl(Folder * folder, const char * server, int port)
 
 	return result.error;
 }
-#endif
+
 struct capa_param {
 	mailimap * imap;
 };
@@ -888,10 +883,8 @@ static void login_run(struct etpan_thread_op * op)
 			param->type, NULL, NULL, NULL,
 			NULL, param->login,
 			param->password, NULL);
-#ifdef USE_OAUTH2
 	else if (!strcmp(param->type, "XOAUTH2"))
                 r = mailimap_oauth2_authenticate(param->imap, param->login, param->password);
-#endif
 	else
 		r = mailimap_authenticate(param->imap,
 			param->type, NULL, NULL, NULL,
@@ -1084,7 +1077,6 @@ int imap_threaded_noop(Folder * folder, unsigned int * p_exists,
 	return result.error;
 }
 
-#ifdef USE_GNUTLS
 struct starttls_result {
 	int error;
 };
@@ -1158,7 +1150,6 @@ int imap_threaded_starttls(Folder * folder, const gchar *host, int port)
 	}
 	return result.error;
 }
-#endif
 
 struct create_param {
 	mailimap * imap;

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __SSL_H__
@@ -30,14 +30,11 @@ typedef enum {
 	SSL_STARTTLS
 } SSLType;
 
-#ifdef USE_GNUTLS
 #include <glib.h>
 
 #include <gnutls/gnutls.h>
 #include <gnutls/x509.h>
-#if GNUTLS_VERSION_NUMBER >= 0x030000
 #include <gnutls/abstract.h>
-#endif
 
 #include "socket.h"
 
@@ -56,6 +53,5 @@ struct _SSLClientCertHookData
 };
 
 const gchar *claws_ssl_get_cert_file(void);
-#endif /* USE_GNUTLS */
 
 #endif /* __SSL_H__ */

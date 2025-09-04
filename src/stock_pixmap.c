@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <string.h>
@@ -642,17 +637,6 @@ static void stock_pixmap_find_themes_in_dir(GList **list, const gchar *dirname)
 	g_dir_close(dp);
 }
 
-gchar *stock_pixmap_get_system_theme_dir_for_theme(const gchar *theme)
-{
-	if (theme && *theme) {
-		return g_strconcat(PACKAGE_DATA_DIR, G_DIR_SEPARATOR_S,
-	        	   PIXMAP_THEME_DIR, G_DIR_SEPARATOR_S, theme, NULL);
-	} else {
-		return g_strconcat(PACKAGE_DATA_DIR, G_DIR_SEPARATOR_S,
-	        	   PIXMAP_THEME_DIR, NULL);
-	}
-}
-
 GList *stock_pixmap_themes_list_new(void)
 {
 	gchar *defaulttheme;
@@ -661,17 +645,7 @@ GList *stock_pixmap_themes_list_new(void)
 	GList *list = NULL;
 
 	defaulttheme = g_strdup(DEFAULT_PIXMAP_THEME);
-	userthemes   = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
-				   PIXMAP_THEME_DIR, NULL);
-	systemthemes = stock_pixmap_get_system_theme_dir_for_theme(NULL);
-
-	list = g_list_append(list, defaulttheme);
-	stock_pixmap_find_themes_in_dir(&list, userthemes);
-	stock_pixmap_find_themes_in_dir(&list, systemthemes);
-
-	g_free(userthemes);
-	g_free(systemthemes);
-	return list;
+	return g_list_append(list, defaulttheme);
 }
 
 void stock_pixmap_themes_list_free(GList *list)

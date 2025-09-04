@@ -147,11 +147,9 @@ struct _Session
 	gboolean ssl_cert_auto_accept;
 	gint ping_tag;
 
-#ifdef USE_GNUTLS
 	SSLType ssl_type;
 	gchar *gnutls_priority;
 	gboolean use_tls_sni;
-#endif
 };
 
 void session_init		(Session	*session,
@@ -188,9 +186,7 @@ void session_set_send_data_notify	(Session	*session,
 					 SendDataNotify	 notify_func,
 					 gpointer	 data);
 
-#ifdef USE_GNUTLS
 gint session_start_tls	(Session	*session);
-#endif
 
 gint session_send_msg	(Session	*session,
 			 const gchar	*msg);

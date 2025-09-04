@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "defs.h"
 
 #include <glib.h>
@@ -31,9 +30,7 @@
 #include "folderview.h"
 #include "folder_item_prefs.h"
 #include "foldersel.h"
-#include "quicksearch.h"
 #include "summaryview.h"
-#include "summary_search.h"
 #include "messageview.h"
 #include "mimeview.h"
 #include "message_search.h"
@@ -136,8 +133,6 @@ static void app_exit_cb		 (GtkAction	*action,
 
 
 static void search_cb		 (GtkAction	*action,
-				  gpointer	 data);
-static void search_folder_cb	 (GtkAction	*action,
 				  gpointer	 data);
 
 static void toggle_message_cb	 (GtkAction	*action,
@@ -375,8 +370,6 @@ static void mailing_list_compose(GtkWidget *w, gpointer *data);
 
 static void mailing_list_open_uri(GtkWidget *w, gpointer *data);
 
-static void mainwindow_quicksearch		(GtkAction	*action,
-				  gpointer	 data);
 static gboolean any_folder_want_synchronise(void);
 
 static void save_part_as_cb(GtkAction *action, gpointer data);
@@ -458,8 +451,6 @@ static GtkActionEntry mainwin_entries[] =
 	{"Edit/SelectThread",           NULL, N_("Select _thread"), NULL, NULL, G_CALLBACK(select_thread_cb) },
 	{"Edit/---",                    NULL, "---", NULL, NULL, NULL },
 	{"Edit/Find",                   NULL, N_("_Find in current message..."), "<control>F", NULL, G_CALLBACK(search_cb) },
-	{"Edit/SearchFolder",			NULL, N_("_Search folder..."), "<shift><control>F", NULL, G_CALLBACK(search_folder_cb) },
-	{"Edit/QuickSearch",			NULL, N_("_Quick search"), "slash", NULL, G_CALLBACK(mainwindow_quicksearch) },
 
 	{"View/ShowHide",               NULL, N_("Show or hi_de"), NULL, NULL, NULL },
 	{"View/ShowHide/Toolbar",       NULL, N_("_Toolbar"), NULL, NULL, NULL },
@@ -840,17 +831,6 @@ static gboolean mainwindow_key_pressed (GtkWidget *widget, GdkEventKey *event,
 	if (!mainwin || !event)
 		return FALSE;
 
-	if (quicksearch_has_focus(mainwin->summaryview->quicksearch))
-	{
-		GtkWidget *entry =
-			quicksearch_get_entry(mainwin->summaryview->quicksearch);
-		gboolean handled;
-		g_signal_emit_by_name(entry, "key-press-event", event, &handled);
-		if (handled) {
-			return TRUE;
-		}
-	}
-
 	switch (event->keyval) {
 	case GDK_KEY_Q:             /* Quit */
 		BREAK_ON_MODIFIER_KEY();
@@ -1004,8 +984,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Edit", "SelectThread", "Edit/SelectThread", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Edit", "Separator1", "Edit/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Edit", "Find", "Edit/Find", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Edit", "SearchFolder", "Edit/SearchFolder", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Edit", "QuickSearch", "Edit/QuickSearch", GTK_UI_MANAGER_MENUITEM)
 
 /* View menu */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/View", "ShowHide", "View/ShowHide", GTK_UI_MANAGER_MENU)
@@ -2332,8 +2310,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 
 	SET_SENSITIVE("Menu/Edit/SelectThread", M_TARGET_EXIST, M_SUMMARY_ISLIST);
 	SET_SENSITIVE("Menu/Edit/Find", M_SINGLE_TARGET_EXIST);
-	SET_SENSITIVE("Menu/Edit/QuickSearch", M_IN_MSGLIST);
-	SET_SENSITIVE("Menu/Edit/SearchFolder", M_TARGET_EXIST, M_SUMMARY_ISLIST);
 
 	SET_SENSITIVE("Menu/View/SetColumns/Folderlist", M_UNLOCKED, M_SUMMARY_ISLIST);
 	SET_SENSITIVE("Menu/View/Sort", M_EXEC, M_SUMMARY_ISLIST);
@@ -2491,14 +2467,10 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 
 	if (mainwin->summaryview->folder_item && !mainwin->summaryview->folder_item->threaded)
 		cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/View/HideReadThreads", FALSE);
-	if ((mainwin->summaryview->folder_item && mainwin->summaryview->folder_item->hide_read_msgs) ||
-	    quicksearch_has_sat_predicate(mainwin->summaryview->quicksearch))
+	if (mainwin->summaryview->folder_item && mainwin->summaryview->folder_item->hide_read_msgs)
 		cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/HideReadThreads", FALSE);
-	if ((mainwin->summaryview->folder_item && mainwin->summaryview->folder_item->hide_read_threads) ||
-	    quicksearch_has_sat_predicate(mainwin->summaryview->quicksearch))
+	if (mainwin->summaryview->folder_item && mainwin->summaryview->folder_item->hide_read_threads)
 		cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/HideReadMessages", FALSE);
-	if (quicksearch_has_sat_predicate(mainwin->summaryview->quicksearch))
-		cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/HideDelMessages", FALSE);
 
 	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/Goto/PrevHistory",
 		messageview_nav_has_prev(mainwin->messageview));
@@ -3075,20 +3047,6 @@ static void search_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
 	message_search(mainwin->messageview);
-}
-
-static void search_folder_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	FolderItem *item = mainwin->summaryview->folder_item;
-	cm_return_if_fail(item != NULL);
-	summary_search(mainwin->summaryview);
-}
-
-static void mainwindow_quicksearch(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	summaryview_activate_quicksearch(mainwin->summaryview, TRUE);
 }
 
 static void toggle_message_cb(GtkAction *action, gpointer data)

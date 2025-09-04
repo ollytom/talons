@@ -14,13 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#include "claws-features.h"
-#endif 
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -52,10 +47,10 @@ update_preview_cb (GtkFileChooser *file_chooser, gpointer data)
 		return;
 	}
 	type = procmime_get_mime_type(filename);
-	
-	if (type && !strncmp(type, "image/", 6)) 
+
+	if (type && !strncmp(type, "image/", 6))
 		pixbuf = gdk_pixbuf_new_from_file_at_size (filename, 128, 128, NULL);
-	
+
 	g_free(type);
 	g_free (filename);
 
@@ -67,7 +62,7 @@ update_preview_cb (GtkFileChooser *file_chooser, gpointer data)
 
 	gtk_file_chooser_set_preview_widget_active (file_chooser, have_preview);
 }
-	
+
 static GList *filesel_create(const gchar *title, const gchar *path,
 			     gboolean multiple_files,
 			     gboolean open, gboolean folder_mode,
@@ -76,15 +71,15 @@ static GList *filesel_create(const gchar *title, const gchar *path,
 	GSList *slist = NULL, *slist_orig = NULL;
 	GList *list = NULL;
 
-	gint action = (open == TRUE) ? 
+	gint action = (open == TRUE) ?
 			(folder_mode == TRUE ? GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER:
 					       GTK_FILE_CHOOSER_ACTION_OPEN):
 			(folder_mode == TRUE ? GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER:
 					       GTK_FILE_CHOOSER_ACTION_SAVE);
-			
+
 	gchar * action_btn = (open == TRUE) ? _("_Open"):_("_Save");
 	GtkFileChooserNative *chooser = gtk_file_chooser_native_new
-				(title, NULL, action, 
+				(title, NULL, action,
 				action_btn, _("_Cancel"));
 
 	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(chooser), FALSE);
@@ -125,7 +120,7 @@ static GList *filesel_create(const gchar *title, const gchar *path,
 			*(strrchr(realpath, G_DIR_SEPARATOR)+1) = '\0';
 		} else {
 			filename = (char *) path;
-			g_free(realpath); 
+			g_free(realpath);
 			realpath = g_strdup(get_home_dir());
 		}
 		if (g_utf8_validate(realpath, -1, NULL))
@@ -152,19 +147,19 @@ static GList *filesel_create(const gchar *title, const gchar *path,
 		g_free(tmp);
 	}
 
-	if (gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT) 
+	if (gtk_native_dialog_run(GTK_NATIVE_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
 		slist = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER (chooser));
-	
+
 	g_object_unref(chooser);
 
 	slist_orig = slist;
-	
+
 	if (slist) {
 		gchar *tmp = g_strdup(slist->data);
 
 		if (!path && prefs_common.attach_load_dir)
 			g_free(prefs_common.attach_load_dir);
-		
+
 		if (strrchr(tmp, G_DIR_SEPARATOR))
 			*(strrchr(tmp, G_DIR_SEPARATOR)+1) = '\0';
 
@@ -178,10 +173,10 @@ static GList *filesel_create(const gchar *title, const gchar *path,
 		list = g_list_append(list, slist->data);
 		slist = slist->next;
 	}
-	
+
 	if (slist_orig)
 		g_slist_free(slist_orig);
-	
+
 	return list;
 }
 
@@ -204,7 +199,7 @@ GList *filesel_select_multiple_files_open_with_filter(	const gchar *title,
 
 /**
  * This function lets the user select one file.
- * This opens an Open type dialog if "file" is NULL, 
+ * This opens an Open type dialog if "file" is NULL,
  * Save dialog if "file" contains a path.
  * @param title the title of the dialog
  * @param path the optional path to save to

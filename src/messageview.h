@@ -34,7 +34,6 @@
 
 #define MESSAGE_VIEW_SHOW_DONE_HOOKLIST "message_view_show_done_hooklist"
 
-
 struct _MessageView
 {
 	GtkWidget *vbox;

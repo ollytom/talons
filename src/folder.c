@@ -963,8 +963,6 @@ void folder_scan_tree(Folder *folder, gboolean rebuild)
 
 	folder_persist_prefs_free(pptable);
 
-	prefs_matcher_read_config();
-
 	folder_write_list();
 }
 
@@ -3172,8 +3170,6 @@ static FolderItem *folder_item_move_recursive(FolderItem *src, FolderItem *dest,
 		procmsg_msg_list_free(mlist);
 	}
 
-	prefs_matcher_write_config();
-
 	/* recurse */
 	srcnode = src->folder->node;
 	srcnode = g_node_find(srcnode, G_PRE_ORDER, G_TRAVERSE_ALL, src);
@@ -4529,30 +4525,6 @@ gboolean folder_get_sort_type		(Folder		*folder,
 	return TRUE;
 }
 
-gint folder_item_search_msgs	(Folder			*folder,
-				 FolderItem		*container,
-				 MsgNumberList		**msgs,
-				 gboolean		*on_server,
-				 MatcherList		*predicate,
-				 SearchProgressNotify	progress_cb,
-				 gpointer		progress_data)
-{
-	gint result = -1;
-
-	folder_item_update_freeze();
-
-	if (folder->klass->search_msgs)
-		result = folder->klass->search_msgs(folder, container,
-				msgs, on_server, predicate, progress_cb, progress_data);
-	if (result < 0)
-		result = folder_item_search_msgs_local(folder, container,
-				msgs, on_server, predicate, progress_cb, progress_data);
-
-	folder_item_update_thaw();
-
-	return result;
-}
-
 MsgNumberList *folder_item_get_number_list(FolderItem *item)
 {
 	GSList *nums = NULL;
@@ -4562,61 +4534,6 @@ MsgNumberList *folder_item_get_number_list(FolderItem *item)
 	procmsg_msg_list_free(msglist);
 
 	return nums;
-}
-
-gint folder_item_search_msgs_local	(Folder			*folder,
-					 FolderItem		*container,
-					 MsgNumberList		**msgs,
-					 gboolean		*on_server,
-					 MatcherList		*predicate,
-					 SearchProgressNotify	progress_cb,
-					 gpointer		progress_data)
-{
-	GSList *result = NULL;
-	GSList *cur = NULL;
-	gint matched_count = 0;
-	guint processed_count = 0;
-	gint msgcount;
-	GSList *nums = NULL;
-
-	if (*msgs == NULL) {
-		nums = folder_item_get_number_list(container);
-	} else {
-		nums = *msgs;
-	}
-
-	msgcount = g_slist_length(nums);
-
-	if (msgcount < 0)
-		return -1;
-
-	for (cur = nums; cur != NULL; cur = cur->next) {
-		guint msgnum = GPOINTER_TO_UINT(cur->data);
-		MsgInfo *msg = folder_item_get_msginfo(container, msgnum);
-
-		if (msg == NULL) {
-			g_slist_free(result);
-			return -1;
-		}
-
-		if (matcherlist_match(predicate, msg)) {
-			result = g_slist_prepend(result, GUINT_TO_POINTER(msg->msgnum));
-			matched_count++;
-		}
-		processed_count++;
-
-		procmsg_msginfo_free(&msg);
-
-		if (progress_cb != NULL
-		    && !progress_cb(progress_data, FALSE, processed_count,
-			    matched_count, msgcount))
-			break;
-	}
-
-	g_slist_free(nums);
-	*msgs = g_slist_reverse(result);
-
-	return matched_count;
 }
 
 /* Tests if a local (on disk) folder name is acceptable. */

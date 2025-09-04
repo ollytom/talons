@@ -15,13 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
-
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
 
 #include <glib.h>
 #ifdef ENABLE_NLS
@@ -56,7 +51,7 @@ gchar *string_remove_match(gchar *buf, gint buflen, gchar * txt, regex_t *preg)
 					buf[i++] = txt[j++];
 				else {
 					k = j;
-					while (txt[j] &&  j != k + match.rm_so)	
+					while (txt[j] &&  j != k + match.rm_so)
 						buf[i++] = txt[j++];
 					if (txt[j])
 						j = k + match.rm_eo;
@@ -69,7 +64,7 @@ gchar *string_remove_match(gchar *buf, gint buflen, gchar * txt, regex_t *preg)
 					buflen - 1);
 			buf[buflen - 1] = 0x00;
 		}
-		return buf;		
+		return buf;
 	}
 	return txt;
 }

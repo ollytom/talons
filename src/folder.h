@@ -194,12 +194,6 @@ struct _FolderClass
 	 * user. Can be upper and lowercase unlike the idstr.
 	 */
 	gchar	   *uistr;
-	/**
-	* A boolean to indicate whether or not the FolderClass supports search on the
-	* server. If \c TRUE, setting \c on_server in \c search_msgs offloads search to
-	* the server.
-	*/
-	gboolean    supports_server_search;
 
 	/**
 	 * Klass-specific prefs pages
@@ -533,58 +527,6 @@ struct _FolderClass
 						 FolderItem	*dest,
 						 MsgInfoList	*msglist,
                                     		 GHashTable	*relation);
-
-	/**
-	 * Search the given FolderItem for messages matching \c predicate.
-	 * The search may be offloaded to the server if the \c folder
-	 * supports server side search, as indicated by \c supports_server_search.
-	 *
-	 * \param folder The \c Folder of the container FolderItem
-	 * \param container The \c FolderItem containing the messages to be searched
-	 * \param msgs The \c MsgNumberList results will be saved to.
-	 *             If <tt>*msgs != NULL</tt>, the search will be restricted to
-	 *             messages whose numbers are contained therein.
-	 *             If \c on_server is considered \c FALSE, messages are guaranteed to
-	 *             be processed in the order they are listed in \c msgs.
-	 *             On error, \c msgs will not be changed.
-	 * \param on_server Whether or not the search should be offloaded to the server.
-	 *                  If \c on_server is not \c NULL and points to a \c TRUE value,
-	 *                  search will be done on the server. If \c predicate contains
-	 *                  one or more atoms the server does not support, the value
-	 *                  pointed to by \c on_server will be set to \c FALSE upon return.
-	 *                  In this case, \c msgs must still contain a valid superset of
-	 *                  messages actually matched by \c predicate, or this method must
-	 *                  return an error.
-	 *                  \c on_server may only point to a \c TRUE value if
-	 *                  \c supports_server_search is also \c TRUE.
-	 *                  \c NULL and pointer to \c FALSE are considered equivalent and
-	 *                  will start a client-only search.
-	 * \param predicate The \c MatcherList to use in the search
-	 * \param progress_cb Called for every message searched.
-	 *                    When search is offloaded to the server, this function
-	 *                    may or may not be called, depending on the implementation.
-	 *                    The second argument of this function will be the number of
-	 *                    messages already processed.
-	 *                    Return \c FALSE from this function to end the search.
-	 *                    May be \c NULL, no calls will be made in this case.
-	 * \param progress_data First argument value for \c progress_cb
-	 * \return Number of messages that matched \c predicate on success, a negative
-	 *         number otherwise.
-	 *
-	 * \note
-	 * When search is stopped by returning \c FALSE from \c progress_cb, \c msgs will
-	 * contain all messages found until the point of cancellation. The number of
-	 * messages found will be returned as indicated above.
-	 */
-	gint		(*search_msgs)		(Folder			*folder,
-						 FolderItem		*container,
-						 MsgNumberList		**msgs,
-						 gboolean		*on_server,
-						 MatcherList		*predicate,
-						 SearchProgressNotify	progress_cb,
-						 gpointer		progress_data);
-
-
 	/**
 	 * Remove a message from a \c FolderItem.
 	 *
@@ -941,13 +883,7 @@ gint   folder_item_copy_msg		(FolderItem	*dest,
 					 MsgInfo	*msginfo);
 gint   folder_item_copy_msgs		(FolderItem	*dest,
 					 GSList		*msglist);
-gint   folder_item_search_msgs		(Folder			*folder,
-					 FolderItem		*container,
-					 MsgNumberList		**msgs,
-					 gboolean		*on_server,
-					 MatcherList		*predicate,
-					 SearchProgressNotify	progress_cb,
-					 gpointer		progress_data);
+
 gint   folder_item_remove_msg		(FolderItem	*item,
 					 gint		 num);
 gint   folder_item_remove_msgs		(FolderItem	*item,
@@ -986,16 +922,6 @@ gboolean folder_get_sort_type		(Folder		*folder,
 void folder_item_synchronise		(FolderItem *item);
 void folder_item_discard_cache		(FolderItem *item);
 void folder_item_commit_tags(FolderItem *item, MsgInfo *msginfo, GSList *tags_set, GSList *tags_unset);
-
-
-
-gint folder_item_search_msgs_local	(Folder			*folder,
-					 FolderItem		*container,
-					 MsgNumberList		**msgs,
-					 gboolean		*on_server,
-					 MatcherList		*predicate,
-					 SearchProgressNotify	progress_cb,
-					 gpointer		progress_data);
 
 gchar *folder_get_list_path	(void);
 gboolean folder_local_name_ok(const gchar *name);

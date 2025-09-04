@@ -33,7 +33,7 @@ typedef enum
 	UNDO_ACTION_REPLACE_DELETE
 } UndoAction;
 
-typedef enum 
+typedef enum
 {
 	UNDO_STATE_TRUE,
 	UNDO_STATE_FALSE,
@@ -49,7 +49,7 @@ typedef void (*UndoChangeStateFunc)	(UndoMain	*undostruct,
 					 gint		 redo_state,
 					 gpointer	 data);
 
-struct _UndoMain 
+struct _UndoMain
 {
 	GtkTextView *textview;
 
@@ -74,12 +74,12 @@ void undo_set_change_state_func	(UndoMain		*undostruct,
 				 UndoChangeStateFunc	 func,
 				 gpointer		 data);
 
-void undo_undo			(UndoMain		*undostruct); 
-void undo_redo			(UndoMain		*undostruct); 
+void undo_undo			(UndoMain		*undostruct);
+void undo_redo			(UndoMain		*undostruct);
 void undo_block			(UndoMain 		*undostruct);
 void undo_unblock		(UndoMain 		*undostruct);
-void undo_wrapping		(UndoMain		*undostruct, 
+void undo_wrapping		(UndoMain		*undostruct,
 				 gboolean 		 wrap);
-void undo_paste_clipboard	(GtkTextView 		*textview, 
+void undo_paste_clipboard	(GtkTextView 		*textview,
 				 UndoMain 		*undostruct);
 #endif /* __UNDO_H__ */

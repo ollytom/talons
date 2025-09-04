@@ -80,7 +80,6 @@
 #include "folder.h"
 #include "folder_item_prefs.h"
 #include "addr_compl.h"
-#include "quote_fmt.h"
 #include "undo.h"
 #include "foldersel.h"
 #include "toolbar.h"
@@ -223,13 +222,6 @@ static gint compose_parse_manual_headers	(Compose	*compose,
 static gchar *compose_parse_references		(const gchar	*ref,
 						 const gchar	*msgid);
 
-static gchar *compose_quote_fmt			(Compose	*compose,
-						 MsgInfo	*msginfo,
-						 const gchar	*fmt,
-						 const gchar	*body,
-						 gboolean	 rewrap,
-						 gboolean	 need_unescape,
-						 const gchar *err_msg);
 
 static void compose_reply_set_entry		(Compose	*compose,
 						 MsgInfo	*msginfo,
@@ -806,8 +798,6 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 	GtkTextView *textview;
 	GtkTextBuffer *textbuf;
 	GtkTextIter iter;
-	const gchar *subject_format = NULL;
-	const gchar *body_format = NULL;
 	gchar *mailto_from = NULL;
 	PrefsAccount *mailto_account = NULL;
 	MsgInfo* dummyinfo = NULL;
@@ -876,74 +866,6 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 
 	compose_add_field_list( compose, listAddress );
 
-	if (prefs_common.compose_with_format) {
-		subject_format = prefs_common.compose_subject_format;
-		body_format = prefs_common.compose_body_format;
-	}
-
-	if (subject_format || body_format) {
-
-		if ( subject_format
-			 && *subject_format != '\0' )
-		{
-			gchar *subject = NULL;
-			gchar *tmp = NULL;
-			gchar *buf = NULL;
-
-			if (!dummyinfo)
-				dummyinfo = compose_msginfo_new_from_compose(compose);
-
-			/* decode \-escape sequences in the internal representation of the quote format */
-			tmp = g_malloc(strlen(subject_format)+1);
-			pref_get_unescaped_pref(tmp, subject_format);
-
-			subject = gtk_editable_get_chars(GTK_EDITABLE(compose->subject_entry), 0, -1);
-			quote_fmt_init(dummyinfo, NULL, subject, FALSE, compose->account, FALSE);
-
-			quote_fmt_scan_string(tmp);
-			quote_fmt_parse();
-
-			buf = quote_fmt_get_buffer();
-			if (buf == NULL)
-				alertpanel_error(_("New message subject format error."));
-			else
-				gtk_entry_set_text(GTK_ENTRY(compose->subject_entry), buf);
-			compose_attach_from_list(compose, quote_fmt_get_attachments_list(), FALSE);
-			quote_fmt_reset_vartable();
-			quote_fmtlex_destroy();
-
-			g_free(subject);
-			g_free(tmp);
-			mfield = SUBJECT_FIELD_PRESENT;
-		}
-
-		if ( body_format
-			 && *body_format != '\0' )
-		{
-			GtkTextView *text;
-			GtkTextBuffer *buffer;
-			GtkTextIter start, end;
-			gchar *tmp = NULL;
-
-			if (!dummyinfo)
-				dummyinfo = compose_msginfo_new_from_compose(compose);
-
-			text = GTK_TEXT_VIEW(compose->text);
-			buffer = gtk_text_view_get_buffer(text);
-			gtk_text_buffer_get_start_iter(buffer, &start);
-			gtk_text_buffer_get_iter_at_offset(buffer, &end, -1);
-			tmp = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-
-			compose_quote_fmt(compose, dummyinfo, body_format, tmp, FALSE, TRUE,
-						  _("The body of the \"New message\" template has an error at line %d."));
-			compose_attach_from_list(compose, quote_fmt_get_attachments_list(), FALSE);
-			quote_fmt_reset_vartable();
-
-			g_free(tmp);
-			mfield = BODY_FIELD_PRESENT;
-		}
-
-	}
 	procmsg_msginfo_free( &dummyinfo );
 
 	if (attach_files) {
@@ -1006,11 +928,7 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 		     * is therefore created before placing the cursor
 		     */
 		case BODY_FIELD_PRESENT:
-			cursor_pos = quote_fmt_get_cursor_pos();
-			if (cursor_pos == -1)
-				gtk_widget_grab_focus(compose->header_last->entry);
-			else
-				gtk_widget_grab_focus(compose->text);
+			gtk_widget_grab_focus(compose->text);
 			break;
 	}
 
@@ -1362,26 +1280,6 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 
 	undo_block(compose->undostruct);
 
-	if (quote_mode == COMPOSE_QUOTE_FORCED ||
-			(quote_mode == COMPOSE_QUOTE_CHECK && prefs_common.reply_with_quote)) {
-		/* use the reply format of folder (if enabled), or the account's one
-		   (if enabled) or fallback to the global reply format, which is always
-		   enabled (even if empty). */
-		quote = TRUE;
-		body_fmt = "";
-		if (prefs_common.quotefmt && *prefs_common.quotefmt) {
-			body_fmt = prefs_common.quotefmt;
-		}
-	}
-
-	if (quote) {
-		compose_quote_fmt(compose, compose->replyinfo,
-			          body_fmt, body, FALSE, TRUE,
-					  _("The body of the \"Reply\" template has an error at line %d."));
-		compose_attach_from_list(compose, quote_fmt_get_attachments_list(), FALSE);
-		quote_fmt_reset_vartable();
-	}
-
 	if (MSG_IS_ENCRYPTED(compose->replyinfo->flags)) {
 		compose_force_encryption(compose, account, FALSE, s_system);
 	}
@@ -1507,26 +1405,6 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 					      "message/rfc822", NULL);
 
 		g_free(msgfile);
-	} else {
-		MsgInfo *full_msginfo;
-
-		full_msginfo = procmsg_msginfo_get_full_info(msginfo);
-		if (!full_msginfo)
-			full_msginfo = procmsg_msginfo_copy(msginfo);
-
-		gchar *body_fmt = "";
-		if (prefs_common.fw_quotefmt && *prefs_common.fw_quotefmt) {
-			body_fmt = prefs_common.fw_quotefmt;
-		}
-
-		compose_quote_fmt(compose, full_msginfo,
-			          body_fmt, body, FALSE, TRUE,
-					  _("The body of the \"Forward\" template has an error at line %d."));
-		compose_attach_from_list(compose, quote_fmt_get_attachments_list(), FALSE);
-		quote_fmt_reset_vartable();
-		compose_attach_parts(compose, msginfo);
-
-		procmsg_msginfo_free(&full_msginfo);
 	}
 
 	SIGNAL_BLOCK(textbuf);
@@ -1542,11 +1420,7 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 	    (account->default_encrypt || account->default_sign))
 		COMPOSE_PRIVACY_WARNING();
 
-	cursor_pos = quote_fmt_get_cursor_pos();
-	if (cursor_pos == -1)
-		gtk_widget_grab_focus(compose->header_last->entry);
-	else
-		gtk_widget_grab_focus(compose->text);
+	gtk_widget_grab_focus(compose->text);
 
 	if (!no_extedit && prefs_common.auto_exteditor)
 		compose_exec_ext_editor(compose);
@@ -2171,9 +2045,6 @@ Compose *compose_redirect(PrefsAccount *account, MsgInfo *msginfo,
 				   msginfo->subject);
 	gtk_editable_set_editable(GTK_EDITABLE(compose->subject_entry), FALSE);
 
-	compose_quote_fmt(compose, msginfo, "%M", NULL, FALSE, FALSE,
-					  _("The body of the \"Redirect\" template has an error at line %d."));
-	quote_fmt_reset_vartable();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(compose->text), FALSE);
 
 	compose_colorize_signature(compose);
@@ -2669,118 +2540,6 @@ static gchar *compose_parse_references(const gchar *ref, const gchar *msgid)
 	slist_free_strings_full(ref_id_list);
 
 	return g_string_free(new_ref, FALSE);
-}
-
-static gchar *compose_quote_fmt(Compose *compose, MsgInfo *msginfo,
-				const gchar *fmt, const gchar *body,
-				gboolean rewrap,
-				gboolean need_unescape,
-				const gchar *err_msg)
-{
-	MsgInfo* dummyinfo = NULL;
-	gchar *quote_str = NULL;
-	gchar *buf;
-	gboolean prev_autowrap;
-	const gchar *trimmed_body = body;
-	gint cursor_pos = -1;
-	GtkTextView *text = GTK_TEXT_VIEW(compose->text);
-	GtkTextBuffer *buffer = gtk_text_view_get_buffer(text);
-	GtkTextIter iter;
-	GtkTextMark *mark;
-
-	SIGNAL_BLOCK(buffer);
-
-	if (!msginfo) {
-		dummyinfo = compose_msginfo_new_from_compose(compose);
-		msginfo = dummyinfo;
-	}
-
-	const char *qmark = "> ";
-	quote_fmt_init(msginfo, NULL, NULL, FALSE, compose->account, FALSE);
-	quote_fmt_scan_string(qmark);
-	quote_fmt_parse();
-
-	buf = quote_fmt_get_buffer();
-	if (buf == NULL)
-		alertpanel_error(_("The \"Quotation mark\" of the template is invalid."));
-	else
-		Xstrdup_a(quote_str, buf, goto error)
-
-	if (fmt && *fmt != '\0') {
-		if (trimmed_body)
-			while (*trimmed_body == '\n')
-				trimmed_body++;
-		quote_fmt_init(msginfo, quote_str, trimmed_body, FALSE, compose->account, FALSE);
-		if (need_unescape) {
-			gchar *tmp = NULL;
-
-			/* decode \-escape sequences in the internal representation of the quote format */
-			tmp = g_malloc(strlen(fmt)+1);
-			pref_get_unescaped_pref(tmp, fmt);
-			quote_fmt_scan_string(tmp);
-			quote_fmt_parse();
-			g_free(tmp);
-		} else {
-			quote_fmt_scan_string(fmt);
-			quote_fmt_parse();
-		}
-
-		buf = quote_fmt_get_buffer();
-
-		if (buf == NULL) {
-			gint line = quote_fmt_get_line();
-			alertpanel_error(err_msg, line);
-
-			goto error;
-		}
-
-	} else
-		buf = "";
-
-	prev_autowrap = compose->autowrap;
-	compose->autowrap = FALSE;
-
-	mark = gtk_text_buffer_get_insert(buffer);
-	gtk_text_buffer_get_iter_at_mark(buffer, &iter, mark);
-	if (g_utf8_validate(buf, -1, NULL)) {
-		gtk_text_buffer_insert(buffer, &iter, buf, -1);
-	} else {
-		gchar *tmpout = NULL;
-		tmpout = conv_codeset_strdup
-			(buf, conv_get_locale_charset_str_no_utf8(),
-			 CS_INTERNAL);
-		if (!tmpout || !g_utf8_validate(tmpout, -1, NULL)) {
-			g_free(tmpout);
-			tmpout = g_malloc(strlen(buf)*2+1);
-			conv_localetodisp(tmpout, strlen(buf)*2+1, buf);
-		}
-		gtk_text_buffer_insert(buffer, &iter, tmpout, -1);
-		g_free(tmpout);
-	}
-
-	cursor_pos = quote_fmt_get_cursor_pos();
-	if (cursor_pos == -1)
-		cursor_pos = gtk_text_iter_get_offset(&iter);
-	compose->set_cursor_pos = cursor_pos;
-
-	gtk_text_buffer_get_start_iter(buffer, &iter);
-	gtk_text_buffer_get_iter_at_offset(buffer, &iter, cursor_pos);
-	gtk_text_buffer_place_cursor(buffer, &iter);
-
-	compose->autowrap = prev_autowrap;
-	if (compose->autowrap && rewrap)
-		compose_wrap_all(compose);
-
-	goto ok;
-
-error:
-	buf = NULL;
-ok:
-	SIGNAL_UNBLOCK(buffer);
-
-	procmsg_msginfo_free( &dummyinfo );
-
-	return buf;
 }
 
 /* if ml_post is of type addr@host and from is of type
@@ -6163,10 +5922,7 @@ static gchar *compose_get_header(Compose *compose)
 	/* Program version and system info */
 	if (compose->account->gen_xmailer &&
 	    g_slist_length(compose->to_list) && !IS_IN_CUSTOM_HEADER("X-Mailer")) {
-		g_string_append_printf(header, "X-Mailer: %s (GTK %d.%d.%d; %s)\n",
-			prog_version,
-			gtk_major_version, gtk_minor_version, gtk_micro_version,
-			TARGET_ALIAS);
+		g_string_append_printf(header, "X-Mailer: Talons (https://git.olowe.co/talons)\n");
 	}
 
 	/* custom headers */
@@ -8485,7 +8241,7 @@ static void compose_undo_state_changed(UndoMain *undostruct, gint undo_state,
 	switch (undo_state) {
 	case UNDO_STATE_TRUE:
 		if (!undostruct->undo_state) {
-			undostruct->undo_state = TRUE;
+			undostruct->undo_state = 1;
 			cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Edit/Undo", TRUE);
 		}
 		break;
@@ -8508,7 +8264,7 @@ static void compose_undo_state_changed(UndoMain *undostruct, gint undo_state,
 	switch (redo_state) {
 	case UNDO_STATE_TRUE:
 		if (!undostruct->redo_state) {
-			undostruct->redo_state = TRUE;
+			undostruct->redo_state = 1;
 			cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Edit/Redo", TRUE);
 		}
 		break;
@@ -9112,7 +8868,6 @@ static void compose_insert_file_cb(GtkAction *action, gpointer data)
 {
 	Compose *compose = (Compose *)data;
 	GList *file_list;
-	gint files_inserted = 0;
 
 	file_list = filesel_select_multiple_files_open(_("Select file"), NULL);
 
@@ -9133,8 +8888,7 @@ static void compose_insert_file_cb(GtkAction *action, gpointer data)
 				alertpanel_error(_("File '%s' contained invalid characters\n"
 							"for the current encoding, insertion may be incorrect."),
 							shortfile);
-			} else if (res == COMPOSE_INSERT_SUCCESS)
-				files_inserted++;
+			}
 
 			g_free(shortfile);
 			g_free(filedup);
@@ -9338,7 +9092,6 @@ static void paste_text(Compose *compose, GtkWidget *entry, GdkAtom clip, GtkText
 static void attach_uri_list(Compose *compose, GtkSelectionData *data)
 {
 	GList *list, *tmp;
-	int att = 0;
 	gchar *warn_files = NULL;
 
 	list = uri_list_extract_filenames(
@@ -9350,7 +9103,6 @@ static void attach_uri_list(Compose *compose, GtkSelectionData *data)
 				utf8_filename);
 		g_free(warn_files);
 		warn_files = tmp_f;
-		att++;
 		compose_attach_append
 			(compose, (const gchar *)tmp->data,
 			 utf8_filename, NULL, NULL);
@@ -9527,7 +9279,6 @@ static void compose_copy_cb(GtkAction *action, gpointer data)
 static void compose_paste_cb(GtkAction *action, gpointer data)
 {
 	Compose *compose = (Compose *)data;
-	GtkTextBuffer *buffer;
 	if (compose->focused_editable && gtk_widget_has_focus(compose->focused_editable))
 		entry_paste_clipboard(compose, compose->focused_editable, GDK_SELECTION_CLIPBOARD, NULL);
 }
@@ -10289,36 +10040,7 @@ static void text_inserted(GtkTextBuffer *buffer, GtkTextIter *iter,
 					G_CALLBACK(text_inserted),
 					compose);
 	if (paste_as_quotation) {
-		gchar *new_text;
-		guint pos = 0;
-		GtkTextIter start_iter;
-
-		if (len < 0)
-			len = strlen(text);
-
-		new_text = g_strndup(text, len);
-
-		mark = gtk_text_buffer_create_mark(buffer, NULL, iter, FALSE);
-		gtk_text_buffer_place_cursor(buffer, iter);
-
-		pos = gtk_text_iter_get_offset(iter);
-
-		compose_quote_fmt(compose, NULL, "%Q", new_text, TRUE, FALSE,
-						  _("Quote format error at line %d."));
-		quote_fmt_reset_vartable();
-		g_free(new_text);
-		g_object_set_data(G_OBJECT(compose->text), "paste_as_quotation",
-				  GINT_TO_POINTER(paste_as_quotation - 1));
-
-		gtk_text_buffer_get_iter_at_mark(buffer, iter, mark);
-		gtk_text_buffer_place_cursor(buffer, iter);
-		gtk_text_buffer_delete_mark(buffer, mark);
-
-		gtk_text_buffer_get_iter_at_offset(buffer, &start_iter, pos);
-		mark = gtk_text_buffer_create_mark(buffer, NULL, &start_iter, FALSE);
-		compose_beautify_paragraph(compose, &start_iter, FALSE);
-		gtk_text_buffer_get_iter_at_mark(buffer, &start_iter, mark);
-		gtk_text_buffer_delete_mark(buffer, mark);
+		// TODO delete
 	} else {
 		if (strcmp(text, "\n") || compose->automatic_break
 		|| gtk_text_iter_starts_line(iter)) {

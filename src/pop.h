@@ -16,12 +16,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __POP_H__
-#define __POP_H__
-
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
+#ifndef _POP_H_
+#define _POP_H_
 
 #include <glib.h>
 #include <time.h>
@@ -46,9 +42,7 @@ typedef struct _MailReceiveData	MailReceiveData;
 typedef enum {
 	POP3_READY,
 	POP3_GREETING,
-#ifdef USE_GNUTLS
 	POP3_STLS,
-#endif
 	POP3_GETAUTH_USER,
 	POP3_GETAUTH_USER_PHASE2,
 	POP3_GETAUTH_PASS,
@@ -130,9 +124,8 @@ struct _Pop3Session
 	gint cur_total_bytes;
 	gint cur_total_recv_bytes;
 
-#ifdef USE_OAUTH2
         gint two_stage_pop;
-#endif
+
 	Pop3MsgInfo *msg;
 
 	GHashTable *uidl_table;
@@ -160,4 +153,4 @@ struct _Pop3Session
 Session *pop3_session_new	(PrefsAccount	*account);
 gint pop3_write_uidl_list	(Pop3Session	*session);
 
-#endif /* __POP_H__ */
+#endif /* _POP_H_ */

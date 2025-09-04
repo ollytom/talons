@@ -24,7 +24,7 @@
 typedef struct _MainWindow  MainWindow;
 
 #include "viewtypes.h"
-#include "logwindow.h"
+#include "gtk/logwindow.h"
 #include "procmsg.h"
 #include "toolbar.h"
 

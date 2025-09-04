@@ -20,8 +20,6 @@
  * Definitions for generic functions.
  */
 
-#include "config.h"
-
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>

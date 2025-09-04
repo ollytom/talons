@@ -32,7 +32,7 @@ struct _SourceWindow
 	GtkWidget *window;
 	GtkWidget *scrolledwin;
 	GtkWidget *text;
-	
+
 	gboolean updating;
 	gboolean deferred_destroy;
 };

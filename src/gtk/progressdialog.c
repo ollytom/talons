@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
@@ -199,7 +194,7 @@ gint progress_dialog_list_set_status(ProgressDialog *progress,
 }
 
 /*!
- *\return	gint Row where data were set 
+ *\return	gint Row where data were set
  */
 gint progress_dialog_list_set(ProgressDialog	*progress,
 			      gint		 row,
@@ -234,13 +229,13 @@ static gint progress_dialog_insert_account(ProgressDialog *progress,
 {
 	GtkTreeIter iter;
 	GtkListStore *store = progress->store;
-	gint result = -1;					
-	
+	gint result = -1;
+
 	if (account == NULL && status == NULL && image == NULL)
 		return -1;
 
 	/* see if row exists, if not append */
-	if (row < 0 || !gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), 
+	if (row < 0 || !gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store),
 						      &iter, NULL, row)) {
 		result = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),
 							NULL);
@@ -252,16 +247,16 @@ static gint progress_dialog_insert_account(ProgressDialog *progress,
 	 * XXX: uhm, when does the iter invalidate? sure not while
 	 * just setting a row's column i hope?
 	 */
-	
+
 	if (account)
-		gtk_list_store_set(store, &iter, 
+		gtk_list_store_set(store, &iter,
 				   PROGRESS_ACCOUNT, account,
 				   -1);
 	if (status)
 		gtk_list_store_set(store, &iter,
 				   PROGRESS_STATE, status,
 				   -1);
-	if (image) 
+	if (image)
 		gtk_list_store_set(store, &iter,
 				   PROGRESS_IMAGE, image,
 				   -1);

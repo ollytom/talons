@@ -14,13 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
-
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -41,10 +36,10 @@ GtkWidget *combobox_text_new(const gboolean with_entry, const gchar *text, ...)
 	GtkWidget *combo;
 	va_list args;
 	gchar *string;
-	
+
 	if(text == NULL)
 		return NULL;
-	
+
 	if (with_entry)
 		combo = gtk_combo_box_text_new_with_entry();
 	else
@@ -56,9 +51,9 @@ GtkWidget *combobox_text_new(const gboolean with_entry, const gchar *text, ...)
 	while ((string = va_arg(args, gchar*)) != NULL)
 		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo), string);
 	va_end(args);
-		
+
 	gtk_combo_box_set_active(GTK_COMBO_BOX(combo), 0);
-	
+
 	return combo;
 }
 
@@ -184,7 +179,7 @@ void combobox_set_popdown_strings(GtkComboBoxText *combobox,
 
 gboolean combobox_set_value_from_arrow_key(GtkComboBox *combobox,
 				 guint keyval)
-/* used from key_press events upon gtk_combo_box_entry with one text column 
+/* used from key_press events upon gtk_combo_box_entry with one text column
    (gtk_combo_box_text_new() and with GtkComboBoxEntry's for instance),
    make sure that up and down arrow keys behave the same as old with old
    gtk_combo widgets:
@@ -260,7 +255,7 @@ void combobox_set_sensitive(GtkComboBox *combobox, const guint index,
 	GtkTreeModel *model;
 	GtkTreeIter iter, child;
 	guint i;
-	
+
 	if((model = gtk_combo_box_get_model(combobox)) == NULL)
 		return;
 
@@ -270,12 +265,12 @@ void combobox_set_sensitive(GtkComboBox *combobox, const guint index,
 		if(gtk_tree_model_iter_next(model, &iter) == FALSE)
 			return;
 	}
-	
+
 	store_set_sensitive(model, &iter, sensitive);
 
 	if(gtk_tree_model_iter_children(model, &child, &iter) == FALSE)
 		return;
-	
+
 	do {
 		store_set_sensitive(model, &child, sensitive);
 	} while (gtk_tree_model_iter_next(model, &child) == TRUE);

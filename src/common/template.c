@@ -1,5 +1,5 @@
 /*
- * Claws Mail templates subsystem 
+ * Claws Mail templates subsystem
  * Copyright (C) 2001 Alexander Barinov
  * Copyright (C) 2001-2021 The Claws Mail team
  *
@@ -15,10 +15,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
-#include "config.h"
 #include "defs.h"
 
 #include <glib.h>
@@ -52,7 +51,7 @@ static Template *template_load(gchar *filename)
 	tmpl->subject = NULL;
 	tmpl->from = NULL;
 	tmpl->to = NULL;
-	tmpl->cc = NULL;	
+	tmpl->cc = NULL;
 	tmpl->bcc = NULL;
 	tmpl->replyto = NULL;
 	tmpl->value = NULL;
@@ -69,9 +68,9 @@ static Template *template_load(gchar *filename)
 		else if (!g_ascii_strncasecmp(buf, "Cc:", 3))
 			tmpl->cc = g_strdup(g_strstrip(buf + 3));
 		else if (!g_ascii_strncasecmp(buf, "Bcc:", 4))
-			tmpl->bcc = g_strdup(g_strstrip(buf + 4));						
+			tmpl->bcc = g_strdup(g_strstrip(buf + 4));
 		else if (!g_ascii_strncasecmp(buf, "Reply-To:", 9))
-			tmpl->replyto = g_strdup(g_strstrip(buf + 9));						
+			tmpl->replyto = g_strdup(g_strstrip(buf + 9));
 		else if (!g_ascii_strncasecmp(buf, "Subject:", 8))
 			tmpl->subject = g_strdup(g_strstrip(buf + 8));
 	}
@@ -105,8 +104,8 @@ void template_free(Template *tmpl)
 	g_free(tmpl->from);
 	g_free(tmpl->to);
 	g_free(tmpl->cc);
-	g_free(tmpl->bcc);		
-	g_free(tmpl->replyto);		
+	g_free(tmpl->bcc);
+	g_free(tmpl->replyto);
 	g_free(tmpl->value);
 	g_free(tmpl);
 }
@@ -150,7 +149,7 @@ static gint tmpl_compare(gconstpointer tmpl1, gconstpointer tmpl2)
 	else
 		if (filenum1 > filenum2)
 			ret = 1;
-			
+
 	return ret;
 }
 
@@ -295,7 +294,7 @@ static void template_write_config(GSList *tmpl_list)
 		g_free(new);
 		g_free(filename);
 	}
-	
+
 	/* remove other templates */
 	while (TRUE) {
 		gchar *filename = g_strconcat(path, G_DIR_SEPARATOR_S,

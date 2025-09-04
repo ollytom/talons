@@ -118,7 +118,7 @@ ItemPerson *addrcache_remove_person	( AddressCache *cache, ItemPerson *person );
 ItemEMail *addrcache_remove_email	( AddressCache *cache, ItemEMail *email );
 
 ItemEMail *addrcache_person_remove_email( AddressCache *cache,
-					  ItemPerson *person, 
+					  ItemPerson *person,
 					  ItemEMail *email );
 
 GList *addrcache_get_group_for_person	( AddressCache *cache, ItemPerson *person );

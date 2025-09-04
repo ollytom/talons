@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 
 #include "utils.h"
@@ -34,15 +29,15 @@ static GHookList *hooks_get_hooklist(const gchar *hooklist_name)
 
 	if (hooklist_table == NULL)
 		hooklist_table = g_hash_table_new(g_str_hash, g_str_equal);
-	
+
 	hooklist = (GHookList *) g_hash_table_lookup(hooklist_table, hooklist_name);
 	if (hooklist != NULL)
 		return hooklist;
-	
+
 	hooklist = g_new0(GHookList, 1);
 	g_hook_list_init(hooklist, sizeof(GHook));
 	g_hash_table_insert(hooklist_table, g_strdup(hooklist_name), hooklist);
-	
+
 	return hooklist;
 }
 
@@ -55,7 +50,7 @@ gulong hooks_register_hook(const gchar *hooklist_name,
 
 	cm_return_val_if_fail(hooklist_name != NULL, HOOK_NONE);
 	cm_return_val_if_fail(hook_func != NULL, HOOK_NONE);
-	
+
 	hooklist = hooks_get_hooklist(hooklist_name);
 	cm_return_val_if_fail(hooklist != NULL, HOOK_NONE);
 
@@ -115,7 +110,7 @@ gboolean hooks_invoke(const gchar *hooklist_name,
 {
 	GHookList *hooklist;
 	struct MarshalData marshal_data;
-	
+
 	cm_return_val_if_fail(hooklist_name != NULL, FALSE);
 
 	hooklist = hooks_get_hooklist(hooklist_name);

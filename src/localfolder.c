@@ -17,8 +17,6 @@
  *
  */
 
-#include "config.h"
-
 #include <glib.h>
 
 #include "folder.h"

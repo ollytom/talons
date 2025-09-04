@@ -1,6 +1,6 @@
 /*
  * Claws Mail -- a GTK based, lightweight, and fast e-mail client
- * Copyright (C) 1999-2012 Colin Leroy <colin@colino.net> 
+ * Copyright (C) 1999-2012 Colin Leroy <colin@colino.net>
  * and the Claws Mail team
  *
  * This program is free software; you can redistribute it and/or modify
@@ -15,15 +15,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
-#ifdef USE_GNUTLS
 #include <libetpan/libetpan.h>
 #include <libetpan/libetpan_version.h>
 #include <gnutls/gnutls.h>
@@ -162,7 +156,7 @@ void etpan_connect_ssl_context_cb(struct mailstream_ssl_context * ssl_context, v
 		pkey_len = (size_t)gnutls_i2d_PrivateKey(pkey, &pkey_der);
 		if (x509_len > 0 && pkey_len > 0) {
 			if (mailstream_ssl_set_client_certificate_data(ssl_context, x509_der, x509_len) < 0 ||
-			    mailstream_ssl_set_client_private_key_data(ssl_context, pkey_der, pkey_len) < 0) 
+			    mailstream_ssl_set_client_private_key_data(ssl_context, pkey_der, pkey_len) < 0)
 				log_error(LOG_PROTOCOL, _("Impossible to set the client certificate.\n"));
 			g_free(x509_der);
 			g_free(pkey_der);
@@ -188,5 +182,3 @@ void etpan_connect_ssl_context_cb(struct mailstream_ssl_context * ssl_context, v
 #endif /* LIBETPAN_API_CURRENT >= 23 */
 
 }
-
-#endif /* USE_GNUTLS */

@@ -269,20 +269,7 @@ static void prefs_themes_foreach_file(const gchar *dirname, const FileFunc func,
 
 static gboolean prefs_themes_is_system_theme(const gchar *dirname)
 {
-	gint len;
-	gchar *system_theme_dir;
-	gboolean is_sys = FALSE;
-
-	cm_return_val_if_fail(dirname != NULL, FALSE);
-
-	system_theme_dir = stock_pixmap_get_system_theme_dir_for_theme(NULL);
-	len = strlen(system_theme_dir);
-	if (strlen(dirname) > len && 0 == strncmp(dirname, system_theme_dir, len))
-		is_sys = TRUE;
-
-	g_free(system_theme_dir);
-
-	return is_sys;
+	return FALSE;
 }
 
 static void prefs_themes_set_themes_menu(GtkComboBox *combo, const ThemesData *tdata)
