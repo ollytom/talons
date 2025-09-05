@@ -970,7 +970,8 @@ static void inc_progress_dialog_update_periodic(IncProgressDialog *inc_dialog,
 	    tv_result += G_USEC_PER_SEC;
 	}
 
-	if (tv_result > PROGRESS_UPDATE_INTERVAL) {
+	uint progress_update_interval = 200; // milliseconds
+	if (tv_result > progress_update_interval) {
                 inc_progress_dialog_update(inc_dialog, inc_session);
 		tv_cur = g_date_time_add(inc_dialog->progress_tv, tv_result);
 		g_date_time_unref(inc_dialog->progress_tv);

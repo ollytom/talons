@@ -413,7 +413,7 @@ static PrefParam basic_param[] = {
 	{"use_mail_command", "FALSE", &tmp_ac_prefs.use_mail_command, P_BOOL,
 	 &basic_page.mailcmd_checkbtn, prefs_set_data_from_toggle, prefs_set_toggle},
 
-	{"mail_command", DEFAULT_SENDMAIL_CMD, &tmp_ac_prefs.mail_command, P_STRING,
+	{"mail_command", "/usr/sbin/sendmail -t -i", &tmp_ac_prefs.mail_command, P_STRING,
 	 &basic_page.mailcmd_entry, prefs_set_data_from_entry, prefs_set_entry},
 
 	{"user_id", NULL, &tmp_ac_prefs.userid, P_STRING,
@@ -562,7 +562,7 @@ static PrefParam compose_param[] = {
 	 &compose_page.sigfile_radiobtn,
 	 prefs_account_enum_set_data_from_radiobtn,
 	 prefs_account_enum_set_radiobtn},
-	{"signature_path", "~" G_DIR_SEPARATOR_S DEFAULT_SIGNATURE,
+	{"signature_path", "~/.signature",
 	 &tmp_ac_prefs.sig_path, P_STRING, &compose_page.entry_sigpath,
 	 prefs_set_data_from_entry, prefs_set_entry},
 
@@ -896,7 +896,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 
 	acname_entry = gtk_entry_new ();
 	gtk_widget_show (acname_entry);
-	gtk_widget_set_size_request (acname_entry, DEFAULT_ENTRY_WIDTH, -1);
 	gtk_box_pack_start (GTK_BOX (hbox), acname_entry, TRUE, TRUE, 0);
 
 	default_checkbtn = gtk_check_button_new_with_label (_("Set as default"));
@@ -1043,14 +1042,12 @@ static void basic_create_widget_func(PrefsPage * _page,
 
 	uid_entry = gtk_entry_new ();
 	gtk_widget_show (uid_entry);
-	gtk_widget_set_size_request (uid_entry, DEFAULT_ENTRY_WIDTH, -1);
 	gtk_grid_attach(GTK_GRID(serv_table), uid_entry, 1, 7, 2, 1);
 	gtk_widget_set_hexpand(uid_entry, TRUE);
 	gtk_widget_set_halign(uid_entry, GTK_ALIGN_FILL);
 
 	pass_entry = gtk_entry_new ();
 	gtk_widget_show (pass_entry);
-	gtk_widget_set_size_request (pass_entry, DEFAULT_ENTRY_WIDTH, -1);
 	gtk_grid_attach(GTK_GRID(serv_table), pass_entry, 1, 8, 2, 1);
 	gtk_widget_set_hexpand(pass_entry, TRUE);
 	gtk_widget_set_halign(pass_entry, GTK_ALIGN_FILL);
@@ -1623,7 +1620,6 @@ static void send_create_widget_func(PrefsPage * _page,
 
 	smtp_uid_entry = gtk_entry_new ();
 	gtk_widget_show (smtp_uid_entry);
-	gtk_widget_set_size_request (smtp_uid_entry, DEFAULT_ENTRY_WIDTH, -1);
 	gtk_box_pack_start (GTK_BOX (hbox), smtp_uid_entry, TRUE, TRUE, 0);
 
 	label = gtk_label_new (_("Password"));
@@ -1632,7 +1628,6 @@ static void send_create_widget_func(PrefsPage * _page,
 
 	smtp_pass_entry = gtk_entry_new ();
 	gtk_widget_show (smtp_pass_entry);
-	gtk_widget_set_size_request (smtp_pass_entry, DEFAULT_ENTRY_WIDTH, -1);
 	gtk_box_pack_start (GTK_BOX (hbox), smtp_pass_entry, TRUE, TRUE, 0);
 	gtk_entry_set_visibility (GTK_ENTRY (smtp_pass_entry), FALSE);
 	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(smtp_pass_entry),
@@ -1886,14 +1881,13 @@ static void oauth2_create_widget_func(PrefsPage * _page,
 	gtk_box_pack_start (GTK_BOX (vbox3), hbox, FALSE, FALSE, 0);
 	//gtk_widget_set_size_request (hbox, -1, 50);
 
-	label = gtk_label_new (_("Authorization code"));
+	label = gtk_label_new ("Authorization code");
 	gtk_widget_show (label);
 	gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
 
 	oauth2_authcode_entry = gtk_entry_new ();
 	gtk_widget_show (oauth2_authcode_entry);
 	gtk_widget_set_margin_bottom(oauth2_authcode_entry, 8);
-	//gtk_widget_set_size_request (oauth2_authcode_entry, DEFAULT_ENTRY_WIDTH, -1);
 	gtk_widget_set_tooltip_text(oauth2_authcode_entry,
 		_("Paste complete URL from browser or the provided authorization token"));
 	gtk_box_pack_start (GTK_BOX (hbox), oauth2_authcode_entry, TRUE, TRUE, 0);

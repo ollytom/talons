@@ -79,7 +79,7 @@ static PrefParam param[] = {
 	/* Receive */
 	{"use_ext_inc", "FALSE", &prefs_common.use_extinc, P_BOOL,
 	 NULL, NULL, NULL},
-	{"ext_inc_path", DEFAULT_INC_PATH, &prefs_common.extinc_cmd, P_STRING,
+	{"ext_inc_path", "/usr/bin/mh/inc", &prefs_common.extinc_cmd, P_STRING,
 	 NULL, NULL, NULL},
 
 	{"autochk_newmail", "FALSE", &prefs_common.autochk_newmail, P_BOOL,

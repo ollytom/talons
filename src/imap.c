@@ -1103,7 +1103,8 @@ new_conn:
 	 * A better solution than sending a NOOP every time would be
 	 * for every command to be prepared to retry until it is
 	 * successfully sent. -- mbp */
-	if ((time(NULL) - SESSION(session)->last_access_time > SESSION_TIMEOUT_INTERVAL) || session->cancelled) {
+	uint timeout = 60; // seconds
+	if ((time(NULL) - SESSION(session)->last_access_time > timeout) || session->cancelled) {
 		/* verify that the session is still alive */
 		r = imap_cmd_noop(session);
 
@@ -2522,35 +2523,28 @@ static FolderItem *imap_create_special_folder(Folder *folder,
 	return new_item;
 }
 
-static gchar *imap_item_get_path(Folder *folder, FolderItem *item)
+char *imap_item_get_path(Folder *folder, FolderItem *item)
 {
-	gchar *folder_path, *path;
-	gchar *item_path = NULL;
-
 	g_return_val_if_fail(folder != NULL, NULL);
 	g_return_val_if_fail(folder->account != NULL, NULL);
 	g_return_val_if_fail(item != NULL, NULL);
 
-	folder_path = prefs_account_cache_dir(folder->account->recv_server, folder->account->userid);
-	item_path = g_strdup(item->path);
-	if (g_path_is_absolute(folder_path)) {
-                if (item_path)
-                        path = g_strconcat(folder_path, G_DIR_SEPARATOR_S,
-                                           item_path, NULL);
+	char path[PATH_MAX];
+
+	char *dir = prefs_account_cache_dir(folder->account->recv_server, folder->account->userid);
+	if (g_path_is_absolute(dir)) {
+                if (item->path)
+                        snprintf(path, sizeof(path), "%s/%s", dir, item->path);
                 else
-                        path = g_strdup(folder_path);
-        } else {
-                if (item_path)
-                        path = g_strconcat(get_home_dir(), G_DIR_SEPARATOR_S,
-                                           folder_path, G_DIR_SEPARATOR_S,
-                                           item_path, NULL);
-                else
-                        path = g_strconcat(get_home_dir(), G_DIR_SEPARATOR_S,
-                                           folder_path, NULL);
+                        strlcpy(path, dir, sizeof(path));
+	} else {
+		if (item->path)
+			snprintf(path, sizeof(path), "%s/%s/%s", get_home_dir(), dir, item->path);
+		else
+			snprintf(path, sizeof(path), "%s/%s", get_home_dir(), dir);
         }
-        g_free(folder_path);
-        g_free(item_path);
-        return path;
+        free(dir);
+        return strdup(path);
 }
 
 static FolderItem *imap_create_folder(Folder *folder, FolderItem *parent,

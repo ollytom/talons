@@ -46,10 +46,7 @@
 
 #define ACTIONS_RC		"actionsrc"
 #define COMMAND_HISTORY	"command_history"
-#define DEFAULT_SIGNATURE	".signature"
 
-#define DEFAULT_INC_PATH	"/usr/bin/mh/inc"
-#define DEFAULT_SENDMAIL_CMD	"/usr/sbin/sendmail -t -i"
 #define DEFAULT_BROWSER_CMD	"firefox '%s'"
 #define DEFAULT_EDITOR_CMD	"gedit '%s'"
 
@@ -62,15 +59,11 @@
 #define FOLDER_SPACING			4
 #define COLOR_DIM			((double)35000 / 65535)
 #define UI_REFRESH_INTERVAL		50000	/* usec */
-#define PROGRESS_UPDATE_INTERVAL	200	/* msec */
-#define SESSION_TIMEOUT_INTERVAL	60	/* sec */
-#define MAX_HISTORY_SIZE		32
 #define HSPACING_NARROW			4
 #define VSPACING			10
 #define VSPACING_NARROW			4
 #define VSPACING_NARROW_2		2
 #define VBOX_BORDER			8
-#define DEFAULT_ENTRY_WIDTH		80
 
 #define DEFAULT_PIXMAP_THEME	"INTERNAL_DEFAULT"
 

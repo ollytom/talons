@@ -3825,29 +3825,28 @@ void folder_item_discard_cache(FolderItem *item)
 
 }
 
-static gchar *folder_item_get_cache_file(FolderItem *item)
+static char *folder_item_get_cache_file(FolderItem *item)
 {
-	gchar *path;
-	gchar *file;
-	gchar *old_file;
+	if (!item)
+		return NULL;
 
-	cm_return_val_if_fail(item != NULL, NULL);
-
-	path = folder_item_get_path(item);
-	cm_return_val_if_fail(path != NULL, NULL);
+	char *path = folder_item_get_path(item);
+	if (!path)
+		return NULL;
 	if (!is_dir_exist(path))
 		make_dir_hier(path);
-	file = g_strconcat(path, "/.claws_cache", NULL);
-	g_free(path);
 
-	return file;
+	char file[PATH_MAX];
+	strlcpy(file, path, sizeof(file));
+	strlcat(file, "/.claws_cache", sizeof(file));
+	free(path);
+	return strdup(file);
 }
 
 static gchar *folder_item_get_mark_file(FolderItem *item)
 {
 	gchar *path;
 	gchar *file;
-	gchar *old_file;
 
 	cm_return_val_if_fail(item != NULL, NULL);
 	cm_return_val_if_fail(item->path != NULL, NULL);

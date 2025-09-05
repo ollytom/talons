@@ -749,12 +749,13 @@ GList *add_history(GList *list, const gchar *str)
 
 	cm_return_val_if_fail(str != NULL, list);
 
+	uint maxhist = 32;
 	old = g_list_find_custom(list, (gpointer)str, (GCompareFunc)g_strcmp0);
 	if (old) {
 		oldstr = old->data;
 		list = g_list_remove(list, old->data);
 		g_free(oldstr);
-	} else if (g_list_length(list) >= MAX_HISTORY_SIZE) {
+	} else if (g_list_length(list) >= maxhist) {
 		GList *last;
 
 		last = g_list_last(list);
