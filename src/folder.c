@@ -3838,11 +3838,6 @@ static gchar *folder_item_get_cache_file(FolderItem *item)
 	if (!is_dir_exist(path))
 		make_dir_hier(path);
 	file = g_strconcat(path, G_DIR_SEPARATOR_S, CACHE_FILE, NULL);
-	old_file = g_strconcat(path, G_DIR_SEPARATOR_S, OLD_CACHE_FILE, NULL);
-
-	if (!is_file_exist(file) && is_file_exist(old_file))
-		move_file(old_file, file, FALSE);
-	g_free(old_file);
 	g_free(path);
 
 	return file;
@@ -3862,11 +3857,6 @@ static gchar *folder_item_get_mark_file(FolderItem *item)
 	if (!is_dir_exist(path))
 		make_dir_hier(path);
 	file = g_strconcat(path, G_DIR_SEPARATOR_S, MARK_FILE, NULL);
-	old_file = g_strconcat(path, G_DIR_SEPARATOR_S, OLD_MARK_FILE, NULL);
-
-	if (!is_file_exist(file) && is_file_exist(old_file))
-		move_file(old_file, file, FALSE);
-	g_free(old_file);
 	g_free(path);
 
 	return file;
