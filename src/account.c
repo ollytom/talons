@@ -1016,23 +1016,11 @@ static void account_clone(GtkWidget *widget, gpointer data)
 #undef ACP_FDUP
 #undef ACP_FASSIGN
 
-static void account_empty_cache(PrefsAccount *ac_prefs)
+void account_empty_cache(const char *server)
 {
-	gchar *cache_dir;
-
-	cache_dir = prefs_account_cache_dir(ac_prefs, FALSE);
-	if (cache_dir == NULL)
-		return; /* no cache dir, nothing to do */
-
+	char *cache_dir = prefs_account_cache_dir(server, NULL);
 	if (is_dir_exist(cache_dir) && remove_dir_recursive(cache_dir) < 0) {
 		g_warning("can't remove directory '%s'", cache_dir);
-	} else {
-		gchar *server_dir =  prefs_account_cache_dir(ac_prefs, TRUE);
-		if (g_rmdir(server_dir) == 0)
-			debug_print("Removed empty cache server directory\n");
-		else
-			debug_print("Cache server directory not empty: not removed\n");
-		g_free(server_dir);
 	}
 	g_free(cache_dir);
 }
@@ -1040,7 +1028,6 @@ static void account_empty_cache(PrefsAccount *ac_prefs)
 static void account_delete(GtkWidget *widget, gpointer data)
 {
 	PrefsAccount *ac_prefs;
-	gchar buf[BUFFSIZE];
 	GList *list;
 	Folder *folder;
 
@@ -1048,12 +1035,14 @@ static void account_delete(GtkWidget *widget, gpointer data)
  	if (ac_prefs == NULL)
  		return;
 
-	g_snprintf(buf, sizeof(buf),
-		   _("Do you really want to delete the account '%s'?"),
-		   ac_prefs->account_name ? ac_prefs->account_name :
-		   _("(Untitled)"));
-	if (alertpanel_full(_("Delete account"), buf,
-		 	    NULL, _("_Cancel"), "edit-delete-symbolic", _("_Delete"),
+	char msg[BUFSIZ];
+	char *name = ac_prefs->account_name;
+	if (!name)
+		strlcpy(msg, "Do you really want to delete this account?", sizeof(msg));
+	else
+		snprintf(msg, sizeof(msg), "Do you really want to delete the account '%s'?", name);
+	if (alertpanel_full("Delete account", msg,
+		 	    NULL, "_Cancel", "edit-delete-symbolic", "_Delete",
 			    NULL, NULL, ALERTFOCUS_FIRST, FALSE,
 			    NULL, ALERT_WARNING) != G_ALERTALTERNATE)
 		return;
@@ -1089,8 +1078,8 @@ static void account_delete(GtkWidget *widget, gpointer data)
 	passwd_store_delete_block(PWS_ACCOUNT, uid);
 	g_free(uid);
 
-	debug_print("Removing cache directory of this account...\n");
-	account_empty_cache(ac_prefs);
+	if (ac_prefs->protocol == A_IMAP4)
+		account_empty_cache(ac_prefs->recv_server);
 
 	folder_write_list();
 }

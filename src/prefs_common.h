@@ -339,7 +339,6 @@ struct _PrefsCommon
 	gboolean addressbook_use_editaddress_dialog;
 	gint addressbook_hpaned_pos;
 	gint addressbook_vpaned_pos;
-	GList *addressbook_custom_attributes;
 
 	/* Interface */
 	LayoutType layout_mode;

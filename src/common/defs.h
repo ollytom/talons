@@ -24,62 +24,34 @@
 #define QUEUE_DIR		"queue"
 #define DRAFT_DIR		"draft"
 #define TRASH_DIR		"trash"
-#define TAGS_DIR		"tagsdb"
 #define RC_DIR			".claws-mail"
-#define IMAP_CACHE_DIR		"imapcache"
-#define HEADER_CACHE_DIR        "headercache"
-#define MIME_TMP_DIR		"mimetmp"
 #define COMMON_RC		"clawsrc"
 #define ACCOUNT_RC		"accountrc"
 #define OAUTH2_RC		"oauth2rc"
 #define CUSTOM_HEADER_RC	"customheaderrc"
 #define DISPLAY_HEADER_RC	"dispheaderrc"
 #define FOLDERITEM_RC           "folderitemrc"
-#define FILTERING_RC		"filteringrc"
-#define MATCHER_RC		"matcherrc"
 #define MENU_RC			"menurc"
-#define TAGS_RC			"tagsrc"
 #define PASSWORD_STORE_RC			"passwordstorerc"
-#define MESSAGE_SEARCH_HISTORY	"messagesearch_history"
 #define COMPOSE_SAVE_TO_HISTORY	"compose_save_to_history"
-#define ADDRESSBOOK_CUSTOM_ATTRIBUTES "attributesrc"
-#define TEMPLATE_DIR		"templates"
-#define TMP_DIR			"tmp"
 #define ADDRESS_BOOK		"addressbook.xml"
 #define ADDRBOOK_DIR		"addrbook"
-#define MANUAL_HTML_INDEX	"claws-mail-manual.html"
 #define HOMEPAGE_URI		"https://www.claws-mail.org/"
-#define MANUAL_URI		"https://www.claws-mail.org/documentation.php"
-#define FAQ_URI			"https://www.claws-mail.org/faq/index.php"
-#define BUGZILLA_URI		"https://www.thewildbeast.co.uk/claws-mail/bugzilla/enter_bug.cgi"
-#define THEMES_URI		"https://www.claws-mail.org/themes.php"
-#define TOOLS_URI		"https://www.claws-mail.org/tools.php"
-#define MAILING_LIST_URI	"https://www.claws-mail.org/MLs.php"
-#define WELCOME_MSG_ADDR	"noreply@claws-mail.org"
 #define USERS_ML_URI		"https://lists.claws-mail.org/cgi-bin/mailman/listinfo/users"
-#define GPL_URI			"https://www.gnu.org/licenses/gpl.html"
 #define DONATE_URI		"https://www.claws-mail.org/donations.php"
-#define CONFIG_VERSIONS_URI	"https://www.claws-mail.org/cvc.php"
 #define RELEASE_NOTES_FILE	"RELEASE_NOTES"
 #define FOLDER_LIST		"folderlist.xml"
-#define CACHE_FILE		".claws_cache"
-#define MARK_FILE		".claws_mark"
-#define TAGS_FILE		".claws_tags"
 #define CACHE_VERSION		24
 #define MARK_VERSION		2
-#define TAGS_VERSION		1
 
 #define ACTIONS_RC		"actionsrc"
 #define COMMAND_HISTORY	"command_history"
 #define DEFAULT_SIGNATURE	".signature"
 
 #define DEFAULT_INC_PATH	"/usr/bin/mh/inc"
-#define DEFAULT_INC_PROGRAM	"inc"
 #define DEFAULT_SENDMAIL_CMD	"/usr/sbin/sendmail -t -i"
 #define DEFAULT_BROWSER_CMD	"firefox '%s'"
 #define DEFAULT_EDITOR_CMD	"gedit '%s'"
-#define DEFAULT_IMAGE_VIEWER_CMD "display '%s'"
-#define DEFAULT_AUDIO_PLAYER_CMD "play '%s'"
 
 #define BUFFSIZE			8192
 
@@ -88,15 +60,12 @@
 #define BORDER_WIDTH			2
 #define CTREE_INDENT			18
 #define FOLDER_SPACING			4
-#define MAX_ENTRY_LENGTH		8191
 #define COLOR_DIM			((double)35000 / 65535)
 #define UI_REFRESH_INTERVAL		50000	/* usec */
-#define FOLDER_UPDATE_INTERVAL		1500	/* msec */
 #define PROGRESS_UPDATE_INTERVAL	200	/* msec */
 #define SESSION_TIMEOUT_INTERVAL	60	/* sec */
 #define MAX_HISTORY_SIZE		32
 #define HSPACING_NARROW			4
-#define HSPACING_NARROW_2		2
 #define VSPACING			10
 #define VSPACING_NARROW			4
 #define VSPACING_NARROW_2		2
@@ -105,8 +74,6 @@
 
 #define DEFAULT_PIXMAP_THEME	"INTERNAL_DEFAULT"
 
-#define AVATAR_NONE	0
-#define AVATAR_XFACE	1
 #define AVATAR_FACE	2
 
 #endif /* __DEFS_H__ */

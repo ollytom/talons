@@ -4680,27 +4680,15 @@ void prefs_account_unregister_page(PrefsPage *page)
 	prefs_pages = g_slist_remove(prefs_pages, page);
 }
 
-gchar *prefs_account_cache_dir(PrefsAccount *ac_prefs, gboolean for_server)
+char *prefs_account_cache_dir(const char *server, const char *userid)
 {
-	gchar *dir = NULL;
-
-	if (ac_prefs->protocol == A_IMAP4) {
-		if (for_server) {
-			dir = g_strconcat(get_imap_cache_dir(),
-					  G_DIR_SEPARATOR_S,
-					  ac_prefs->recv_server,
-					  NULL);
-		} else {
-			dir = g_strconcat(get_imap_cache_dir(),
-					  G_DIR_SEPARATOR_S,
-					  ac_prefs->recv_server,
-					  G_DIR_SEPARATOR_S,
-					  ac_prefs->userid,
-					  NULL);
-		}
-	}
-
-	return dir;
+	char dir[PATH_MAX];
+	snprintf(dir, sizeof(dir), "%s/imapcache/%s", get_rc_dir(), server);
+	if (userid == NULL)
+		return strdup(dir);
+	strlcat(dir, "/", sizeof(dir));
+	strlcat(dir, userid, sizeof(dir));
+	return strdup(dir);
 }
 
 static void prefs_account_receive_itv_spinbutton_value_changed_cb(GtkWidget *w, gpointer data)

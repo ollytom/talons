@@ -23,7 +23,6 @@
 #include <string.h>
 #include <locale.h>
 
-#include "prefs_common.h"
 #include "manual.h"
 #include "utils.h"
 
@@ -64,62 +63,13 @@ static gchar *get_local_path_with_locale(gchar *rootpath)
 	return dir;
 }
 
-gboolean manual_available(ManualType type)
-{
-	gboolean ret = FALSE;
-    	gchar *dir = NULL, *uri = NULL;
-
-	switch (type) {
-		case MANUAL_MANUAL_CLAWS:
-			dir = get_local_path_with_locale("/dev/null"); // TODO: was MANUALDIR
-			if (dir != NULL) {
-				uri = g_strconcat(dir, G_DIR_SEPARATOR_S, MANUAL_HTML_INDEX, NULL);
-				g_free(dir);
-				if (is_file_exist(uri))
-					ret = TRUE;
-				else
-					ret = FALSE;
-				g_free(uri);
-			}
-			break;
-		default:
-			ret = FALSE;
-	}
-
-	return ret;
-}
-
 void manual_open(ManualType type, gchar *url_anchor)
 {
-	gchar *uri = NULL;
-	gchar *dir;
-
-	switch (type) {
-		case MANUAL_MANUAL_CLAWS:
-			dir = get_local_path_with_locale("/dev/null"); // TODO: was MANUALDIR
-			if (dir != NULL) {
-				gchar *tmp_anchor = NULL;
-				if (url_anchor && *url_anchor != '\0')
-					tmp_anchor = g_strconcat("#", url_anchor, NULL);
-				uri = g_strconcat("file://",
-						dir, G_DIR_SEPARATOR_S, MANUAL_HTML_INDEX,
-						tmp_anchor,
-						NULL);
-				g_free(tmp_anchor);
-				g_free(dir);
-			} else {
-				uri = g_strconcat(MANUAL_URI, NULL);
-			}
-			break;
-		case MANUAL_FAQ_CLAWS:
-			uri = g_strconcat(FAQ_URI, NULL);
-			break;
-
-		default:
-			break;
+	if (type == MANUAL_FAQ_CLAWS) {
+		open_uri("https://www.claws-mail.org/faq/index.php", "xdg-open '%s'");
+		return;
 	}
-	open_uri(uri, prefs_common_get_uri_cmd());
-	g_free(uri);
+	open_uri("https://www.claws-mail.org/documentation.php", "xdg-open '%s'");
 }
 
 void manual_open_with_anchor_cb(GtkWidget *widget, gchar *url_anchor)

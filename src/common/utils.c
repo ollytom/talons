@@ -1446,24 +1446,12 @@ const gchar *get_mail_base_dir(void)
 	return get_home_dir();
 }
 
-const gchar *get_imap_cache_dir(void)
-{
-	static gchar *imap_cache_dir = NULL;
-
-	if (!imap_cache_dir)
-		imap_cache_dir = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
-					     IMAP_CACHE_DIR, NULL);
-
-	return imap_cache_dir;
-}
-
 const gchar *get_mime_tmp_dir(void)
 {
 	static gchar *mime_tmp_dir = NULL;
 
 	if (!mime_tmp_dir)
-		mime_tmp_dir = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
-					   MIME_TMP_DIR, NULL);
+		mime_tmp_dir = g_strconcat(get_rc_dir(), "/mimetmp", NULL);
 
 	return mime_tmp_dir;
 }
@@ -1473,9 +1461,7 @@ const gchar *get_template_dir(void)
 	static gchar *template_dir = NULL;
 
 	if (!template_dir)
-		template_dir = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
-					   TEMPLATE_DIR, NULL);
-
+		template_dir = g_strconcat(get_rc_dir(), "/templates", NULL);
 	return template_dir;
 }
 
@@ -1494,9 +1480,7 @@ const gchar *get_tmp_dir(void)
 	static gchar *tmp_dir = NULL;
 
 	if (!tmp_dir)
-		tmp_dir = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
-				      TMP_DIR, NULL);
-
+		tmp_dir = g_strconcat(get_rc_dir(), "/tmp", NULL);
 	return tmp_dir;
 }
 

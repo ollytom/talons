@@ -514,7 +514,7 @@ SummaryView *summary_create(MainWindow *mainwin)
 
 	statlabel_folder = gtk_label_new("");
 	gtk_widget_show(statlabel_folder);
-	gtk_box_pack_start(GTK_BOX(hbox_l), statlabel_folder, FALSE, FALSE, HSPACING_NARROW_2);
+	gtk_box_pack_start(GTK_BOX(hbox_l), statlabel_folder, FALSE, FALSE, 2);
 	statlabel_select = gtk_label_new("");
 	gtk_widget_show(statlabel_select);
 	gtk_box_pack_start(GTK_BOX(hbox_l), statlabel_select, FALSE, FALSE, 12);

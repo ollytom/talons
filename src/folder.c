@@ -3837,7 +3837,7 @@ static gchar *folder_item_get_cache_file(FolderItem *item)
 	cm_return_val_if_fail(path != NULL, NULL);
 	if (!is_dir_exist(path))
 		make_dir_hier(path);
-	file = g_strconcat(path, G_DIR_SEPARATOR_S, CACHE_FILE, NULL);
+	file = g_strconcat(path, "/.claws_cache", NULL);
 	g_free(path);
 
 	return file;
@@ -3856,11 +3856,13 @@ static gchar *folder_item_get_mark_file(FolderItem *item)
 	cm_return_val_if_fail(path != NULL, NULL);
 	if (!is_dir_exist(path))
 		make_dir_hier(path);
-	file = g_strconcat(path, G_DIR_SEPARATOR_S, MARK_FILE, NULL);
+	file = g_strconcat(path, "/.claws_mark", NULL);
 	g_free(path);
 
 	return file;
 }
+
+const char *tags_dir = ".claws_tags";
 
 static gchar *folder_item_get_tags_file(FolderItem *item)
 {
@@ -3878,16 +3880,11 @@ static gchar *folder_item_get_tags_file(FolderItem *item)
 	identifier = folder_item_get_identifier(item);
 	cm_return_val_if_fail(identifier != NULL, NULL);
 
-	path = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
-			   TAGS_DIR, G_DIR_SEPARATOR_S,
-			   identifier, NULL);
-
+	path = g_strconcat(get_rc_dir(), "/tagsdb/", identifier, NULL);
 	g_free(identifier);
-
 	if (!is_dir_exist(path))
 		make_dir_hier(path);
-
-	file = g_strconcat(path, G_DIR_SEPARATOR_S, TAGS_FILE, NULL);
+	file = g_strconcat(path, "/.claws_tags", NULL);
 
 	g_free(path);
 

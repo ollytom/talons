@@ -14,11 +14,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __MANUAL_H__
 #define __MANUAL_H__
+
+#include <gtk/gtk.h>
 
 typedef enum
 {
@@ -37,7 +39,6 @@ typedef enum
 #define MANUAL_ANCHOR_PLUGINS		"adv_plugins"
 #define MANUAL_ANCHOR_TAGS		"adv_tags"
 
-gboolean manual_available	(ManualType type);
 void	 manual_open		(ManualType type, gchar *url_anchor);
 void	 manual_open_with_anchor_cb(GtkWidget *widget, gchar *url_anchor);
 

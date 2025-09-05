@@ -92,10 +92,7 @@ void gtkut_stock_button_add_help(GtkWidget *bbox, GtkWidget **help_btn)
 
 	gtk_widget_set_can_default(*help_btn, TRUE);
 	gtk_box_pack_end(GTK_BOX (bbox), *help_btn, TRUE, TRUE, 0);
-	gtk_button_box_set_child_secondary(GTK_BUTTON_BOX (bbox),
-			*help_btn, TRUE);
-	gtk_widget_set_sensitive(*help_btn,
-			manual_available(MANUAL_MANUAL_CLAWS));
+	gtk_button_box_set_child_secondary(GTK_BUTTON_BOX (bbox), *help_btn, TRUE);
 	gtk_widget_show(*help_btn);
 }
 

@@ -978,7 +978,7 @@ void prefs_common_read_config(void)
 	prefs_common.mime_open_cmd_history =
 		prefs_common_read_history(COMMAND_HISTORY);
 	prefs_common.message_search_history =
-		prefs_common_read_history(MESSAGE_SEARCH_HISTORY);
+		prefs_common_read_history("messagesearch_history");
 	prefs_common.compose_save_to_history =
 		prefs_common_read_history(COMPOSE_SAVE_TO_HISTORY);
 }
@@ -1056,14 +1056,8 @@ void prefs_common_write_config(void)
 {
 	prefs_write_config(param, "Common", COMMON_RC);
 
-	prefs_common_save_history(COMMAND_HISTORY,
-		prefs_common.mime_open_cmd_history);
-	prefs_common_save_history(COMPOSE_SAVE_TO_HISTORY,
-		prefs_common.compose_save_to_history);
-
-		prefs_common_save_history_to_dir(ADDRBOOK_DIR,
-		ADDRESSBOOK_CUSTOM_ATTRIBUTES,
-		prefs_common.addressbook_custom_attributes);
+	prefs_common_save_history(COMMAND_HISTORY, prefs_common.mime_open_cmd_history);
+	prefs_common_save_history(COMPOSE_SAVE_TO_HISTORY, prefs_common.compose_save_to_history);
 }
 
 /* make a copy of string 'in' into buffer 'out'. un-escape \ sequences.

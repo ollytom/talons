@@ -2530,13 +2530,10 @@ static gchar *imap_item_get_path(Folder *folder, FolderItem *item)
 	g_return_val_if_fail(folder != NULL, NULL);
 	g_return_val_if_fail(folder->account != NULL, NULL);
 	g_return_val_if_fail(item != NULL, NULL);
-	folder_path = prefs_account_cache_dir(folder->account, FALSE);
 
-	g_return_val_if_fail(folder_path != NULL, NULL);
-
+	folder_path = prefs_account_cache_dir(folder->account->recv_server, folder->account->userid);
 	item_path = g_strdup(item->path);
-
-        if (g_path_is_absolute(folder_path)) {
+	if (g_path_is_absolute(folder_path)) {
                 if (item_path)
                         path = g_strconcat(folder_path, G_DIR_SEPARATOR_S,
                                            item_path, NULL);

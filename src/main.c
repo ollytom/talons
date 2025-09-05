@@ -429,7 +429,6 @@ int main(int argc, char *argv[])
 	CHDIR_RETURN_VAL_IF_FAIL(get_rc_dir(), 1);
 
 	MAKE_DIR_IF_NOT_EXIST(get_mail_base_dir());
-	MAKE_DIR_IF_NOT_EXIST(get_imap_cache_dir());
 	MAKE_DIR_IF_NOT_EXIST(get_mime_tmp_dir());
 	MAKE_DIR_IF_NOT_EXIST(get_tmp_dir());
 
