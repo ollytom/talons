@@ -1446,16 +1446,6 @@ const gchar *get_mail_base_dir(void)
 	return get_home_dir();
 }
 
-const gchar *get_news_cache_dir(void)
-{
-	static gchar *news_cache_dir = NULL;
-	if (!news_cache_dir)
-		news_cache_dir = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
-					     NEWS_CACHE_DIR, NULL);
-
-	return news_cache_dir;
-}
-
 const gchar *get_imap_cache_dir(void)
 {
 	static gchar *imap_cache_dir = NULL;

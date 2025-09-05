@@ -402,12 +402,6 @@ struct _PrefsCommon
 	gint summary_quicksearch_dynamic;
 	gint summary_quicksearch_autorun;
 
-	GList *summary_quicksearch_history;
-	GList *summary_search_from_history;
-	GList *summary_search_to_history;
-	GList *summary_search_subject_history;
-	GList *summary_search_body_history;
-	GList *summary_search_adv_condition_history;
 	GList *message_search_history;
 	GList *compose_save_to_history;
 

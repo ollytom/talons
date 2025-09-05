@@ -49,6 +49,8 @@
 #define IS_SYSTEM_THEME(path)   (prefs_themes_is_system_theme(path))
 
 #define PREVIEW_ICONS 7
+#define THEMEINFO_FILE ".claws_themeinfo"
+#define PIXMAP_THEME_DIR "themes"
 
 typedef struct _ThemesPage
 {

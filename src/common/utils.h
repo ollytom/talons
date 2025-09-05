@@ -345,7 +345,6 @@ const gchar *get_rc_dir			(void);
 void  set_rc_dir			(const gchar *dir);
 gboolean rc_dir_is_alt			(void);
 const gchar *get_mail_base_dir		(void);
-const gchar *get_news_cache_dir		(void);
 const gchar *get_imap_cache_dir		(void);
 const gchar *get_mime_tmp_dir		(void);
 const gchar *get_template_dir		(void);

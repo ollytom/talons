@@ -430,10 +430,8 @@ int main(int argc, char *argv[])
 
 	MAKE_DIR_IF_NOT_EXIST(get_mail_base_dir());
 	MAKE_DIR_IF_NOT_EXIST(get_imap_cache_dir());
-	MAKE_DIR_IF_NOT_EXIST(get_news_cache_dir());
 	MAKE_DIR_IF_NOT_EXIST(get_mime_tmp_dir());
 	MAKE_DIR_IF_NOT_EXIST(get_tmp_dir());
-	MAKE_DIR_IF_NOT_EXIST(UIDL_DIR);
 
 	remove_all_files(get_tmp_dir());
 	remove_all_files(get_mime_tmp_dir());
