@@ -75,6 +75,12 @@
 #include "socket.h"
 #include "send_message.h"
 
+/*
+ * longer labels crash the X Window System with error:
+ * 'BadAlloc (insufficient resources for operation)'
+ */
+#define MAX_MENU_LABEL_LENGTH		5453
+
 /* list of all instantiated MainWindow */
 static GList *mainwin_list = NULL;
 
@@ -2571,7 +2577,7 @@ static gint mailing_list_populate_submenu (GtkWidget *menuitem, const gchar * li
 {
 	GtkWidget *item, *menu;
 	const gchar *url_pt ;
-	gchar url_decoded[BUFFSIZE];
+	gchar url_decoded[MAX_MENU_LABEL_LENGTH];
 	GList *children, *amenu;
 	gint menu_nb = 0;
 
@@ -2590,7 +2596,7 @@ static gint mailing_list_populate_submenu (GtkWidget *menuitem, const gchar * li
 			get_url_part (&url_pt, url_decoded);
 			item = NULL;
 			if (!g_ascii_strncasecmp(url_decoded, "mailto:", 7)) {
- 				item = cm_menu_item_new_label_from_url ((url_decoded));
+ 				item = gtk_menu_item_new_with_label(url_decoded);
 				g_signal_connect(G_OBJECT(item), "activate",
 						 G_CALLBACK(mailing_list_compose),
 						 NULL);
@@ -2598,7 +2604,7 @@ static gint mailing_list_populate_submenu (GtkWidget *menuitem, const gchar * li
  			else if (!g_ascii_strncasecmp(url_decoded, "http:", 5) ||
 				 !g_ascii_strncasecmp(url_decoded, "https:",6)) {
 
-				item = cm_menu_item_new_label_from_url ((url_decoded));
+				item = gtk_menu_item_new_with_label(url_decoded);
 				g_signal_connect(G_OBJECT(item), "activate",
 						 G_CALLBACK(mailing_list_open_uri),
 						 NULL);
