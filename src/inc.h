@@ -20,10 +20,6 @@
 #ifndef __INC_H__
 #define __INC_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 
 #include "mainwindow.h"

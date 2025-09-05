@@ -20,10 +20,6 @@
 #ifndef __SSL_H__
 #define __SSL_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 typedef enum {
 	SSL_NONE,
 	SSL_TUNNEL,

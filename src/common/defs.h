@@ -19,10 +19,6 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #define INBOX_DIR		"inbox"
 #define OUTBOX_DIR		"sent"
 #define QUEUE_DIR		"queue"

@@ -16,13 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
-#include <stdio.h>
-
 #include "defs.h"
 
 #include <glib.h>
@@ -30,6 +23,7 @@
 #include <string.h>
 #include <locale.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

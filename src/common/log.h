@@ -14,15 +14,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef LOG_H
 #define LOG_H
-
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
 
 #include <glib.h>
 
@@ -57,7 +53,7 @@ struct _LogText
 {
 	LogInstance  instance;
 	gchar		*text;
-	LogType		 type;	
+	LogType		 type;
 };
 
 /* logging */

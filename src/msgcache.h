@@ -20,10 +20,6 @@
 #ifndef __MSGCACHE_H__
 #define __MSGCACHE_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <sys/types.h>
 
 typedef struct _MsgCache MsgCache;

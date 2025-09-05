@@ -17,11 +17,6 @@
  *
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#include "claws-features.h"
-#endif
-
 # include <gnutls/gnutls.h>
 # include <gnutls/crypto.h>
 

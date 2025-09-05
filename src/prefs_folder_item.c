@@ -20,11 +20,6 @@
  * folderlist.xml!!! the old folderitemrc file will only serve for a few
  * versions (for compatibility) */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include "defs.h"
 
 #include <glib.h>

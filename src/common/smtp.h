@@ -20,10 +20,6 @@
 #ifndef __SMTP_H__
 #define __SMTP_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 
 #include "session.h"

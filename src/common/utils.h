@@ -23,10 +23,6 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <glib-object.h>
 #include <stdio.h>

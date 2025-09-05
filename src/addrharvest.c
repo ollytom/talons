@@ -20,11 +20,6 @@
  * Functions for an E-Mail address harvester.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <sys/stat.h>
 #include <glib.h>
 #include <string.h>

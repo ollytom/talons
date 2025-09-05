@@ -18,11 +18,6 @@
 
 /* General functions for accessing address book files */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>

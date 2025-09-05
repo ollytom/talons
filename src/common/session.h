@@ -20,10 +20,6 @@
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 
 #include <time.h>

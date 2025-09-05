@@ -14,15 +14,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __PROCMIME_H__
 #define __PROCMIME_H__
-
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
 
 #include <gio/gio.h>
 #include <gtk/gtk.h>

@@ -19,10 +19,6 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <netdb.h>
 

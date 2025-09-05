@@ -21,10 +21,6 @@
 #ifndef __SSL_CERTIFICATE_H__
 #define __SSL_CERTIFICATE_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <gnutls/gnutls.h>
 #include <gnutls/x509.h>
 

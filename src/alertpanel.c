@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <stddef.h>
 
 #include <glib.h>
@@ -197,7 +192,7 @@ void alertpanel_error_log(const gchar *format, ...)
 	strretchomp(buf);
 
 	mainwin = mainwindow_get_mainwindow();
-	
+
 	if (mainwin && mainwin->logwin) {
 		mainwindow_clear_error(mainwin);
 		val = alertpanel_full(_("Error"), buf, NULL, _("_Close"), NULL,
@@ -218,7 +213,7 @@ static void alertpanel_show(void)
 	manage_window_set_transient(GTK_WINDOW(window));
 	gtk_widget_show_all(window);
 	value = G_ALERTWAIT;
-	
+
 	display = gdk_display_get_default();
 	seat = gdk_display_get_default_seat(display);
 	device = gdk_seat_get_pointer(seat);
@@ -278,7 +273,7 @@ static void alertpanel_create(const gchar *title,
 	gtk_window_set_title(GTK_WINDOW(window), title);
 	gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DIALOG);
 	gtk_window_set_modal(GTK_WINDOW(window), TRUE);
-	
+
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	g_signal_connect(G_OBJECT(window), "delete_event",
 			 G_CALLBACK(alertpanel_deleted),
@@ -295,7 +290,7 @@ static void alertpanel_create(const gchar *title,
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 12);
 
 	gtk_container_add (GTK_CONTAINER(content_area), hbox);
-	
+
 	/* title icon */
 	switch (alert_type) {
 	case ALERT_QUESTION:
@@ -321,10 +316,10 @@ static void alertpanel_create(const gchar *title,
 	gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 0);
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 12);
-	
+
 	gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
 	gtk_widget_show (vbox);
-	
+
 	label = gtk_label_new(title_full);
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
 	gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_LEFT);
@@ -356,7 +351,7 @@ static void alertpanel_create(const gchar *title,
 	gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
 	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 	gtk_widget_show(label);
-		
+
 	/* Claws: custom widget */
 	if (custom_widget) {
 		gtk_box_pack_start(GTK_BOX(vbox), custom_widget, FALSE,

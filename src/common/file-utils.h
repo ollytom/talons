@@ -19,10 +19,6 @@
 #ifndef __CLAWS_IO_H__
 #define __CLAWS_IO_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <stdio.h>
 #include <glib.h>
 

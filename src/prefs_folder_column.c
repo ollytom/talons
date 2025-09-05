@@ -16,11 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include "defs.h"
 
 #include <glib.h>
@@ -516,7 +511,6 @@ static void prefs_folder_column_remove(void)
 	GtkListStore *stock_store, *shown_store;
 	GtkTreeIter shown_sel, stock_sel, stock_add;
 	gboolean stock_sel_valid;
-	gchar *name;
 	FolderColumnType type;
 
 	stock_store = GTK_LIST_STORE(gtk_tree_view_get_model

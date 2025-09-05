@@ -19,11 +19,6 @@
 /* code ported from gedit */
 /* This is for my patient girlfirend Regina */
 
-#ifdef HAVE_CONFIG_H
-#  include "config.h"
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 
 #include <string.h> /* for strlen */

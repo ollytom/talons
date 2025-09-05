@@ -19,10 +19,6 @@
 #ifndef __GTKUTILS_H__
 #define __GTKUTILS_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <glib.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>

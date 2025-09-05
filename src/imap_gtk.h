@@ -14,16 +14,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef IMAP_GTK_H
 #define IMAP_GTK_H
-
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 
 #include <glib.h>
 #include "folder.h"

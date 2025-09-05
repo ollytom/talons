@@ -21,10 +21,6 @@
 #ifndef __ETPAN_SSL_H__
 #define __ETPAN_SSL_H__
 
-#ifdef HAVE_CONFIG_H
-#include "claws-features.h"
-#endif
-
 #include <libetpan/libetpan.h>
 
 gboolean etpan_certificate_check(mailstream *imap_stream, const char *host, gint port, gboolean accept_if_valid);
