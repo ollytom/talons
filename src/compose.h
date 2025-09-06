@@ -32,7 +32,6 @@ typedef struct _AttachInfo	AttachInfo;
 #include "undo.h"
 #include "toolbar.h"
 #include "codeconv.h"
-#include "template.h"
 #include "viewtypes.h"
 #include "folder.h"
 
