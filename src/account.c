@@ -90,7 +90,6 @@ static void	      account_set_menu		(void);
 
 static void account_edit_prefs		(GtkWidget *widget, gpointer data);
 static void account_delete		(GtkWidget *widget, gpointer data);
-static void account_clone		(GtkWidget *widget, gpointer data);
 
 static void account_up			(GtkWidget *widget, gpointer data);
 static void account_down		(GtkWidget *widget, gpointer data);
@@ -673,7 +672,6 @@ static void account_edit_create(void)
 	GtkWidget *add_btn;
 	GtkWidget *edit_btn;
 	GtkWidget *del_btn;
-	GtkWidget *clone_btn;
 	GtkWidget *up_btn;
 	GtkWidget *down_btn;
 
@@ -756,14 +754,6 @@ static void account_edit_create(void)
 			  G_CALLBACK (account_delete), NULL);
 	CLAWS_SET_TIP(del_btn,
 			_("Delete the selected account from the list"));
-
-	clone_btn = gtkut_stock_button("edit-copy", _("_Copy"));
-	gtk_widget_show (clone_btn);
-	gtk_box_pack_start (GTK_BOX (vbox2), clone_btn, FALSE, FALSE, 4);
-	g_signal_connect(G_OBJECT(clone_btn), "clicked",
-			 G_CALLBACK(account_clone), NULL);
-	CLAWS_SET_TIP(clone_btn,
-			_("Create a new copy of the selected account"));
 
 	down_btn = gtkut_stock_button("go-down", _("_Down"));
 	gtk_widget_show (down_btn);
@@ -859,162 +849,6 @@ static gboolean account_delete_references_func(GNode *node, gpointer data)
 
 	return FALSE;
 }
-
-
-#define ACP_FDUP(fld) ac_clon->fld = ((ac_prefs->fld) != NULL)?\
-				     g_strdup(ac_prefs->fld): NULL
-#define ACP_FASSIGN(fld) ac_clon->fld = ac_prefs->fld
-static void account_clone(GtkWidget *widget, gpointer data)
-{
-	PrefsAccount *ac_prefs, *ac_clon;
-	GSList *hdrs = NULL;
-	CustomHeader *cch = NULL, *ch = NULL;
-
-	ac_prefs = account_list_view_get_selected_account(edit_account.list_view);
-	if (ac_prefs == NULL)
-		return;
-
-	if (ac_prefs->protocol == A_IMAP4) {
-		alertpanel_error(_("Accounts with remote folders cannot be copied."));
-		return;
-	}
-	account_list_dirty = TRUE;
-
-	ac_clon = prefs_account_new();
-	/* copy fields */
-	ac_clon->account_name = g_strdup_printf(_("Copy of %s"),
-						ac_prefs->account_name);
-	/* personal */
-	ACP_FDUP(name);
-	ACP_FDUP(address);
-	ACP_FDUP(organization);
-
-	/* server */
-	ACP_FASSIGN(protocol);
-	ACP_FDUP(recv_server);
-	ACP_FDUP(smtp_server);
-	ACP_FDUP(userid);
-	ACP_FDUP(passwd);
-
-	ACP_FDUP(local_mbox);
-	ACP_FASSIGN(use_mail_command);
-	ACP_FDUP(mail_command);
-
-	ACP_FASSIGN(ssl_pop);
-	ACP_FASSIGN(ssl_imap);
-	ACP_FASSIGN(ssl_smtp);
-	ACP_FASSIGN(use_nonblocking_ssl);
-	ACP_FASSIGN(use_tls_sni);
-	ACP_FASSIGN(in_ssl_client_cert_file);
-	ACP_FASSIGN(in_ssl_client_cert_pass);
-	ACP_FASSIGN(out_ssl_client_cert_file);
-	ACP_FASSIGN(out_ssl_client_cert_pass);
-
-	/* receive */
-	ACP_FASSIGN(use_pop_auth);
-    ACP_FASSIGN(pop_auth_type);
-	ACP_FASSIGN(rmmail);
-	ACP_FASSIGN(msg_leave_time);
-	ACP_FASSIGN(msg_leave_hour);
-	ACP_FASSIGN(recv_at_getall);
-	ACP_FASSIGN(sd_rmmail_on_download);
-	ACP_FDUP(inbox);
-	ACP_FDUP(local_inbox);
-	ACP_FASSIGN(max_articles);
-	ACP_FASSIGN(autochk_use_default);
-	ACP_FASSIGN(autochk_use_custom);
-	ACP_FASSIGN(autochk_itv);
-	ac_clon->autocheck_timer = 0;
-
-	ACP_FASSIGN(imap_auth_type);
-	ACP_FASSIGN(imap_batch_size);
-
-	/* send */
-	ACP_FASSIGN(gen_msgid);
-	ACP_FASSIGN(gen_xmailer);
-	ACP_FASSIGN(add_customhdr);
-	ACP_FASSIGN(use_smtp_auth);
-	ACP_FASSIGN(smtp_auth_type);
-	ACP_FDUP(smtp_userid);
-	ACP_FDUP(smtp_passwd);
-
-	ACP_FASSIGN(pop_before_smtp);
-	ACP_FASSIGN(pop_before_smtp_timeout);
-	ACP_FASSIGN(last_pop_login_time);
-
-	ac_clon->customhdr_list = NULL;
-	hdrs = ac_prefs->customhdr_list;
-	while (hdrs != NULL) {
-		ch = (CustomHeader *)hdrs->data;
-
-		cch = g_new0(CustomHeader, 1);
-		cch->account_id = ac_clon->account_id;
-		cch->name = (ch->name != NULL) ? g_strdup(ch->name) : NULL;
-		cch->value = (ch->value != NULL) ? g_strdup(ch->value) : NULL;
-
-		ac_clon->customhdr_list = g_slist_append(ac_clon->customhdr_list, cch);
-
-		hdrs = g_slist_next(hdrs);
-	}
-
-	/* compose */
-        ACP_FASSIGN(sig_type);
-        ACP_FDUP(sig_path);
-        ACP_FASSIGN(auto_sig);
-        ACP_FDUP(sig_sep);
-        ACP_FASSIGN(set_autocc);
-        ACP_FDUP(auto_cc);
-        ACP_FASSIGN(set_autobcc);
-        ACP_FDUP(auto_bcc);
-        ACP_FASSIGN(set_autoreplyto);
-        ACP_FDUP(auto_replyto);
-
-        /* privacy */
-	ACP_FDUP(default_privacy_system);
-        ACP_FASSIGN(default_encrypt);
-	ACP_FASSIGN(default_encrypt_reply);
-        ACP_FASSIGN(default_sign);
-	ACP_FASSIGN(default_sign_reply);
-	ACP_FASSIGN(save_encrypted_as_clear_text);
-	ACP_FASSIGN(encrypt_to_self);
-
-        /* advanced */
-        ACP_FASSIGN(set_smtpport);
-        ACP_FASSIGN(smtpport);
-        ACP_FASSIGN(set_popport);
-        ACP_FASSIGN(popport);
-        ACP_FASSIGN(set_imapport);
-        ACP_FASSIGN(imapport);
-        ACP_FASSIGN(set_domain);
-        ACP_FDUP(domain);
-        ACP_FASSIGN(mark_crosspost_read);
-        ACP_FASSIGN(crosspost_col);
-
-        ACP_FASSIGN(set_tunnelcmd);
-        ACP_FDUP(tunnelcmd);
-
-        ACP_FDUP(imap_dir);
-	ACP_FASSIGN(imap_subsonly);
-
-        ACP_FASSIGN(set_sent_folder);
-        ACP_FDUP(sent_folder);
-	ACP_FASSIGN(set_queue_folder);
-	ACP_FDUP(queue_folder);
-        ACP_FASSIGN(set_draft_folder);
-        ACP_FDUP(draft_folder);
-        ACP_FASSIGN(set_trash_folder);
-        ACP_FDUP(trash_folder);
-	/* don't want two default accounts */
-	ac_clon->is_default = FALSE;
-	ACP_FASSIGN(folder);
-
-	ACP_FASSIGN(config_version);
-
-	account_list = g_list_append(account_list, ac_clon);
-	account_list_view_set();
-}
-#undef ACP_FDUP
-#undef ACP_FASSIGN
 
 void account_empty_cache(const char *server)
 {

@@ -43,6 +43,8 @@
 #include "combobox.h"
 #include "file-utils.h"
 
+#define CUSTOM_HEADER_RC "customheaderrc"
+
 enum {
 	CUSTHDR_STRING,		/*!< display string managed by list store */
 	CUSTHDR_DATA,		/*!< string managed by us */
