@@ -31,12 +31,6 @@ typedef enum {
 	NUM_RECV_PROTOCOLS
 } RecvProtocol;
 
-typedef enum {
-	SIG_FILE,
-	SIG_COMMAND,
-	SIG_DIRECT
-} SigType;
-
 typedef enum
 {
 	POPAUTH_OAUTH2    = 1 << 1
@@ -128,10 +122,6 @@ struct _PrefsAccount
         gchar *oauth2_client_secret;
 
 	/* Compose */
-	SigType sig_type;
-	gchar    *sig_path;
-	gboolean  auto_sig;
-	gchar 	 *sig_sep;
 	gboolean  set_autocc;
 	gchar    *auto_cc;
 	gboolean  set_autobcc;

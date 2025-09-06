@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include "main.h"
 #include "mainwindow.h"
 #include "folderview.h"
 #include "folder.h"
@@ -48,8 +47,6 @@
 #include "prefs_actions.h"
 #include "hooks.h"
 #include "passwordstore.h"
-#include "file-utils.h"
-#include "oauth2.h"
 
 enum {
 	ACCOUNT_IS_DEFAULT,
@@ -1514,65 +1511,6 @@ static void account_double_clicked(GtkTreeView		*list_view,
 	account_edit_prefs(NULL, NULL);
 }
 
-gchar *account_get_signature_str(PrefsAccount *account)
-{
-	gchar *sig_body = NULL;
-	gchar *sig_str = NULL;
-	gchar *utf8_sig_str = NULL;
-
-	cm_return_val_if_fail(account != NULL, NULL);
-
-	if (!account->sig_path)
-		return NULL;
-
-	if (account->sig_type == SIG_FILE) {
-		gchar *sig_full_path;
-		if (!g_path_is_absolute(account->sig_path)) {
-			sig_full_path = g_build_filename(get_home_dir(), account->sig_path, NULL);
-		} else {
-			sig_full_path = g_strdup(account->sig_path);
-		}
-
-		if (!is_file_or_fifo_exist(sig_full_path)) {
-			g_warning("can't open signature file: '%s'", sig_full_path);
-			g_free(sig_full_path);
-			return NULL;
-		}
-
-		debug_print("Reading signature from file '%s'\n", sig_full_path);
-		gchar *tmp = file_read_to_str(sig_full_path);
-		g_free(sig_full_path);
-
-		if (!tmp)
-			return NULL;
-
-		sig_body = normalize_newlines(tmp);
-		g_free(tmp);
-	} else {
-		sig_body = get_command_output(account->sig_path);
-	}
-
-	if (account->sig_sep) {
-		sig_str = g_strconcat("\n", account->sig_sep, "\n", sig_body,
-				      NULL);
-		g_free(sig_body);
-	} else
-		sig_str = g_strconcat("\n", sig_body, NULL);
-
-	if (sig_str) {
-		if (g_utf8_validate(sig_str, -1, NULL) == TRUE)
-			utf8_sig_str = sig_str;
-		else {
-			utf8_sig_str = conv_codeset_strdup
-				(sig_str, conv_get_locale_charset_str_no_utf8(),
-				 CS_INTERNAL);
-			g_free(sig_str);
-		}
-	}
-
-	return utf8_sig_str;
-}
-
 PrefsAccount *account_get_cur_account (void)
 {
 	return cur_account;
@@ -1604,86 +1542,3 @@ gboolean password_get(const gchar *user,
 	return FALSE;
 }
 
-static GSList *account_sigsep_list = NULL;
-
-/* create a list of unique signatures from accounts list */
-void account_sigsep_matchlist_create(void)
-{
-	GList *cur_ac = NULL;
-	PrefsAccount *ac_prefs = NULL;
-
-	if (account_sigsep_list)
-		return;
-
-	account_sigsep_list = g_slist_prepend(account_sigsep_list, g_strdup("-- "));
-	for (cur_ac = account_get_list();
-		 cur_ac != NULL;
-		 cur_ac = g_list_next(cur_ac)) {
-		ac_prefs = (PrefsAccount *)cur_ac->data;
-
-		if (ac_prefs->sig_sep && *ac_prefs->sig_sep != '\0') {
-			if (!g_slist_find_custom(account_sigsep_list, ac_prefs->sig_sep,
-					(GCompareFunc)g_strcmp0)) {
-				account_sigsep_list = g_slist_prepend(account_sigsep_list,
-						g_strdup(ac_prefs->sig_sep));
-			}
-		}
-	}
-}
-
-/* delete the list of signatures created by account_sigsep_matchlist_create() */
-void account_sigsep_matchlist_delete(void)
-{
-	if (account_sigsep_list) {
-		slist_free_strings_full(account_sigsep_list);
-		account_sigsep_list = NULL;
-	}
-}
-
-/* match a string against all signatures in list, using the specified format */
-gboolean account_sigsep_matchlist_str_found(const gchar *str, const gchar *format)
-{
-	gchar *tmp = NULL;
-	gboolean found = FALSE;
-	GSList *item;
-
-	for (item = account_sigsep_list;
-		 item != NULL && !found;
-		 item = g_slist_next(item)) {
-		tmp = g_strdup_printf(format, (gchar *)item->data);
-		if (tmp) {
-			found = (strcmp(tmp, str) == 0);
-			g_free(tmp);
-		} else {
-			g_warning("account_sigsep_matchlist_str_found: g_strdup_printf failed, check format '%s'",
-				format);
-			return FALSE;
-		}
-	}
-	return found;
-}
-
-/* match M first char of a string against all signatures in list, using the specified format */
-gboolean account_sigsep_matchlist_nchar_found(const gchar *str, const gchar *format)
-{
-	gchar *tmp = NULL;
-	gboolean found = FALSE;
-	GSList *item;
-	gint len;
-
-	for (item = account_sigsep_list;
-		 item != NULL && !found;
-		 item = g_slist_next(item)) {
-		tmp = g_strdup_printf(format, (gchar *)item->data);
-		if (tmp) {
-			len = strlen(tmp);
-			found = (strncmp(tmp, str, len) == 0);
-			g_free(tmp);
-		} else {
-			g_warning("account_sigsep_matchlist_nchar_found: g_strdup_printf failed, check format '%s'",
-				format);
-			return FALSE;
-		}
-	}
-	return found;
-}

@@ -208,14 +208,10 @@ typedef struct
 
 typedef struct ComposePage
 {
-    PrefsPage page;
+	PrefsPage page;
 
-    GtkWidget *vbox;
+	GtkWidget *vbox;
 
-	GtkWidget *sigfile_radiobtn;
-	GtkWidget *entry_sigpath;
-	GtkWidget *checkbtn_autosig;
-	GtkWidget *entry_sigsep;
 	GtkWidget *autocc_checkbtn;
 	GtkWidget *autocc_entry;
 	GtkWidget *autobcc_checkbtn;
@@ -558,22 +554,6 @@ static PrefParam oauth2_param[] = {
 };
 
 static PrefParam compose_param[] = {
-	{"signature_type", "0", &tmp_ac_prefs.sig_type, P_ENUM,
-	 &compose_page.sigfile_radiobtn,
-	 prefs_account_enum_set_data_from_radiobtn,
-	 prefs_account_enum_set_radiobtn},
-	{"signature_path", "~/.signature",
-	 &tmp_ac_prefs.sig_path, P_STRING, &compose_page.entry_sigpath,
-	 prefs_set_data_from_entry, prefs_set_entry},
-
-	{"auto_signature", "TRUE", &tmp_ac_prefs.auto_sig, P_BOOL,
-	 &compose_page.checkbtn_autosig,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"signature_separator", "-- ", &tmp_ac_prefs.sig_sep, P_STRING,
-	 &compose_page.entry_sigsep,
-	 prefs_set_data_from_entry, prefs_set_entry},
-
 	{"set_autocc", "FALSE", &tmp_ac_prefs.set_autocc, P_BOOL,
 	 &compose_page.autocc_checkbtn,
 	 prefs_set_data_from_toggle, prefs_set_toggle},
@@ -1952,15 +1932,8 @@ static void compose_create_widget_func(PrefsPage * _page,
 	PrefsAccount *ac_prefs = (PrefsAccount *) data;
 
 	GtkWidget *vbox1;
-	GtkWidget *sig_hbox;
 	GtkWidget *hbox1;
 	GtkWidget *hbox2;
-	GtkWidget *frame_sig;
-	GtkWidget *vbox_sig;
-	GtkWidget *label_sigpath;
-	GtkWidget *checkbtn_autosig;
-	GtkWidget *label_sigsep;
-	GtkWidget *entry_sigsep;
 	GtkWidget *frame;
 	GtkWidget *table;
 	GtkWidget *autocc_checkbtn;
@@ -1974,73 +1947,7 @@ static void compose_create_widget_func(PrefsPage * _page,
 	gtk_widget_show (vbox1);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
 
-	vbox_sig = gtkut_get_options_frame(vbox1, &frame_sig, _("Signature"));
-
-	PACK_CHECK_BUTTON (vbox_sig, checkbtn_autosig,
-			   _("Automatically insert signature"));
-
-	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox1);
-	gtk_box_pack_start (GTK_BOX (vbox_sig), hbox1, TRUE, TRUE, 0);
-	label_sigsep = gtk_label_new (_("Signature separator"));
-	gtk_widget_show (label_sigsep);
-	gtk_box_pack_start (GTK_BOX (hbox1), label_sigsep, FALSE, FALSE, 0);
-
-	entry_sigsep = gtk_entry_new ();
-	gtk_widget_show (entry_sigsep);
-	gtk_box_pack_start (GTK_BOX (hbox1), entry_sigsep, FALSE, FALSE, 0);
-
-	gtk_widget_set_size_request (entry_sigsep, 64, -1);
-
-	sig_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (sig_hbox);
-	gtk_box_pack_start (GTK_BOX (vbox_sig), sig_hbox, FALSE, FALSE, 0);
-
-	sigfile_radiobtn = gtk_radio_button_new_with_label (NULL, _("File"));
-	gtk_widget_show (sigfile_radiobtn);
-	gtk_box_pack_start (GTK_BOX (sig_hbox), sigfile_radiobtn,
-			    FALSE, FALSE, 0);
-	g_object_set_data (G_OBJECT (sigfile_radiobtn),
-			   MENU_VAL_ID,
-			   GINT_TO_POINTER (SIG_FILE));
-	g_signal_connect(G_OBJECT(sigfile_radiobtn), "clicked",
-			 G_CALLBACK(prefs_account_sigfile_radiobtn_cb), NULL);
-
-	sigcmd_radiobtn = gtk_radio_button_new_with_label_from_widget
-		(GTK_RADIO_BUTTON(sigfile_radiobtn), _("Command output"));
-	gtk_widget_show (sigcmd_radiobtn);
-	gtk_box_pack_start (GTK_BOX (sig_hbox), sigcmd_radiobtn,
-			    FALSE, FALSE, 0);
-	g_object_set_data (G_OBJECT (sigcmd_radiobtn),
-			   MENU_VAL_ID,
-			   GINT_TO_POINTER (SIG_COMMAND));
-	g_signal_connect(G_OBJECT(sigcmd_radiobtn), "clicked",
-			 G_CALLBACK(prefs_account_sigcmd_radiobtn_cb), NULL);
-
-	hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox2);
-	gtk_box_pack_start (GTK_BOX (vbox_sig), hbox2, TRUE, TRUE, 0);
-	label_sigpath = gtk_label_new (_("Signature"));
-	gtk_widget_show (label_sigpath);
-	gtk_box_pack_start (GTK_BOX (hbox2), label_sigpath, FALSE, FALSE, 0);
-
-	entry_sigpath = gtk_entry_new ();
-	gtk_widget_show (entry_sigpath);
-	gtk_box_pack_start (GTK_BOX (hbox2), entry_sigpath, TRUE, TRUE, 0);
-
-	signature_browse_button = gtkut_get_browse_file_btn(_("Bro_wse"));
-	gtk_widget_show (signature_browse_button);
-	gtk_box_pack_start (GTK_BOX (hbox2), signature_browse_button, FALSE, FALSE, 0);
-	g_signal_connect(G_OBJECT(signature_browse_button), "clicked",
-			 G_CALLBACK(prefs_account_signature_browse_cb), NULL);
-
-	signature_edit_button = gtk_button_new_with_mnemonic(_("_Edit"));
-	gtk_widget_show (signature_edit_button);
-	gtk_box_pack_start (GTK_BOX (hbox2), signature_edit_button, FALSE, FALSE, 0);
-	g_signal_connect(G_OBJECT(signature_edit_button), "clicked",
-			 G_CALLBACK(prefs_account_signature_edit_cb), entry_sigpath);
-
-	PACK_FRAME (vbox1, frame, _("Automatically set the following addresses"));
+	PACK_FRAME (vbox1, frame, "Automatically set the following addresses");
 
 	table =  gtk_grid_new();
 	gtk_widget_show (table);
@@ -2084,11 +1991,6 @@ static void compose_create_widget_func(PrefsPage * _page,
 	gtk_widget_set_halign(autoreplyto_entry, GTK_ALIGN_FILL);
 
 	SET_TOGGLE_SENSITIVITY (autoreplyto_checkbtn, autoreplyto_entry);
-
-	page->sigfile_radiobtn = sigfile_radiobtn;
-	page->entry_sigpath      = entry_sigpath;
-	page->checkbtn_autosig   = checkbtn_autosig;
-	page->entry_sigsep       = entry_sigsep;
 
 	page->autocc_checkbtn      = autocc_checkbtn;
 	page->autocc_entry       = autocc_entry;

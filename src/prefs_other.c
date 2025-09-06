@@ -152,7 +152,6 @@ static void prefs_keybind_preset_changed(GtkComboBox *widget)
 		{"<Actions>/Menu/Message/SendLater",			"<shift><control>S"},
 		{"<Actions>/Menu/Message/AttachFile",			"<control>M"},
 		{"<Actions>/Menu/Message/InsertFile",			"<control>I"},
-		{"<Actions>/Menu/Message/InsertSig",			"<control>G"},
 		{"<Actions>/Menu/Message/Save",				"<control>S"},
 		{"<Actions>/Menu/Message/Close",			"<control>W"},
 		{"<Actions>/Menu/Edit/Undo",				"<control>Z"},

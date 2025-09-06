@@ -73,17 +73,11 @@ PrefsAccount *account_get_reply_account	(MsgInfo 	*msginfo,
 					 gboolean	 reply_autosel);
 void 	      account_rename_path	(const gchar 	*old_id,
 					 const gchar 	*new_id);
-gchar *account_get_signature_str(PrefsAccount *account);
 
 gboolean      password_get(const gchar *user,
 			   const gchar *server,
 			   const gchar *protocol,
 			   guint16 port,
 			   gchar **password);
-
-void		  account_sigsep_matchlist_create	  (void);
-void		  account_sigsep_matchlist_delete	  (void);
-gboolean	  account_sigsep_matchlist_str_found  (const gchar *str, const gchar *format);
-gboolean	  account_sigsep_matchlist_nchar_found    (const gchar *str, const gchar *format);
 
 #endif /* __ACCOUNT_H__ */
