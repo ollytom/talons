@@ -32,7 +32,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const fence_mod = b.createModule(.{
-        .root_source_file = b.path("fence/src/root.zig"),
+        .root_source_file = b.path("fence/root.zig"),
         .target = target,
     });
     const fence = b.addLibrary(.{
@@ -41,7 +41,7 @@ pub fn build(b: *std.Build) void {
     });
     // https://github.com/ziglang/zig/issues/6817
     fence.bundle_compiler_rt = true;
-    const header_file = b.addInstallHeaderFile(b.path("fence/src/fence.h"), "fence.h");
+    const header_file = b.addInstallHeaderFile(b.path("fence/fence.h"), "fence.h");
     b.getInstallStep().dependOn(&header_file.step);
 
     const extlibs = [_][]const u8{
