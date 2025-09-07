@@ -346,8 +346,6 @@ void procmsg_msginfo_change_flags	(MsgInfo *msginfo,
 					 MsgTmpFlags add_tmp_flags,
 					 MsgPermFlags rem_perm_flags,
 					 MsgTmpFlags rem_tmp_flags);
-gint procmsg_remove_special_headers	(const gchar 	*in,
-					 const gchar 	*out);
 
 gint procmsg_save_to_outbox(FolderItem *outbox, const gchar *file);
 gboolean procmsg_msg_has_flagged_parent	(MsgInfo 	*info,

@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <math.h>
 
+
 #include "main.h"
 #include "utils.h"
 #include "procmsg.h"
@@ -33,6 +34,7 @@
 #include "send_message.h"
 #include "procmime.h"
 #include "statusbar.h"
+#include "fence.h"
 #include "folder.h"
 #include "foldersel.h"
 #include "prefs_common.h"
@@ -949,51 +951,6 @@ gboolean procmsg_queue_is_empty(FolderItem *queue)
 	return res;
 }
 
-gint procmsg_remove_special_headers(const gchar *in, const gchar *out)
-{
-	FILE *fp, *outfp;
-	gchar buf[BUFFSIZE];
-
-	if ((fp = g_fopen(in, "rb")) == NULL) {
-		FILE_OP_ERROR(in, "g_fopen");
-		return -1;
-	}
-	if ((outfp = g_fopen(out, "wb")) == NULL) {
-		FILE_OP_ERROR(out, "g_fopen");
-		fclose(fp);
-		return -1;
-	}
-	while (fgets(buf, sizeof(buf), fp) != NULL) {
-		/* new way */
-		if ((!strncmp(buf, "X-Claws-End-Special-Headers: 1",
-			strlen("X-Claws-End-Special-Headers:"))) ||
-		    (!strncmp(buf, "X-Sylpheed-End-Special-Headers: 1",
-			strlen("X-Sylpheed-End-Special-Headers:"))))
-			break;
-		/* old way */
-		if (buf[0] == '\r' || buf[0] == '\n') break;
-		/* from other mailers */
-		if (!strncmp(buf, "Date: ", 6)
-		||  !strncmp(buf, "To: ", 4)
-		||  !strncmp(buf, "From: ", 6)
-		||  !strncmp(buf, "Subject: ", 9)) {
-			rewind(fp);
-			break;
-		}
-	}
-	while (fgets(buf, sizeof(buf), fp) != NULL) {
-		if (fputs(buf, outfp) == EOF) {
-			FILE_OP_ERROR(out, "fputs");
-			fclose(outfp);
-			fclose(fp);
-			return -1;
-		}
-	}
-	safe_fclose(outfp);
-	fclose(fp);
-	return 0;
-}
-
 gint procmsg_save_to_outbox(FolderItem *outbox, const gchar *file)
 {
 	gint num;
@@ -1017,7 +974,8 @@ gint procmsg_save_to_outbox(FolderItem *outbox, const gchar *file)
 	g_snprintf(tmp, sizeof(tmp), "%s%ctmpmsg.out.%08x",
 		   get_rc_dir(), G_DIR_SEPARATOR, (guint) rand());
 
-	if (procmsg_remove_special_headers(file, tmp) !=0)
+	char *end = "X-Claws-End-Special-Headers:";
+	if (fence_copy_after_line(tmp, file, end) == 0)
 		return -1;
 
 	while (folder_item_scan(outbox) < 0) {

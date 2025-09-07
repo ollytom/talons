@@ -32,7 +32,6 @@
 #include "procmime.h"
 #include "procheader.h"
 #include "quoted-printable.h"
-#include "uuencode.h"
 #include "unmime.h"
 #include "html.h"
 #include "codeconv.h"
@@ -425,26 +424,6 @@ gboolean procmime_decode_content(MimeInfo *mimeinfo)
 		}
 		if (tmpfp != outfp) {
 			fclose(tmpfp);
-		}
-	} else if (encoding == ENC_X_UUENCODE) {
-		gchar outbuf[BUFFSIZE];
-		glong len;
-		gboolean flag = FALSE;
-
-		while ((ftell(infp) < readend) && (fgets(buf, sizeof(buf), infp) != NULL)) {
-			if (!flag && strncmp(buf,"begin ", 6)) continue;
-
-			if (flag) {
-				len = fromuutobits(outbuf, buf);
-				if (len <= 0) {
-					if (len < 0)
-						g_warning("bad UUENCODE content (%ld)", len);
-					break;
-				}
-				if (fwrite(outbuf, sizeof(gchar), (size_t)len, outfp) < (size_t)len)
-					err = TRUE;
-			} else
-				flag = TRUE;
 		}
 	} else {
 		while ((ftell(infp) < readend) && (fgets(buf, sizeof(buf), infp) != NULL)) {

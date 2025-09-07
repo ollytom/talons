@@ -108,7 +108,6 @@ pub fn build(b: *std.Build) void {
     etpan.addIncludePath(b.path("."));
     etpan.addIncludePath(b.path("common"));
 
-    // We will also create a module for our other entry point, 'main.zig'.
     const exe_mod = b.createModule(.{
         .target = target,
         .optimize = optimize,
@@ -135,7 +134,7 @@ pub fn build(b: *std.Build) void {
             "-DGTK_DISABLE_DEPRECATION_WARNINGS",
             "-DGDK_DISABLE_DEPRECATION_WARNINGS",
             "-g",
-            // "-std=c11",
+            "-std=c17",
         },
     });
     exe.addIncludePath(b.path(".."));

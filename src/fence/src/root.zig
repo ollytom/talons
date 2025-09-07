@@ -29,7 +29,7 @@ fn quoteDepth(line: []const u8) u8 {
 
     var depth: u8 = 0;
     const last = std.mem.lastIndexOfScalar(u8, ln, '>') orelse return 1;
-    for (line[first..last+1]) |c| {
+    for (line[first .. last + 1]) |c| {
         if (c == '>') {
             if (depth == 0xff) return depth;
             depth += 1;
@@ -46,16 +46,45 @@ export fn quote_depth(line: [*:0]const u8) c_int {
     return @as(c_int, n);
 }
 
+fn copyAfterLine(dst: std.fs.File, src: std.fs.File, key: []const u8) !usize {
+    var buf: [8192]u8 = undefined;
+    var rd = std.io.bufferedReader(src.reader());
+    var r = rd.reader();
+    var wr = std.io.bufferedWriter(dst.writer());
+    var w = wr.writer();
+    var found = false;
+    var n: usize = 0;
+    while (try r.readUntilDelimiterOrEof(buf[0..], '\n')) |line| {
+        if (std.mem.startsWith(u8, line, key)) {
+            found = true;
+            continue;
+        }
+        if (!found) continue;
+        try w.print("{s}\n", .{line});
+        n += (line.len + 1); // + 1 for newline
+    }
+    try wr.flush();
+    return n;
+}
+
+export fn fence_copy_after_line(dst: [*:0]const u8, src: [*:0]const u8, line: [*:0]const u8) usize {
+    const fdst = std.fs.cwd().createFile(std.mem.span(dst), .{}) catch return 0;
+    defer fdst.close();
+    const fsrc = std.fs.cwd().openFile(std.mem.span(src), .{}) catch return 0;
+    defer fsrc.close();
+    return copyAfterLine(fdst, fsrc, std.mem.span(line)) catch 0;
+}
+
 test "quote depth" {
-    const tests = [_]struct{[]const u8, u8}{
-        .{">>> hello", 3},
-        .{">    >> hello", 3},
-        .{"     > hello >", 1},
-        .{"hello>>", 0},
-        .{">> hello >>", 2},
-        .{">  \t> hello", 2},
-        .{">", 1},
-        .{ "xxx > hello >>", 0},
+    const tests = [_]struct { []const u8, u8 }{
+        .{ ">>> hello", 3 },
+        .{ ">    >> hello", 3 },
+        .{ "     > hello >", 1 },
+        .{ "hello>>", 0 },
+        .{ ">> hello >>", 2 },
+        .{ ">  \t> hello", 2 },
+        .{ ">", 1 },
+        .{ "xxx > hello >>", 0 },
     };
     for (tests) |t| {
         const got = quoteDepth(t[0]);
