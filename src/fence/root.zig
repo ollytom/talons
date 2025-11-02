@@ -47,22 +47,17 @@ export fn quote_depth(line: [*:0]const u8) c_int {
 }
 
 fn copyAfterLine(dst: std.fs.File, src: std.fs.File, key: []const u8) !usize {
-    var buf: [8192]u8 = undefined;
-    var rd = std.io.bufferedReader(src.reader());
-    var r = rd.reader();
-    var wr = std.io.bufferedWriter(dst.writer());
-    var w = wr.writer();
-    var found = false;
-    var n: usize = 0;
-    while (try r.readUntilDelimiterOrEof(buf[0..], '\n')) |line| {
+    var rbuf: [8192]u8 = undefined;
+    var rd = std.fs.File.reader(src, &rbuf).interface;
+    var wbuf: [8192]u8 = undefined;
+    var wr = std.fs.File.writer(dst, &wbuf).interface;
+    while (true) {
+        const line = try rd.takeDelimiterInclusive('\n');
         if (std.mem.startsWith(u8, line, key)) {
-            found = true;
-            continue;
+            break;
         }
-        if (!found) continue;
-        try w.print("{s}\n", .{line});
-        n += (line.len + 1); // + 1 for newline
     }
+    const n = try rd.streamRemaining(&wr);
     try wr.flush();
     return n;
 }

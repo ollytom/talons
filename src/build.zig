@@ -6,14 +6,14 @@ fn cFiles(name: []const u8) ![][]const u8 {
     var dir = try std.fs.cwd().openDir(name, .{.iterate = true});
     defer dir.close();
     const dba = alloc.allocator();
-    var files = std.ArrayList([]const u8).init(dba);
+    var files = std.ArrayList([]const u8).empty;
     var iter = dir.iterate();
     while (try iter.next()) |dent| {
         if (std.mem.endsWith(u8, dent.name, ".c")) {
-            try files.append(try std.fs.path.join(dba, &.{name, dent.name}));
+            try files.append(dba, try std.fs.path.join(dba, &.{name, dent.name}));
         }
     }
-    return files.toOwnedSlice();
+    return files.toOwnedSlice(dba);
 }
 
 // Although this function looks imperative, note that its job is to
