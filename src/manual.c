@@ -17,51 +17,8 @@
  *
  */
 
-#include "defs.h"
-
-#include <glib.h>
-#include <string.h>
-#include <locale.h>
-
 #include "manual.h"
 #include "utils.h"
-
-static gchar *get_language()
-{
-	gchar *language;
-	gchar *c;
-	language = g_strdup(setlocale(LC_MESSAGES, NULL));
-	if (!language)
-		return g_strdup("en");
-
-	if((c = strchr(language, ',')) != NULL)
-		*c = '\0';
-	if((c = strchr(language, '_')) != NULL)
-		*c = '\0';
-
-	return language;
-}
-
-static gchar *get_local_path_with_locale(gchar *rootpath)
-{
-	gchar *lang_str, *dir;
-
-	lang_str = get_language();
-	dir = g_strconcat(rootpath, G_DIR_SEPARATOR_S,
-			  lang_str, NULL);
-	g_free(lang_str);
-	if(!is_dir_exist(dir)) {
-		g_free(dir);
-		dir = g_strconcat(rootpath, G_DIR_SEPARATOR_S,
-				  "en", NULL);
-		if(!is_dir_exist(dir)) {
-			g_free(dir);
-			dir = NULL;
-		}
-	}
-
-	return dir;
-}
 
 void manual_open(ManualType type, gchar *url_anchor)
 {

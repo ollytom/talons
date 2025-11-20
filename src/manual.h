@@ -17,9 +17,6 @@
  *
  */
 
-#ifndef __MANUAL_H__
-#define __MANUAL_H__
-
 #include <gtk/gtk.h>
 
 typedef enum
@@ -41,5 +38,3 @@ typedef enum
 
 void	 manual_open		(ManualType type, gchar *url_anchor);
 void	 manual_open_with_anchor_cb(GtkWidget *widget, gchar *url_anchor);
-
-#endif /* __MANUAL_H__ */
