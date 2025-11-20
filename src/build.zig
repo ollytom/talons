@@ -16,20 +16,12 @@ fn cFiles(name: []const u8) ![][]const u8 {
     return files.toOwnedSlice(dba);
 }
 
-// Although this function looks imperative, note that its job is to
-// declaratively construct a build graph that will be executed by an external
-// runner.
 pub fn build(b: *std.Build) void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
     // for restricting supported target set are available.
     const target = b.standardTargetOptions(.{});
-
-    // Standard optimization options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
-    // set a preferred release mode, allowing the user to decide how to optimize.
-    const optimize = b.standardOptimizeOption(.{});
 
     const fence_mod = b.createModule(.{
         .root_source_file = b.path("fence/root.zig"),
@@ -45,9 +37,9 @@ pub fn build(b: *std.Build) void {
     b.getInstallStep().dependOn(&header_file.step);
 
     const extlibs = [_][]const u8{
-        "cairo", "glib-2.0",  "gtk-3", "gdk-3", "gdk_pixbuf-2.0", "pango-1.0",
+        "cairo", "glib-2.0",  "gtk-3", "gdk-3", "gdk_pixbuf-2.0", "pango-1.0", "gio-2.0",
         "iconv",
-        "gnutls", "gmp", "unistring",
+        "gnutls", "gmp", "unistring", "nettle", "tasn1", "p11-kit", "hogweed", "libidn2",
     };
 
     const common_mod = b.createModule(.{
@@ -96,7 +88,7 @@ pub fn build(b: *std.Build) void {
     }
     etpan_mod.linkLibrary(common);
     etpan_mod.linkSystemLibrary("etpan", .{});
-    etpan_mod.linkSystemLibrary("atk", .{});
+    etpan_mod.linkSystemLibrary("atk-1.0", .{});
     const etpan = b.addLibrary(.{
         .name = "clawsetpan",
         .root_module = etpan_mod,
@@ -110,7 +102,7 @@ pub fn build(b: *std.Build) void {
 
     const exe_mod = b.createModule(.{
         .target = target,
-        .optimize = optimize,
+        .optimize = b.standardOptimizeOption(.{}),
         .link_libc = true,
     });
     exe_mod.linkLibrary(fence);
