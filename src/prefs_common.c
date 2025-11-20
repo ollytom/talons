@@ -640,12 +640,6 @@ static PrefParam param[] = {
 	 P_COLOR, NULL, NULL, NULL},
 	{"log_out_color", "#0000ef", &prefs_common.color[COL_LOG_OUT],
 	 P_COLOR, NULL, NULL, NULL},
-	{"log_status_ok_color", "#00af00", &prefs_common.color[COL_LOG_STATUS_OK],
-	 P_COLOR, NULL, NULL, NULL},
-	{"log_status_nok_color", "#0000af", &prefs_common.color[COL_LOG_STATUS_NOK],
-	 P_COLOR, NULL, NULL, NULL},
-	{"log_status_skip_color", "#aa00aa", &prefs_common.color[COL_LOG_STATUS_SKIP],
-	 P_COLOR, NULL, NULL, NULL},
 
 	{"gtk_enable_accels", "TRUE", &prefs_common.gtk_enable_accels, P_BOOL,
 	 NULL, NULL, NULL},

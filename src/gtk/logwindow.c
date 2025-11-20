@@ -140,8 +140,6 @@ LogWindow *log_window_create(LogInstance instance)
 	return logwin;
 }
 
-#define LOG_COLORS 8
-
 void log_window_init(LogWindow *logwin)
 {
 	GtkTextBuffer *buffer;
@@ -151,9 +149,9 @@ void log_window_init(LogWindow *logwin)
 	logwin->error_color = &prefs_common.color[COL_LOG_ERROR];
 	logwin->in_color = &prefs_common.color[COL_LOG_IN];
 	logwin->out_color = &prefs_common.color[COL_LOG_OUT];
-	logwin->status_ok_color = &prefs_common.color[COL_LOG_STATUS_OK];
-	logwin->status_nok_color = &prefs_common.color[COL_LOG_STATUS_NOK];
-	logwin->status_skip_color = &prefs_common.color[COL_LOG_STATUS_SKIP];
+	logwin->status_ok_color = "#00af00"; // green
+	logwin->status_nok_color = "#0000af"; // blue
+	logwin->status_skip_color = "#aa00aa"; // purple
 
 	buffer = logwin->buffer;
 	gtk_text_buffer_create_tag(buffer, "message",
@@ -181,8 +179,6 @@ void log_window_init(LogWindow *logwin)
 				   "foreground-rgba", logwin->status_skip_color,
 				   NULL);
 }
-
-#undef LOG_COLORS
 
 void log_window_show(LogWindow *logwin)
 {
