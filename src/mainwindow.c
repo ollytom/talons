@@ -341,11 +341,6 @@ static void scan_tree_func	 (Folder	*folder,
 static void toggle_work_offline_cb(GtkAction	*action,
 				  gpointer	 data);
 
-static void addr_harvest_cb	 ( GtkAction	*action,
-				  gpointer	 data );
-
-static void addr_harvest_msg_cb	 ( GtkAction	*action,
-				  gpointer	 data );
 static void sync_cb		 ( GtkAction	*action,
 				  gpointer	 data );
 
@@ -610,15 +605,8 @@ static GtkActionEntry mainwin_entries[] =
 
 	{"Message/CheckSignature",                   NULL, N_("Check signature"), "C", NULL, G_CALLBACK(check_signature_cb) },
 
-/* Tools menu */
-
 	{"Tools/AddressBook",                        NULL, N_("_Address book"), "<shift><control>A", NULL, G_CALLBACK(addressbook_open_cb) },
 	{"Tools/AddSenderToAB",                      NULL, N_("Add sender to address boo_k"), NULL, NULL, G_CALLBACK(add_address_cb) },
-
-	{"Tools/CollectAddresses",                   NULL, N_("C_ollect addresses"), NULL, NULL, NULL },
-	{"Tools/CollectAddresses/FromFolder",        NULL, N_("From current _folder..."), NULL, NULL, G_CALLBACK(addr_harvest_cb) },
-	{"Tools/CollectAddresses/FromSelected",      NULL, N_("From selected _messages..."), NULL, NULL, G_CALLBACK(addr_harvest_msg_cb) },
-	{"Tools/---",                                NULL, "---", NULL, NULL, NULL },
 
 	/* {"Tools/---",                             NULL, "---", NULL, NULL, NULL }, */
 	{"Tools/Actions",                            NULL, N_("Actio_ns"), NULL, NULL, NULL },
@@ -1224,9 +1212,6 @@ MainWindow *main_window_create()
 /* Tools menu */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "AddressBook", "Tools/AddressBook", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "AddSenderToAB", "Tools/AddSenderToAB", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "CollectAddresses", "Tools/CollectAddresses", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CollectAddresses", "FromFolder", "Tools/CollectAddresses/FromFolder", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools/CollectAddresses", "FromSelected", "Tools/CollectAddresses/FromSelected", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "Separator1", "Tools/---", GTK_UI_MANAGER_SEPARATOR)
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "CheckNewMessages", "Tools/CheckNewMessages", GTK_UI_MANAGER_MENUITEM)
@@ -2372,10 +2357,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	SET_SENSITIVE("Menu/Message/CheckSignature", M_SINGLE_TARGET_EXIST);
 
 	SET_SENSITIVE("Menu/Tools/AddSenderToAB", M_SINGLE_TARGET_EXIST);
-	SET_SENSITIVE("Menu/Tools/CollectAddresses", M_FOLDER_SELECTED);
-	SET_SENSITIVE("Menu/Tools/CollectAddresses/FromFolder", M_FOLDER_SELECTED);
-	SET_SENSITIVE("Menu/Tools/CollectAddresses/FromSelected", M_TARGET_EXIST);
-
 	SET_SENSITIVE("Menu/Tools/Execute", M_DELAY_EXEC);
 	SET_SENSITIVE("Menu/Tools/Expunge", M_DELETED_EXISTS);
 	SET_SENSITIVE("Menu/Tools/ForgetSessionPasswords", M_SESSION_PASSWORDS);
@@ -3998,25 +3979,6 @@ static gboolean mainwindow_state_event_cb(GtkWidget *widget, GdkEventWindowState
 gboolean mainwindow_is_obscured(void)
 {
 	return is_obscured;
-}
-
-/*
- * Harvest addresses for selected folder.
- */
-static void addr_harvest_cb( GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-
-	addressbook_harvest( mainwin->summaryview->folder_item, FALSE, NULL );
-}
-
-/*
- * Harvest addresses for selected messages in summary view.
- */
-static void addr_harvest_msg_cb( GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	summary_harvest_address( mainwin->summaryview );
 }
 
 /*!

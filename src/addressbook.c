@@ -59,7 +59,6 @@
 #include "addrquery.h"
 #include "addrselect.h"
 #include "addrclip.h"
-#include "addrgather.h"
 #include "adbookbase.h"
 
 typedef enum
@@ -4936,46 +4935,6 @@ gboolean addressbook_peek_folder_exists( gchar *folderpath,
 	if ( folder )
 		*folder = folder_path_match.folder;
 	return folder_path_match.matched;
-}
-
-/**
- * Harvest addresses.
- * \param folderItem Folder to import.
- * \param sourceInd  Source indicator: FALSE - Folder, TRUE - Messages.
- * \param msgList    List of message numbers, or NULL to process folder.
- */
-void addressbook_harvest(
-	FolderItem *folderItem, gboolean sourceInd, GList *msgList )
-{
-	AddressDataSource *ds = NULL;
-	AdapterDSource *ads = NULL;
-	AddressBookFile *abf = NULL;
-	AdapterInterface *adapter;
-	GtkCMCTreeNode *newNode;
-
-	abf = addrgather_dlg_execute(
-		folderItem, _addressIndex_, sourceInd, msgList );
-	if( abf ) {
-		ds = addrindex_index_add_datasource(
-			_addressIndex_, ADDR_IF_BOOK, abf );
-
-		adapter = addrbookctl_find_interface( ADDR_IF_BOOK );
-		if( adapter ) {
-			if( adapter->treeNode ) {
-				ads = addressbook_create_ds_adapter(
-					ds, ADDR_BOOK, addrbook_get_name( abf ) );
-				newNode = addressbook_add_object(
-						adapter->treeNode,
-						ADDRESS_OBJECT(ads) );
-				if (newNode == NULL) {
-					g_message("error adding addressbook object\n");
-				}
-			}
-		}
-
-		/* Notify address completion */
-		invalidate_address_completion();
-	}
 }
 
 static void addressbook_find_duplicates_cb(GtkAction *action, gpointer data)

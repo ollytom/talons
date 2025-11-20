@@ -6511,29 +6511,6 @@ void summary_reflect_prefs_pixmap_theme(SummaryView *summaryview)
 	summary_set_column_titles(summaryview);
 }
 
-/*
- * Harvest addresses for selected messages in summary view.
- */
-void summary_harvest_address(SummaryView *summaryview)
-{
-	GtkCMCTree *ctree = GTK_CMCTREE( summaryview->ctree );
-	GList *cur;
-	GList *msgList;
-	MsgInfo *msginfo;
-
-	msgList = NULL;
-	for( cur = GTK_CMCLIST(ctree)->selection; cur != NULL && cur->data != NULL; cur = cur->next ) {
-		msginfo = gtk_cmctree_node_get_row_data( ctree, GTK_CMCTREE_NODE(cur->data) );
-		if (!msginfo)
-			continue;
-		msgList = g_list_append( msgList, GUINT_TO_POINTER( msginfo->msgnum ) );
-	}
-
-	addressbook_harvest( summaryview->folder_item, TRUE, msgList );
-
-	g_list_free( msgList );
-}
-
 static regex_t *summary_compile_simplify_regexp(gchar *simplify_subject_regexp)
 {
 	int err;
