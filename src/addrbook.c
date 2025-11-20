@@ -1813,17 +1813,12 @@ GList *addrbook_get_bookfile_list(AddressBookFile *book) {
 		return NULL;
 	}
 
-	strncpy(buf, book->path, WORK_BUFLEN);
-	len = strlen(buf);
-	if (len > 0) {
-		if (buf[len-1] != G_DIR_SEPARATOR) {
-			buf[len] = G_DIR_SEPARATOR;
-			buf[++len] = '\0';
-		}
-	}
+	strlcpy(buf, book->path, sizeof(buf));
+	if (buf[strlen(buf)] != '/')
+		strlcat(buf, "/", sizeof(buf));
 
-	adbookdir = g_strdup(buf);
-	strncat(buf, ADDRBOOK_PREFIX, WORK_BUFLEN - strlen(buf));
+	adbookdir = strdup(buf);
+	strlcat(buf, ADDRBOOK_PREFIX, sizeof(buf));
 
 	if( ( dir = g_dir_open( adbookdir, 0, NULL ) ) == NULL ) {
 		book->retVal = MGU_OPEN_DIRECTORY;

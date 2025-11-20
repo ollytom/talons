@@ -40,8 +40,6 @@
 #include "statusbar.h"
 #include "file-utils.h"
 
-#define MESSAGEBUFSIZE	8192
-
 #define FPUTS_TO_TMP_ABORT_IF_FAIL(s) \
 { \
 	lines++; \
@@ -59,7 +57,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, PrefsAccount *account)
 /* return values: -1 error, >=0 number of msgs added */
 {
 	FILE *mbox_fp;
-	gchar buf[MESSAGEBUFSIZE];
+	char buf[BUFSIZ];
 	gchar *tmp_file;
 	gint msgs = 0;
 	gint lines;
@@ -253,7 +251,7 @@ gint copy_mbox(gint srcfd, const gchar *dest)
 {
 	FILE *dest_fp;
 	ssize_t n_read;
-	gchar buf[BUFSIZ];
+	char buf[BUFSIZ];
 	gboolean err = FALSE;
 	int save_errno = 0;
 
