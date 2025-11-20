@@ -80,10 +80,6 @@ extern "C" {
  * The returned string has to be freed by the caller. */
 gchar *gtkut_gdk_rgba_to_string(GdkRGBA *rgba);
 
-gboolean gtkut_get_font_size		(GtkWidget	*widget,
-					 gint		*width,
-					 gint		*height);
-
 void gtkut_stock_button_add_help(GtkWidget *bbox, GtkWidget **help_btn);
 
 void gtkut_stock_button_set_create_with_help(GtkWidget **bbox,
@@ -194,8 +190,6 @@ GtkWidget *gtkut_time_select_combo_new();
 void gtkut_time_select_select_by_time(GtkComboBox *combo, int hour, int minute);
 gboolean gtkut_time_select_get_time(GtkComboBox *combo, int *hour, int *minute);
 
-void gtk_calendar_select_today(GtkCalendar *calendar);
-
 typedef void (*ClawsIOFunc)(gpointer data, gint source, GIOCondition condition);
 gint
 claws_input_add    (gint	      source,
@@ -251,8 +245,6 @@ gpointer gtkut_tree_view_get_selected_pointer(GtkTreeView *view,
 		gint column, GtkTreeModel **_model, GtkTreeSelection **_selection,
 		GtkTreeIter *_iter);
 
-gint gtkut_gdk_screen_width();
-gint gtkut_gdk_screen_height();
 void gtkut_gdk_screen_size_changed (GdkScreen* self, gpointer data);
 
 #ifdef __cplusplus

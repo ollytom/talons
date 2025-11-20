@@ -44,24 +44,6 @@
 
 static GdkRectangle _screen_area = { 0 };
 
-gboolean gtkut_get_font_size(GtkWidget *widget,
-			     gint *width, gint *height)
-{
-	PangoLayout *layout;
-	const gchar *str = "Abcdef";
-
-	cm_return_val_if_fail(GTK_IS_WIDGET(widget), FALSE);
-
-	layout = gtk_widget_create_pango_layout(widget, str);
-	cm_return_val_if_fail(layout, FALSE);
-	pango_layout_get_pixel_size(layout, width, height);
-	if (width)
-		*width = *width / g_utf8_strlen(str, -1);
-	g_object_unref(layout);
-
-	return TRUE;
-}
-
 PangoFontDescription *default_font()
 {
 	GtkSettings *settings = gtk_settings_get_default();
@@ -1600,18 +1582,6 @@ gboolean gtkut_time_select_get_time(GtkComboBox *combo, int *hour, int *minute)
 	return TRUE;
 }
 
-void gtk_calendar_select_today(GtkCalendar *calendar)
-{
-	time_t t = time (NULL);
-	struct tm buft;
- 	struct tm *lt = localtime_r (&t, &buft);
-
-	mktime(lt);
-	gtk_calendar_select_day(calendar, lt->tm_mday);
-	gtk_calendar_select_month(calendar, lt->tm_mon, lt->tm_year + 1900);
-}
-
-
 #define RGBA_ELEMENT_TO_BYTE(x) (int)((gdouble)x * 255)
 gchar *gtkut_gdk_rgba_to_string(GdkRGBA *rgba)
 {
@@ -1632,16 +1602,6 @@ static void get_screen_rectangle()
 			&_screen_area);
 		debug_print("saved screen area: %u x %u\n", _screen_area.width, _screen_area.height);
 	}
-}
-
-gint gtkut_gdk_screen_width()
-{
-	return _screen_area.width;
-}
-
-gint gtkut_gdk_screen_height()
-{
-	return _screen_area.height;
 }
 
 void gtkut_gdk_screen_size_changed (GdkScreen* self, gpointer data)
