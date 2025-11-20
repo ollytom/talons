@@ -69,8 +69,5 @@ void log_print		(LogInstance instance, const gchar *format, ...) G_GNUC_PRINTF(2
 void log_message	(LogInstance instance, const gchar *format, ...) G_GNUC_PRINTF(2, 3);
 void log_warning	(LogInstance instance, const gchar *format, ...) G_GNUC_PRINTF(2, 3);
 void log_error		(LogInstance instance, const gchar *format, ...) G_GNUC_PRINTF(2, 3);
-void log_status_ok	(LogInstance instance, const gchar *format, ...) G_GNUC_PRINTF(2, 3);
-void log_status_nok	(LogInstance instance, const gchar *format, ...) G_GNUC_PRINTF(2, 3);
-void log_status_skip	(LogInstance instance, const gchar *format, ...) G_GNUC_PRINTF(2, 3);
 
 #endif /* LOG_H */
