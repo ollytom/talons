@@ -32,7 +32,6 @@
 #include "log.h"
 #include "hooks.h"
 #include "file-utils.h"
-#include "oauth2.h"
 
 #include "defs.h"
 
@@ -131,77 +130,6 @@ static gint pop3_getauth_pass_send(Pop3Session *session)
 	session->state = POP3_GETAUTH_PASS;
 	pop3_gen_send(session, "PASS %s", session->pass);
 	return PS_SUCCESS;
-}
-
-static gint pop3_getauth_oauth2_send_generic(Pop3Session *session)
-{
-	gchar buf[MESSAGEBUFSIZE], *b64buf, *out;
-	gint len;
-
-	cm_return_val_if_fail(session->user != NULL, -1);
-	cm_return_val_if_fail(session->pass != NULL, -1);
-
-	session->state = POP3_GETAUTH_OAUTH2;
-	memset(buf, 0, sizeof buf);
-
-	/* "user=" {User} "^Aauth=Bearer " {Access Token} "^A^A" */
-	/* session->pass contains the OAUTH2 Access Token */
-	len = sprintf(buf, "user=%s\1auth=Bearer %s\1\1", session->user, session->pass);
-	b64buf = g_base64_encode(buf, len);
-	out = g_strconcat("AUTH XOAUTH2 ", b64buf, NULL);
-	g_free(b64buf);
-
-	pop3_gen_send(session, "%s", out);
-	/* Any error response contains base64({JSON-Body}) containing three values: status, schemes, and scope */
-	/* This could be dealt with but is currently written to the log in a fairly graceful fail - not crucial */
-	g_free(out);
-	return PS_SUCCESS;
-}
-
-/* Microsoft requires authentication to be split in two lines */
-static gint pop3_getauth_oauth2_send_microsoft_1(Pop3Session *session)
-{
-	cm_return_val_if_fail(session->user != NULL, -1);
-	cm_return_val_if_fail(session->pass != NULL, -1);
-
-	session->state = POP3_GETAUTH_USER_PHASE2;
-
-	pop3_gen_send(session, "AUTH XOAUTH2");
-
-	return PS_SUCCESS;
-}
-
-static gint pop3_getauth_oauth2_send_microsoft_2(Pop3Session *session)
-{
-	gchar buf[MESSAGEBUFSIZE], *b64buf;
-	gint len;
-
-	cm_return_val_if_fail(session->user != NULL, -1);
-	cm_return_val_if_fail(session->pass != NULL, -1);
-
-	session->state = POP3_GETAUTH_OAUTH2;
-	memset(buf, 0, sizeof buf);
-
-	/* "user=" {User} "^Aauth=Bearer " {Access Token} "^A^A"*/
-	/* session->pass contains the OAUTH2 Access Token*/
-	len = sprintf(buf, "user=%s\1auth=Bearer %s\1\1", session->user, session->pass);
-	b64buf = g_base64_encode(buf, len);
-
-	pop3_gen_send(session, "%s", b64buf);
-
-	g_free(b64buf);
-	/* Any error response contains base64({JSON-Body}) containing three values: status, schemes, and scope */
-	/* This could be dealt with but is currently written to the log in a fairly graceful fail - not crucial */
-	return PS_SUCCESS;
-}
-
-static gint pop3_getauth_oauth2_send(Pop3Session *session)
-{
-	gint two_stage_pop = session->two_stage_pop;
-	return ( two_stage_pop ?
-		 pop3_getauth_oauth2_send_microsoft_1(session)
-		 : pop3_getauth_oauth2_send_generic(session)
-		 );
 }
 
 static gint pop3_getrange_stat_send(Pop3Session *session)
@@ -545,17 +473,6 @@ Session *pop3_session_new(PrefsAccount *account)
 	session->current_time = time(NULL);
 	session->error_val = PS_SUCCESS;
 	session->error_msg = NULL;
-
-	if(session->ac_prefs->use_pop_auth && session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2){
-	       //Set up for two stage sessions - link provider selected in ac_prefs to the config file
-	       GList *oauth2_providers_list = oauth2_providers_get_list();
-	       Oauth2Info *oa2;
-
-	       oa2 = g_list_nth_data (oauth2_providers_list, session->ac_prefs->oauth2_provider - 1);
-	       debug_print("POP - Oauth2 name: %s Two stage POP: %i\n", oa2->oa2_name, oa2->oa2_two_stage_pop);
-	       session->two_stage_pop = oa2->oa2_two_stage_pop;
-	}
-
 	return SESSION(session);
 }
 
@@ -946,27 +863,17 @@ static gint pop3_session_recv_msg(Session *session, const gchar *msg)
 		if (pop3_session->ac_prefs->ssl_pop == SSL_STARTTLS)
 			val = pop3_stls_send(pop3_session);
 		else
-		if (pop3_session->ac_prefs->use_pop_auth && pop3_session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2)
-			val = pop3_getauth_oauth2_send(pop3_session);
-		else
 			val = pop3_getauth_user_send(pop3_session);
 		break;
 	case POP3_STLS:
 		if (pop3_stls_recv(pop3_session) != PS_SUCCESS)
 			return -1;
-		else if (pop3_session->ac_prefs->use_pop_auth && pop3_session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2)
-			val = pop3_getauth_oauth2_send(pop3_session);
-		else
-			val = pop3_getauth_user_send(pop3_session);
+		val = pop3_getauth_user_send(pop3_session);
 		break;
 	case POP3_GETAUTH_USER:
 		val = pop3_getauth_pass_send(pop3_session);
 		break;
-	case POP3_GETAUTH_USER_PHASE2:
-		val = pop3_getauth_oauth2_send_microsoft_2(pop3_session);
-		break;
 	case POP3_GETAUTH_PASS:
-	case POP3_GETAUTH_OAUTH2:
 		if (!pop3_session->pop_before_smtp)
 			val = pop3_getrange_stat_send(pop3_session);
 		else

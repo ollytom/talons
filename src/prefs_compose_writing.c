@@ -45,9 +45,6 @@ typedef struct _WritingPage
 	GtkWidget *window;
 
 	GtkWidget *checkbtn_autoextedit;
-	GtkWidget *checkbtn_reply_account_autosel;
-	GtkWidget *checkbtn_forward_account_autosel;
-	GtkWidget *checkbtn_reedit_account_autosel;
 	GtkWidget *spinbtn_undolevel;
 	GtkWidget *checkbtn_reply_with_quote;
 	GtkWidget *checkbtn_default_reply_list;
@@ -71,10 +68,6 @@ static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *win
 	GtkWidget *vbox2;
 	GtkWidget *checkbtn_autoextedit;
 	GtkWidget *frame;
-	GtkWidget *hbox_autosel;
-	GtkWidget *checkbtn_reply_account_autosel;
-	GtkWidget *checkbtn_forward_account_autosel;
-	GtkWidget *checkbtn_reedit_account_autosel;
 
 	GtkWidget *hbox_undolevel;
 	GtkWidget *label_undolevel;
@@ -113,21 +106,6 @@ static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *win
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox1);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
-
-	/* Account autoselection */
-	PACK_FRAME(vbox1, frame, _("Automatic account selection"));
-
-	hbox_autosel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, VSPACING_NARROW);
-	gtk_widget_show (hbox_autosel);
-	gtk_container_add (GTK_CONTAINER (frame), hbox_autosel);
-	gtk_container_set_border_width (GTK_CONTAINER (hbox_autosel), 8);
-
-	PACK_CHECK_BUTTON (hbox_autosel, checkbtn_reply_account_autosel,
-			   _("when replying"));
-	PACK_CHECK_BUTTON (hbox_autosel, checkbtn_forward_account_autosel,
-			   _("when forwarding"));
-	PACK_CHECK_BUTTON (hbox_autosel, checkbtn_reedit_account_autosel,
-			   _("when re-editing"));
 
 	/* Editing */
 	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Editing"));
@@ -243,9 +221,6 @@ static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *win
 	SET_TOGGLE_SENSITIVITY (checkbtn_warn_large_insert, label_warn_large_insert_size);
 
 	prefs_writing->checkbtn_autoextedit = checkbtn_autoextedit;
-	prefs_writing->checkbtn_reply_account_autosel   = checkbtn_reply_account_autosel;
-	prefs_writing->checkbtn_forward_account_autosel = checkbtn_forward_account_autosel;
-	prefs_writing->checkbtn_reedit_account_autosel  = checkbtn_reedit_account_autosel;
 
 	prefs_writing->spinbtn_undolevel     = spinbtn_undolevel;
 
@@ -284,12 +259,6 @@ static void prefs_compose_writing_create_widget(PrefsPage *_page, GtkWindow *win
 		prefs_common.warn_large_insert);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(prefs_writing->spinbtn_warn_large_insert_size),
 		prefs_common.warn_large_insert_size);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs_writing->checkbtn_reply_account_autosel),
-		prefs_common.reply_account_autosel);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs_writing->checkbtn_forward_account_autosel),
-		prefs_common.forward_account_autosel);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs_writing->checkbtn_reedit_account_autosel),
-		prefs_common.reedit_account_autosel);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs_writing->checkbtn_reply_with_quote),
 			prefs_common.reply_with_quote);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prefs_writing->checkbtn_warn_pasted_attachments),
@@ -325,12 +294,10 @@ static void prefs_compose_writing_save(PrefsPage *_page)
 	prefs_common.warn_large_insert_size =
 		gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(page->spinbtn_warn_large_insert_size));
 
-	prefs_common.reply_account_autosel =
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_reply_account_autosel));
-	prefs_common.forward_account_autosel =
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_forward_account_autosel));
-	prefs_common.reedit_account_autosel =
-		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->checkbtn_reedit_account_autosel));
+	prefs_common.reply_account_autosel = TRUE;
+	prefs_common.forward_account_autosel = TRUE;
+	prefs_common.reedit_account_autosel = TRUE;
+
 	prefs_common.reply_with_quote = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_reply_with_quote));
 	prefs_common.default_reply_list =

@@ -55,7 +55,6 @@
 #include "hooks.h"
 #include "logwindow.h"
 #include "passwordstore.h"
-#include "oauth2.h"
 
 static GList *inc_dialog_list = NULL;
 
@@ -571,10 +570,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 			manage_window_focus_in
 				(inc_dialog->dialog->window,
 				 NULL, NULL);
-
-		if(pop3_session->ac_prefs->use_pop_auth &&
-		   pop3_session->ac_prefs->pop_auth_type == POPAUTH_OAUTH2)
-		     oauth2_check_passwds (pop3_session->ac_prefs);
 
 		if (password_get(pop3_session->user,
 					pop3_session->ac_prefs->recv_server,

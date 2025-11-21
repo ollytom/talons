@@ -24,20 +24,6 @@
 #include "xml.h"
 #include "utils.h"
 
-void folder_local_folder_init(Folder *folder, const gchar *name,
-			      const gchar *path)
-{
-	folder_init(folder, name);
-	LOCAL_FOLDER(folder)->rootpath = g_strdup(path);
-}
-
-void folder_local_folder_destroy(LocalFolder *lfolder)
-{
-	cm_return_if_fail(lfolder != NULL);
-
-	g_free(lfolder->rootpath);
-}
-
 void folder_local_set_xml(Folder *_folder, XMLTag *tag)
 {
 	LocalFolder *folder = LOCAL_FOLDER(_folder);

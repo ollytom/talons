@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef LOCALFOLDER_H
@@ -35,10 +35,6 @@ struct _LocalFolder
 	gchar *rootpath;
 };
 
-void	folder_local_folder_init	(Folder 	*folder,
-					 const gchar 	*name,
-			    		 const gchar 	*path);
-void 	folder_local_folder_destroy	(LocalFolder	*lfolder);
 void 	folder_local_set_xml		(Folder 	*folder,
 					 XMLTag 	*tag);
 XMLTag *folder_local_get_xml		(Folder 	*folder);

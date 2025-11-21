@@ -60,7 +60,6 @@
 #include "version.h"
 #include "statusbar.h"
 #include "folder_item_prefs.h"
-#include "avatars.h"
 #include "file-utils.h"
 
 #include "addressbook.h"
@@ -1990,8 +1989,6 @@ static void add_address_cb(GtkAction *action, gpointer data)
 	MessageView *messageview = (MessageView *)data;
 	MsgInfo *msginfo, *full_msginfo;
 	gchar *from;
-	GdkPixbuf *picture = NULL;
-	AvatarRender *avatarr;
 
 	if (!messageview->msginfo || !messageview->msginfo->from)
 		return;
@@ -2003,16 +2000,9 @@ static void add_address_cb(GtkAction *action, gpointer data)
 
 	full_msginfo = procmsg_msginfo_get_full_info(msginfo);
 
-	avatarr = avatars_avatarrender_new(full_msginfo);
-	hooks_invoke(AVATAR_IMAGE_RENDER_HOOKLIST, avatarr);
-
 	procmsg_msginfo_free(&full_msginfo);
 
-	if (avatarr->image != NULL)
-		picture = gtk_image_get_pixbuf(GTK_IMAGE(avatarr->image));
-
-	addressbook_add_contact(msginfo->fromname, from, NULL, picture);
-	avatars_avatarrender_free(avatarr);
+	addressbook_add_contact(msginfo->fromname, from, NULL, NULL);
 }
 
 static gboolean messageview_update_msg(gpointer source, gpointer data)

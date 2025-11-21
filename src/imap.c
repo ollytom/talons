@@ -58,7 +58,6 @@
 #include "main.h"
 #include "passwordstore.h"
 #include "file-utils.h"
-#include "oauth2.h"
 
 typedef struct _IMAPFolder	IMAPFolder;
 typedef struct _IMAPSession	IMAPSession;
@@ -1246,8 +1245,6 @@ static gint imap_session_authenticate(IMAPSession *session,
 	gboolean failed = FALSE;
 	gint ok = MAILIMAP_NO_ERROR;
 	g_return_val_if_fail(account->userid != NULL, MAILIMAP_ERROR_BAD_STATE);
-	if(account->imap_auth_type == IMAP_AUTH_OAUTH2)
-	        oauth2_check_passwds (account);
 	if (!password_get(account->userid, account->recv_server, "imap",
 			 SESSION(session)->port, &acc_pass)) {
 		acc_pass = passwd_store_get_account(account->account_id,

@@ -178,13 +178,13 @@ static Folder *mh_folder_new(const gchar *name, const gchar *path)
 
 static void mh_folder_destroy(Folder *folder)
 {
-	folder_local_folder_destroy(LOCAL_FOLDER(folder));
+	free(LOCAL_FOLDER(folder)->rootpath);
 }
 
 static void mh_folder_init(Folder *folder, const gchar *name, const gchar *path)
 {
-	folder_local_folder_init(folder, name, path);
-
+	folder_init(folder, name);
+	LOCAL_FOLDER(folder)->rootpath = strdup(path);
 }
 
 gboolean mh_scan_required(Folder *folder, FolderItem *item)

@@ -67,7 +67,6 @@
 #include "log.h"
 #include "manual.h"
 #include "manage_window.h"
-#include "avatars.h"
 
 #define SUMMARY_COL_MARK_WIDTH		10
 #define SUMMARY_COL_STATUS_WIDTH	13
@@ -4087,8 +4086,6 @@ void summary_add_address(SummaryView *summaryview)
 {
 	MsgInfo *msginfo, *full_msginfo;
 	gchar *from;
-	GdkPixbuf *picture = NULL;
-	AvatarRender *avatarr;
 
 	msginfo = gtk_cmctree_node_get_row_data(GTK_CMCTREE(summaryview->ctree),
 					      summaryview->selected);
@@ -4101,16 +4098,9 @@ void summary_add_address(SummaryView *summaryview)
 
 	full_msginfo = procmsg_msginfo_get_full_info(msginfo);
 
-	avatarr = avatars_avatarrender_new(full_msginfo);
-	hooks_invoke(AVATAR_IMAGE_RENDER_HOOKLIST, avatarr);
-
 	procmsg_msginfo_free(&full_msginfo);
 
-	if (avatarr->image)
-		picture = gtk_image_get_pixbuf(GTK_IMAGE(avatarr->image));
-
-	addressbook_add_contact(msginfo->fromname, from, NULL, picture);
-	avatars_avatarrender_free(avatarr);
+	addressbook_add_contact(msginfo->fromname, from, NULL, NULL);
 }
 
 void summary_select_all(SummaryView *summaryview)

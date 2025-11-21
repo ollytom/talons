@@ -55,7 +55,6 @@
 #include "prefs_themes.h"
 #include "prefs_other.h"
 #include "prefs_send.h"
-#include "prefs_wrapping.h"
 #include "prefs_compose_writing.h"
 #include "prefs_display_header.h"
 #include "account.h"
@@ -82,10 +81,8 @@
 #include "matcher.h"
 #include "hooks.h"
 #include "menu.h"
-#include "avatars.h"
 #include "passwordstore.h"
 #include "file-utils.h"
-#include "oauth2.h"
 
 #include "etpan/imap-thread.h"
 #include "stock_pixmap.h"
@@ -454,7 +451,6 @@ int main(int argc, char *argv[])
 
 	prefs_themes_init();
 	prefs_ext_prog_init();
-	prefs_wrapping_init();
 	prefs_compose_writing_init();
 	prefs_summaries_init();
 	prefs_message_init();
@@ -496,7 +492,6 @@ int main(int argc, char *argv[])
 
 	prefs_account_init();
 	account_read_config_all();
-	account_read_oauth2_all();
 
 	imap_main_init(prefs_common.skip_ssl_cert_check);
 	imap_main_set_timeout(prefs_common.io_timeout_secs);
@@ -560,7 +555,6 @@ int main(int argc, char *argv[])
 
 	claws_register_idle_function(claws_gtk_idle);
 
-	avatars_init();
 	prefs_toolbar_init();
 
 	num_folder_class = g_list_length(folder_get_list());
@@ -736,12 +730,10 @@ static void exit_claws(MainWindow *mainwin)
 	main_window_destroy_all();
 
 	prefs_toolbar_done();
-	avatars_done();
 
 	addressbook_destroy();
 	prefs_themes_done();
 	prefs_ext_prog_done();
-	prefs_wrapping_done();
 	prefs_compose_writing_done();
 	prefs_summaries_done();
 	prefs_message_done();
