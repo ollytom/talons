@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 
 #include <ctype.h>
+#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -234,78 +235,34 @@ static gboolean defer_jump(void *data)
 
 static gboolean sc_exiting = FALSE;
 
-bool verify_folderlist_xml()
+bool verify_folderlist_xml(char *path, char *backup)
 {
-	GNode *node;
-	static gchar *filename = NULL;
-	static gchar *bak = NULL;
-	time_t date;
-	struct tm *ts;
-	gchar buf[BUFFSIZE];
-	gboolean fileexists, bakexists;
+	if (xml_parse_file(path))
+		return true;
+	bool fileexists = true;
+	if (errno == ENOENT)
+		fileexists = false;
 
-	filename = folder_get_list_path();
+ 	struct stat sb;
+ 	if (stat(backup, &sb) < 0)
+  		return false;
 
-	fileexists = is_file_exist(filename);
+	char baktime[BUFSIZ];
+	time_t mtime = sb.st_mtim.tv_sec;
+	strftime(baktime, sizeof(baktime), "%a %d-%b-%Y %H:%M %Z", localtime(&mtime));
+	char msg[BUFSIZ];
+	if (fileexists)
+		snprintf(msg, sizeof(msg), "File %s is corrupted! Restore from backup on %s?", FOLDER_LIST, baktime);
+	else
+		snprintf(msg, sizeof(msg), "File %s is missing! Restore from backup on %s?", FOLDER_LIST, baktime);
 
-	bak = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S,
- 			  FOLDER_LIST, ".bak", NULL);
-	bakexists = is_file_exist(bak);
-
-	if (bakexists) {
-		date = get_file_mtime(bak);
-		ts = localtime(&date);
-		strftime(buf, sizeof(buf), "%a %d-%b-%Y %H:%M %Z", ts);
+	AlertValue aval = alertpanel("Warning", msg, NULL, "Cancel", NULL, "Restore", NULL, NULL, ALERTFOCUS_FIRST);
+	if (aval != G_ALERTALTERNATE)
+		return false;
+	if (copy_file(backup, path, FALSE) < 0) {
+		alertpanel_warning("Could not restore from %s to %s", backup, path);
+		return false;
 	}
-
-	if (!fileexists && bakexists) {
-		AlertValue aval;
-		gchar *msg;
-
-		msg = g_strdup_printf
-			(_("The file %s is missing! "
-			   "Do you want to use the backup file from %s?"), FOLDER_LIST,buf);
-		aval = alertpanel(_("Warning"), msg, NULL, _("_No"), NULL, _("_Yes"),
-				  NULL, NULL, ALERTFOCUS_FIRST);
-		g_free(msg);
-		if (aval != G_ALERTALTERNATE)
-			return false;
-		else {
-			if (copy_file(bak,filename,FALSE) < 0) {
-				alertpanel_warning(_("Could not copy %s to %s"),bak,filename);
-				return false;
-			}
-			g_free(bak);
-			return true;
-		}
-	}
-
-	if (fileexists) {
-		node = xml_parse_file(filename);
-		if (!node && is_file_exist(bak)) {
-			AlertValue aval;
-			gchar *msg;
-
-			msg = g_strdup_printf
-				(_("The file %s is empty or corrupted! "
-				   "Do you want to use the backup file from %s?"), FOLDER_LIST,buf);
-			aval = alertpanel(_("Warning"), msg, NULL, _("_No"), NULL, _("_Yes"),
-					  NULL, NULL, ALERTFOCUS_FIRST);
-			g_free(msg);
-			if (aval != G_ALERTALTERNATE)
-				return false;
-			else {
-				if (copy_file(bak,filename,FALSE) < 0) {
-					alertpanel_warning(_("Could not copy %s to %s"),bak,filename);
-					return false;
-				}
-				g_free(bak);
-				return true;
-			}
-		}
-		xml_free_tree(node);
-  	}
-
 	return true;
 }
 
@@ -476,8 +433,10 @@ int main(int argc, char *argv[])
 
 	mainwin = main_window_create();
 
-	if (!verify_folderlist_xml())
-		exit(1);
+	char backup[PATH_MAX];
+	snprintf(backup, sizeof(backup), "%s/%s.bak", get_rc_dir(), FOLDER_LIST);
+	if (!verify_folderlist_xml(folder_get_list_path(), backup))
+		errx(1, "verify folderlist %s: %s", folder_get_list_path(), strerror(errno));
 
 	manage_window_focus_in(mainwin->window, NULL, NULL);
 	folderview = mainwin->folderview;
