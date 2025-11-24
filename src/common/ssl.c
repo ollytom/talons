@@ -122,10 +122,6 @@ const gchar *claws_ssl_get_cert_file(void)
 		NULL};
 	int i;
 
-	/* We honor this environment variable on all platforms. */
-	if (g_getenv("SSL_CERT_FILE"))
-		return g_getenv("SSL_CERT_FILE");
-
 	for (i = 0; cert_files[i]; i++) {
 		if (is_file_exist(cert_files[i]))
 			return cert_files[i];
@@ -135,8 +131,6 @@ const gchar *claws_ssl_get_cert_file(void)
 
 const gchar *claws_ssl_get_cert_dir(void)
 {
-	if (g_getenv("SSL_CERT_DIR"))
-		return g_getenv("SSL_CERT_DIR");
 	const char *cert_dirs[]={
 		"/etc/pki/tls/certs",
 		"/etc/certs",
@@ -320,7 +314,7 @@ gboolean ssl_init_socket(SockInfo *sockinfo)
 	if (claws_ssl_get_cert_file()) {
 		r = gnutls_certificate_set_x509_trust_file(xcred, claws_ssl_get_cert_file(),  GNUTLS_X509_FMT_PEM);
 		if (r < 0)
-			g_warning("can't read SSL_CERT_FILE '%s': %s",
+			g_warning("get certificate file '%s': %s",
 				claws_ssl_get_cert_file(),
 				gnutls_strerror(r));
 	} else {
