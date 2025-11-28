@@ -22,7 +22,6 @@
 
 #include "defs.h"
 #include "folder.h"
-#include "matcher.h"
 #include "utils.h"
 #include "prefs_gtk.h"
 #include "folder_item_prefs.h"

@@ -79,7 +79,6 @@
 #include "prefs_toolbar.h"
 #include "mh_gtk.h"
 #include "imap_gtk.h"
-#include "matcher.h"
 #include "hooks.h"
 #include "menu.h"
 #include "passwordstore.h"

@@ -132,7 +132,6 @@ typedef void (*FolderItemFunc)	(FolderItem	*item,
 #include "proctypes.h"
 #include "xml.h"
 #include "prefs_account.h"
-#include "matchertypes.h"
 
 struct _MsgCache;
 
