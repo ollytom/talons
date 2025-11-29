@@ -34,10 +34,8 @@
 #include "adbookbase.h"
 #include "file-utils.h"
 
-#ifndef DEV_STANDALONE
 #include "prefs_gtk.h"
 #include "codeconv.h"
-#endif
 
 #define ADDRBOOK_MAX_SEARCH_COUNT 1000
 #define ADDRBOOK_PREFIX           "addrbook-"
@@ -1266,9 +1264,7 @@ static gint addrbook_write_to(AddressBookFile *book, gchar *newFile)
 	FILE *fp;
 	gchar *fileSpec;
 	HashLoopData data;
-#ifndef DEV_STANDALONE
 	PrefFile *pfile;
-#endif
 
 	cm_return_val_if_fail(book != NULL, -1);
 	cm_return_val_if_fail(newFile != NULL, -1);
@@ -1276,22 +1272,12 @@ static gint addrbook_write_to(AddressBookFile *book, gchar *newFile)
 	fileSpec = g_strconcat(book->path, G_DIR_SEPARATOR_S, newFile, NULL);
 
 	book->retVal = MGU_OPEN_FILE;
-#ifdef DEV_STANDALONE
-	fp = g_fopen(fileSpec, "wb");
-	g_free(fileSpec);
-	if (fp) {
-		if (fputs("<?xml version=\"1.0\" ?>\n", fp) == EOF) {
-			book->retVal = MGU_ERROR_WRITE;
-			return book->retVal;
-		}
-#else
 	pfile = prefs_write_open(fileSpec);
 	g_free(fileSpec);
 	if (pfile) {
 		fp = pfile->fp;
 		if (fprintf( fp, "<?xml version=\"1.0\" encoding=\"%s\" ?>\n", CS_INTERNAL ) < 0)
 			goto fail;
-#endif
 		if (addrbook_write_elem_s(fp, 0, AB_ELTAG_ADDRESS_BOOK) < 0)
 			goto fail;
 		if (addrbook_write_attr(fp, AB_ATTAG_NAME,
@@ -1327,12 +1313,8 @@ static gint addrbook_write_to(AddressBookFile *book, gchar *newFile)
 			goto fail;
 
 		book->retVal = MGU_SUCCESS;
-#ifdef DEV_STANDALONE
-		fclose(fp);
-#else
 		if (prefs_file_close( pfile ) < 0)
 			book->retVal = MGU_ERROR_WRITE;
-#endif
 	}
 
 	fileSpec = NULL;

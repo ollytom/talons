@@ -35,10 +35,8 @@
 #include "passwordstore.h"
 #include "file-utils.h"
 
-#ifndef DEV_STANDALONE
 #include "prefs_gtk.h"
 #include "codeconv.h"
-#endif
 
 #define TAG_ADDRESS_INDEX    "addressbook"
 
@@ -1019,27 +1017,18 @@ static int addrindex_write_index( AddressIndex *addrIndex, FILE *fp ) {
 static gint addrindex_write_to( AddressIndex *addrIndex, const gchar *newFile ) {
 	FILE *fp;
 	gchar *fileSpec;
-#ifndef DEV_STANDALONE
 	PrefFile *pfile;
-#endif
 
 	cm_return_val_if_fail( addrIndex != NULL, -1 );
 
 	fileSpec = g_strconcat( addrIndex->filePath, G_DIR_SEPARATOR_S, newFile, NULL );
 	addrIndex->retVal = MGU_OPEN_FILE;
-#ifdef DEV_STANDALONE
-	fp = g_fopen( fileSpec, "wb" );
-	g_free( fileSpec );
-	if( fp ) {
-		fputs( "<?xml version=\"1.0\" ?>\n", fp );
-#else
 	pfile = prefs_write_open( fileSpec );
 	g_free( fileSpec );
 	if( pfile ) {
 		fp = pfile->fp;
 		if (fprintf( fp, "<?xml version=\"1.0\" encoding=\"%s\" ?>\n", CS_INTERNAL ) < 0)
 			goto fail;
-#endif
 		if (addrindex_write_elem_s( fp, 0, TAG_ADDRESS_INDEX ) < 0)
 			goto fail;
 		if (fputs( ">\n", fp ) == EOF)
