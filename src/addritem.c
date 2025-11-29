@@ -270,42 +270,24 @@ void addritem_person_set_picture( ItemPerson *person, const gchar *value ) {
 	}
 }
 
-/**
- * Get picture filename for person object.
- * \param person Person object.
- * \return copy of picture file path string (to be freed by caller - and there is
- *         no guarantee that path does exist, or NULL.
- */
-gchar *addritem_person_get_picture( ItemPerson *person) {
-	if (person->picture)
-		return g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S,
-			ADDRBOOK_DIR, G_DIR_SEPARATOR_S, person->picture,
-			".png", NULL );
-	return NULL;
+size_t addritem_person_get_picture(char *dst, ItemPerson *person) {
+	if (!person->picture)
+		return 0;
+	char buf[PATH_MAX];
+	snprintf(buf, sizeof(buf), "%s/%s/%s.png", get_rc_dir(), ADDRBOOK_DIR, person->picture);
+	return strlcpy(dst, buf, sizeof(dst));
 }
 
-/**
- * Delete picture for person object.
- * \param person Person object.
- */
-void addritem_person_remove_picture( ItemPerson *person) {
-	if (person->picture) {
-		gchar *filename = g_strconcat( get_rc_dir(), G_DIR_SEPARATOR_S,
-			ADDRBOOK_DIR, G_DIR_SEPARATOR_S, person->picture,
-			".png", NULL );
-		if (is_file_exist(filename)) {
-			debug_print("removing addressbook picture %s\n",
-				filename);
-			if (unlink(filename) < 0) {
-				FILE_OP_ERROR(filename, "remove");
-				g_free(filename);
-				return;
-			}
-		}
-		g_free(person->picture);
-		person->picture = NULL;
-		g_free(filename);
-	}
+int addritem_person_remove_picture(ItemPerson *person) {
+	if (!person->picture)
+		return 0;
+
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/%s/%s", get_rc_dir(), ADDRBOOK_DIR, person->picture);
+	int ret = unlink(path);
+	free(person->picture);
+	person->picture = NULL;
+	return ret;
 }
 
 /**

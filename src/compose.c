@@ -43,6 +43,7 @@
 #include <wchar.h>
 #include <wctype.h>
 #include <signal.h>
+#include <err.h>
 #include <errno.h>
 #include <libgen.h>
 
@@ -7855,8 +7856,8 @@ static void compose_ext_editor_closed_cb(GPid pid, gint exit_status, gpointer da
 	if (compose_can_autosave(compose))
 	  compose_draft((gpointer)compose, COMPOSE_AUTO_SAVE);
 
-	if (unlink(compose->exteditor_file) < 0)
-		FILE_OP_ERROR(compose->exteditor_file, "unlink");
+	if (remove(compose->exteditor_file) < 0)
+		warn("remove %s", compose->exteditor_file);
 
 	gtk_text_buffer_get_start_iter(buffer, &iter);
 

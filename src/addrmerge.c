@@ -121,14 +121,10 @@ static void addrmerge_do_merge(struct AddrMergePage *page)
 			addritem_folder_remove_person(ADAPTER_FOLDER(page->pobj)->itemFolder, person);
 		person = addrbook_remove_person( page->abf, person );
 
-		if( person ) {
-			gchar *filename = addritem_person_get_picture(person);
-			if ((g_strcmp0(person->picture, target->picture) &&
-					filename && is_file_exist(filename)))
-				unlink(filename);
-			if (filename)
-				g_free(filename);
-			addritem_free_item_person( person );
+		if (person) {
+			char filename[PATH_MAX];
+			if (addritem_person_get_picture(filename, person))
+				remove(filename);
 		}
 	}
 
@@ -201,10 +197,8 @@ static void addrmerge_prompt( struct AddrMergePage *page )
 	GtkWidget *namesList = NULL;
 	MainWindow *mainwin = mainwindow_get_mainwindow();
 	GtkListStore *store = NULL;
-	GtkTreeIter iter;
 	GList *node;
 	ItemPerson *person;
-	GError *error = NULL;
 	gchar *msg, *label_msg;
 
 	dialog = page->dialog = gtk_dialog_new_with_buttons (
@@ -240,66 +234,6 @@ static void addrmerge_prompt( struct AddrMergePage *page )
 	gtk_label_set_yalign(GTK_LABEL(label),0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 	g_free(label_msg);
-
-	if (page->pickPicture) {
-		GtkWidget *scrollwinPictures;
-
-		store = gtk_list_store_new(N_SET_COLUMNS,
-					GDK_TYPE_PIXBUF,
-					G_TYPE_POINTER,
-					-1);
-		gtk_list_store_clear(store);
-
-		vbox = gtkut_get_options_frame(mvbox, &frame,
-				_("Keep which picture?"));
-		gtk_container_set_border_width(GTK_CONTAINER(frame), 4);
-
-		scrollwinPictures = gtk_scrolled_window_new(NULL, NULL);
-		gtk_container_set_border_width(GTK_CONTAINER(scrollwinPictures), 1);
-		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollwinPictures),
-				GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrollwinPictures),
-				GTK_SHADOW_IN);
-		gtk_box_pack_start (GTK_BOX (vbox), scrollwinPictures, FALSE, FALSE, 0);
-		gtk_widget_set_size_request(scrollwinPictures, 464, 192);
-
-		iconView = gtk_icon_view_new_with_model(GTK_TREE_MODEL(store));
-		gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(iconView), GTK_SELECTION_SINGLE);
-		gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(iconView), SET_ICON);
-		gtk_container_add(GTK_CONTAINER(scrollwinPictures), GTK_WIDGET(iconView));
-		g_signal_connect(G_OBJECT(iconView), "selection-changed",
-				G_CALLBACK(addrmerge_picture_selected), page);
-
-		/* Add pictures from persons */
-		for (node = page->persons; node; node = node->next) {
-			gchar *filename;
-			person = node->data;
-			filename = addritem_person_get_picture(person);
-			if (filename && is_file_exist(filename)) {
-				GdkPixbuf *pixbuf;
-				GtkWidget *image;
-
-				pixbuf = gdk_pixbuf_new_from_file(filename, &error);
-				if (error) {
-					debug_print("Failed to read image: \n%s",
-							error->message);
-					g_error_free(error);
-					continue;
-				}
-
-				image = gtk_image_new();
-				gtk_image_set_from_pixbuf(GTK_IMAGE(image), pixbuf);
-
-				gtk_list_store_append(store, &iter);
-				gtk_list_store_set(store, &iter,
-						SET_ICON, pixbuf,
-						SET_PERSON, person,
-						-1);
-			}
-			if (filename)
-				g_free(filename);
-		}
-	}
 
 	if (page->pickName) {
 		GtkWidget *scrollwinNames;
@@ -374,11 +308,10 @@ void addrmerge_merge(
 	AddrItemObject *aio;
 	ItemPerson *person, *target = NULL, *nameTarget = NULL;
 	GList *persons = NULL, *emails = NULL;
-	gboolean pickPicture = FALSE, pickName = FALSE;
+	gboolean pickName = FALSE;
 
-	/* Test for read only */
 	if( ds->interface->readOnly ) {
-		alertpanel_warning(_("This address data is read-only and cannot be deleted."));
+		alertpanel_warning("This address data is read-only and cannot be deleted.");
 		return;
 	}
 
@@ -409,28 +342,7 @@ void addrmerge_merge(
 		}
 	}
 
-	/* Check if more than one person has a picture */
-	for (node = persons; node; node = node->next) {
-		gchar *filename;
-		person = node->data;
-		filename = addritem_person_get_picture(person);
-		if (filename && is_file_exist(filename)) {
-			if (target == NULL) {
-				target = person;
-			} else {
-				pickPicture = TRUE;
-				target = NULL;
-				g_free(filename);
-				break;
-			}
-		}
-		if (filename)
-			g_free(filename);
-	}
-	if (pickPicture || target) {
-		/* At least one person had a picture */
-	} else if (persons && persons->data) {
-		/* No person had a picture. Use the first person as target */
+	if (persons && persons->data) {
 		target = persons->data;
 	} else {
 		/* No persons in list. Abort */
@@ -459,7 +371,7 @@ void addrmerge_merge(
 
 	/* Create object */
 	page = g_new0(struct AddrMergePage, 1);
-	page->pickPicture = pickPicture;
+	page->pickPicture = FALSE;
 	page->pickName = pickName;
 	page->target = target;
 	page->nameTarget = nameTarget;

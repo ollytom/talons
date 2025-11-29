@@ -36,14 +36,6 @@
 #endif
 #include <wchar.h>
 
-/* The Hurd doesn't have these limits */
-#ifndef PATH_MAX
-  #define PATH_MAX 4196
-#endif
-#ifndef HOST_NAME_MAX
-  #define HOST_NAME_MAX 256
-#endif
-
 /* Handling Base64 content in procmime and prefs_customheader */
 #define B64_LINE_SIZE 57
 

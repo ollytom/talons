@@ -149,21 +149,6 @@ static void quit_signal_handler         (int sig);
 static void install_basic_sighandlers   (void);
 static void exit_claws			(MainWindow *mainwin);
 
-#define MAKE_DIR_IF_NOT_EXIST(dir) \
-{ \
-	if (!is_dir_exist(dir)) { \
-		if (is_file_exist(dir)) { \
-			alertpanel_warning \
-				(_("File '%s' already exists.\n" \
-				   "Can't create folder."), \
-				 dir); \
-			return 1; \
-		} \
-		if (make_dir(dir) < 0) \
-			return 1; \
-	} \
-}
-
 #define STRNCMP(S1, S2) (strncmp((S1), (S2), sizeof((S2)) - 1))
 
 #define CM_FD_WRITE(S) fd_write(sock, (S), strlen((S)))
@@ -381,23 +366,17 @@ int main(int argc, char *argv[])
 	g_free(userrc);
 	CHDIR_RETURN_VAL_IF_FAIL(get_rc_dir(), 1);
 
-	MAKE_DIR_IF_NOT_EXIST(get_mail_base_dir());
-	MAKE_DIR_IF_NOT_EXIST(get_mime_tmp_dir());
-	MAKE_DIR_IF_NOT_EXIST(get_tmp_dir());
+	if (mkdir(get_mail_base_dir(), 0755) < 0 && errno != EEXIST)
+		err(1, "make %s", get_mail_base_dir());
+	if (mkdir(get_mime_tmp_dir(), 0755) < 0 && errno != EEXIST)
+		err(1, "make %s", get_mime_tmp_dir());
+	if (mkdir(get_tmp_dir(), 0755) < 0 && errno != EEXIST)
+		err(1, "make %s", get_tmp_dir());
 
 	remove_all_files(get_tmp_dir());
 	remove_all_files(get_mime_tmp_dir());
 
-	if (is_file_exist("claws.log")) {
-		if (rename_force("claws.log", "claws.log.bak") < 0)
-			FILE_OP_ERROR("claws.log", "rename");
-	}
 	set_log_file(LOG_PROTOCOL, "claws.log");
-
-	if (is_file_exist("filtering.log")) {
-		if (rename_force("filtering.log", "filtering.log.bak") < 0)
-			FILE_OP_ERROR("filtering.log", "rename");
-	}
 	set_log_file(LOG_DEBUG_FILTERING, "filtering.log");
 
 	CHDIR_RETURN_VAL_IF_FAIL(get_home_dir(), 1);

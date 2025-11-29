@@ -804,7 +804,6 @@ gint folder_read_list(void)
 	gint config_version = -1;
 
 	path = folder_get_list_path();
-	if (!is_file_exist(path)) return -1;
 	node = xml_parse_file(path);
 	if (!node) return -1;
 
@@ -3781,8 +3780,7 @@ void folder_item_discard_cache(FolderItem *item)
 	g_free(dir);
 
 	cache = folder_item_get_cache_file(item);
-	if (is_file_exist(cache))
-		unlink(cache);
+	unlink(cache);
 	g_free(cache);
 
 }

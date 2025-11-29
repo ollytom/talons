@@ -1369,16 +1369,14 @@ static gchar *imap_get_cached_filename(FolderItem *item, guint msgnum)
 
 static void imap_remove_cached_msg(Folder *folder, FolderItem *item, MsgInfo *msginfo)
 {
-	gchar *filename;
-
-	filename = imap_get_cached_filename(item, msginfo->msgnum);
-
-	cm_return_if_fail(filename != NULL);
-
-	if (is_file_exist(filename)) {
-		unlink(filename);
+	char *name = imap_get_cached_filename(item, msginfo->msgnum);
+	if (!name) {
+		warn("cannot get filename for message number %d", msginfo->msgnum);
+		return;
 	}
-	g_free(filename);
+	if (remove(name) < 0)
+		warn("remove %s", name);
+	free(name);
 }
 
 static gchar *imap_fetch_msg_full(Folder *folder, FolderItem *item, gint uid,
