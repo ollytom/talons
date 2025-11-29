@@ -371,7 +371,7 @@ static void ssl_certificate_save (SSLCertificate *cert)
 	gnutls_export_X509_fp(fp, cert->x509_cert, GNUTLS_X509_FMT_DER);
 
 	g_free(file);
-	safe_fclose(fp);
+	fclose(fp);
 
 }
 
@@ -676,7 +676,7 @@ static void ssl_certificate_save_chain(gnutls_x509_crt_t *certs, gint len, const
 
 	}
 	if (fp)
-		safe_fclose(fp);
+		fclose(fp);
 }
 
 gboolean ssl_certificate_check (gnutls_x509_crt_t x509_cert, guint status,

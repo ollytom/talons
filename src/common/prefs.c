@@ -155,7 +155,7 @@ gint prefs_file_close(PrefFile *pfile)
 
 	tmppath = g_strconcat(path, ".tmp", NULL);
 
-	if (safe_fclose(fp) == EOF) {
+	if (fclose(fp) == EOF) {
 		FILE_OP_ERROR(tmppath, "fclose");
 		unlink(tmppath);
 		g_free(path);

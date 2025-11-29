@@ -1051,13 +1051,8 @@ static gint addrindex_write_to( AddressIndex *addrIndex, const gchar *newFile ) 
 			goto fail;
 
 		addrIndex->retVal = MGU_SUCCESS;
-#ifdef DEV_STANDALONE
-		safe_fclose( fp );
-#else
-		if( prefs_file_close( pfile ) < 0 ) {
+		if (prefs_file_close(pfile) < 0)
 			addrIndex->retVal = MGU_ERROR_WRITE;
-		}
-#endif
 	}
 
 	fileSpec = NULL;

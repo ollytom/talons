@@ -20,6 +20,7 @@
 
 #include <sys/wait.h>
 
+#include <err.h>
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -29,17 +30,6 @@
 #include "codeconv.h"
 #include "utils.h"
 #include "file-utils.h"
-
-int safe_fclose(FILE *fp)
-{
-	if (fflush(fp) != 0) {
-		return EOF;
-	}
-	if (fsync(fileno(fp)) != 0) {
-		return EOF;
-	}
-	return fclose(fp);
-}
 
 gint file_strip_crs(const gchar *file)
 {
@@ -69,7 +59,7 @@ gint file_strip_crs(const gchar *file)
 	}
 
 	fclose(fp);
-	if (safe_fclose(outfp) == EOF) {
+	if (fclose(outfp) == EOF) {
 		goto unlinkout;
 	}
 
@@ -204,7 +194,7 @@ gint copy_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 		err = TRUE;
 	}
 	fclose(src_fp);
-	if (safe_fclose(dest_fp) == EOF) {
+	if (fclose(dest_fp) == EOF) {
 		FILE_OP_ERROR(dest, "fclose");
 		err = TRUE;
 	}
@@ -302,7 +292,7 @@ gint copy_file_part(FILE *fp, off_t offset, size_t length, const gchar *dest)
 	if (copy_file_part_to_fp(fp, offset, length, dest_fp) < 0)
 		err = TRUE;
 
-	if (safe_fclose(dest_fp) == EOF) {
+	if (fclose(dest_fp) == EOF) {
 		FILE_OP_ERROR(dest, "fclose");
 		err = TRUE;
 	}
@@ -384,7 +374,7 @@ gint canonicalize_file(const gchar *src, const gchar *dest)
 		err = TRUE;
 	}
 	fclose(src_fp);
-	if (safe_fclose(dest_fp) == EOF) {
+	if (fclose(dest_fp) == EOF) {
 		FILE_OP_ERROR(dest, "fclose");
 		err = TRUE;
 	}
@@ -420,45 +410,31 @@ gint canonicalize_file_replace(const gchar *file)
 }
 
 
-gint str_write_to_file(const gchar *str, const gchar *file, gboolean safe)
+gint str_write_to_file(const gchar *str, char *file)
 {
-	FILE *fp;
-	size_t len;
-	int r;
-
-	cm_return_val_if_fail(str != NULL, -1);
-	cm_return_val_if_fail(file != NULL, -1);
-
-	if ((fp = g_fopen(file, "wb")) == NULL) {
-		FILE_OP_ERROR(file, "g_fopen");
-		return -1;
-	}
-
-	len = strlen(str);
-	if (len == 0) {
-		fclose(fp);
+	if (strlen(str) == 0)
 		return 0;
+
+	FILE *fp = fopen(file, "wb");
+	if (fp == NULL) {
+		warn("open %s", file);
+		return -1;
 	}
 
-	if (fwrite(str, 1, len, fp) != len) {
-		FILE_OP_ERROR(file, "fwrite");
+	size_t len = strlen(str);
+	size_t n = fwrite(str, 1, strlen(str), fp);
+	if (n != len) {
+		warn("short write to %s: expected %d bytes but wrote %d", file, len, n);
 		fclose(fp);
-		unlink(file);
+		remove(file);
 		return -1;
 	}
 
-	if (safe) {
-		r = safe_fclose(fp);
-	} else {
-		r = fclose(fp);
-	}
-
-	if (r == EOF) {
-		FILE_OP_ERROR(file, "fclose");
-		unlink(file);
+	if (fclose(fp) == EOF) {
+		warn("close %s", file);
+		remove(file);
 		return -1;
 	}
-
 	return 0;
 }
 

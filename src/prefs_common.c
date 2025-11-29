@@ -1018,7 +1018,7 @@ static void prefs_common_save_history_to_dir(const gchar *dirname, const gchar *
 		    fputc('\n', fp) != EOF);
 	}
 
-	if (safe_fclose(fp) == EOF) {
+	if (fclose(fp) == EOF) {
 		FILE_OP_ERROR(tmp_path, "fclose");
 		fp = NULL;
 		goto out;
@@ -1031,7 +1031,7 @@ static void prefs_common_save_history_to_dir(const gchar *dirname, const gchar *
 
 out:
 	if (fp)
-		safe_fclose(fp);
+		fclose(fp);
 	g_free(tmp_path);
 	g_free(path);
 }

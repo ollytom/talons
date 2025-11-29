@@ -4936,7 +4936,7 @@ static gint compose_write_to_file(Compose *compose, FILE *fp, gint action, gbool
 					rewind(fp);
 					content = file_read_stream_to_str(fp);
 
-					str_write_to_file(content, tmp_enc_file, TRUE);
+					str_write_to_file(content, tmp_enc_file);
 					g_free(content);
 
 					/* Now write the unencrypted body. */
@@ -5021,7 +5021,7 @@ static gint compose_write_body_to_file(Compose *compose, const gchar *file)
 
 	g_free(chars);
 
-	if (safe_fclose(fp) == EOF) {
+	if (fclose(fp) == EOF) {
 		FILE_OP_ERROR(file, "fclose");
 		unlink(file);
 		return -1;
@@ -5286,7 +5286,7 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 		g_free(tmp);
 		return COMPOSE_QUEUE_ERROR_WITH_ERRNO;
 	}
-	if (safe_fclose(fp) == EOF) {
+	if (fclose(fp) == EOF) {
 		FILE_OP_ERROR(tmp, "fclose");
 		unlink(tmp);
 		g_free(tmp);
@@ -8448,7 +8448,7 @@ gboolean compose_draft (gpointer data, guint action)
 		fclose(fp);
 		goto warn_err;
 	}
-	if (safe_fclose(fp) == EOF) {
+	if (fclose(fp) == EOF) {
 		goto warn_err;
 	}
 
@@ -8948,7 +8948,7 @@ int attach_image(Compose *compose, GtkSelectionData *data, const gchar *subtype)
 		return -1;
 	}
 
-	r = safe_fclose(fp);
+	r = fclose(fp);
 
 	if (r == EOF) {
 		FILE_OP_ERROR(file, "fclose");
@@ -9625,7 +9625,7 @@ static void compose_insert_drag_received_cb (GtkWidget		*widget,
 			/* Assume a list of no files, and data has ://, is a remote link */
 			gchar *tmpdata = g_strstrip(g_strdup(ddata));
 			gchar *tmpfile = get_tmp_file();
-			str_write_to_file(tmpdata, tmpfile, TRUE);
+			str_write_to_file(tmpdata, tmpfile);
 			g_free(tmpdata);
 			compose_insert_file(compose, tmpfile);
 			unlink(tmpfile);

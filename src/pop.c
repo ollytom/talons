@@ -631,7 +631,7 @@ gint pop3_write_uidl_list(Pop3Session *session)
 			    > 0);
 	}
 
-	if (safe_fclose(fp) == EOF) {
+	if (fclose(fp) == EOF) {
 		FILE_OP_ERROR(tmp_path, "fclose");
 		fp = NULL;
 		goto err_write;
@@ -729,7 +729,7 @@ static gint pop3_write_msg_to_file(const gchar *file, const gchar *data,
 		}
 	}
 
-	if (safe_fclose(fp) == EOF) {
+	if (fclose(fp) == EOF) {
 		FILE_OP_ERROR(file, "fclose");
 		unlink(file);
 		return -1;

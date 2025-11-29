@@ -2532,7 +2532,7 @@ static void fetch_content_run(struct etpan_thread_op * op)
 			goto do_fclose;
 		}
 
-		if (safe_fclose(f) == EOF) {
+		if (fclose(f) == EOF) {
 			result->error = MAILIMAP_ERROR_FETCH;
 			goto unlink;
 		}

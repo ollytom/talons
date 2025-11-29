@@ -975,9 +975,9 @@ gint msgcache_write(const gchar *cache_file, const gchar *mark_file, const gchar
 
 	/* close files */
 	if (write_fps.cache_fp)
-		write_fps.error |= (safe_fclose(write_fps.cache_fp) != 0);
+		write_fps.error |= (fclose(write_fps.cache_fp) != 0);
 	if (write_fps.mark_fp)
-		write_fps.error |= (safe_fclose(write_fps.mark_fp) != 0);
+		write_fps.error |= (fclose(write_fps.mark_fp) != 0);
 
 	if (write_fps.error != 0) {
 		/* in case of error, forget all */

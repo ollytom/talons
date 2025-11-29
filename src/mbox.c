@@ -202,7 +202,7 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, PrefsAccount *account)
 			return -1;
 		}
 
-		if (safe_fclose(tmp_fp) == EOF) {
+		if (fclose(tmp_fp) == EOF) {
 			FILE_OP_ERROR(tmp_file, "fclose");
 			g_warning("can't write to temporary file");
 			fclose(mbox_fp);
@@ -284,7 +284,7 @@ gint copy_mbox(gint srcfd, const gchar *dest)
 		err = TRUE;
 	}
 
-	if (safe_fclose(dest_fp) == EOF) {
+	if (fclose(dest_fp) == EOF) {
 		FILE_OP_ERROR(dest, "fclose");
 		err = TRUE;
 	}
@@ -395,7 +395,7 @@ gint export_list_to_mbox(GSList *mlist, const gchar *mbox)
 			goto out;
 		}
 
-		safe_fclose(msg_fp);
+		fclose(msg_fp);
 		statusbar_progress_all(msgs++,total, 500);
 		if (msgs%500 == 0)
 			GTK_EVENTS_FLUSH();
@@ -405,7 +405,7 @@ out:
 	statusbar_progress_all(0,0,0);
 	statusbar_pop_all();
 
-	safe_fclose(mbox_fp);
+	fclose(mbox_fp);
 
 	return err;
 }

@@ -45,6 +45,7 @@ To run the app:
 ## Goals
 
 Many features of Claws Mail have been removed to make it easier to maintain by a single person.
+As of the end of 2025, Talons is less than half the size of Claws Mail; 120KLOC. versus Claws Mail 4.3.1 at around 295KLOC.
 
 To be honest I can't even remember how many or which features have been removed.
 Off the top of my head:
@@ -55,6 +56,7 @@ Off the top of my head:
 - no localisation (sorry)
 - no actions
 - no client-side mail filtering
+- no LDAP, Palm Pilot address books
 
 [Zig]: https://ziglang.org
 [Claws Mail]: https://claws-mail.org

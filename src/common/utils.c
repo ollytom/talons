@@ -3499,7 +3499,7 @@ void mailcap_update_default(const gchar *type, const gchar *command)
 	if (fp)
 		fclose(fp);
 
-	if (safe_fclose(outfp) == EOF)
+	if (fclose(outfp) == EOF)
 		err = TRUE;
 
 	if (!err)

@@ -22,8 +22,6 @@
 #include <stdio.h>
 #include <glib.h>
 
-int safe_fclose(FILE *fp);
-
 gint file_strip_crs		(const gchar	*file);
 gint append_file		(const gchar	*src,
 				 const gchar	*dest,
@@ -60,9 +58,7 @@ FILE *my_tmpfile		(void);
 FILE *get_tmpfile_in_dir	(const gchar 	*dir,
 				 gchar	       **filename);
 FILE *str_open_as_stream	(const gchar	*str);
-gint str_write_to_file		(const gchar	*str,
-				 const gchar	*file,
-				 gboolean	 safe);
+gint str_write_to_file		(const gchar *str, char *file);
 
 gint prefs_chmod_mode		(gchar *chmod_pref);
 

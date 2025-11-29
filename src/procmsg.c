@@ -1998,14 +1998,14 @@ MsgInfo *procmsg_msginfo_new_from_mimeinfo(MsgInfo *src_msginfo, MimeInfo *mimei
 	}
 
 	if (fp && procmime_write_mimeinfo(mimeinfo, fp) >= 0) {
-		safe_fclose(fp);
+		fclose(fp);
 		fp = NULL;
 		tmp_msginfo = procheader_parse_file(
 			tmpfile, flags,
 			TRUE, FALSE);
 	}
 	if (fp)
-		safe_fclose(fp);
+		fclose(fp);
 
 	if (tmp_msginfo != NULL) {
 		if (src_msginfo)
