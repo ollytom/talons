@@ -667,9 +667,6 @@ static gint pop3_write_msg_to_file(const gchar *file, const gchar *data,
 		return -1;
 	}
 
-	if (change_file_mode_rw(fp, file) < 0)
-		FILE_OP_ERROR(file, "chmod");
-
 	if (prefix != NULL) {
 		if (fprintf(fp, "%s\n", prefix) < 0) {
 			FILE_OP_ERROR(file, "fprintf");

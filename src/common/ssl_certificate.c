@@ -450,7 +450,7 @@ SSLCertificate *ssl_certificate_find (const gchar *host, gushort port, const gch
 		gchar *old = get_certificate_path(host, buf, NULL);
 		gchar *new = get_certificate_path(host, buf, fingerprint);
 		if (strcmp(old, new))
-			move_file(old, new, TRUE);
+			rename(old, new);
 		g_free(old);
 		g_free(new);
 	}

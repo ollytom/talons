@@ -982,10 +982,10 @@ static gint procheader_scan_date_string(const gchar *o_str,
 		if (month_n >= 1 && month_n <= 12) {
 			strncpy2(month, monthstr+((month_n-1)*3), 4);
 			if (zonestr[0] == 'z' || zonestr[0] == 'Z') {
-				strcat(zone, "+00:00");
+				strlcat(zone, "+00:00", sizeof(zone));
 			} else if (sscanf(zonestr, "%c%2d:%2d",
 						&offset_sign, &zone1, &zone2) == 3) {
-				strcat(zone, zonestr);
+				strlcat(zone, zonestr, sizeof(zone));
 			}
 			return 0;
 		}
@@ -999,10 +999,10 @@ static gint procheader_scan_date_string(const gchar *o_str,
 		if (month_n >= 1 && month_n <= 12) {
 			strncpy2(month, monthstr+((month_n-1)*3), 4);
 			if (zonestr[0] == 'z' || zonestr[0] == 'Z') {
-				strcat(zone, "+00:00");
+				strlcat(zone, "+00:00", sizeof(zone));
 			} else if (sscanf(zonestr, "%c%2d:%2d",
 						&offset_sign, &zone1, &zone2) == 3) {
-				strcat(zone, zonestr);
+				strlcat(zone, zonestr, sizeof(zone));
 			}
 			return 0;
 		}

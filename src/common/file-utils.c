@@ -62,8 +62,7 @@ gint file_strip_crs(const gchar *file)
 	if (fclose(outfp) == EOF) {
 		goto unlinkout;
 	}
-
-	if (move_file(out, file, TRUE) < 0)
+	if (rename(out, file) < 0)
 		goto unlinkout;
 
 	g_free(out);
@@ -96,11 +95,6 @@ gint append_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 		FILE_OP_ERROR(dest, "g_fopen");
 		fclose(src_fp);
 		return -1;
-	}
-
-	if (change_file_mode_rw(dest_fp, dest) < 0) {
-		FILE_OP_ERROR(dest, "chmod");
-		g_warning("can't change file mode: %s", dest);
 	}
 
 	while ((n_read = fread(buf, sizeof(gchar), sizeof(buf), src_fp)) > 0) {
@@ -147,8 +141,8 @@ gint copy_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 	}
 	if (is_file_exist(dest)) {
 		dest_bak = g_strconcat(dest, ".bak", NULL);
-		if (rename_force(dest, dest_bak) < 0) {
-			FILE_OP_ERROR(dest, "rename");
+		if (rename(dest, dest_bak) < 0) {
+			warn("rename %s to %s", dest, dest_bak);
 			fclose(src_fp);
 			g_free(dest_bak);
 			return -1;
@@ -159,16 +153,11 @@ gint copy_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 		FILE_OP_ERROR(dest, "g_fopen");
 		fclose(src_fp);
 		if (dest_bak) {
-			if (rename_force(dest_bak, dest) < 0)
+			if (rename(dest_bak, dest) < 0)
 				FILE_OP_ERROR(dest_bak, "rename");
 			g_free(dest_bak);
 		}
 		return -1;
-	}
-
-	if (change_file_mode_rw(dest_fp, dest) < 0) {
-		FILE_OP_ERROR(dest, "chmod");
-		g_warning("can't change file mode: %s", dest);
 	}
 
 	while ((n_read = fread(buf, sizeof(gchar), sizeof(buf), src_fp)) > 0) {
@@ -181,7 +170,7 @@ gint copy_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 			if (unlink(dest) < 0)
                                 FILE_OP_ERROR(dest, "unlink");
 			if (dest_bak) {
-				if (rename_force(dest_bak, dest) < 0)
+				if (rename(dest_bak, dest) < 0)
 					FILE_OP_ERROR(dest_bak, "rename");
 				g_free(dest_bak);
 			}
@@ -203,7 +192,7 @@ gint copy_file(const gchar *src, const gchar *dest, gboolean keep_backup)
 		if (unlink(dest) < 0)
                         FILE_OP_ERROR(dest, "unlink");
 		if (dest_bak) {
-			if (rename_force(dest_bak, dest) < 0)
+			if (rename(dest_bak, dest) < 0)
 				FILE_OP_ERROR(dest_bak, "rename");
 			g_free(dest_bak);
 		}
@@ -215,27 +204,6 @@ gint copy_file(const gchar *src, const gchar *dest, gboolean keep_backup)
                         FILE_OP_ERROR(dest_bak, "unlink");
 
 	g_free(dest_bak);
-
-	return 0;
-}
-
-gint move_file(const gchar *src, const gchar *dest, gboolean overwrite)
-{
-	if (overwrite == FALSE && is_file_exist(dest)) {
-		g_warning("move_file(): file %s already exists", dest);
-		return -1;
-	}
-
-	if (rename_force(src, dest) == 0) return 0;
-
-	if (EXDEV != errno) {
-		FILE_OP_ERROR(src, "rename");
-		return -1;
-	}
-
-	if (copy_file(src, dest, FALSE) < 0) return -1;
-
-	unlink(src);
 
 	return 0;
 }
@@ -284,11 +252,6 @@ gint copy_file_part(FILE *fp, off_t offset, size_t length, const gchar *dest)
 		return -1;
 	}
 
-	if (change_file_mode_rw(dest_fp, dest) < 0) {
-		FILE_OP_ERROR(dest, "chmod");
-		g_warning("can't change file mode: %s", dest);
-	}
-
 	if (copy_file_part_to_fp(fp, offset, length, dest_fp) < 0)
 		err = TRUE;
 
@@ -326,11 +289,6 @@ gint canonicalize_file(const gchar *src, const gchar *dest)
 		FILE_OP_ERROR(dest, "g_fopen");
 		fclose(src_fp);
 		return -1;
-	}
-
-	if (change_file_mode_rw(dest_fp, dest) < 0) {
-		FILE_OP_ERROR(dest, "chmod");
-		g_warning("can't change file mode: %s", dest);
 	}
 
 	while (fgets(buf, sizeof(buf), src_fp) != NULL) {
@@ -386,29 +344,6 @@ gint canonicalize_file(const gchar *src, const gchar *dest)
 
 	return 0;
 }
-
-gint canonicalize_file_replace(const gchar *file)
-{
-	gchar *tmp_file;
-
-	tmp_file = get_tmp_file();
-
-	if (canonicalize_file(file, tmp_file) < 0) {
-		g_free(tmp_file);
-		return -1;
-	}
-
-	if (move_file(tmp_file, file, TRUE) < 0) {
-		g_warning("can't replace file: %s", file);
-		unlink(tmp_file);
-		g_free(tmp_file);
-		return -1;
-	}
-
-	g_free(tmp_file);
-	return 0;
-}
-
 
 gint str_write_to_file(const gchar *str, char *file)
 {
@@ -559,41 +494,17 @@ gchar *file_read_stream_to_str(FILE *fp)
 	return file_read_stream_to_str_full(fp, TRUE);
 }
 
-gchar *file_read_to_str_no_recode(const gchar *file)
-{
-	return file_read_to_str_full(file, FALSE);
-}
-gchar *file_read_stream_to_str_no_recode(FILE *fp)
-{
-	return file_read_stream_to_str_full(fp, FALSE);
-}
-
-gint rename_force(const gchar *oldpath, const gchar *newpath)
-{
-#ifndef G_OS_UNIX
-	if (!is_file_entry_exist(oldpath)) {
-		errno = ENOENT;
-		return -1;
-	}
-	if (is_file_exist(newpath)) {
-		if (unlink(newpath) < 0)
-			FILE_OP_ERROR(newpath, "unlink");
-	}
-#endif
-	return g_rename(oldpath, newpath);
-}
-
 gint copy_dir(const gchar *src, const gchar *dst)
 {
 	GDir *dir;
 	const gchar *name;
 
 	if ((dir = g_dir_open(src, 0, NULL)) == NULL) {
-		g_warning("failed to open directory: %s", src);
+		warn("open %s", src);
 		return -1;
 	}
 
-	if (make_dir(dst) < 0) {
+	if (mkdir(dst, 0700) < 0) {
 		g_dir_close(dir);
 		return -1;
 	}
@@ -631,11 +542,6 @@ gint copy_dir(const gchar *src, const gchar *dst)
 	}
 	g_dir_close(dir);
 	return 0;
-}
-
-gint change_file_mode_rw(FILE *fp, const gchar *file)
-{
-	return fchmod(fileno(fp), S_IRUSR|S_IWUSR);
 }
 
 FILE *my_tmpfile(void)

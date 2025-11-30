@@ -293,7 +293,6 @@ static void main_dump_features_list(gboolean show_debug_only)
 
 int main(int argc, char *argv[])
 {
-	gchar *userrc;
 	MainWindow *mainwin;
 	FolderView *folderview;
 	GdkPixbuf *icon;
@@ -327,7 +326,7 @@ int main(int argc, char *argv[])
 	if (cmd.status || cmd.status_full || cmd.search ||
 		cmd.cancel_receiving || cmd.cancel_sending ||
 		cmd.debug) {
-		puts("0 Claws Mail not running.");
+		puts("Claws Mail not running");
 		lock_socket_remove();
 		return 0;
 	}
@@ -344,26 +343,20 @@ int main(int argc, char *argv[])
 
 	CHDIR_RETURN_VAL_IF_FAIL(get_home_dir(), 1);
 
-	if (!is_dir_exist(get_rc_dir())) {
-		if (copy_dir("/etc/skel/.claws-mail", get_rc_dir()) < 0) {
-			if (!is_dir_exist(get_rc_dir()) && make_dir(get_rc_dir()) < 0) {
-				exit(1);
-			}
+	if (mkdir(get_rc_dir(), 0700) == 0) {
+		char *skel = "/etc/skel/.claws-mail";
+		if (copy_dir(skel, get_rc_dir()) < 0) {
+			err(1, "copy template config directory from %s to %s", skel, get_rc_dir());
 		}
 	}
 
-	userrc = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, "gtkrc-2.0", NULL);
-	gtk_rc_parse(userrc);
-	g_free(userrc);
-
-	userrc = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, MENU_RC, NULL);
-
+	char userrc[PATH_MAX];
+	snprintf(userrc, sizeof(userrc), "%s/%s", get_rc_dir, MENU_RC);
 	if (copy_file(userrc, userrc, TRUE) < 0) {
-		g_warning("can't copy %s to %s.bak", userrc, userrc);
+		warn("backup %s to %s.bak", userrc, userrc);
 	}
 
 	gtk_accel_map_load (userrc);
-	g_free(userrc);
 	CHDIR_RETURN_VAL_IF_FAIL(get_rc_dir(), 1);
 
 	if (mkdir(get_mail_base_dir(), 0755) < 0 && errno != EEXIST)
@@ -1178,22 +1171,15 @@ gboolean claws_is_starting(void)
 	return sc_starting;
 }
 
-gchar *claws_get_socket_name(void)
+char *claws_get_socket_name(void)
 {
-	char *dir = g_strdup_printf("%s/claws-mail", g_get_user_runtime_dir());
-	struct stat sb;
-	int ok = stat(dir, &sb);
-	if (ok < 0 && errno != ENOENT) {
-		g_print("stat %s: %s\n", dir, g_strerror(errno));
-	}
-	if (!is_dir_exist(dir) && make_dir(dir) < 0) {
-		g_print("create %s: %s\n", dir, g_strerror(errno));
-	}
-	char *filename = g_strdup_printf("%s/control.sock", dir);
-	g_free(dir);
-
-	debug_print("Using control socket %s\n", filename);
-	return filename;
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/claws-mail", g_get_user_runtime_dir());
+	if (mkdir(path, 0755) < 0 && errno != EEXIST)
+		warn("mkdir %s", path);
+	strlcat(path, "/control.sock", sizeof(path));
+	fprintf(stderr, "Using control socket %s\n", path);
+	return strdup(path);
 }
 
 static gint prohibit_duplicate_launch(int *argc, char ***argv)
@@ -1548,13 +1534,12 @@ static void lock_socket_input_cb(gpointer data,
 
 static void open_compose_new(const gchar *address, GList *attach_files)
 {
-	gchar *addr = NULL;
-
+	// 254 + mailto:
+	char addr[261];
 	if (address) {
-		Xstrdup_a(addr, address, return);
+		strlcpy(addr, address, sizeof(addr));
 		g_strstrip(addr);
 	}
-
 	compose_new(NULL, addr, attach_files);
 }
 

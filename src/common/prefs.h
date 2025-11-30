@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef PREFS_H
@@ -33,7 +33,6 @@ struct _PrefFile {
 	gboolean writing;
 };
 
-PrefFile *prefs_read_open	(const gchar	*path);
 PrefFile *prefs_write_open	(const gchar	*path);
 gint prefs_file_close		(PrefFile	*pfile);
 gint prefs_file_close_revert	(PrefFile	*pfile);

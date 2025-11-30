@@ -693,11 +693,6 @@ gint procmime_get_part(const gchar *outfile, MimeInfo *mimeinfo)
 		return -(saved_errno);
 	}
 
-	if (change_file_mode_rw(outfp, outfile) < 0) {
-		FILE_OP_ERROR(outfile, "chmod");
-		g_warning("can't change file mode: %s", outfile);
-	}
-
 	result = procmime_get_part_to_stream(outfp, mimeinfo);
 
 	if (fclose(outfp) == EOF) {

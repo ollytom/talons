@@ -22,6 +22,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 
 #include "main.h"
@@ -3964,7 +3965,7 @@ void addressbook_read_file( void ) {
 	/* Use new address book index. */
 
 	if ( !is_dir_exist(indexdir) ) {
-		if ( make_dir(indexdir) < 0 ) {
+		if (mkdir(indexdir, 0700) < 0 ) {
 			addrindex_set_file_path( addrIndex, get_rc_dir() );
 			g_warning("couldn't create dir '%s'", indexdir);
 		} else {

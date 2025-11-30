@@ -1338,7 +1338,6 @@ gchar *folder_item_get_identifier(FolderItem *item)
 
 Folder *folder_find_from_identifier(const gchar *identifier)
 {
-	gchar *str;
 	gchar *p;
 	gchar *name;
 	FolderClass *class;
@@ -1348,7 +1347,8 @@ Folder *folder_find_from_identifier(const gchar *identifier)
 	if (*identifier != '#')
 		return NULL;
 
-	Xstrdup_a(str, identifier, return NULL);
+	char str[BUFSIZ];
+	strlcpy(str, identifier, sizeof(str));
 
 	p = strchr(str, '/');
 	if (!p)

@@ -1303,6 +1303,7 @@ static gint get_spool(FolderItem *dest, const gchar *mbox, PrefsAccount *account
 	}
 	debug_print("Getting new messages from %s into %s...\n", mbox, dest->path);
 	if (copy_mbox(spool, tmp_mbox) < 0) {
+		perror("copy mbox");
 		flock(spool, LOCK_UN);
 		close(spool);
 		return -1;

@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
+#include <err.h>
 #include <errno.h>
 #include <time.h>
 
@@ -189,33 +190,19 @@ static void mh_folder_init(Folder *folder, const gchar *name, const gchar *path)
 
 gboolean mh_scan_required(Folder *folder, FolderItem *item)
 {
-	gchar *path;
-	GStatBuf s;
-
-	path = folder_item_get_path(item);
-	cm_return_val_if_fail(path != NULL, FALSE);
-
-	if (g_stat(path, &s) < 0) {
-		FILE_OP_ERROR(path, "stat");
-		g_free(path);
+	char *path = folder_item_get_path(item);
+	if (path == NULL)
+		return FALSE;
+	struct stat sb;
+	if (stat(path, &sb) < 0) {
+		warn("stat %s", path);
+		free(path);
 		return FALSE;
 	}
+	free(path);
 
-	if ((s.st_mtime > item->mtime) &&
-		(s.st_mtime - 3600 != item->mtime)) {
-		debug_print("MH scan required, folder updated: %s (%ld > %ld)\n",
-			    path,
-			    (long int) s.st_mtime,
-			    (long int) item->mtime);
-		g_free(path);
+	if ((sb.st_mtime > item->mtime) && (sb.st_mtime - 3600 != item->mtime))
 		return TRUE;
-	}
-
-	debug_print("MH scan not required: %s (%ld <= %ld)\n",
-		    path,
-		    (long int) s.st_mtime,
-		    (long int) item->mtime);
-	g_free(path);
 	return FALSE;
 }
 
@@ -544,8 +531,8 @@ static gint mh_copy_msgs(Folder *folder, FolderItem *dest, MsgInfoList *msglist,
 
 		if (MSG_IS_MOVE(msginfo->flags)) {
 			msginfo->flags.tmp_flags &= ~MSG_MOVE_DONE;
-			if (move_file(srcfile, destfile, TRUE) < 0) {
-				FILE_OP_ERROR(srcfile, "move");
+			if (rename(srcfile, destfile) < 0) {
+				warn("rename %s to %s", srcfile, destfile);
 				if (copy_file(srcfile, destfile, TRUE) < 0) {
 					FILE_OP_ERROR(srcfile, "copy");
 					g_free(srcfile);
@@ -890,7 +877,16 @@ static gboolean mh_renumber_msg(MsgInfo *info)
 	dest = mh_get_new_msg_filename(info->folder);
 	num = info->folder->last_num + 1;
 
-	if (move_file(src, dest, FALSE) == 0) {
+	// only renumber the file if dest doesn't already exist.
+	// TODO(otl): why?
+	struct stat sb;
+	if (stat(dest, &sb) && errno == ENOENT) {
+		if (rename(src, dest) < 0) {
+			warn("rename %s to %s", src, dest);
+			free(src);
+			free(dest);
+			return FALSE;
+		}
 		msgcache_remove_msg(info->folder->cache, info->msgnum);
 		info->msgnum = num;
 		msgcache_add_msg(info->folder->cache, info);
@@ -936,7 +932,7 @@ static FolderItem *mh_create_folder(Folder *folder, FolderItem *parent,
 		}
 	}
 
-	if (make_dir(fullpath) < 0) {
+	if (mkdir(fullpath, 0700) < 0) {
 		g_free(fullpath);
 		return NULL;
 	}

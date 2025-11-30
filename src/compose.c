@@ -4984,15 +4984,9 @@ static gint compose_write_body_to_file(Compose *compose, const gchar *file)
 	size_t len;
 	gchar *chars, *tmp;
 
-	if ((fp = g_fopen(file, "wb")) == NULL) {
-		FILE_OP_ERROR(file, "g_fopen");
+	if ((fp = fopen(file, "wb")) == NULL) {
+		warn("open %s", file);
 		return -1;
-	}
-
-	/* chmod for security */
-	if (change_file_mode_rw(fp, file) < 0) {
-		FILE_OP_ERROR(file, "chmod");
-		g_warning("can't change file mode");
 	}
 
 	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->text));
@@ -5143,14 +5137,9 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 			      G_DIR_SEPARATOR, compose, (guint) rand());
 	debug_print("queuing to %s\n", tmp);
 	if ((fp = g_fopen(tmp, "w+b")) == NULL) {
-		FILE_OP_ERROR(tmp, "g_fopen");
+		warn("open %s", tmp);
 		g_free(tmp);
 		return COMPOSE_QUEUE_ERROR_WITH_ERRNO;
-	}
-
-	if (change_file_mode_rw(fp, tmp) < 0) {
-		FILE_OP_ERROR(tmp, "chmod");
-		g_warning("can't change file mode");
 	}
 
 	/* queueing variables */
@@ -8374,7 +8363,6 @@ gboolean compose_draft (gpointer data, guint action)
 		goto warn_err;
 	}
 
-	/* chmod for security unless folder chmod is set */
 	prefs = draft->prefs;
 	if (prefs && prefs->enable_folder_chmod && prefs->folder_chmod) {
 			filemode = prefs->folder_chmod;
@@ -8382,9 +8370,6 @@ gboolean compose_draft (gpointer data, guint action)
 			if (filemode & S_IROTH) filemode |= S_IWOTH;
 			if (chmod(tmp, filemode) < 0)
 				FILE_OP_ERROR(tmp, "chmod");
-	} else if (change_file_mode_rw(fp, tmp) < 0) {
-		FILE_OP_ERROR(tmp, "chmod");
-		g_warning("can't change file mode");
 	}
 
 	/* Save draft infos */

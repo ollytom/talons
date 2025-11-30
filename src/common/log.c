@@ -115,11 +115,6 @@ void set_log_file(LogInstance instance, const gchar *filename)
 		return;
 	}
 
-	if (change_file_mode_rw(log_fp[instance], fullname) < 0) {
-		FILE_OP_ERROR(fullname, "chmod");
-		g_warning("can't change file mode: %s", fullname);
-	}
-
 	log_filename[instance] = g_strdup(fullname);
 	log_size[instance] = 0;
 	g_free(fullname);

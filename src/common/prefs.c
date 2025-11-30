@@ -18,6 +18,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "defs.h"
 
@@ -25,78 +26,32 @@
 
 #include "prefs.h"
 #include "utils.h"
-#include "file-utils.h"
 
 static gboolean prefs_is_readonly	(const gchar 	*path);
 
-/*!
- *\brief	Open preferences file for reading
- *
- *\param	path Filename with path of preferences file to read
- *
- *\return	PrefFile * preferences file struct
- */
-PrefFile *prefs_read_open(const gchar *path)
-{
-	PrefFile *pfile;
-	FILE *fp;
-
-	cm_return_val_if_fail(path != NULL, NULL);
-
-	if ((fp = g_fopen(path, "rb")) == NULL) {
-		FILE_OP_ERROR(path, "g_fopen");
-		return NULL;
-	}
-
-	pfile = g_new(PrefFile, 1);
-	pfile->fp = fp;
-	pfile->orig_fp = NULL;
-	pfile->path = g_strdup(path);
-	pfile->writing = FALSE;
-
-	return pfile;
-}
-
-/*!
- *\brief	Open preferences file for writing
- *		Prefs are written to a temp file: Call prefs_file_close()
- *		to rename this to the final filename
- *
- *\param	path Filename with path of preferences file to write
- *
- *\return	PrefFile * preferences file struct
+/*
+ * Open preferences file for writing
+ * Prefs are written to a temp file: Call prefs_file_close()
+ * to rename this to the final filename
  */
 PrefFile *prefs_write_open(const gchar *path)
 {
-	PrefFile *pfile;
-	gchar *tmppath;
 	FILE *fp;
-
-	cm_return_val_if_fail(path != NULL, NULL);
-
-	if (prefs_is_readonly(path)) {
-		g_warning("no write permission on '%s'", path);
+	char tmp[PATH_MAX];
+	strlcpy(tmp, path, sizeof(tmp));
+	strlcat(tmp, ".tmp", sizeof(tmp));
+	if ((fp = fopen(tmp, "w")) == NULL) {
+		char msg[PATH_MAX];
+		snprintf(msg, sizeof(msg), "open %s", tmp);
+		perror(msg);
 		return NULL;
 	}
 
-	tmppath = g_strconcat(path, ".tmp", NULL);
-	if ((fp = g_fopen(tmppath, "wb")) == NULL) {
-		FILE_OP_ERROR(tmppath, "g_fopen");
-		g_free(tmppath);
-		return NULL;
-	}
-
-	if (change_file_mode_rw(fp, tmppath) < 0)
-		FILE_OP_ERROR(tmppath, "chmod");
-
-	g_free(tmppath);
-
-	pfile = g_new(PrefFile, 1);
+	PrefFile *pfile = g_new(PrefFile, 1);
 	pfile->fp = fp;
 	pfile->orig_fp = NULL;
-	pfile->path = g_strdup(path);
+	pfile->path = strdup(path);
 	pfile->writing = TRUE;
-
 	return pfile;
 }
 
@@ -228,22 +183,11 @@ static gboolean prefs_is_readonly(const gchar * path)
 	return (access(path, W_OK) != 0 && access(path, F_OK) == 0);
 }
 
-/*!
- *\brief	Check if "rcfile" is in rcdir, a file and read-only
- */
 gboolean prefs_rc_is_readonly(const gchar * rcfile)
 {
-	gboolean result;
-	gchar * rcpath;
-
-	if (rcfile == NULL)
-		return TRUE;
-
-	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, rcfile, NULL);
-	result = prefs_is_readonly(rcpath);
-	g_free(rcpath);
-
-	return result;
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/%s", get_rc_dir(), rcfile);
+	return prefs_is_readonly(path);
 }
 
 /*!

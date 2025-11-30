@@ -1008,11 +1008,6 @@ static void prefs_common_save_history_to_dir(const gchar *dirname, const gchar *
 		goto out;
 	}
 
-	if (change_file_mode_rw(fp, history) < 0) {
-		FILE_OP_ERROR(history, "chmod");
-		g_warning("can't change file mode: %s", history);
-	}
-
 	for (cur = list; cur != NULL; cur = cur->next) {
 		TRY(fputs((gchar *)cur->data, fp) != EOF &&
 		    fputc('\n', fp) != EOF);

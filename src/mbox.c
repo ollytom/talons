@@ -126,9 +126,6 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, PrefsAccount *account)
 			g_free(tmp_file);
 			return -1;
 		}
-		if (change_file_mode_rw(tmp_fp, tmp_file) < 0) {
-			FILE_OP_ERROR(tmp_file, "chmod");
-		}
 
 		empty_lines = 0;
 		lines = 0;
@@ -247,27 +244,17 @@ gint proc_mbox(FolderItem *dest, const gchar *mbox, PrefsAccount *account)
 	return msgs;
 }
 
-gint copy_mbox(gint srcfd, const gchar *dest)
-{
-	FILE *dest_fp;
+int copy_mbox(gint srcfd, const gchar *dest) {
 	ssize_t n_read;
 	char buf[BUFSIZ];
-	gboolean err = FALSE;
-	int save_errno = 0;
 
-	if (srcfd < 0) {
+	FILE *dest_fp = fopen(dest, "w");
+	if (dest_fp == NULL) {
+		warn("open %s", dest);
 		return -1;
 	}
-
-	if ((dest_fp = g_fopen(dest, "wb")) == NULL) {
-		FILE_OP_ERROR(dest, "g_fopen");
-		return -1;
-	}
-
-	if (change_file_mode_rw(dest_fp, dest) < 0) {
-		FILE_OP_ERROR(dest, "chmod");
-		g_warning("can't change file mode");
-	}
+	if (chmod(dest, S_IRUSR|S_IWUSR) < 0)
+		warn("chmod %s", dest);
 
 	while ((n_read = read(srcfd, buf, sizeof(buf))) > 0) {
 		if (fwrite(buf, 1, n_read, dest_fp) < n_read) {
@@ -277,24 +264,7 @@ gint copy_mbox(gint srcfd, const gchar *dest)
 			return -1;
 		}
 	}
-
-	if (save_errno != 0) {
-		g_warning("error %d reading mbox: %s", save_errno,
-				g_strerror(save_errno));
-		err = TRUE;
-	}
-
-	if (fclose(dest_fp) == EOF) {
-		FILE_OP_ERROR(dest, "fclose");
-		err = TRUE;
-	}
-
-	if (err) {
-		unlink(dest);
-		return -1;
-	}
-
-	return 0;
+	return fclose(dest_fp);
 }
 
 gint export_list_to_mbox(GSList *mlist, const gchar *mbox)

@@ -29,9 +29,6 @@ gint append_file		(const gchar	*src,
 gint copy_file			(const gchar	*src,
 				 const gchar	*dest,
 				 gboolean	 keep_backup);
-gint move_file			(const gchar	*src,
-				 const gchar	*dest,
-				 gboolean	 overwrite);
 gint copy_file_part_to_fp	(FILE		*fp,
 				 off_t		 offset,
 				 size_t		 length,
@@ -42,18 +39,11 @@ gint copy_file_part		(FILE		*fp,
 				 const gchar	*dest);
 gint canonicalize_file		(const gchar	*src,
 				 const gchar	*dest);
-gint canonicalize_file_replace	(const gchar	*file);
 gchar *file_read_to_str		(const gchar	*file);
-gchar *file_read_to_str_no_recode(const gchar	*file);
 gchar *file_read_stream_to_str	(FILE		*fp);
-gchar *file_read_stream_to_str_no_recode(FILE	*fp);
 
-gint rename_force		(const gchar	*oldpath,
-				 const gchar	*newpath);
 gint copy_dir			(const gchar	*src,
 				 const gchar	*dest);
-gint change_file_mode_rw	(FILE		*fp,
-				 const gchar	*file);
 FILE *my_tmpfile		(void);
 FILE *get_tmpfile_in_dir	(const gchar 	*dir,
 				 gchar	       **filename);

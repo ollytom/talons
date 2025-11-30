@@ -377,9 +377,6 @@ static FILE *msgcache_open_data_file(const gchar *file, guint version,
 			FILE_OP_ERROR(file, "g_fopen");
 			return NULL;
 		}
-		if (change_file_mode_rw(fp, file) < 0)
-			FILE_OP_ERROR(file, "chmod");
-
 		WRITE_CACHE_DATA_INT(version, fp);
 		if (w_err != 0) {
 			g_warning("failed to write int");
@@ -958,12 +955,6 @@ gint msgcache_write(const gchar *cache_file, const gchar *mark_file, const gchar
 
 	write_fps.tags_fp = NULL;
 
-	if (write_fps.cache_fp || write_fps.mark_fp)
-		debug_print("\tWriting message cache to %s and %s...\n", new_cache, new_mark);
-
-	if (write_fps.cache_fp && change_file_mode_rw(write_fps.cache_fp, new_cache) < 0)
-		FILE_OP_ERROR(new_cache, "chmod");
-
 	/* headers written, note file size */
 	if (write_fps.cache_fp)
 		write_fps.cache_size = ftell(write_fps.cache_fp);
@@ -989,9 +980,9 @@ gint msgcache_write(const gchar *cache_file, const gchar *mark_file, const gchar
 	} else {
 		/* switch files */
 		if (cache_file)
-			move_file(new_cache, cache_file, TRUE);
+			rename(new_cache, cache_file);
 		if (mark_file)
-			move_file(new_mark, mark_file, TRUE);
+			rename(new_mark, mark_file);
 		cache->last_access = time(NULL);
 	}
 

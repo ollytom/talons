@@ -1654,18 +1654,6 @@ gint change_dir(const gchar *dir)
 	return 0;
 }
 
-gint make_dir(const gchar *dir)
-{
-	if (g_mkdir(dir, S_IRWXU) < 0) {
-		FILE_OP_ERROR(dir, "mkdir");
-		return -1;
-	}
-	if (g_chmod(dir, S_IRWXU) < 0)
-		FILE_OP_ERROR(dir, "chmod");
-
-	return 0;
-}
-
 gint make_dir_hier(const gchar *dir)
 {
 	gchar *parent_dir;
@@ -1675,7 +1663,7 @@ gint make_dir_hier(const gchar *dir)
 		parent_dir = g_strndup(dir, p - dir);
 		if (*parent_dir != '\0') {
 			if (!is_dir_exist(parent_dir)) {
-				if (make_dir(parent_dir) < 0) {
+				if (mkdir(parent_dir, 0700) < 0) {
 					g_free(parent_dir);
 					return -1;
 				}
@@ -1684,11 +1672,8 @@ gint make_dir_hier(const gchar *dir)
 		g_free(parent_dir);
 	}
 
-	if (!is_dir_exist(dir)) {
-		if (make_dir(dir) < 0)
-			return -1;
-	}
-
+	if (mkdir(dir, 0700) < 0 && errno != EEXIST)
+		return -1;
 	return 0;
 }
 
@@ -2480,39 +2465,18 @@ gboolean debug_get_mode(void)
 	return debug_mode;
 }
 
-#ifdef HAVE_VA_OPT
-void debug_print_real(const char *file, int line, const gchar *format, ...)
-{
+void debug_print_real(const gchar *format, ...) {
+	if (!debug_mode)
+		return;
+
 	va_list args;
 	gchar buf[BUFFSIZE];
-	gint prefix_len;
-
-	if (!debug_mode) return;
-
-	prefix_len = g_snprintf(buf, sizeof(buf), "%s:%d:", debug_srcname(file), line);
-
-	va_start(args, format);
-	g_vsnprintf(buf + prefix_len, sizeof(buf) - prefix_len, format, args);
-	va_end(args);
-
-	g_print("%s", buf);
-}
-#else
-void debug_print_real(const gchar *format, ...)
-{
-	va_list args;
-	gchar buf[BUFFSIZE];
-
-	if (!debug_mode) return;
 
 	va_start(args, format);
 	g_vsnprintf(buf, sizeof(buf), format, args);
 	va_end(args);
-
-	g_print("%s", buf);
+	fprintf(stderr, "%s\n", buf);
 }
-#endif
-
 
 const char * debug_srcname(const char *file)
 {
