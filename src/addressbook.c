@@ -423,12 +423,8 @@ static gchar *_errMsgUnknown_ = "Unknown" ;
  */
 static ErrMsgTableEntry _lutErrorsGeneral_[] = {
 	{ MGU_SUCCESS,		"Success" },
-	{ MGU_BAD_ARGS,		"Bad arguments" },
 	{ MGU_NO_FILE,		"File not specified" },
 	{ MGU_OPEN_FILE,	"Error opening file" },
-	{ MGU_ERROR_READ,	"Error reading file" },
-	{ MGU_EOF,		"End of file encountered" },
-	{ MGU_OO_MEMORY,	"Error allocating memory" },
 	{ MGU_BAD_FORMAT,	"Bad file format" },
 	{ MGU_ERROR_WRITE,	"Error writing to file" },
 	{ MGU_OPEN_DIRECTORY,	"Error opening directory" },

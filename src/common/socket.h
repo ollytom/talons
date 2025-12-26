@@ -68,9 +68,6 @@ struct _SockInfo
 	gboolean use_tls_sni;
 };
 
-gint sock_init				(void);
-gint sock_cleanup			(void);
-
 gint sock_set_io_timeout		(guint sec);
 
 gint sock_set_nonblocking_mode		(SockInfo *sock, gboolean nonblock);

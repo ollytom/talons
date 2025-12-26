@@ -26,6 +26,7 @@
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <libgen.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -36,10 +37,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-
-#ifdef HAVE_VALGRIND
-#include <valgrind.h>
-#endif
 
 #include "claws.h"
 #include "main.h"
@@ -311,11 +308,10 @@ int main(int argc, char *argv[])
 
 	parse_cmd_opt(argc, argv);
 
-	sock_init();
-
 	/* check and create unix domain socket for remote operation */
 	lock_socket = prohibit_duplicate_launch(&argc, &argv);
 	if (lock_socket < 0) {
+		perror("prohibit_duplicate_launch");
 		return 0;
 	}
 
@@ -351,7 +347,7 @@ int main(int argc, char *argv[])
 	}
 
 	char userrc[PATH_MAX];
-	snprintf(userrc, sizeof(userrc), "%s/%s", get_rc_dir, MENU_RC);
+	snprintf(userrc, sizeof(userrc), "%s/%s", get_rc_dir(), MENU_RC);
 	if (copy_file(userrc, userrc, TRUE) < 0) {
 		warn("backup %s to %s.bak", userrc, userrc);
 	}
@@ -1150,12 +1146,6 @@ void app_will_exit(GtkWidget *widget, gpointer data)
 		manage_window_focus_in(mainwin->window, NULL, NULL);
 	}
 
-	sock_cleanup();
-#ifdef HAVE_VALGRIND
-	if (RUNNING_ON_VALGRIND) {
-		summary_clear_list(mainwin->summaryview);
-	}
-#endif
 	if (folderview_get_selected_item(mainwin->folderview))
 		folder_item_close(folderview_get_selected_item(mainwin->folderview));
 	gtk_main_quit();
@@ -1171,31 +1161,26 @@ gboolean claws_is_starting(void)
 	return sc_starting;
 }
 
-char *claws_get_socket_name(void)
-{
-	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/claws-mail", g_get_user_runtime_dir());
-	if (mkdir(path, 0755) < 0 && errno != EEXIST)
-		warn("mkdir %s", path);
-	strlcat(path, "/control.sock", sizeof(path));
-	fprintf(stderr, "Using control socket %s\n", path);
-	return strdup(path);
+size_t claws_socket_path(char *buf, size_t len) {
+	size_t n = 0;
+	n += strlcpy(buf, g_get_user_runtime_dir(), len);
+	n += strlcat(buf, "/", len);
+	n += strlcat(buf, "claws-mail/control.sock", len);
+	return n;
 }
 
 static gint prohibit_duplicate_launch(int *argc, char ***argv)
 {
 	gint sock;
 	GList *curr;
-	gchar *path;
 
-	path = claws_get_socket_name();
-	/* Try to connect to the control socket */
-	sock = fd_connect_unix(path);
+	char sockpath[PATH_MAX];
+	claws_socket_path(sockpath, sizeof(sockpath));
+	if (mkdir(dirname(sockpath), 0755) < 0)
+		return -1;
+	sock = fd_connect_unix(sockpath);
 
 	if (sock < 0) {
-		gint ret;
-		gchar *socket_lock;
-		gint lock_fd;
 		/* If connect failed, no other process is running.
 		 * Unlink the potentially existing socket, then
 		 * open it. This has to be done locking a temporary
@@ -1203,36 +1188,30 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 		 * process could have created the socket just in
 		 * between.
 		 */
-		socket_lock = g_strconcat(path, ".lock",
-					  NULL);
-		lock_fd = g_open(socket_lock, O_RDWR|O_CREAT, 0);
+		char socklock[PATH_MAX];
+		strlcpy(socklock, sockpath, sizeof(socklock));
+		strlcat(socklock, ".lock", sizeof(socklock));
+		int lock_fd = open(socklock, O_RDWR|O_CREAT, 0);
 		if (lock_fd < 0) {
-			debug_print("Couldn't open %s: %s (%d)\n", socket_lock,
-				g_strerror(errno), errno);
-			g_free(socket_lock);
+			warn("open %s", socklock);
 			return -1;
 		}
 		if (flock(lock_fd, LOCK_EX) < 0) {
-			debug_print("Couldn't lock %s: %s (%d)\n", socket_lock,
-				g_strerror(errno), errno);
+			warn("lock %s", socklock);
 			close(lock_fd);
-			g_free(socket_lock);
 			return -1;
 		}
 
-		unlink(path);
-		debug_print("Opening socket %s\n", path);
-		ret = fd_open_unix(path);
+		remove(sockpath);
+		int ret = fd_open_unix(sockpath);
 		flock(lock_fd, LOCK_UN);
 		close(lock_fd);
-		unlink(socket_lock);
-		g_free(socket_lock);
+		remove(socklock);
 		return ret;
 	}
+	fprintf(stderr, "another Claws Mail instance is already running.\n");
+
 	/* remote command mode */
-
-	debug_print("another Claws Mail instance is already running.\n");
-
 	if (cmd.receive_all) {
 		CM_FD_WRITE_ALL("receive_all\n");
 	} else if (cmd.receive) {
@@ -1365,7 +1344,7 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 			g_print("Claws Mail is already running on this display (%s).\n",
 				buf);
 			close(sock);
-			sock = fd_connect_unix(path);
+			sock = fd_connect_unix(sockpath);
 			CM_FD_WRITE_ALL("popup\n");
 		}
 #else
@@ -1377,30 +1356,20 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 	return -1;
 }
 
-static gint lock_socket_remove(void)
+static int lock_socket_remove(void)
 {
-#ifdef G_OS_UNIX
-	gchar *filename, *dirname;
-#endif
-	if (lock_socket < 0) {
+	if (lock_socket < 0)
 		return -1;
-	}
 
-	if (lock_socket_tag > 0) {
+	if (lock_socket_tag > 0)
 		g_source_remove(lock_socket_tag);
-	}
 	close(lock_socket);
 
-#ifdef G_OS_UNIX
-	filename = claws_get_socket_name();
-	dirname = g_path_get_dirname(filename);
-	if (unlink(filename) < 0)
-                FILE_OP_ERROR(filename, "unlink");
-	g_rmdir(dirname);
-	g_free(dirname);
-#endif
-
-	return 0;
+	char sockpath[PATH_MAX];
+	claws_socket_path(sockpath, sizeof(sockpath));
+	if (remove(sockpath) < 0)
+		warn("remove %s", sockpath);
+	return remove(dirname(sockpath));
 }
 
 static GPtrArray *get_folder_item_list(gint sock)

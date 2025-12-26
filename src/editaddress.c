@@ -25,7 +25,6 @@
 
 #include "alertpanel.h"
 #include "stock_pixmap.h"
-#include "mgutils.h"
 #include "addressbook.h"
 #include "addressitem.h"
 #include "addritem.h"
@@ -447,16 +446,15 @@ static void edit_person_email_delete( gpointer data ) {
 
 static ItemEMail *edit_person_email_edit( gboolean *error, ItemEMail *email ) {
 	ItemEMail *retVal = NULL;
-	gchar *sEmail, *sAlias, *sRemarks, *sEmail_;
+	gchar *sEmail, *sAlias, *sRemarks;
 
 	*error = TRUE;
-	sEmail_ = gtk_editable_get_chars( GTK_EDITABLE(personeditdlg.entry_email), 0, -1 );
 	sAlias = gtk_editable_get_chars( GTK_EDITABLE(personeditdlg.entry_alias), 0, -1 );
 	sRemarks = gtk_editable_get_chars( GTK_EDITABLE(personeditdlg.entry_remarks), 0, -1 );
-	sEmail = mgu_email_check_empty( sEmail_ );
-	g_free( sEmail_ );
 
-	if( sEmail ) {
+	sEmail = gtk_editable_get_chars( GTK_EDITABLE(personeditdlg.entry_email), 0, -1 );
+	g_strstrip(sEmail);
+	if (sEmail) {
 		if( email == NULL ) {
 			email = addritem_create_item_email();
 		}

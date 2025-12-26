@@ -17,39 +17,17 @@
  *
  */
 
-/*
- * Definitions for generic functions.
- */
-
 #ifndef __MGUTILS_H__
 #define __MGUTILS_H__
 
-#include <stdio.h>
-#include <glib.h>
-
-/* Error codes */
 #define MGU_SUCCESS        0
-#define MGU_BAD_ARGS       -1
 #define MGU_NO_FILE        -2
 #define MGU_OPEN_FILE      -3
-#define MGU_ERROR_READ     -4
-#define MGU_EOF            -5
-#define MGU_OO_MEMORY      -6
 #define MGU_BAD_FORMAT     -7
 #define MGU_ERROR_WRITE    -15
 #define MGU_OPEN_DIRECTORY -16
 #define MGU_NO_PATH        -17
 
-/* Function prototypes */
-void mgu_print_list		( GSList *list, FILE *stream );
-void mgu_print_dlist		( GList *list, FILE *stream );
-gchar *mgu_list_coalesce	( GSList *list );
-gchar *mgu_replace_string	( gchar *str, const gchar *value );
-gchar *mgu_email_check_empty	( gchar *address );
-GList *mgu_parse_string		( gchar *line, const gint maxTokens,
-				  gint *tokenCnt );
-void mgu_str_unescape		( gchar *str );
-void mgu_str_ltc2space		( gchar *str, gchar chlead, gchar chtail );
-gchar *mgu_slist_longest_entry	( GSList *list );
+char *mgu_replace_string	(char *old, const char *new);
 
 #endif /* __MGUTILS_H__ */
