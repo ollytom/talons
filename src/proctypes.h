@@ -43,9 +43,6 @@ typedef struct _AvatarCaptureData	AvatarCaptureData;
 struct _MsgInfoExtraData;
 typedef struct _MsgInfoExtraData	MsgInfoExtraData;
 
-struct _MsgInfoAvatar;
-typedef struct _MsgInfoAvatar		MsgInfoAvatar;
-
 typedef GSList MsgInfoList;
 typedef GSList MsgNumberList;
 

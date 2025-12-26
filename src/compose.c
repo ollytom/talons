@@ -83,7 +83,6 @@
 #include "message_search.h"
 #include "combobox.h"
 #include "hooks.h"
-#include "privacy.h"
 #include "headers.h"
 #include "file-utils.h"
 #include "fence.h"
@@ -153,13 +152,6 @@ typedef enum {
 #define COMPOSE_DRAFT_TIMEOUT_UNSET -1
 #define COMPOSE_DRAFT_TIMEOUT_FORBIDDEN -2
 
-#define COMPOSE_PRIVACY_WARNING() {							\
-	alertpanel_error(_("You have opted to sign and/or encrypt this "		\
-			   "message but have not selected a privacy system.\n\n"	\
-			   "Signing and encrypting have been disabled for this "	\
-			   "message."));						\
-}
-
 #define INVALID_PID -1
 
 static GdkRGBA default_header_bgcolor =
@@ -200,7 +192,6 @@ static Compose *compose_reply			(MsgInfo	*msginfo,
 static Compose *compose_reply_mode		(ComposeMode 	 mode,
 					 GSList 	*msginfo_list,
 					 gchar 		*body);
-static void compose_update_privacy_systems_menu(Compose	*compose);
 
 static GtkWidget *compose_account_option_menu_create
 						(Compose	*compose);
@@ -410,20 +401,8 @@ static void compose_toggle_autowrap_cb	(GtkToggleAction *action,
 					 gpointer	 data);
 static void compose_toggle_autoindent_cb(GtkToggleAction *action,
 					 gpointer	 data);
-
-static void compose_toggle_sign_cb	(GtkToggleAction *action,
-					 gpointer	 data);
-static void compose_toggle_encrypt_cb	(GtkToggleAction *action,
-					 gpointer	 data);
-static void compose_set_privacy_system_cb(GtkWidget *widget, gpointer data);
-static void compose_update_privacy_system_menu_item(Compose * compose, gboolean warn);
-static void compose_activate_privacy_system     (Compose *compose,
-                                         PrefsAccount *account,
-					 gboolean warn);
-static void compose_apply_folder_privacy_settings(Compose *compose, FolderItem *folder_item);
-static void compose_toggle_remove_refs_cb(GtkToggleAction *action,
-					 gpointer	 data);
-static void compose_reply_change_mode	(Compose *compose, ComposeMode action);
+static void compose_toggle_remove_refs_cb(GtkToggleAction *action, gpointer	 data);
+static void compose_reply_change_mode (Compose *compose, ComposeMode action);
 static void compose_reply_change_mode_cb(GtkAction *action, GtkRadioAction *current, gpointer data);
 
 static void compose_attach_drag_received_cb (GtkWidget		*widget,
@@ -572,8 +551,6 @@ static GtkActionEntry compose_entries[] =
 
 	{"Options/ReplyMode",                 NULL, N_("Reply _mode"), NULL, NULL, NULL },
 	{"Options/---",                       NULL, "---", NULL, NULL, NULL },
-	{"Options/PrivacySystem",             NULL, N_("Privacy _System"), NULL, NULL, NULL },
-	{"Options/PrivacySystem/PlaceHolder", NULL, "Placeholder", NULL, NULL, G_CALLBACK(compose_nothing_cb) },
 
 	{"Options/Encoding",              NULL, N_("Character _encoding"), NULL, NULL, NULL },
 	{"Options/Encoding/---",          NULL, "---", NULL, NULL, NULL },
@@ -591,8 +568,6 @@ static GtkToggleActionEntry compose_toggle_entries[] =
 {
 	{"Edit/AutoWrap",            NULL, N_("Aut_o wrapping"), "<shift><control>L", NULL, G_CALLBACK(compose_toggle_autowrap_cb), FALSE }, /* Toggle */
 	{"Edit/AutoIndent",          NULL, N_("Auto _indent"), NULL, NULL, G_CALLBACK(compose_toggle_autoindent_cb), FALSE }, /* Toggle */
-	{"Options/Sign",             NULL, N_("Si_gn"), NULL, NULL, G_CALLBACK(compose_toggle_sign_cb), FALSE }, /* Toggle */
-	{"Options/Encrypt",          NULL, N_("_Encrypt"), NULL, NULL, G_CALLBACK(compose_toggle_encrypt_cb), FALSE }, /* Toggle */
 	{"Options/RemoveReferences", NULL, N_("Remo_ve references"), NULL, NULL, G_CALLBACK(compose_toggle_remove_refs_cb), FALSE }, /* Toggle */
 };
 
@@ -821,11 +796,6 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 	cm_return_val_if_fail(account != NULL, NULL);
 
 	compose = compose_create(account, item, COMPOSE_NEW, FALSE);
-	compose_apply_folder_privacy_settings(compose, item);
-
-	if (privacy_system_can_sign(compose->privacy_system) == FALSE &&
-	    (account->default_encrypt || account->default_sign))
-		COMPOSE_PRIVACY_WARNING();
 
 	/* override from name if mailto asked for it */
 	if (mailto_from) {
@@ -932,80 +902,6 @@ Compose *compose_generic_new(PrefsAccount *account, const gchar *mailto, FolderI
 	hooks_invoke(COMPOSE_CREATED_HOOKLIST, compose);
 
         return compose;
-}
-
-static void compose_force_encryption(Compose *compose, PrefsAccount *account,
-		gboolean override_pref, const gchar *system)
-{
-	const gchar *privacy = NULL;
-
-	cm_return_if_fail(compose != NULL);
-	cm_return_if_fail(account != NULL);
-
-	if (privacy_system_can_encrypt(compose->privacy_system) == FALSE ||
-	    (override_pref == FALSE && account->default_encrypt_reply == FALSE))
-		return;
-
-	if (account->default_privacy_system && strlen(account->default_privacy_system))
-		privacy = account->default_privacy_system;
-	else if (system)
-		privacy = system;
-	else {
-		GSList *privacy_avail = privacy_get_system_ids();
-		if (privacy_avail && g_slist_length(privacy_avail)) {
-			privacy = (gchar *)(privacy_avail->data);
-		}
-		g_slist_free_full(privacy_avail, g_free);
-	}
-	if (privacy != NULL) {
-		if (system) {
-			g_free(compose->privacy_system);
-			compose->privacy_system = NULL;
-			g_free(compose->encdata);
-			compose->encdata = NULL;
-		}
-		if (compose->privacy_system == NULL)
-			compose->privacy_system = g_strdup(privacy);
-		else if (*(compose->privacy_system) == '\0') {
-			g_free(compose->privacy_system);
-			g_free(compose->encdata);
-			compose->encdata = NULL;
-			compose->privacy_system = g_strdup(privacy);
-		}
-		compose_update_privacy_system_menu_item(compose, FALSE);
-		compose_use_encryption(compose, TRUE);
-	}
-}
-
-static void compose_force_signing(Compose *compose, PrefsAccount *account, const gchar *system)
-{
-	const gchar *privacy = NULL;
-	if (privacy_system_can_sign(compose->privacy_system) == FALSE)
-		return;
-
-	if (account->default_privacy_system && strlen(account->default_privacy_system))
-		privacy = account->default_privacy_system;
-	else if (system)
-		privacy = system;
-	else {
-		GSList *privacy_avail = privacy_get_system_ids();
-		if (privacy_avail && g_slist_length(privacy_avail)) {
-			privacy = (gchar *)(privacy_avail->data);
-		}
-	}
-
-	if (privacy != NULL) {
-		if (system) {
-			g_free(compose->privacy_system);
-			compose->privacy_system = NULL;
-			g_free(compose->encdata);
-			compose->encdata = NULL;
-		}
-		if (compose->privacy_system == NULL)
-			compose->privacy_system = g_strdup(privacy);
-		compose_update_privacy_system_menu_item(compose, FALSE);
-		compose_use_signing(compose, TRUE);
-	}
 }
 
 static Compose *compose_reply_mode(ComposeMode mode, GSList *msginfo_list, gchar *body)
@@ -1227,7 +1123,6 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 	cm_return_val_if_fail(account != NULL, NULL);
 
 	compose = compose_create(account, msginfo->folder, COMPOSE_REPLY, FALSE);
-	compose_apply_folder_privacy_settings(compose, msginfo->folder);
 
 	compose->updating = TRUE;
 
@@ -1263,21 +1158,7 @@ static Compose *compose_generic_reply(MsgInfo *msginfo,
 
 	undo_block(compose->undostruct);
 
-	if (MSG_IS_ENCRYPTED(compose->replyinfo->flags)) {
-		compose_force_encryption(compose, account, FALSE, s_system);
-	}
-
-	privacy_msginfo_get_signed_state(compose->replyinfo, &s_system);
-	if (MSG_IS_SIGNED(compose->replyinfo->flags) && account->default_sign_reply) {
-		compose_force_signing(compose, account, s_system);
-	}
 	g_free(s_system);
-
-	if (privacy_system_can_sign(compose->privacy_system) == FALSE &&
-	    ((account->default_encrypt || account->default_sign) ||
-	     (account->default_encrypt_reply && MSG_IS_ENCRYPTED(compose->replyinfo->flags)) ||
-	     (account->default_sign_reply && MSG_IS_SIGNED(compose->replyinfo->flags))))
-		COMPOSE_PRIVACY_WARNING();
 
 	SIGNAL_BLOCK(textbuf);
 	compose_wrap_all(compose);
@@ -1343,8 +1224,6 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 		return NULL;
 	}
 
-	compose_apply_folder_privacy_settings(compose, msginfo->folder);
-
 	compose->updating = TRUE;
 	compose->fwdinfo = procmsg_msginfo_get_full_info(msginfo);
 	if (!compose->fwdinfo)
@@ -1387,10 +1266,6 @@ Compose *compose_forward(PrefsAccount *account, MsgInfo *msginfo,
 	SIGNAL_BLOCK(textbuf);
 	compose_wrap_all(compose);
 	SIGNAL_UNBLOCK(textbuf);
-
-	if (privacy_system_can_sign(compose->privacy_system) == FALSE &&
-	    (account->default_encrypt || account->default_sign))
-		COMPOSE_PRIVACY_WARNING();
 
 	gtk_widget_grab_focus(compose->text);
 
@@ -1468,10 +1343,6 @@ static Compose *compose_forward_multiple(PrefsAccount *account, GSList *msginfo_
 	}
 
 	compose = compose_create(account, ((MsgInfo *)msginfo_list->data)->folder, COMPOSE_FORWARD, FALSE);
-	compose_apply_folder_privacy_settings(compose, ((MsgInfo *)msginfo_list->data)->folder);
-	if (privacy_system_can_sign(compose->privacy_system) == FALSE &&
-	    (account->default_encrypt || account->default_sign))
-		COMPOSE_PRIVACY_WARNING();
 
 	compose->updating = TRUE;
 
@@ -1617,9 +1488,6 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 	GtkTextMark *mark;
 	GtkTextIter iter;
 	FILE *fp;
-	gboolean use_signing = FALSE;
-	gboolean use_encryption = FALSE;
-	gchar *privacy_system = NULL;
 	MsgInfo *replyinfo = NULL, *fwdinfo = NULL;
 	gboolean autowrap = prefs_common.autowrap;
 	gboolean autoindent = prefs_common.auto_indent;
@@ -1668,30 +1536,7 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 			account = account_find_from_address(queueheader_buf);
 			g_free(queueheader_buf);
 		}
-		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
-					     					"X-Claws-Sign:")) {
-			param = atoi(&queueheader_buf[strlen("X-Claws-Sign:")]);
-			use_signing = param;
-			g_free(queueheader_buf);
-		}
-		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
-					     					"X-Sylpheed-Sign:")) {
-			param = atoi(&queueheader_buf[strlen("X-Sylpheed-Sign:")]);
-			use_signing = param;
-			g_free(queueheader_buf);
-		}
-		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
-					     					"X-Claws-Encrypt:")) {
-			param = atoi(&queueheader_buf[strlen("X-Claws-Encrypt:")]);
-			use_encryption = param;
-			g_free(queueheader_buf);
-		}
-		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
-					     					"X-Sylpheed-Encrypt:")) {
-			param = atoi(&queueheader_buf[strlen("X-Sylpheed-Encrypt:")]);
-			use_encryption = param;
-			g_free(queueheader_buf);
-		}
+
 		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
 					     					"X-Claws-Auto-Wrapping:")) {
 			param = atoi(&queueheader_buf[strlen("X-Claws-Auto-Wrapping:")]);
@@ -1704,16 +1549,7 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 			autoindent = param;
 			g_free(queueheader_buf);
 		}
-		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
-                            		"X-Claws-Privacy-System:")) {
-			privacy_system = g_strdup(&queueheader_buf[strlen("X-Claws-Privacy-System:")]);
-			g_free(queueheader_buf);
-		}
-		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
-                            		"X-Sylpheed-Privacy-System:")) {
-			privacy_system = g_strdup(&queueheader_buf[strlen("X-Sylpheed-Privacy-System:")]);
-			g_free(queueheader_buf);
-		}
+
 		if (!procheader_get_header_from_msginfo(msginfo, &queueheader_buf,
 											"RMID:")) {
 			gchar **tokens = g_strsplit(&queueheader_buf[strlen("RMID:")], "\t", 0);
@@ -1787,19 +1623,6 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 
 	compose->updating = TRUE;
 
-	if (privacy_system != NULL) {
-		compose->privacy_system = privacy_system;
-		compose_use_signing(compose, use_signing);
-		compose_use_encryption(compose, use_encryption);
-		compose_update_privacy_system_menu_item(compose, FALSE);
-	} else {
-		compose_activate_privacy_system(compose, account, FALSE);
-	}
-	compose_apply_folder_privacy_settings(compose, msginfo->folder);
-	if (privacy_system_can_sign(compose->privacy_system) == FALSE &&
-	    (account->default_encrypt || account->default_sign))
-		COMPOSE_PRIVACY_WARNING();
-
 	compose->targetinfo = procmsg_msginfo_copy(msginfo);
 	compose->targetinfo->tags = g_slist_copy(msginfo->tags);
 
@@ -1841,15 +1664,7 @@ Compose *compose_reedit(MsgInfo *msginfo, gboolean batch)
 	g_signal_handlers_block_by_func(G_OBJECT(textbuf),
 					G_CALLBACK(compose_changed_cb),
 					compose);
-
-	if (MSG_IS_ENCRYPTED(msginfo->flags)) {
-		fp = procmime_get_first_encrypted_text_content(msginfo);
-		if (fp) {
-			compose_force_encryption(compose, account, TRUE, NULL);
-		}
-	} else {
-		fp = procmime_get_first_text_content(msginfo);
-	}
+	fp = procmime_get_first_text_content(msginfo);
 	if (fp == NULL) {
 		g_warning("can't get text part");
 	}
@@ -1991,10 +1806,6 @@ Compose *compose_redirect(PrefsAccount *account, MsgInfo *msginfo,
 		gtk_widget_set_sensitive(compose->toolbar->linewrap_current_btn, FALSE);
 	if (compose->toolbar->linewrap_all_btn)
 		gtk_widget_set_sensitive(compose->toolbar->linewrap_all_btn, FALSE);
-	if (compose->toolbar->privacy_sign_btn)
-		gtk_widget_set_sensitive(compose->toolbar->privacy_sign_btn, FALSE);
-	if (compose->toolbar->privacy_encrypt_btn)
-		gtk_widget_set_sensitive(compose->toolbar->privacy_encrypt_btn, FALSE);
 
 	compose->modified = FALSE;
 	compose_set_title(compose);
@@ -2710,7 +2521,6 @@ static void compose_reedit_set_entry(Compose *compose, MsgInfo *msginfo)
 	SET_ADDRESS(COMPOSE_REPLYTO, compose->replyto);
 	SET_ADDRESS(COMPOSE_FOLLOWUPTO, compose->followup_to);
 
-	compose_update_privacy_system_menu_item(compose, FALSE);
 	compose_show_first_last_header(compose, TRUE);
 }
 
@@ -2988,18 +2798,6 @@ static gboolean compose_attach_append(Compose *compose, const gchar *file,
 	return TRUE;
 }
 
-void compose_use_signing(Compose *compose, gboolean use_signing)
-{
-	compose->use_signing = use_signing;
-	cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Options/Sign", use_signing);
-}
-
-void compose_use_encryption(Compose *compose, gboolean use_encryption)
-{
-	compose->use_encryption = use_encryption;
-	cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Options/Encrypt", use_encryption);
-}
-
 #define NEXT_PART_NOT_CHILD(info)  \
 {  \
 	node = info->node;  \
@@ -3013,7 +2811,6 @@ static void compose_attach_parts(Compose *compose, MsgInfo *msginfo)
 	MimeInfo *mimeinfo;
 	MimeInfo *child;
 	MimeInfo *firsttext = NULL;
-	MimeInfo *encrypted = NULL;
 	GNode    *node;
 	gchar *outfile;
 	const gchar *partname = NULL;
@@ -3035,21 +2832,11 @@ static void compose_attach_parts(Compose *compose, MsgInfo *msginfo)
 		if (child->type == MIMETYPE_TEXT) {
 			firsttext = child;
 			debug_print("First text part found\n");
-		} else if (compose->mode == COMPOSE_REEDIT &&
-			 child->type == MIMETYPE_APPLICATION &&
-			 !g_ascii_strcasecmp(child->subtype, "pgp-encrypted")) {
-			encrypted = (MimeInfo *)child->node->parent->data;
 		}
 	}
 	child = (MimeInfo *) mimeinfo->node->children->data;
 	while (child != NULL) {
 		gint err;
-
-		if (child == encrypted) {
-			/* skip this part of tree */
-			NEXT_PART_NOT_CHILD(child);
-			continue;
-		}
 
 		if (child->type == MIMETYPE_MULTIPART) {
 			/* get the actual content */
@@ -3065,30 +2852,6 @@ static void compose_attach_parts(Compose *compose, MsgInfo *msginfo)
 		outfile = procmime_get_tmp_file_name(child);
 		if ((err = procmime_get_part(outfile, child)) < 0)
 			g_warning("can't get the part of multipart message. (%s)", g_strerror(-err));
-		else {
-			gchar *content_type;
-
-			content_type = procmime_get_content_type_str(child->type, child->subtype);
-
-			/* if we meet a pgp signature, we don't attach it, but
-			 * we force signing. */
-			if ((strcmp(content_type, "application/pgp-signature") &&
-			    strcmp(content_type, "application/pkcs7-signature") &&
-			    strcmp(content_type, "application/x-pkcs7-signature"))
-			    || compose->mode == COMPOSE_REDIRECT) {
-				partname = procmime_mimeinfo_get_parameter(child, "filename");
-				if (partname == NULL)
-					partname = procmime_mimeinfo_get_parameter(child, "name");
-				if (partname == NULL)
-					partname = "";
-				compose_attach_append(compose, outfile,
-						      partname, content_type,
-						      procmime_mimeinfo_get_parameter(child, "charset"));
-			} else {
-				compose_force_signing(compose, compose->account, NULL);
-			}
-			g_free(content_type);
-		}
 		g_free(outfile);
 		NEXT_PART_NOT_CHILD(child);
 	}
@@ -3096,8 +2859,6 @@ static void compose_attach_parts(Compose *compose, MsgInfo *msginfo)
 }
 
 #undef NEXT_PART_NOT_CHILD
-
-
 
 typedef enum {
 	WAIT_FOR_INDENT_CHAR,
@@ -4053,19 +3814,6 @@ static void compose_select_account(Compose *compose, PrefsAccount *account,
 
 	compose_set_title(compose);
 
-	compose_activate_privacy_system(compose, account, FALSE);
-
-	if (account->default_sign && privacy_system_can_sign(compose->privacy_system) &&
-	    compose->mode != COMPOSE_REDIRECT)
-		cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Options/Sign", TRUE);
-	else
-		cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Options/Sign", FALSE);
-	if (account->default_encrypt && privacy_system_can_encrypt(compose->privacy_system) &&
-	    compose->mode != COMPOSE_REDIRECT)
-		cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Options/Encrypt", TRUE);
-	else
-		cm_toggle_menu_set_active_full(compose->ui_manager, "Menu/Options/Encrypt", FALSE);
-
 	if (!init && compose->mode != COMPOSE_REDIRECT) {
 		undo_block(compose->undostruct);
 		undo_unblock(compose->undostruct);
@@ -4292,26 +4040,9 @@ static void _display_queue_error(ComposeQueueResult val)
 			alertpanel_error(_("Could not queue message:\n\n%s."),
 					g_strerror(errno));
 			break;
-		case COMPOSE_QUEUE_ERROR_SIGNING_FAILED:
-			alertpanel_error(_("Could not queue message for sending:\n\n"
-						"Signature failed: %s"),
-					privacy_peek_error() ? privacy_get_error() : _("Unknown error"));
-			break;
-		case COMPOSE_QUEUE_ERROR_ENCRYPT_FAILED:
-			alertpanel_error(_("Could not queue message for sending:\n\n"
-						"Encryption failed: %s"),
-					privacy_peek_error() ? privacy_get_error() : _("Unknown error"));
-			break;
 		case COMPOSE_QUEUE_ERROR_CHAR_CONVERSION:
 			alertpanel_error(_("Could not queue message for sending:\n\n"
 						"Charset conversion failed."));
-			break;
-		case COMPOSE_QUEUE_ERROR_NO_ENCRYPTION_KEY:
-			alertpanel_error(_("Could not queue message for sending:\n\n"
-						"Couldn't get recipient encryption key."));
-			break;
-		case COMPOSE_QUEUE_SIGNING_CANCELLED:
-			debug_print("signing cancelled\n");
 			break;
 		default:
 			/* unhandled error */
@@ -4624,9 +4355,7 @@ static gint compose_redirect_write_to_file(Compose *compose, FILE *fdest)
 		"SSH:",			"R:",			"MAID:",
 		"NAID:",		"RMID:",		"FMID:",
 		"SCF:",			"RRCPT:",		"NG:",
-		"X-Claws-Privacy",	"X-Claws-Sign:",	"X-Claws-Encrypt",
 		"X-Claws-End-Special-Headers:", 		"X-Claws-Account-Id:",
-		"X-Sylpheed-Privacy",	"X-Sylpheed-Sign:",	"X-Sylpheed-Encrypt",
 		"X-Sylpheed-End-Special-Headers:", 		"X-Sylpheed-Account-Id:",
 		"X-Claws-Auto-Wrapping:", "X-Claws-Auto-Indent:",
 		NULL
@@ -4849,12 +4578,6 @@ static gint compose_write_to_file(Compose *compose, FILE *fp, gint action, gbool
 	g_hash_table_insert(mimetext->typeparameters, g_strdup("charset"),
 			    g_strdup(out_codeset));
 
-	/* protect trailing spaces when signing message */
-	if (action == COMPOSE_WRITE_FOR_SEND && compose->use_signing &&
-	    privacy_system_can_sign(compose->privacy_system)) {
-		encoding = ENC_QUOTED_PRINTABLE;
-	}
-
 	debug_print("main text: %" G_GSIZE_FORMAT " bytes encoded as %s in %d\n",
 		strlen(buf), out_codeset, encoding);
 
@@ -4904,68 +4627,10 @@ static gint compose_write_to_file(Compose *compose, FILE *fp, gint action, gbool
 		}
 		g_free(spec);
 	}
-	/* sign message if sending */
-	if (action == COMPOSE_WRITE_FOR_SEND && compose->use_signing &&
-	    privacy_system_can_sign(compose->privacy_system))
-		if (!privacy_sign(compose->privacy_system, mimemsg,
-			compose->account, from_addr)) {
-			g_free(from_name);
-			g_free(from_addr);
-			if (!privacy_peek_error())
-				return COMPOSE_QUEUE_SIGNING_CANCELLED;
-			else
-				return COMPOSE_QUEUE_ERROR_SIGNING_FAILED;
-	}
+
 	g_free(from_name);
 	g_free(from_addr);
 
-	if (compose->use_encryption) {
-		if (compose->encdata != NULL &&
-				strcmp(compose->encdata, "_DONT_ENCRYPT_")) {
-
-			/* First, write an unencrypted copy and save it to outbox, if
-			 * user wants that. */
-			if (compose->account->save_encrypted_as_clear_text) {
-				debug_print("saving sent message unencrypted...\n");
-				FILE *tmpfp = get_tmpfile_in_dir(get_mime_tmp_dir(), &tmp_enc_file);
-				if (tmpfp) {
-					fclose(tmpfp);
-
-					/* fp now points to a file with headers written,
-					 * let's make a copy. */
-					rewind(fp);
-					content = file_read_stream_to_str(fp);
-
-					str_write_to_file(content, tmp_enc_file);
-					g_free(content);
-
-					/* Now write the unencrypted body. */
-					if ((tmpfp = g_fopen(tmp_enc_file, "a")) != NULL) {
-						procmime_write_mimeinfo(mimemsg, tmpfp);
-						fclose(tmpfp);
-
-						outbox = folder_find_item_from_identifier(compose_get_save_to(compose));
-						if (!outbox)
-							outbox = folder_get_default_outbox();
-
-						procmsg_save_to_outbox(outbox, tmp_enc_file);
-						unlink(tmp_enc_file);
-					} else {
-						g_warning("can't open file '%s'", tmp_enc_file);
-					}
-				} else {
-					g_warning("couldn't get tempfile");
-				}
-			}
-			if (!privacy_encrypt(compose->privacy_system, mimemsg, compose->encdata)) {
-				debug_print("Couldn't encrypt mime structure: %s.\n",
-						privacy_get_error());
-				if (tmp_enc_file)
-					g_free(tmp_enc_file);
-				return COMPOSE_QUEUE_ERROR_ENCRYPT_FAILED;
-			}
-		}
-	}
 	if (tmp_enc_file)
 		g_free(tmp_enc_file);
 
@@ -5070,31 +4735,6 @@ ComposeQueueResult compose_queue(Compose *compose, gint *msgnum, FolderItem **it
 	return compose_queue_sub (compose, msgnum, item, msgpath, FALSE, remove_reedit_target);
 }
 
-static gboolean compose_warn_encryption(Compose *compose)
-{
-	const gchar *warning = privacy_get_encrypt_warning(compose->privacy_system);
-	AlertValue val = G_ALERTALTERNATE;
-
-	if (warning == NULL)
-		return TRUE;
-
-	val = alertpanel_full(_("Encryption warning"), warning,
-			      NULL, _("_Cancel"), NULL, _("C_ontinue"), NULL, NULL,
-			      ALERTFOCUS_SECOND, TRUE, NULL, ALERT_WARNING);
-	if (val & G_ALERTDISABLE) {
-		val &= ~G_ALERTDISABLE;
-		if (val == G_ALERTALTERNATE)
-			privacy_inhibit_encrypt_warning(compose->privacy_system,
-				TRUE);
-	}
-
-	if (val == G_ALERTALTERNATE) {
-		return TRUE;
-	} else {
-		return FALSE;
-	}
-}
-
 static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, FolderItem **item,
 			      gchar **msgpath, gboolean perform_checks,
 			      gboolean remove_reedit_target)
@@ -5174,44 +4814,6 @@ static ComposeQueueResult compose_queue_sub(Compose *compose, gint *msgnum, Fold
 	/* account IDs */
 	if (mailac)
 		err |= (fprintf(fp, "MAID:%d\n", mailac->account_id) < 0);
-
-	if (compose->privacy_system != NULL) {
-		err |= (fprintf(fp, "X-Claws-Privacy-System:%s\n", compose->privacy_system) < 0);
-		err |= (fprintf(fp, "X-Claws-Sign:%d\n", compose->use_signing) < 0);
-		if (compose->use_encryption) {
-			if (!compose_warn_encryption(compose)) {
-				fclose(fp);
-				unlink(tmp);
-				g_free(tmp);
-				return COMPOSE_QUEUE_ERROR_NO_MSG;
-			}
-			if (mailac && mailac->encrypt_to_self) {
-				GSList *tmp_list = g_slist_copy(compose->to_list);
-				tmp_list = g_slist_append(tmp_list, compose->account->address);
-				compose->encdata = privacy_get_encrypt_data(compose->privacy_system, tmp_list);
-				g_slist_free(tmp_list);
-			} else {
-				compose->encdata = privacy_get_encrypt_data(compose->privacy_system, compose->to_list);
-			}
-			if (compose->encdata != NULL) {
-				if (strcmp(compose->encdata, "_DONT_ENCRYPT_")) {
-					err |= (fprintf(fp, "X-Claws-Encrypt:%d\n", compose->use_encryption) < 0);
-					err |= (fprintf(fp, "X-Claws-Encrypt-Data:%s\n",
-						compose->encdata) < 0);
-				} /* else we finally dont want to encrypt */
-			} else {
-				err |= (fprintf(fp, "X-Claws-Encrypt:%d\n", compose->use_encryption) < 0);
-				/* and if encdata was null, it means there's been a problem in
-				 * key selection */
-				if (err == TRUE)
-					g_warning("failed to write queue message");
-				fclose(fp);
-				unlink(tmp);
-				g_free(tmp);
-				return COMPOSE_QUEUE_ERROR_NO_ENCRYPTION_KEY;
-			}
-		}
-	}
 
 	/* Save copy folder */
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(compose->savemsg_checkbtn))) {
@@ -5416,7 +5018,7 @@ static int compose_add_attachments(Compose *compose, MimeInfo *parent, gint acti
 		if (mimepart->type == MIMETYPE_MESSAGE
 		    || mimepart->type == MIMETYPE_MULTIPART)
 			ainfo->encoding = ENC_BINARY;
-		else if (compose->use_signing || compose->fwdinfo != NULL) {
+		else if (compose->fwdinfo != NULL) {
 			if (ainfo->encoding == ENC_7BIT)
 				ainfo->encoding = ENC_QUOTED_PRINTABLE;
 			else if (ainfo->encoding == ENC_8BIT)
@@ -6575,12 +6177,6 @@ static Compose *compose_create(PrefsAccount *account,
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/ReplyMode", "Sender", "Options/ReplyMode/Sender", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/ReplyMode", "List", "Options/ReplyMode/List", GTK_UI_MANAGER_MENUITEM)
 
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Separator1", "Options/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "PrivacySystem", "Options/PrivacySystem", GTK_UI_MANAGER_MENU)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options/PrivacySystem", "PlaceHolder", "Options/PrivacySystem/PlaceHolder", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Sign", "Options/Sign", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Encrypt", "Options/Encrypt", GTK_UI_MANAGER_MENUITEM)
-
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Separator4", "Options/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "RemoveReferences", "Options/RemoveReferences", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(compose->ui_manager, "/Menu/Options", "Separator5", "Options/---", GTK_UI_MANAGER_SEPARATOR)
@@ -6795,9 +6391,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	compose->autowrap       = prefs_common.autowrap;
 	compose->autoindent	= prefs_common.auto_indent;
-	compose->use_signing    = FALSE;
-	compose->use_encryption = FALSE;
-	compose->privacy_system = NULL;
 	compose->encdata        = NULL;
 
 	compose->modified = FALSE;
@@ -6843,10 +6436,6 @@ static Compose *compose_create(PrefsAccount *account,
 
 	/* Actions menu */
 	compose_update_actions_menu(compose);
-
-	/* Privacy Systems menu */
-	compose_update_privacy_systems_menu(compose);
-	compose_activate_privacy_system(compose, account, TRUE);
 
 	toolbar_set_style(compose->toolbar->toolbar, compose->handlebox, prefs_common.toolbar_style);
 	if (batch) {
@@ -6997,117 +6586,6 @@ static void compose_reply_change_mode_cb(GtkAction *action, GtkRadioAction *curr
 		compose_reply_change_mode(compose, value);
 }
 
-static void compose_set_privacy_system_cb(GtkWidget *widget, gpointer data)
-{
-	Compose *compose = (Compose *) data;
-	gchar *systemid;
-	gboolean can_sign = FALSE, can_encrypt = FALSE;
-
-	cm_return_if_fail(GTK_IS_CHECK_MENU_ITEM(widget));
-
-	if (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		return;
-
-	systemid = g_object_get_data(G_OBJECT(widget), "privacy_system");
-	g_free(compose->privacy_system);
-	compose->privacy_system = NULL;
-	g_free(compose->encdata);
-	compose->encdata = NULL;
-	if (systemid != NULL) {
-		compose->privacy_system = g_strdup(systemid);
-
-		can_sign = privacy_system_can_sign(systemid);
-		can_encrypt = privacy_system_can_encrypt(systemid);
-	}
-
-	debug_print("activated privacy system: %s\n", systemid != NULL ? systemid : "None");
-
-	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options/Sign", can_sign);
-	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options/Encrypt", can_encrypt);
-	if (compose->toolbar->privacy_sign_btn != NULL) {
-		gtk_widget_set_sensitive(
-			GTK_WIDGET(compose->toolbar->privacy_sign_btn),
-			can_sign);
-		gtk_toggle_tool_button_set_active(
-			GTK_TOGGLE_TOOL_BUTTON(compose->toolbar->privacy_sign_btn),
-			can_sign ? compose->use_signing : FALSE);
-	}
-	if (compose->toolbar->privacy_encrypt_btn != NULL) {
-		gtk_widget_set_sensitive(
-			GTK_WIDGET(compose->toolbar->privacy_encrypt_btn),
-			can_encrypt);
-		gtk_toggle_tool_button_set_active(
-			GTK_TOGGLE_TOOL_BUTTON(compose->toolbar->privacy_encrypt_btn),
-			can_encrypt ? compose->use_encryption : FALSE);
-	}
-}
-
-static void compose_update_privacy_system_menu_item(Compose * compose, gboolean warn)
-{
-	static gchar *branch_path = "/Menu/Options/PrivacySystem";
-	GtkWidget *menuitem = NULL;
-	GList *children, *amenu;
-	gboolean can_sign = FALSE, can_encrypt = FALSE;
-	gboolean found = FALSE;
-
-	if (compose->privacy_system != NULL) {
-		gchar *systemid;
-		menuitem = gtk_menu_item_get_submenu(GTK_MENU_ITEM(
-				gtk_ui_manager_get_widget(compose->ui_manager, branch_path)));
-		cm_return_if_fail(menuitem != NULL);
-
-		children = gtk_container_get_children(GTK_CONTAINER(GTK_MENU_SHELL(menuitem)));
-		amenu = children;
-		menuitem = NULL;
-		while (amenu != NULL) {
-			systemid = g_object_get_data(G_OBJECT(amenu->data), "privacy_system");
-			if (systemid != NULL) {
-				if (strcmp(systemid, compose->privacy_system) == 0 &&
-				    GTK_IS_CHECK_MENU_ITEM(amenu->data)) {
-					menuitem = GTK_WIDGET(amenu->data);
-
-					can_sign = privacy_system_can_sign(systemid);
-					can_encrypt = privacy_system_can_encrypt(systemid);
-					found = TRUE;
-					break;
-				}
-			} else if (strlen(compose->privacy_system) == 0 &&
-				   GTK_IS_CHECK_MENU_ITEM(amenu->data)) {
-					menuitem = GTK_WIDGET(amenu->data);
-
-					can_sign = FALSE;
-					can_encrypt = FALSE;
-					found = TRUE;
-					break;
-			}
-
-			amenu = amenu->next;
-		}
-		g_list_free(children);
-		if (menuitem != NULL)
-			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menuitem), TRUE);
-
-		if (warn && !found && strlen(compose->privacy_system)) {
-			alertpanel_warning(_("The privacy system '%s' cannot be loaded. You "
-				  "will not be able to sign or encrypt this message."),
-				  compose->privacy_system);
-		}
-	}
-
-	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options/Sign", can_sign);
-	cm_menu_set_sensitive_full(compose->ui_manager, "Menu/Options/Encrypt", can_encrypt);
-	if (compose->toolbar->privacy_sign_btn != NULL) {
-		gtk_widget_set_sensitive(
-			GTK_WIDGET(compose->toolbar->privacy_sign_btn),
-			can_sign);
-	}
-	if (compose->toolbar->privacy_encrypt_btn != NULL) {
-		gtk_widget_set_sensitive(
-			GTK_WIDGET(compose->toolbar->privacy_encrypt_btn),
-			can_encrypt);
-	}
-}
-
 static void compose_set_out_encoding(Compose *compose)
 {
 	CharSet out_encoding;
@@ -7156,47 +6634,6 @@ static void compose_set_out_encoding(Compose *compose)
 void compose_update_actions_menu(Compose *compose)
 {
 	action_update_compose_menu(compose->ui_manager, "/Menu/Tools/Actions", compose);
-}
-
-static void compose_update_privacy_systems_menu(Compose *compose)
-{
-	static gchar *branch_path = "/Menu/Options/PrivacySystem";
-	GSList *systems, *cur;
-	GtkWidget *widget;
-	GtkWidget *system_none;
-	GSList *group;
-	GtkWidget *privacy_menuitem = gtk_ui_manager_get_widget(compose->ui_manager, branch_path);
-	GtkWidget *privacy_menu = gtk_menu_new();
-
-	system_none = gtk_radio_menu_item_new_with_mnemonic(NULL, _("_None"));
-	g_object_set_data_full(G_OBJECT(system_none), "privacy_system", NULL, NULL);
-
-	g_signal_connect(G_OBJECT(system_none), "activate",
-		G_CALLBACK(compose_set_privacy_system_cb), compose);
-
-	gtk_menu_shell_append(GTK_MENU_SHELL(privacy_menu), system_none);
-	gtk_widget_show(system_none);
-
-	systems = privacy_get_system_ids();
-	for (cur = systems; cur != NULL; cur = g_slist_next(cur)) {
-		gchar *systemid = cur->data;
-
-		group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(system_none));
-		widget = gtk_radio_menu_item_new_with_label(group,
-			privacy_system_get_name(systemid));
-		g_object_set_data_full(G_OBJECT(widget), "privacy_system",
-				       g_strdup(systemid), g_free);
-		g_signal_connect(G_OBJECT(widget), "activate",
-			G_CALLBACK(compose_set_privacy_system_cb), compose);
-
-		gtk_menu_shell_append(GTK_MENU_SHELL(privacy_menu), widget);
-		gtk_widget_show(widget);
-		g_free(systemid);
-	}
-	g_slist_free(systems);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(privacy_menuitem), privacy_menu);
-	gtk_widget_show_all(privacy_menu);
-	gtk_widget_show_all(privacy_menuitem);
 }
 
 void compose_reflect_prefs_pixmap_theme(void)
@@ -7262,12 +6699,8 @@ static void compose_destroy(Compose *compose)
 		undo_destroy(compose->undostruct);
 
 	g_free(compose->sig_str);
-
 	g_free(compose->exteditor_file);
-
 	g_free(compose->orig_charset);
-
-	g_free(compose->privacy_system);
 	g_free(compose->encdata);
 
 	if (addressbook_get_target_compose() == compose)
@@ -7689,13 +7122,6 @@ static gboolean attach_property_key_pressed(GtkWidget *widget,
 	return FALSE;
 }
 
-static gboolean compose_can_autosave(Compose *compose)
-{
-	if (compose->privacy_system && compose->use_encryption)
-		return prefs_common.autosave && prefs_common.autosave_encrypted;
-	return prefs_common.autosave;
-}
-
 /**
  * compose_exec_ext_editor:
  *
@@ -7842,7 +7268,7 @@ static void compose_ext_editor_closed_cb(GPid pid, gint exit_status, gpointer da
 	compose_insert_file(compose, compose->exteditor_file);
 
 	/* Check if we should save the draft or not */
-	if (compose_can_autosave(compose))
+	if (prefs_common.autosave)
 	  compose_draft((gpointer)compose, COMPOSE_AUTO_SAVE);
 
 	if (remove(compose->exteditor_file) < 0)
@@ -8383,11 +7809,6 @@ gboolean compose_draft (gpointer data, guint action)
 		err |= (fprintf(fp, "SCF:%s\n", savefolderid) < 0);
 		g_free(savefolderid);
 	}
-	if (compose->privacy_system) {
-		err |= (fprintf(fp, "X-Claws-Sign:%d\n", compose->use_signing) < 0);
-		err |= (fprintf(fp, "X-Claws-Encrypt:%d\n", compose->use_encryption) < 0);
-		err |= (fprintf(fp, "X-Claws-Privacy-System:%s\n", compose->privacy_system) < 0);
-	}
 
 	/* Message-ID of message replying to */
 	if ((compose->replyinfo != NULL) && (compose->replyinfo->msgid != NULL)) {
@@ -8738,7 +8159,7 @@ static void compose_close_cb(GtkAction *action, gpointer data)
 		g_mutex_unlock(&compose->mutex);
 		switch (val) {
 		case G_ALERTDEFAULT:
-			if (compose_can_autosave(compose) && !reedit)
+			if (prefs_common.autosave && !reedit)
 				compose_remove_draft(compose);
 			break;
 		case G_ALERTALTERNATE:
@@ -9471,49 +8892,6 @@ static void compose_toggle_autoindent_cb(GtkToggleAction *action,
 	compose->autoindent = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
 }
 
-static void compose_toggle_sign_cb(GtkToggleAction *action, gpointer data)
-{
-	Compose *compose = (Compose *)data;
-
-	compose->use_signing = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
-	if (compose->toolbar->privacy_sign_btn != NULL)
-		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(compose->toolbar->privacy_sign_btn), compose->use_signing);
-}
-
-static void compose_toggle_encrypt_cb(GtkToggleAction *action, gpointer data)
-{
-	Compose *compose = (Compose *)data;
-
-	compose->use_encryption = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
-	if (compose->toolbar->privacy_encrypt_btn != NULL)
-		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(compose->toolbar->privacy_encrypt_btn), compose->use_encryption);
-}
-
-static void compose_activate_privacy_system(Compose *compose, PrefsAccount *account, gboolean warn)
-{
-	g_free(compose->privacy_system);
-	g_free(compose->encdata);
-
-	compose->privacy_system = g_strdup(account->default_privacy_system);
-	compose_update_privacy_system_menu_item(compose, warn);
-}
-
-static void compose_apply_folder_privacy_settings(Compose *compose, FolderItem *folder_item)
-{
-	if (folder_item != NULL) {
-		if (folder_item->prefs->always_sign != SIGN_OR_ENCRYPT_DEFAULT &&
-		    privacy_system_can_sign(compose->privacy_system)) {
-			compose_use_signing(compose,
-				(folder_item->prefs->always_sign == SIGN_OR_ENCRYPT_ALWAYS) ? TRUE : FALSE);
-		}
-		if (folder_item->prefs->always_encrypt != SIGN_OR_ENCRYPT_DEFAULT &&
-		    privacy_system_can_encrypt(compose->privacy_system)) {
-			compose_use_encryption(compose,
-				(folder_item->prefs->always_encrypt == SIGN_OR_ENCRYPT_ALWAYS) ? TRUE : FALSE);
-		}
-	}
-}
-
 static void compose_attach_drag_received_cb (GtkWidget		*widget,
 					     GdkDragContext	*context,
 					     gint		 x,
@@ -9862,7 +9240,7 @@ static void text_inserted(GtkTextBuffer *buffer, GtkTextIter *iter,
 					  compose);
 	g_signal_stop_emission_by_name(G_OBJECT(buffer), "insert-text");
 
-	if (compose_can_autosave(compose) &&
+	if (prefs_common.autosave &&
 	    gtk_text_buffer_get_char_count(buffer) % prefs_common.autosave_length == 0 &&
 	    compose->draft_timeout_tag != COMPOSE_DRAFT_TIMEOUT_FORBIDDEN /* disabled while loading */)
 		compose->draft_timeout_tag = g_timeout_add
@@ -9976,8 +9354,6 @@ static void compose_reply_from_messageview_real(MessageView *msgview, GSList *ms
 	gchar *body = NULL;
 	GSList *new_msglist = NULL;
 	MsgInfo *tmp_msginfo = NULL;
-	gboolean originally_enc = FALSE;
-	gboolean originally_sig = FALSE;
 	Compose *compose = NULL;
 	gchar *s_system = NULL;
 
@@ -9993,10 +9369,6 @@ static void compose_reply_from_messageview_real(MessageView *msgview, GSList *ms
 						orig_msginfo, mimeinfo);
 			if (tmp_msginfo != NULL) {
 				new_msglist = g_slist_append(NULL, tmp_msginfo);
-
-				originally_enc = MSG_IS_ENCRYPTED(orig_msginfo->flags);
-				privacy_msginfo_get_signed_state(orig_msginfo, &s_system);
-				originally_sig = MSG_IS_SIGNED(orig_msginfo->flags);
 
 				tmp_msginfo->folder = orig_msginfo->folder;
 				tmp_msginfo->msgnum = orig_msginfo->msgnum;
@@ -10018,13 +9390,6 @@ static void compose_reply_from_messageview_real(MessageView *msgview, GSList *ms
 	} else
 		compose = compose_reply_mode((ComposeMode)action, msginfo_list, body);
 
-	if (compose && originally_enc) {
-		compose_force_encryption(compose, compose->account, FALSE, s_system);
-	}
-
-	if (compose && originally_sig && compose->account->default_sign_reply) {
-		compose_force_signing(compose, compose->account, s_system);
-	}
 	g_free(s_system);
 	g_free(body);
 	hooks_invoke(COMPOSE_CREATED_HOOKLIST, compose);

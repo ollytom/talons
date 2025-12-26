@@ -54,7 +54,6 @@
 #include "hooks.h"
 #include "inc.h"
 #include "log.h"
-#include "privacy.h"
 #include "combobox.h"
 #include "quoted-printable.h"
 #include "version.h"
@@ -146,7 +145,6 @@ static void save_part_as_cb(GtkAction *action, gpointer data);
 static void view_part_as_text_cb(GtkAction *action, gpointer data);
 static void open_part_cb(GtkAction *action, gpointer data);
 static void open_part_with_cb(GtkAction *action, gpointer data);
-static void check_signature_cb(GtkAction *action, gpointer data);
 static void goto_next_part_cb(GtkAction *action, gpointer data);
 static void goto_prev_part_cb(GtkAction *action, gpointer data);
 
@@ -251,7 +249,6 @@ static GtkActionEntry msgview_entries[] =
 	{"Message/Forward",                          NULL, N_("_Forward"), "<control><alt>F", NULL, G_CALLBACK(reply_cb) }, /* COMPOSE_FORWARD_INLINE */
 	{"Message/ForwardAtt",                       NULL, N_("For_ward as attachment"), NULL, NULL, G_CALLBACK(reply_cb) }, /* COMPOSE_FORWARD_AS_ATTACH */
 	{"Message/Redirect",                         NULL, N_("Redirec_t"), NULL, NULL, G_CALLBACK(reply_cb) }, /* COMPOSE_REDIRECT */
-	{"Message/CheckSignature",                   NULL, N_("Check signature"), "C", NULL, G_CALLBACK(check_signature_cb) },
 
 /* Tools menu */
 	{"Tools/AddressBook",                        NULL, N_("_Address book"), "<control><shift>A", NULL, G_CALLBACK(addressbook_open_cb) },
@@ -538,7 +535,6 @@ static void messageview_add_toolbar(MessageView *msgview, GtkWidget *window)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Message", "Forward", "Message/Forward", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Message", "ForwardAtt", "Message/ForwardAtt", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Message", "Redirect", "Message/Redirect", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Message", "CheckSignature", "Message/CheckSignature", GTK_UI_MANAGER_MENUITEM)
 
 /* Tools menu */
 	MENUITEM_ADDUI_MANAGER(msgview->ui_manager, "/Menu/Tools", "AddressBook", "Tools/AddressBook", GTK_UI_MANAGER_MENUITEM)
@@ -644,29 +640,6 @@ void messageview_init(MessageView *messageview)
 {
 	mimeview_init(messageview->mimeview);
 	noticeview_hide(messageview->noticeview);
-}
-
-static gboolean find_encrypted_func(GNode *node, gpointer data)
-{
-	MimeInfo *mimeinfo = (MimeInfo *) node->data;
-	MimeInfo **encinfo = (MimeInfo **) data;
-
-	if (privacy_mimeinfo_is_encrypted(mimeinfo)) {
-		*encinfo = mimeinfo;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-static MimeInfo *find_encrypted_part(MimeInfo *rootinfo)
-{
-	MimeInfo *encinfo = NULL;
-
-	g_node_traverse(rootinfo->node, G_IN_ORDER, G_TRAVERSE_ALL, -1,
-		find_encrypted_func, &encinfo);
-
-	return encinfo;
 }
 
 static gboolean find_broken_func(GNode *node, gpointer data)
@@ -855,7 +828,7 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 {
 	gchar *text = NULL;
 	gchar *file;
-	MimeInfo *mimeinfo, *encinfo, *root;
+	MimeInfo *mimeinfo, *root;
 	gchar *subject = NULL;
 	cm_return_val_if_fail(msginfo != NULL, -1);
 
@@ -904,22 +877,6 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 	if (!mimeinfo) {
 		textview_show_error(messageview->mimeview->textview);
 		return -1;
-	}
-
-	while ((encinfo = find_encrypted_part(mimeinfo)) != NULL) {
-		debug_print("decrypting message part\n");
-		if (privacy_mimeinfo_decrypt(encinfo) < 0) {
-			text = g_strdup_printf(_("Couldn't decrypt: %s"),
-					       privacy_get_error());
-			noticeview_show(messageview->noticeview);
-			noticeview_set_icon(messageview->noticeview,
-					    STOCK_PIXMAP_NOTICE_WARN);
-			noticeview_set_text(messageview->noticeview, text);
-			gtk_widget_hide(messageview->noticeview->button);
-			gtk_widget_hide(messageview->noticeview->button2);
-			g_free(text);
-			break;
-		}
 	}
 
 	if (messageview->msginfo != msginfo) {
@@ -2051,8 +2008,6 @@ void messageview_set_menu_sensitive(MessageView *messageview)
 	cm_toggle_menu_set_active_full(messageview->ui_manager, "Menu/View/Quotes/Collapse3", (prefs_common.hide_quotes == 3));
 	cm_menu_set_sensitive_full(messageview->ui_manager, "Menu/View/Goto/PrevHistory", messageview_nav_has_prev(messageview));
 	cm_menu_set_sensitive_full(messageview->ui_manager, "Menu/View/Goto/NextHistory", messageview_nav_has_next(messageview));
-
-	cm_menu_set_sensitive_full(messageview->ui_manager, "Menu/Message/CheckSignature", messageview->mimeview->signed_part);
 }
 
 static void save_part_as_cb(GtkAction *action, gpointer data)
@@ -2085,14 +2040,6 @@ static void open_part_with_cb(GtkAction *action, gpointer data)
 
 	if (messageview->mimeview)
 		mimeview_open_with(messageview->mimeview);
-}
-
-static void check_signature_cb(GtkAction *action, gpointer data)
-{
-	MessageView *messageview = (MessageView *)data;
-
-	if (messageview->mimeview)
-		mimeview_check_signature(messageview->mimeview);
 }
 
 static void goto_next_part_cb(GtkAction *action, gpointer data)

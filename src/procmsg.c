@@ -46,7 +46,6 @@
 #include "summaryview.h"
 #include "log.h"
 #include "inc.h"
-#include "privacy.h"
 #include "file-utils.h"
 
 static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_session, gchar **errstr,
@@ -600,13 +599,7 @@ static PrefsAccount *procmsg_get_account_from_file(const gchar *file)
 				       {"SCF:",  NULL, FALSE},
 				       {"RMID:", NULL, FALSE},
 				       {"FMID:", NULL, FALSE},
-				       {"X-Claws-Privacy-System:", NULL, FALSE},
-				       {"X-Claws-Encrypt:", NULL, FALSE},
-				       {"X-Claws-Encrypt-Data:", NULL, FALSE},
 				       {"X-Claws-End-Special-Headers",    NULL, FALSE},
-				       {"X-Sylpheed-Privacy-System:", NULL, FALSE},
-				       {"X-Sylpheed-Encrypt:", NULL, FALSE},
-				       {"X-Sylpheed-Encrypt-Data:", NULL, FALSE},
 				       {NULL,    NULL, FALSE}};
 
 	cm_return_val_if_fail(file != NULL, NULL);
@@ -630,36 +623,6 @@ static PrefsAccount *procmsg_get_account_from_file(const gchar *file)
 		g_free(buf);
 	fclose(fp);
 	return mailac;
-}
-
-gchar *procmsg_msginfo_get_avatar(MsgInfo *msginfo, gint type)
-{
-	GSList *mia;
-
-	if (!msginfo || !msginfo->extradata || !msginfo->extradata->avatars)
-		return NULL;
-
-	for (mia = msginfo->extradata->avatars; mia; mia = mia->next) {
-		MsgInfoAvatar *avatar = (MsgInfoAvatar *)mia->data;
-		if (avatar->avatar_id == type)
-			return avatar->avatar_src;
-	}
-
-	return NULL;
-}
-
-void procmsg_msginfo_add_avatar(MsgInfo *msginfo, gint type, const gchar *data)
-{
-	MsgInfoAvatar *av;
-
-	if (!msginfo->extradata)
-		msginfo->extradata = g_new0(MsgInfoExtraData, 1);
-
-	av = g_new0(MsgInfoAvatar, 1);
-	av->avatar_id = type;
-	av->avatar_src = g_strdup(data);
-
-	msginfo->extradata->avatars = g_slist_append(msginfo->extradata->avatars, av);
 }
 
 gchar *procmsg_msginfo_get_identifier(MsgInfo *msginfo)
@@ -1031,28 +994,6 @@ MsgInfo *procmsg_msginfo_new(void)
 	return newmsginfo;
 }
 
-static MsgInfoAvatar *procmsg_msginfoavatar_copy(MsgInfoAvatar *avatar)
-{
-	MsgInfoAvatar *newavatar;
-
-	if (avatar == NULL) return NULL;
-
-	newavatar = g_new0(MsgInfoAvatar, 1);
-	newavatar->avatar_id = avatar->avatar_id;
-	newavatar->avatar_src = g_strdup(avatar->avatar_src);
-
-	return newavatar;
-}
-
-static void procmsg_msginfoavatar_free(MsgInfoAvatar *avatar)
-{
-	if (avatar != NULL) {
-		if (avatar->avatar_src != NULL)
-			g_free(avatar->avatar_src);
-		g_free(avatar);
-	}
-}
-
 MsgInfo *procmsg_msginfo_copy(MsgInfo *msginfo)
 {
 	MsgInfo *newmsginfo;
@@ -1091,10 +1032,6 @@ MsgInfo *procmsg_msginfo_copy(MsgInfo *msginfo)
 
 	if (msginfo->extradata) {
 		newmsginfo->extradata = g_new0(MsgInfoExtraData, 1);
-		if (msginfo->extradata->avatars) {
-			newmsginfo->extradata->avatars = g_slist_copy_deep(msginfo->extradata->avatars,
-								(GCopyFunc) procmsg_msginfoavatar_copy, NULL);
-		}
 		MEMBDUP(extradata->dispositionnotificationto);
 		MEMBDUP(extradata->returnreceiptto);
 		MEMBDUP(extradata->partial_recv);
@@ -1154,9 +1091,6 @@ MsgInfo *procmsg_msginfo_get_full_info_from_file(MsgInfo *msginfo, const gchar *
 			msginfo->extradata->list_archive= g_strdup(full_msginfo->extradata->list_archive);
 		if (!msginfo->extradata->list_owner)
 			msginfo->extradata->list_owner = g_strdup(full_msginfo->extradata->list_owner);
-		if (!msginfo->extradata->avatars)
-			msginfo->extradata->avatars = g_slist_copy_deep(full_msginfo->extradata->avatars,
-									(GCopyFunc) procmsg_msginfoavatar_copy, NULL);
 		if (!msginfo->extradata->dispositionnotificationto)
 			msginfo->extradata->dispositionnotificationto =
 				g_strdup(full_msginfo->extradata->dispositionnotificationto);
@@ -1232,13 +1166,6 @@ void procmsg_msginfo_free(MsgInfo **msginfo_ptr)
 	FREENULL(msginfo->xref);
 
 	if (msginfo->extradata) {
-		if (msginfo->extradata->avatars) {
-			g_slist_foreach(msginfo->extradata->avatars,
-					(GFunc)procmsg_msginfoavatar_free,
-					NULL);
-			g_slist_free(msginfo->extradata->avatars);
-			msginfo->extradata->avatars = NULL;
-		}
 		FREENULL(msginfo->extradata->returnreceiptto);
 		FREENULL(msginfo->extradata->dispositionnotificationto);
 		FREENULL(msginfo->extradata->list_post);
@@ -1300,13 +1227,6 @@ guint procmsg_msginfo_memusage(MsgInfo *msginfo)
 	}
 	if (msginfo->extradata) {
 		memusage += sizeof(MsgInfoExtraData);
-		if (msginfo->extradata->avatars) {
-			for (tmp = msginfo->extradata->avatars; tmp; tmp = tmp->next) {
-				MsgInfoAvatar *avt = (MsgInfoAvatar *)tmp->data;
-				memusage += (avt->avatar_src)? strlen(avt->avatar_src): 0;
-				memusage += sizeof(MsgInfoAvatar) + sizeof(GSList);
-			}
-		}
 		if (msginfo->extradata->dispositionnotificationto)
 			memusage += strlen(msginfo->extradata->dispositionnotificationto);
 		if (msginfo->extradata->returnreceiptto)
@@ -1350,13 +1270,7 @@ static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_ses
 				       {"SCF:",  NULL, FALSE},
 				       {"RMID:", NULL, FALSE},
 				       {"FMID:", NULL, FALSE},
-				       {"X-Claws-Privacy-System:", NULL, FALSE},
-				       {"X-Claws-Encrypt:", NULL, FALSE}, /* 10 */
-				       {"X-Claws-Encrypt-Data:", NULL, FALSE},
 				       {"X-Claws-End-Special-Headers:", NULL, FALSE},
-				       {"X-Sylpheed-Privacy-System:", NULL, FALSE},
-				       {"X-Sylpheed-Encrypt:", NULL, FALSE},
-				       {"X-Sylpheed-Encrypt-Data:", NULL, FALSE}, /* 15 */
 				       {"X-Sylpheed-End-Special-Headers:", NULL, FALSE},
 				       {NULL,    NULL, FALSE}};
 	FILE *fp;
@@ -1371,7 +1285,6 @@ static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_ses
 	gchar *buf;
 	gint hnum;
 	PrefsAccount *mailac = NULL;
-	gboolean encrypt = FALSE;
 	FolderItem *outbox;
 
 	cm_return_val_if_fail(file != NULL, -1);
@@ -1414,11 +1327,6 @@ static gint procmsg_send_message_queue_full(const gchar *file, gboolean keep_ses
 		case Q_FWD_MESSAGE_ID:
 			if (fwdmessageid == NULL)
 				fwdmessageid = g_strdup(p);
-			break;
-		case Q_ENCRYPT:
-		case Q_ENCRYPT_OLD:
-			if (p[0] == '1')
-				encrypt = TRUE;
 			break;
 		case Q_CLAWS_HDRS:
 		case Q_CLAWS_HDRS_OLD:
@@ -1503,39 +1411,35 @@ send_mail:
 	/* save message to outbox */
 	if (mailval == 0 && savecopyfolder) {
 		debug_print("saving sent message to %s...\n", savecopyfolder);
-
-		if (!encrypt || !mailac->save_encrypted_as_clear_text) {
-			outbox = folder_find_item_from_identifier(savecopyfolder);
-			if (!outbox) {
-				gchar *id;
-				outbox = folder_get_default_outbox();
-				if (outbox != NULL) {
-					id = folder_item_get_identifier(outbox);
-					debug_print("%s not found, using %s\n", savecopyfolder, id);
-					g_free(id);
-				} else {
-					debug_print("could not find outbox\n");
-				}
+		outbox = folder_find_item_from_identifier(savecopyfolder);
+		if (!outbox) {
+			gchar *id;
+			outbox = folder_get_default_outbox();
+			if (outbox != NULL) {
+				id = folder_item_get_identifier(outbox);
+				debug_print("%s not found, using %s\n", savecopyfolder, id);
+				g_free(id);
+			} else {
+				debug_print("could not find outbox\n");
 			}
-			/* Mail was not saved to outbox before encrypting, save it now. */
-			gboolean saved = FALSE;
-			*queued_removed = FALSE;
-			if (queue && msgnum > 0) {
-				MsgInfo *queued_mail = folder_item_get_msginfo(queue, msgnum);
-				if (folder_item_move_msg(outbox, queued_mail) >= 0) {
-					debug_print("moved queued mail %d to sent folder\n", msgnum);
-					saved = TRUE;
-					*queued_removed = TRUE;
-				} else if (folder_item_copy_msg(outbox, queued_mail) >= 0) {
-					debug_print("copied queued mail %d to sent folder\n", msgnum);
-					saved = TRUE;
-				}
-				procmsg_msginfo_free(&queued_mail);
+		}
+		gboolean saved = FALSE;
+		*queued_removed = FALSE;
+		if (queue && msgnum > 0) {
+			MsgInfo *queued_mail = folder_item_get_msginfo(queue, msgnum);
+			if (folder_item_move_msg(outbox, queued_mail) >= 0) {
+				debug_print("moved queued mail %d to sent folder\n", msgnum);
+				saved = TRUE;
+				*queued_removed = TRUE;
+			} else if (folder_item_copy_msg(outbox, queued_mail) >= 0) {
+				debug_print("copied queued mail %d to sent folder\n", msgnum);
+				saved = TRUE;
 			}
-			if (!saved) {
-				debug_print("resaving queued mail to sent folder\n");
-				procmsg_save_to_outbox(outbox, file);
-			}
+			procmsg_msginfo_free(&queued_mail);
+		}
+		if (!saved) {
+			debug_print("resaving queued mail to sent folder\n");
+			procmsg_save_to_outbox(outbox, file);
 		}
 	}
 

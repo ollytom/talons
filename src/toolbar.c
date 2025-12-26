@@ -1706,48 +1706,6 @@ static void toolbar_linewrap_all_cb(GtkWidget *widget, gpointer data)
 	compose_toolbar_cb(A_LINEWRAP_ALL, data);
 }
 
-static void toolbar_privacy_sign_cb(GtkWidget *widget, gpointer data)
-{
-	ToolbarItem *toolbar_item = (ToolbarItem*)data;
-	Compose *compose = (Compose *)toolbar_item->parent;
-	gboolean state = gtk_toggle_tool_button_get_active(GTK_TOGGLE_TOOL_BUTTON(widget));
-
-	cm_return_if_fail(compose != NULL);
-	compose_use_signing(compose, state);
-}
-
-/* Any time the toggle button gets toggled, we want to update its tooltip. */
-static void toolbar_privacy_sign_toggled_cb(GtkWidget *widget, gpointer data)
-{
-	gboolean state = gtk_toggle_tool_button_get_active(GTK_TOGGLE_TOOL_BUTTON(widget));
-
-	if (state)
-		gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(widget), _("Message will be signed"));
-	else
-		gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(widget), _("Message will not be signed"));
-}
-
-static void toolbar_privacy_encrypt_cb(GtkWidget *widget, gpointer data)
-{
-	ToolbarItem *toolbar_item = (ToolbarItem*)data;
-	Compose *compose = (Compose *)toolbar_item->parent;
-	gboolean state = gtk_toggle_tool_button_get_active(GTK_TOGGLE_TOOL_BUTTON(widget));
-
-	cm_return_if_fail(compose != NULL);
-	compose_use_encryption(compose, state);
-}
-
-/* Any time the toggle button gets toggled, we want to update its tooltip. */
-static void toolbar_privacy_encrypt_toggled_cb(GtkWidget *widget, gpointer data)
-{
-	gboolean state = gtk_toggle_tool_button_get_active(GTK_TOGGLE_TOOL_BUTTON(widget));
-
-	if (state)
-		gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(widget), _("Message will be encrypted"));
-	else
-		gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(widget), _("Message will not be encrypted"));
-}
-
 /*
  * Execute actions from toolbar
  */
@@ -1880,8 +1838,6 @@ static void toolbar_buttons_cb(GtkWidget   *widget,
 		{ A_LINEWRAP_CURRENT,	toolbar_linewrap_current_cb	},
 		{ A_LINEWRAP_ALL,		toolbar_linewrap_all_cb   	},
 		{ A_ADDRBOOK,			toolbar_addrbook_cb			},
-		{ A_PRIVACY_SIGN,		toolbar_privacy_sign_cb		},
-		{ A_PRIVACY_ENCRYPT,	toolbar_privacy_encrypt_cb	},
 		{ A_CLAWS_ACTIONS,		toolbar_actions_execute_cb	},
 		{ A_CANCEL_INC,			toolbar_cancel_inc_cb		},
 		{ A_CANCEL_SEND,		toolbar_cancel_send_cb		},
@@ -2197,23 +2153,6 @@ Toolbar *toolbar_create(ToolbarType 	 type,
 			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,_("Address book"));
 			toolbar_data->addrbook_btn = item;
 			break;
-		case A_PRIVACY_SIGN:
-			TOOLBAR_TOGGLE_ITEM(item,icon_wid,toolbar_item->text,_("Sign"));
-			g_signal_connect (G_OBJECT(item), "toggled",
-					G_CALLBACK(toolbar_privacy_sign_toggled_cb), NULL);
-			/* Call the "toggled" handler to set correct tooltip. */
-			toolbar_privacy_sign_toggled_cb(item, NULL);
-			toolbar_data->privacy_sign_btn = item;
-			break;
-		case A_PRIVACY_ENCRYPT:
-			TOOLBAR_TOGGLE_ITEM(item,icon_wid,toolbar_item->text,_("Encrypt"));
-			g_signal_connect (G_OBJECT(item), "toggled",
-					G_CALLBACK(toolbar_privacy_encrypt_toggled_cb), NULL);
-			/* Call the "toggled" handler to set correct tooltip. */
-			toolbar_privacy_encrypt_toggled_cb(item, NULL);
-			toolbar_data->privacy_encrypt_btn = item;
-			break;
-
 		case A_CLAWS_ACTIONS:
 			TOOLBAR_ITEM(item,icon_wid,toolbar_item->text,toolbar_item->text);
 			action_item = g_new0(ToolbarClawsActions, 1);
@@ -2580,9 +2519,6 @@ static void toolbar_init(Toolbar * toolbar)
 	toolbar->preferences_btn   = NULL;
 	toolbar->action_list       = NULL;
 	toolbar->item_list         = NULL;
-
-	toolbar->privacy_sign_btn  = NULL;
-	toolbar->privacy_encrypt_btn = NULL;
 
 	toolbar_destroy(toolbar);
 }

@@ -187,7 +187,6 @@ struct _PrefsCommon
 	gboolean reedit_account_autosel;
 	gboolean autosave;
 	gint autosave_length;
-	gboolean autosave_encrypted;
 	gboolean warn_large_insert;
 	gint warn_large_insert_size;
 	gboolean compose_no_markup;
@@ -489,8 +488,6 @@ struct _PrefsCommon
 
 	gboolean folder_search_wildcard;
 	gboolean address_search_wildcard;
-
-	guint enable_avatars;
 
 	gboolean use_primary_passphrase;
 	gchar *primary_passphrase;

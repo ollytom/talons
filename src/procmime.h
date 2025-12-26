@@ -25,7 +25,7 @@
 
 #include "utils.h"
 #include "proctypes.h"
-#include "privacy.h"
+
 typedef enum
 {
 	ENC_7BIT,
@@ -68,8 +68,6 @@ typedef enum
 
 #include <glib.h>
 #include <stdio.h>
-
-struct _PrivacyData;
 
 struct _MimeType
 {
@@ -120,7 +118,6 @@ struct _MimeInfo
 
 	GNode *node;
 
-	/* --- NEW MIME STUFF --- */
 	/* Content-Type */
 	MimeMediaType 	 type;
 	gchar		*subtype;
@@ -145,11 +142,6 @@ struct _MimeInfo
 	/* Content-Disposition */
 	DispositionType	 disposition;
 	GHashTable	*dispositionparameters;
-
-	/* Privacy */
-	struct _PrivacyData	*privacy;
-	GTask *last_sig_check_task;
-	SignatureData *sig_data;
 
 	gboolean	 broken;
 };
@@ -195,8 +187,6 @@ gboolean procmime_encode_content	(MimeInfo	*mimeinfo, EncodingType encoding);
 gint procmime_get_part			(const gchar	*outfile,
 					 MimeInfo	*mimeinfo);
 FILE *procmime_get_first_text_content	(MsgInfo	*msginfo);
-FILE *procmime_get_first_encrypted_text_content
-					(MsgInfo 	*msginfo);
 
 gchar *procmime_get_tmp_file_name	(MimeInfo	*mimeinfo);
 gchar *procmime_get_part_file_name	(MimeInfo 	*mimeinfo);
@@ -217,7 +207,7 @@ gchar *procmime_get_content_type_str		(MimeMediaType   type,
 						 const gchar	*subtype);
 void procmime_force_charset			(const gchar 	*str);
 void procmime_force_encoding			(EncodingType	 encoding);
-gboolean procmime_msginfo_is_encrypted		(MsgInfo 	*msginfo);
+
 int procmime_write_mime_header			(MimeInfo 	*mimeinfo,
 						 FILE 		*fp);
 void renderer_read_config(void);

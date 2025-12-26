@@ -1176,6 +1176,7 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 
 	char sockpath[PATH_MAX];
 	claws_socket_path(sockpath, sizeof(sockpath));
+	fprintf(stderr, "using %s to prohibit duplicate process\n", sockpath);
 	if (mkdir(dirname(sockpath), 0755) < 0)
 		return -1;
 	sock = fd_connect_unix(sockpath);

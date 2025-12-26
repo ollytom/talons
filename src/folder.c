@@ -48,7 +48,6 @@
 #include "compose.h"
 #include "main.h"
 #include "msgcache.h"
-#include "privacy.h"
 #include "prefs_common.h"
 #include "file-utils.h"
 
@@ -2691,16 +2690,7 @@ static void msginfo_set_mime_flags(GNode *node, gpointer data)
 	if (mimeinfo->type == MIMETYPE_MESSAGE)
 		return;
 
-	if (privacy_mimeinfo_is_signed(mimeinfo)) {
-		procmsg_msginfo_set_flags(msginfo, 0, MSG_SIGNED);
-	}
-
-	if (privacy_mimeinfo_is_encrypted(mimeinfo)) {
-		procmsg_msginfo_set_flags(msginfo, 0, MSG_ENCRYPTED);
-	} else {
-		/* searching inside encrypted parts doesn't really make sense */
-		g_node_children_foreach(mimeinfo->node, G_TRAVERSE_ALL, msginfo_set_mime_flags, msginfo);
-	}
+	g_node_children_foreach(mimeinfo->node, G_TRAVERSE_ALL, msginfo_set_mime_flags, msginfo);
 }
 
 gchar *folder_item_fetch_msg(FolderItem *item, gint num)

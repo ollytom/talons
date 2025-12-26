@@ -43,7 +43,6 @@
 #include "gtk/gtkvscrollbutton.h"
 #include "gtk/logwindow.h"
 #include "manage_window.h"
-#include "privacy.h"
 #include "file-utils.h"
 
 typedef enum
@@ -244,7 +243,6 @@ MimeView *mimeview_create(MainWindow *mainwin)
 	GtkWidget *arrow;
 	GtkWidget *scrollbutton;
 	GtkWidget *hbox;
-	NoticeView *siginfoview;
 	GtkTreeStore *model;
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
@@ -408,12 +406,6 @@ MimeView *mimeview_create(MainWindow *mainwin)
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_show(vbox);
-	siginfoview = noticeview_create(mainwin);
-	gtk_widget_set_name(GTK_WIDGET(siginfoview->vgrid), "siginfoview");
-	noticeview_hide(siginfoview);
-	noticeview_set_icon_clickable(siginfoview, TRUE);
-	gtk_box_pack_start(GTK_BOX(vbox), mime_notebook, TRUE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(vbox), GTK_WIDGET_PTR(siginfoview), FALSE, FALSE, 0);
 
 	paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
 	gtk_widget_show(paned);
@@ -441,7 +433,6 @@ MimeView *mimeview_create(MainWindow *mainwin)
 	mimeview->icon_count    = 0;
 	mimeview->mainwin       = mainwin;
 	mimeview->mime_toggle   = mime_toggle;
-	mimeview->siginfoview	= siginfoview;
 	mimeview->scrollbutton  = scrollbutton;
 	mimeview->arrow		= arrow;
 	mimeview->target_list	= gtk_target_list_new(mimeview_mime_types, 1);
@@ -457,17 +448,6 @@ void mimeview_init(MimeView *mimeview)
 
 	gtk_container_add(GTK_CONTAINER(mimeview->mime_notebook),
 		GTK_WIDGET_PTR(mimeview->textview));
-}
-
-static gboolean any_part_is_signed(MimeInfo *mimeinfo)
-{
-	while (mimeinfo) {
-		if (privacy_mimeinfo_is_signed(mimeinfo))
-			return TRUE;
-		mimeinfo = procmime_mimeinfo_next(mimeinfo);
-	}
-
-	return FALSE;
 }
 
 void mimeview_show_message(MimeView *mimeview, MimeInfo *mimeinfo,
@@ -486,11 +466,6 @@ void mimeview_show_message(MimeView *mimeview, MimeInfo *mimeinfo,
 
 	g_signal_handlers_block_by_func(G_OBJECT(ctree), mimeview_selected,
 					mimeview);
-
-	/* check if the mail's signed - it can change the mail structure */
-
-	if (any_part_is_signed(mimeinfo))
-		debug_print("signed mail\n");
 
 	mimeview_set_multipart_tree(mimeview, mimeinfo, NULL);
 	gtk_tree_view_expand_all(ctree);
@@ -520,14 +495,6 @@ void mimeview_destroy(MimeView *mimeview)
 	g_slist_free(mimeview->viewers);
 	gtk_target_list_unref(mimeview->target_list);
 
-	if (mimeview->sig_check_timeout_tag != 0)
-		g_source_remove(mimeview->sig_check_timeout_tag);
-	if (mimeview->sig_check_cancellable != NULL) {
-		/* Set last_sig_check_task to NULL to discard results in async_cb */
-		mimeview->siginfo->last_sig_check_task = NULL;
-		g_cancellable_cancel(mimeview->sig_check_cancellable);
-		g_object_unref(mimeview->sig_check_cancellable);
-	}
 	mimeview_free_mimeinfo(mimeview);
 	gtk_tree_path_free(mimeview->opened);
 	g_free(mimeview->file);
@@ -917,24 +884,8 @@ void mimeview_clear(MimeView *mimeview)
 
 	if (!mimeview)
 		return;
-
 	if (g_slist_find(mimeviews, mimeview) == NULL)
 		return;
-
-	if (mimeview->sig_check_timeout_tag != 0) {
-		g_source_remove(mimeview->sig_check_timeout_tag);
-		mimeview->sig_check_timeout_tag = 0;
-	}
-
-	if (mimeview->sig_check_cancellable != NULL) {
-		/* Set last_sig_check_task to NULL to discard results in async_cb */
-		mimeview->siginfo->last_sig_check_task = NULL;
-		g_cancellable_cancel(mimeview->sig_check_cancellable);
-		g_object_unref(mimeview->sig_check_cancellable);
-		mimeview->sig_check_cancellable = NULL;
-	}
-
-	noticeview_hide(mimeview->siginfoview);
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mimeview->ctree));
 	gtk_tree_store_clear(GTK_TREE_STORE(model));
@@ -957,251 +908,6 @@ void mimeview_clear(MimeView *mimeview)
 	mimeview_change_view_type(mimeview, MIMEVIEW_TEXT);
 }
 
-gchar * get_message_check_signature_shortcut(MessageView *messageview) {
-	GtkUIManager *ui_manager;
-
-	if (messageview->window != NULL)
-			ui_manager = messageview->ui_manager;
-		else
-			ui_manager = messageview->mainwin->ui_manager;
-
-	return cm_menu_item_get_shortcut(ui_manager, "Menu/Message/CheckSignature");
-}
-
-static void check_signature_cb(GtkWidget *widget, gpointer user_data);
-static void display_full_info_cb(GtkWidget *widget, gpointer user_data);
-
-static void update_signature_noticeview(MimeView *mimeview, gboolean special, SignatureStatus code)
-{
-	gchar *text = NULL, *button_text = NULL;
-	void  *func = NULL;
-	StockPixmap icon = STOCK_PIXMAP_PRIVACY_SIGNED;
-	SignatureStatus mycode = SIGNATURE_UNCHECKED;
-
-	if (mimeview == NULL || mimeview->siginfo == NULL)
-		g_error("bad call to update noticeview");
-
-	mycode = privacy_mimeinfo_get_sig_status(mimeview->siginfo);
-	if (special)
-		mycode = code;
-
-	switch (mycode) {
-	case SIGNATURE_UNCHECKED:
-		button_text = _("Check signature");
-		func = check_signature_cb;
-		icon = STOCK_PIXMAP_PRIVACY_SIGNED;
-		break;
-	case SIGNATURE_OK:
-		button_text = _("View full information");
-		func = display_full_info_cb;
-		icon = STOCK_PIXMAP_PRIVACY_PASSED;
-		break;
-	case SIGNATURE_WARN:
-		button_text = _("View full information");
-		func = display_full_info_cb;
-		icon = STOCK_PIXMAP_PRIVACY_WARN;
-		break;
-	case SIGNATURE_KEY_EXPIRED:
-		button_text = _("View full information");
-		func = display_full_info_cb;
-		icon = STOCK_PIXMAP_PRIVACY_EXPIRED;
-		break;
-	case SIGNATURE_INVALID:
-		button_text = _("View full information");
-		func = display_full_info_cb;
-		icon = STOCK_PIXMAP_PRIVACY_FAILED;
-		break;
-	case SIGNATURE_CHECK_ERROR:
-	case SIGNATURE_CHECK_FAILED:
-	case SIGNATURE_CHECK_TIMEOUT:
-		button_text = _("Check again");
-		func = check_signature_cb;
-		icon = STOCK_PIXMAP_PRIVACY_UNKNOWN;
-		break;
-	default:
-		break;
-	}
-
-	if (mycode == SIGNATURE_UNCHECKED) {
-		gchar *tmp = privacy_mimeinfo_get_sig_info(mimeview->siginfo, FALSE);
-		gchar *shortcut = get_message_check_signature_shortcut(mimeview->messageview);
-
-		if (*shortcut == '\0')
-			text = g_strdup_printf(_("%s Click the icon to check it."), tmp);
-		else
-			text = g_strdup_printf(_("%s Click the icon or hit '%s' to check it."), tmp, shortcut);
-
-		g_free(shortcut);
-	} else if (mycode == SIGNATURE_CHECK_TIMEOUT) {
-		gchar *shortcut = get_message_check_signature_shortcut(mimeview->messageview);
-
-		if (*shortcut == '\0')
-			text = g_strdup(_("Timeout checking the signature. Click the icon to try again."));
-		else
-			text = g_strdup_printf(_("Timeout checking the signature. Click the icon or hit '%s' to try again."), shortcut);
-
-		g_free(shortcut);
-	} else if (mycode == SIGNATURE_CHECK_ERROR) {
-		gchar *shortcut = get_message_check_signature_shortcut(mimeview->messageview);
-
-		if (*shortcut == '\0')
-			text = g_strdup(_("Error checking the signature. Click the icon to try again."));
-		else
-			text = g_strdup_printf(_("Error checking the signature. Click the icon or hit '%s' to try again."), shortcut);
-
-		g_free(shortcut);
-	} else {
-		text = g_strdup(privacy_mimeinfo_get_sig_info(mimeview->siginfo, FALSE));
-	}
-
-	noticeview_set_text(mimeview->siginfoview, text);
-	gtk_label_set_selectable(GTK_LABEL(mimeview->siginfoview->text), TRUE);
-	g_free(text);
-
-	noticeview_set_button_text(mimeview->siginfoview, NULL);
-	noticeview_set_button_press_callback(
-		mimeview->siginfoview,
-		G_CALLBACK(func),
-		(gpointer) mimeview);
-	noticeview_set_icon(mimeview->siginfoview, icon);
-	noticeview_set_tooltip(mimeview->siginfoview, button_text);
-
-	icon_list_clear(mimeview);
-	icon_list_create(mimeview, mimeview->mimeinfo);
-}
-
-static void check_signature_async_cb(GObject *source_object,
-	GAsyncResult *async_result,
-	gpointer user_data)
-{
-	GTask *task = G_TASK(async_result);
-	GCancellable *cancellable;
-	MimeView *mimeview = (MimeView *)user_data;
-	gboolean cancelled;
-	SigCheckTaskResult *result;
-	GError *error = NULL;
-
-	if (mimeview->siginfo == NULL) {
-		debug_print("discarding stale sig check task result task:%p\n", task);
-		return;
-	} else if (task != mimeview->siginfo->last_sig_check_task) {
-		debug_print("discarding stale sig check task result last_task:%p task:%p\n",
-			mimeview->siginfo->last_sig_check_task, task);
-		return;
-	} else {
-		debug_print("using sig check task result task:%p\n", task);
-		mimeview->siginfo->last_sig_check_task = NULL;
-	}
-
-	cancellable = g_task_get_cancellable(task);
-	cancelled = g_cancellable_set_error_if_cancelled(cancellable, &error);
-	if (cancelled) {
-		debug_print("sig check task was cancelled: task:%p GError: domain:%s code:%d message:\"%s\"\n",
-			task, g_quark_to_string(error->domain), error->code, error->message);
-		g_error_free(error);
-		update_signature_noticeview(mimeview, TRUE, SIGNATURE_CHECK_TIMEOUT);
-		return;
-	} else {
-		if (mimeview->sig_check_cancellable == NULL)
-			g_error("bad cancellable");
-		if (mimeview->sig_check_timeout_tag == 0)
-			g_error("bad cancel source tag");
-
-		g_source_remove(mimeview->sig_check_timeout_tag);
-		mimeview->sig_check_timeout_tag = 0;
-		g_object_unref(mimeview->sig_check_cancellable);
-		mimeview->sig_check_cancellable = NULL;
-	}
-
-	result = g_task_propagate_pointer(task, &error);
-
-	if (mimeview->siginfo->sig_data) {
-		privacy_free_signature_data(mimeview->siginfo->sig_data);
-		mimeview->siginfo->sig_data = NULL;
-	}
-
-	if (result == NULL) {
-		debug_print("sig check task propagated NULL task:%p GError: domain:%s code:%d message:\"%s\"\n",
-			task, g_quark_to_string(error->domain), error->code, error->message);
-		g_error_free(error);
-		update_signature_noticeview(mimeview, TRUE, SIGNATURE_CHECK_ERROR);
-		return;
-	}
-
-	mimeview->siginfo->sig_data = result->sig_data;
-	update_signature_noticeview(mimeview, FALSE, 0);
-
-	if (result->newinfo) {
-		g_warning("Check sig task returned an unexpected new MimeInfo");
-		procmime_mimeinfo_free_all(&result->newinfo);
-	}
-
-	g_free(result);
-}
-
-gboolean mimeview_check_sig_timeout(gpointer user_data)
-{
-	MimeView *mimeview = (MimeView *)user_data;
-	GCancellable *cancellable = mimeview->sig_check_cancellable;
-
-	mimeview->sig_check_timeout_tag = 0;
-
-	if (cancellable == NULL) {
-		return G_SOURCE_REMOVE;
-	}
-
-	mimeview->sig_check_cancellable = NULL;
-	g_cancellable_cancel(cancellable);
-	g_object_unref(cancellable);
-
-	return G_SOURCE_REMOVE;
-}
-
-static void check_signature_cb(GtkWidget *widget, gpointer user_data)
-{
-	MimeView *mimeview = (MimeView *) user_data;
-	MimeInfo *mimeinfo = mimeview->siginfo;
-	gint ret;
-
-	if (mimeinfo == NULL || !noticeview_is_visible(mimeview->siginfoview))
-		return;
-
-	noticeview_set_text(mimeview->siginfoview, _("Checking signature..."));
-	GTK_EVENTS_FLUSH();
-
-	if (mimeview->sig_check_cancellable != NULL) {
-		if (mimeview->sig_check_timeout_tag == 0)
-			g_error("bad cancel source tag");
-		g_source_remove(mimeview->sig_check_timeout_tag);
-		g_cancellable_cancel(mimeview->sig_check_cancellable);
-		g_object_unref(mimeview->sig_check_cancellable);
-	}
-
-	mimeview->sig_check_cancellable = g_cancellable_new();
-
-	ret = privacy_mimeinfo_check_signature(mimeview->siginfo,
-		mimeview->sig_check_cancellable,
-		check_signature_async_cb,
-		mimeview);
-	if (ret == 0) {
-		mimeview->sig_check_timeout_tag = g_timeout_add_seconds(prefs_common.io_timeout_secs,
-			mimeview_check_sig_timeout, mimeview);
-	} else if (ret < 0) {
-		g_object_unref(mimeview->sig_check_cancellable);
-		mimeview->sig_check_cancellable = NULL;
-		update_signature_noticeview(mimeview, TRUE, SIGNATURE_CHECK_ERROR);
-	} else {
-		g_object_unref(mimeview->sig_check_cancellable);
-		mimeview->sig_check_cancellable = NULL;
-		update_signature_noticeview(mimeview, FALSE, 0);
-	}
-}
-
-void mimeview_check_signature(MimeView *mimeview)
-{
-	check_signature_cb(NULL, mimeview);
-}
-
 static void redisplay_email(GtkWidget *widget, gpointer user_data)
 {
 	MimeView *mimeview = (MimeView *) user_data;
@@ -1209,63 +915,6 @@ static void redisplay_email(GtkWidget *widget, gpointer user_data)
 	mimeview->opened = NULL;
 	mimeview_selected(gtk_tree_view_get_selection(
 			GTK_TREE_VIEW(mimeview->ctree)), mimeview);
-}
-
-static void display_full_info_cb(GtkWidget *widget, gpointer user_data)
-{
-	MimeView *mimeview = (MimeView *) user_data;
-
-	textview_set_text(mimeview->textview, privacy_mimeinfo_get_sig_info(mimeview->siginfo, TRUE));
-	noticeview_set_button_text(mimeview->siginfoview, NULL);
-	noticeview_set_button_press_callback(
-		mimeview->siginfoview,
-		G_CALLBACK(redisplay_email),
-		(gpointer) mimeview);
-	noticeview_set_tooltip(mimeview->siginfoview, _("Go back to email"));
-}
-
-static void update_signature_info(MimeView *mimeview, MimeInfo *selected)
-{
-	MimeInfo *siginfo;
-	MimeInfo *first_text;
-
-	cm_return_if_fail(mimeview != NULL);
-	cm_return_if_fail(selected != NULL);
-
-	if (selected->type == MIMETYPE_MESSAGE
-	&&  !g_ascii_strcasecmp(selected->subtype, "rfc822")) {
-		/* if the first text part is signed, check that */
-		first_text = selected;
-		while (first_text && first_text->type != MIMETYPE_TEXT) {
-			first_text = procmime_mimeinfo_next(first_text);
-		}
-		if (first_text) {
-			update_signature_info(mimeview, first_text);
-			return;
-		}
-	}
-
-	siginfo = selected;
-	while (siginfo != NULL) {
-		if (privacy_mimeinfo_is_signed(siginfo))
-			break;
-		siginfo = procmime_mimeinfo_parent(siginfo);
-	}
-	mimeview->siginfo = siginfo;
-
-	/* This shortcut boolean is there to correctly set the menu's
-	 * CheckSignature item sensitivity without killing performance
-	 * each time the menu sensitiveness is updated (a lot).
-	 */
-	mimeview->signed_part = (siginfo != NULL);
-
-	if (siginfo == NULL) {
-		noticeview_hide(mimeview->siginfoview);
-		return;
-	}
-
-	update_signature_noticeview(mimeview, FALSE, 0);
-	noticeview_show(mimeview->siginfoview);
 }
 
 void mimeview_show_part_as_text(MimeView *mimeview, MimeInfo *partinfo)
@@ -1319,8 +968,6 @@ static void mimeview_selected(GtkTreeSelection *selection, MimeView *mimeview)
 
 	mimeview->textview->default_text = FALSE;
 
-	update_signature_info(mimeview, partinfo);
-
 	if (!mimeview_show_part(mimeview, partinfo)) {
 		switch (partinfo->type) {
 		case MIMETYPE_TEXT:
@@ -1340,11 +987,6 @@ static void mimeview_selected(GtkTreeSelection *selection, MimeView *mimeview)
 	mainwin = mainwindow_get_mainwindow();
 	if (mainwin)
 		main_window_set_menu_sensitive(mainwin);
-
-	if (mimeview->siginfo && privacy_auto_check_signatures(mimeview->siginfo)
-	&&  privacy_mimeinfo_get_sig_status(mimeview->siginfo) == SIGNATURE_UNCHECKED) {
-		mimeview_check_signature(mimeview);
-	}
 }
 
 static gint mimeview_button_pressed(GtkWidget *widget, GdkEventButton *event,
@@ -2240,10 +1882,6 @@ static gint icon_key_pressed(GtkWidget *button, GdkEventKey *event,
 		BREAK_ON_MODIFIER_KEY();
 		mimeview_open_with(mimeview);
 		return TRUE;
-	case GDK_KEY_c:
-		BREAK_ON_MODIFIER_KEY();
-		mimeview_check_signature(mimeview);
-		return TRUE;
 	case GDK_KEY_a:
 		BREAK_ON_MODIFIER_KEY();
 		mimeview_select_next_part(mimeview);
@@ -2280,8 +1918,6 @@ static void icon_list_append_icon (MimeView *mimeview, MimeInfo *mimeinfo)
 	gchar *content_type;
 	StockPixmap stockp;
 	MimeInfo *partinfo;
-	MimeInfo *siginfo = NULL;
-	MimeInfo *encrypted = NULL;
 
 	if (!prefs_common.show_inline_attachments && mimeinfo->id)
 		return;
@@ -2337,48 +1973,10 @@ static void icon_list_append_icon (MimeView *mimeview, MimeInfo *mimeinfo)
 
 	partinfo = mimeinfo;
 	while (partinfo != NULL) {
-		if (privacy_mimeinfo_is_signed(partinfo)) {
-			siginfo = partinfo;
-			break;
-		}
-		if (privacy_mimeinfo_is_encrypted(partinfo)) {
-			encrypted = partinfo;
-			break;
-		}
 		partinfo = procmime_mimeinfo_parent(partinfo);
 	}
+	pixmap = stock_pixmap_widget_with_overlay(stockp, 0, OVERLAY_NONE, 6, 3);
 
-	if (siginfo != NULL) {
-		switch (privacy_mimeinfo_get_sig_status(siginfo)) {
-		case SIGNATURE_UNCHECKED:
-		case SIGNATURE_CHECK_ERROR:
-		case SIGNATURE_CHECK_FAILED:
-		case SIGNATURE_CHECK_TIMEOUT:
-			pixmap = stock_pixmap_widget_with_overlay(stockp,
-			    STOCK_PIXMAP_PRIVACY_EMBLEM_SIGNED, OVERLAY_BOTTOM_RIGHT, 6, 3);
-			break;
-		case SIGNATURE_OK:
-			pixmap = stock_pixmap_widget_with_overlay(stockp,
-			    STOCK_PIXMAP_PRIVACY_EMBLEM_PASSED, OVERLAY_BOTTOM_RIGHT, 6, 3);
-			break;
-		case SIGNATURE_WARN:
-		case SIGNATURE_KEY_EXPIRED:
-			pixmap = stock_pixmap_widget_with_overlay(stockp,
-			    STOCK_PIXMAP_PRIVACY_EMBLEM_WARN, OVERLAY_BOTTOM_RIGHT, 6, 3);
-			break;
-		case SIGNATURE_INVALID:
-			pixmap = stock_pixmap_widget_with_overlay(stockp,
-			    STOCK_PIXMAP_PRIVACY_EMBLEM_FAILED, OVERLAY_BOTTOM_RIGHT, 6, 3);
-			break;
-		}
-		sigshort = privacy_mimeinfo_get_sig_info(siginfo, FALSE);
-	} else if (encrypted != NULL) {
-			pixmap = stock_pixmap_widget_with_overlay(stockp,
-			    STOCK_PIXMAP_PRIVACY_EMBLEM_ENCRYPTED, OVERLAY_BOTTOM_RIGHT, 6, 3);
-	} else {
-		pixmap = stock_pixmap_widget_with_overlay(stockp, 0,
-							  OVERLAY_NONE, 6, 3);
-	}
 	gtk_container_add(GTK_CONTAINER(button), pixmap);
 	if (!desc) {
 		if (prefs_common.attach_desc)

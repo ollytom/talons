@@ -539,22 +539,6 @@ MsgInfo *procheader_parse_stream(FILE *fp, MsgFlags flags, gboolean full,
 	return parse_stream(fp, FALSE, flags, full, decrypted);
 }
 
-static gboolean avatar_from_some_face(gpointer source, gpointer userdata)
-{
-	AvatarCaptureData *acd = (AvatarCaptureData *)source;
-
-	if (*(acd->content) == '\0') /* won't be null, but may be empty */
-		return FALSE;
-
-	if (!strcmp(acd->header, hentry_full[H_FACE].name)) {
-		debug_print("avatar_from_some_face: found 'Face' header\n");
-		procmsg_msginfo_add_avatar(acd->msginfo, AVATAR_FACE, acd->content);
-	}
-	return FALSE;
-}
-
-static gulong avatar_hook_id = HOOK_NONE;
-
 static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 			     gboolean full, gboolean decrypted)
 {
@@ -608,16 +592,6 @@ static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 		MSG_SET_PERM_FLAGS(msginfo->flags, MSG_NEW | MSG_UNREAD);
 
 	msginfo->inreplyto = NULL;
-
-	if (avatar_hook_id == HOOK_NONE &&
-	    (prefs_common.enable_avatars & (AVATARS_ENABLE_CAPTURE | AVATARS_ENABLE_RENDER))) {
-		avatar_hook_id = hooks_register_hook(AVATAR_HEADER_UPDATE_HOOKLIST,
-						     avatar_from_some_face, NULL);
-	} else if (avatar_hook_id != HOOK_NONE &&
-		   !(prefs_common.enable_avatars & AVATARS_ENABLE_CAPTURE)) {
-		hooks_unregister_hook(AVATAR_HEADER_UPDATE_HOOKLIST, avatar_hook_id);
-		avatar_hook_id = HOOK_NONE;
-	}
 
 	while ((hnum = get_one_field(&buf, data, hentry)) != -1) {
 		hp = buf + strlen(hentry[hnum].name);
@@ -1278,16 +1252,10 @@ gboolean procheader_header_is_internal(const gchar *hdr_name)
 		"PT:", "S:", "RQ:", "SSV:", "NSV:", "SSH:", "R:", "MAID:",
 		"SCF:", "RRCPT:", "RMID:", "FMID:", "NAID:",
 		"X-Claws-Account-Id:",
-		"X-Claws-Sign:",
-		"X-Claws-Encrypt:",
-		"X-Claws-Privacy-System:",
 		"X-Claws-Auto-Wrapping:",
 		"X-Claws-Auto-Indent:",
 		"X-Claws-End-Special-Headers:",
 		"X-Sylpheed-Account-Id:",
-		"X-Sylpheed-Sign:",
-		"X-Sylpheed-Encrypt:",
-		"X-Sylpheed-Privacy-System:",
 		"X-Sylpheed-End-Special-Headers:",
 	         NULL
 	};

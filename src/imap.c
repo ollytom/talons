@@ -18,6 +18,7 @@
 
 #include "defs.h"
 
+#include <err.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <stdio.h>

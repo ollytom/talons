@@ -93,9 +93,6 @@ struct _Toolbar {
 
 	GSList    *action_list;
 	GSList    *item_list;
-
-	GtkWidget *privacy_sign_btn;
-	GtkWidget *privacy_encrypt_btn;
 };
 
 struct _ToolbarItem {

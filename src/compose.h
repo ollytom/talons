@@ -186,9 +186,6 @@ struct _Compose
 	CharSet out_encoding;
 
 	/* privacy settings */
-	gboolean use_signing;
-	gboolean use_encryption;
-	gchar *privacy_system;
 	gchar *encdata;
 
 	gboolean modified;
@@ -332,8 +329,5 @@ void compose_close_toolbar		(Compose *compose);
 void compose_clear_exit_drafts		(void);
 void compose_reopen_exit_drafts		(void);
 void compose_attach_from_list (Compose *compose, GList *file_list, gboolean free_data);
-
-void compose_use_signing(Compose *compose, gboolean use_signing);
-void compose_use_encryption(Compose *compose, gboolean use_encryption);
 
 #endif /* __COMPOSE_H__ */

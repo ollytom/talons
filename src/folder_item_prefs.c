@@ -65,10 +65,6 @@ static PrefParam param[] = {
 	 NULL, NULL, NULL},
 	{"default_account", NULL, &tmp_prefs.default_account, P_INT,
 	 NULL, NULL, NULL},
-	{"always_sign", "0", &tmp_prefs.always_sign, P_ENUM,
- 	 NULL, NULL, NULL},
-	{"always_encrypt", "0", &tmp_prefs.always_encrypt, P_ENUM,
- 	 NULL, NULL, NULL},
 	{"save_copy_to_folder", NULL, &tmp_prefs.save_copy_to_folder, P_BOOL,
 	 NULL, NULL, NULL},
 	{"enable_processing", "FALSE", &tmp_prefs.enable_processing, P_BOOL,
@@ -164,8 +160,6 @@ static FolderItemPrefs *folder_item_prefs_clear(FolderItemPrefs *prefs)
 	prefs->folder_chmod = 0;
 	prefs->enable_default_account = FALSE;
 	prefs->default_account = 0;
-	prefs->always_sign = SIGN_OR_ENCRYPT_DEFAULT;
-	prefs->always_encrypt = SIGN_OR_ENCRYPT_DEFAULT;
 	prefs->save_copy_to_folder = FALSE;
 
 	prefs->enable_processing = FALSE;
@@ -239,8 +233,6 @@ void folder_item_prefs_copy_prefs(FolderItem * src, FolderItem * dest)
 	tmp_prefs.folder_chmod			= src->prefs->folder_chmod;
 	tmp_prefs.enable_default_account	= src->prefs->enable_default_account;
 	tmp_prefs.default_account		= src->prefs->default_account;
-	tmp_prefs.always_sign    	= src->prefs->always_sign;
-	tmp_prefs.always_encrypt    = src->prefs->always_encrypt;
 	tmp_prefs.save_copy_to_folder		= src->prefs->save_copy_to_folder;
 
 	*dest->prefs = tmp_prefs;

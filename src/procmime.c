@@ -39,7 +39,6 @@
 #include "prefs_common.h"
 #include "prefs_gtk.h"
 #include "alertpanel.h"
-#include "privacy.h"
 #include "account.h"
 #include "file-utils.h"
 
@@ -124,12 +123,6 @@ static gboolean free_func(GNode *node, gpointer data)
 	g_hash_table_foreach_remove(mimeinfo->dispositionparameters,
 		procmime_mimeinfo_parameters_destroy, NULL);
 	g_hash_table_destroy(mimeinfo->dispositionparameters);
-
-	if (mimeinfo->privacy)
-		privacy_free_privacydata(mimeinfo->privacy);
-
-	if (mimeinfo->sig_data)
-		privacy_free_signature_data(mimeinfo->sig_data);
 
 	g_free(mimeinfo);
 
@@ -879,87 +872,6 @@ scan_again:
 	procmime_mimeinfo_free_all(&mimeinfo);
 
 	return outfp;
-}
-
-
-static gboolean find_encrypted_func(GNode *node, gpointer data)
-{
-	MimeInfo *mimeinfo = (MimeInfo *) node->data;
-	MimeInfo **encinfo = (MimeInfo **) data;
-
-	if (privacy_mimeinfo_is_encrypted(mimeinfo)) {
-		*encinfo = mimeinfo;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-static MimeInfo *find_encrypted_part(MimeInfo *rootinfo)
-{
-	MimeInfo *encinfo = NULL;
-
-	g_node_traverse(rootinfo->node, G_IN_ORDER, G_TRAVERSE_ALL, -1,
-		find_encrypted_func, &encinfo);
-
-	return encinfo;
-}
-
-/* search the first encrypted text part of (multipart) MIME message,
-   decode, convert it and output to outfp. */
-FILE *procmime_get_first_encrypted_text_content(MsgInfo *msginfo)
-{
-	FILE *outfp = NULL;
-	MimeInfo *mimeinfo, *partinfo, *encinfo;
-
-	cm_return_val_if_fail(msginfo != NULL, NULL);
-
-	mimeinfo = procmime_scan_message(msginfo);
-	if (!mimeinfo) {
-		return NULL;
-	}
-
-	partinfo = mimeinfo;
-	if ((encinfo = find_encrypted_part(partinfo)) != NULL) {
-		debug_print("decrypting message part\n");
-		if (privacy_mimeinfo_decrypt(encinfo) < 0) {
-			alertpanel_error(_("Couldn't decrypt: %s"),
-				privacy_get_error());
-			return NULL;
-		}
-	}
-	partinfo = mimeinfo;
-	while (partinfo && partinfo->type != MIMETYPE_TEXT) {
-		partinfo = procmime_mimeinfo_next(partinfo);
-		if (privacy_mimeinfo_is_signed(partinfo))
-			procmsg_msginfo_set_flags(msginfo, 0, MSG_SIGNED);
-	}
-
-	if (partinfo)
-		outfp = procmime_get_text_content(partinfo);
-
-	procmime_mimeinfo_free_all(&mimeinfo);
-
-	return outfp;
-}
-
-gboolean procmime_msginfo_is_encrypted(MsgInfo *msginfo)
-{
-	MimeInfo *mimeinfo, *partinfo;
-	gboolean result = FALSE;
-
-	cm_return_val_if_fail(msginfo != NULL, FALSE);
-
-	mimeinfo = procmime_scan_message(msginfo);
-	if (!mimeinfo) {
-		return FALSE;
-	}
-
-	partinfo = mimeinfo;
-	result = (find_encrypted_part(partinfo) != NULL);
-	procmime_mimeinfo_free_all(&mimeinfo);
-
-	return result;
 }
 
 gchar *procmime_get_tmp_file_name(MimeInfo *mimeinfo)

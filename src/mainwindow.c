@@ -377,7 +377,6 @@ static void save_part_as_cb(GtkAction *action, gpointer data);
 static void view_part_as_text_cb(GtkAction *action, gpointer data);
 static void open_part_cb(GtkAction *action, gpointer data);
 static void open_part_with_cb(GtkAction *action, gpointer data);
-static void check_signature_cb(GtkAction *action, gpointer data);
 static void goto_next_part_cb(GtkAction *action, gpointer data);
 static void goto_prev_part_cb(GtkAction *action, gpointer data);
 #define DO_ACTION(name, act)	{ if (!strcmp(a_name, name)) action = act; }
@@ -602,8 +601,6 @@ static GtkActionEntry mainwin_entries[] =
 
 	{"Message/Reedit",                           NULL, N_("Re-_edit"), NULL, NULL, G_CALLBACK(reedit_cb) },
 	/*{"Message/---",                            NULL, "---", NULL, NULL, NULL },*/
-
-	{"Message/CheckSignature",                   NULL, N_("Check signature"), "C", NULL, G_CALLBACK(check_signature_cb) },
 
 	{"Tools/AddressBook",                        NULL, N_("_Address book"), "<shift><control>A", NULL, G_CALLBACK(addressbook_open_cb) },
 	{"Tools/AddSenderToAB",                      NULL, N_("Add sender to address boo_k"), NULL, NULL, G_CALLBACK(add_address_cb) },
@@ -1207,7 +1204,6 @@ MainWindow *main_window_create()
 
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "Reedit", "Message/Reedit", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "Separator6", "Message/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Message", "CheckSignature", "Message/CheckSignature", GTK_UI_MANAGER_MENUITEM)
 
 /* Tools menu */
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/Tools", "AddressBook", "Tools/AddressBook", GTK_UI_MANAGER_MENUITEM)
@@ -2354,7 +2350,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	SET_SENSITIVE("Menu/Message/Marks/Lock", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/Message/Marks/Unlock", M_TARGET_EXIST);
 	SET_SENSITIVE("Menu/Message/Reedit", M_HAVE_ACCOUNT, M_ALLOW_REEDIT);
-	SET_SENSITIVE("Menu/Message/CheckSignature", M_SINGLE_TARGET_EXIST);
 
 	SET_SENSITIVE("Menu/Tools/AddSenderToAB", M_SINGLE_TARGET_EXIST);
 	SET_SENSITIVE("Menu/Tools/Execute", M_DELAY_EXEC);
@@ -2472,8 +2467,6 @@ void main_window_set_menu_sensitive(MainWindow *mainwin)
 	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/Goto/NextPart", mimepart_selected);
 	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/Goto/PrevPart", mimepart_selected);
 	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/View/Part", mimepart_selected);
-	cm_menu_set_sensitive_full(mainwin->ui_manager, "Menu/Message/CheckSignature",
-				   mimepart_selected && mainwin->messageview->mimeview->signed_part);
 
 	sensitive = TRUE;
 	if (mimepart_selected) {
@@ -2837,8 +2830,6 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 	 * and mimeview icon list/ctree lose track of their visibility states */
 	if (!noticeview_is_visible(mainwin->messageview->noticeview))
 		gtk_widget_hide(GTK_WIDGET_PTR(mainwin->messageview->noticeview));
-	if (!noticeview_is_visible(mainwin->messageview->mimeview->siginfoview))
-		gtk_widget_hide(GTK_WIDGET_PTR(mainwin->messageview->mimeview->siginfoview));
 	if (mainwin->messageview->mimeview->ctree_mode)
 		gtk_widget_hide(mainwin->messageview->mimeview->icon_mainbox);
 	else
@@ -4167,15 +4158,6 @@ static void open_part_with_cb(GtkAction *action, gpointer data)
 	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimeview_open_with(mainwin->messageview->mimeview);
-}
-
-static void check_signature_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-
-	if (mainwin->messageview
-	&&  mainwin->messageview->mimeview)
-		mimeview_check_signature(mainwin->messageview->mimeview);
 }
 
 static void goto_next_part_cb(GtkAction *action, gpointer data)

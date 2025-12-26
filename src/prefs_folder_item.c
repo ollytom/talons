@@ -114,8 +114,6 @@ struct _FolderItemComposePage
 	GtkWidget *entry_default_replyto;
 	GtkWidget *checkbtn_enable_default_account;
 	GtkWidget *optmenu_default_account;
-	GtkWidget *always_sign;
-	GtkWidget *always_encrypt;
 
 	/* apply to sub folders */
 	GtkWidget *save_copy_to_folder_rec_checkbtn;
@@ -126,8 +124,6 @@ struct _FolderItemComposePage
 	GtkWidget *default_bcc_rec_checkbtn;
 	GtkWidget *default_replyto_rec_checkbtn;
 	GtkWidget *default_account_rec_checkbtn;
-	GtkWidget *always_sign_rec_checkbtn;
-	GtkWidget *always_encrypt_rec_checkbtn;
 };
 
 static void general_save_folder_prefs(FolderItem *folder, FolderItemGeneralPage *page);
@@ -776,10 +772,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	GtkWidget *optmenu_default_account = NULL;
 	GtkListStore *optmenu_default_account_menu = NULL;
 	GtkTreeIter iter;
-	GtkWidget *always_sign;
-	GtkListStore *always_sign_menu;
-	GtkWidget *always_encrypt;
-	GtkListStore *always_encrypt_menu;
 	GtkWidget *save_copy_to_folder_rec_checkbtn = NULL;
 	GtkWidget *default_from_rec_checkbtn = NULL;
 	GtkWidget *default_to_rec_checkbtn = NULL;
@@ -788,8 +780,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	GtkWidget *default_bcc_rec_checkbtn = NULL;
 	GtkWidget *default_replyto_rec_checkbtn = NULL;
 	GtkWidget *default_account_rec_checkbtn = NULL;
-	GtkWidget *always_sign_rec_checkbtn = NULL;
-	GtkWidget *always_encrypt_rec_checkbtn = NULL;
 
 	GList *cur_ac;
 	GList *account_list;
@@ -1018,68 +1008,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	gtk_grid_attach(GTK_GRID(table), default_account_rec_checkbtn, 2, rowcount, 1, 1);
 	rowcount++;
 
-	/* PGP sign? */
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_box_set_spacing(GTK_BOX(hbox), 8);
-	gtk_widget_show (hbox);
-	gtk_grid_attach(GTK_GRID(table), hbox, 0, rowcount, 1, 1);
-
-	label = gtk_label_new(_("Always sign messages"));
-	gtk_widget_show (label);
-	gtk_box_pack_start (GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
-	always_sign = gtkut_sc_combobox_create (NULL, FALSE);
-	gtk_widget_show (always_sign);
-	gtk_box_pack_start (GTK_BOX(hbox), always_sign, FALSE, FALSE, 0);
-
-	always_sign_menu = GTK_LIST_STORE(gtk_combo_box_get_model(
-				GTK_COMBO_BOX(always_sign)));
-	COMBOBOX_ADD (always_sign_menu, _("Default"), SIGN_OR_ENCRYPT_DEFAULT);
-	COMBOBOX_ADD (always_sign_menu, _("No"), SIGN_OR_ENCRYPT_NEVER);
-	COMBOBOX_ADD (always_sign_menu, _("Yes"), SIGN_OR_ENCRYPT_ALWAYS);
-
-	combobox_select_by_data(GTK_COMBO_BOX(always_sign),
-			item->prefs->always_sign);
-
-	CLAWS_SET_TIP(hbox, _("\"Default\" will follow the applicable account preference"));
-
-	always_sign_rec_checkbtn = gtk_check_button_new();
-	gtk_widget_show (always_sign_rec_checkbtn);
-	gtk_grid_attach(GTK_GRID(table), always_sign_rec_checkbtn, 2, rowcount, 1, 1);
-
-	rowcount++;
-
-	/* PGP encrypt? */
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-	gtk_box_set_spacing(GTK_BOX(hbox), 8);
-	gtk_widget_show (hbox);
-	gtk_grid_attach(GTK_GRID(table), hbox, 0, rowcount, 1, 1);
-
-	label = gtk_label_new(_("Always encrypt messages"));
-	gtk_widget_show (label);
-	gtk_box_pack_start (GTK_BOX(hbox), label, FALSE, FALSE, 0);
-
-	always_encrypt = gtkut_sc_combobox_create (NULL, FALSE);
-	gtk_widget_show (always_encrypt);
-	gtk_box_pack_start (GTK_BOX(hbox), always_encrypt, FALSE, FALSE, 0);
-
-	always_encrypt_menu = GTK_LIST_STORE(gtk_combo_box_get_model(
-				GTK_COMBO_BOX(always_encrypt)));
-	COMBOBOX_ADD (always_encrypt_menu, _("Default"), SIGN_OR_ENCRYPT_DEFAULT);
-	COMBOBOX_ADD (always_encrypt_menu, _("No"), SIGN_OR_ENCRYPT_NEVER);
-	COMBOBOX_ADD (always_encrypt_menu, _("Yes"), SIGN_OR_ENCRYPT_ALWAYS);
-
-	combobox_select_by_data(GTK_COMBO_BOX(always_encrypt),
-			item->prefs->always_encrypt);
-
-	CLAWS_SET_TIP(hbox, _("\"Default\" will follow the applicable account preference"));
-
-	always_encrypt_rec_checkbtn = gtk_check_button_new();
-	gtk_widget_show (always_encrypt_rec_checkbtn);
-	gtk_grid_attach(GTK_GRID(table), always_encrypt_rec_checkbtn, 2, rowcount, 1, 1);
-
-	rowcount++;
-
 	gtk_widget_show_all(table);
 
 	page->window = GTK_WIDGET(window);
@@ -1100,8 +1028,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	page->entry_default_replyto = entry_default_replyto;
 	page->checkbtn_enable_default_account = checkbtn_enable_default_account;
 	page->optmenu_default_account = optmenu_default_account;
-	page->always_sign = always_sign;
-	page->always_encrypt = always_encrypt;
 
 	page->save_copy_to_folder_rec_checkbtn	  = save_copy_to_folder_rec_checkbtn;
 	page->default_from_rec_checkbtn		  = default_from_rec_checkbtn;
@@ -1111,8 +1037,6 @@ static void prefs_folder_item_compose_create_widget_func(PrefsPage * page_,
 	page->default_bcc_rec_checkbtn		  = default_bcc_rec_checkbtn;
 	page->default_replyto_rec_checkbtn		  = default_replyto_rec_checkbtn;
 	page->default_account_rec_checkbtn	  = default_account_rec_checkbtn;
-	page->always_sign_rec_checkbtn = always_sign_rec_checkbtn;
-	page->always_encrypt_rec_checkbtn = always_encrypt_rec_checkbtn;
 
 	page->page.widget = table;
 }
@@ -1224,15 +1148,6 @@ static void compose_save_folder_prefs(FolderItem *folder, FolderItemComposePage 
 				GTK_COMBO_BOX(page->optmenu_default_account));
 	}
 
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_sign_rec_checkbtn))) {
-		prefs->always_sign =
-				combobox_get_active_data(GTK_COMBO_BOX(page->always_sign));
-	}
-	if (all || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_encrypt_rec_checkbtn))) {
-		prefs->always_encrypt =
-				combobox_get_active_data(GTK_COMBO_BOX(page->always_encrypt));
-	}
-
 	folder_item_prefs_save_config(folder);
 }
 
@@ -1257,15 +1172,11 @@ static gboolean compose_save_recurse_func(GNode *node, gpointer data)
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_cc_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_bcc_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_replyto_rec_checkbtn)) ||
-	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_sign_rec_checkbtn)) ||
-	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_encrypt_rec_checkbtn)) ||
 	      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_reply_to_rec_checkbtn))
 			))
 		return TRUE;
 	else if ((node == page->item->node) &&
 	    !(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->default_account_rec_checkbtn))
-	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_sign_rec_checkbtn))
-	      || gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(page->always_encrypt_rec_checkbtn))
 		    ))
 		return TRUE;
 	else

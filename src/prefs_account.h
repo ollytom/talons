@@ -129,15 +129,6 @@ struct _PrefsAccount
 	gboolean  set_autoreplyto;
 	gchar    *auto_replyto;
 
-	/* Privacy */
-	gchar	 *default_privacy_system;
-	gboolean  default_encrypt;
-	gboolean  default_encrypt_reply;
-	gboolean  default_sign;
-	gboolean  default_sign_reply;
-	gboolean  save_encrypted_as_clear_text;
-	gboolean  encrypt_to_self;
-
 	/* Advanced */
 	gboolean  set_smtpport;
 	gushort   smtpport;
@@ -181,7 +172,6 @@ struct _PrefsAccount
 	gint account_id;
 
 	struct _Folder *folder;
-	GHashTable *privacy_prefs;
 	SMTPSession *session;
 
 	gint config_version;
@@ -198,8 +188,6 @@ void prefs_account_free			(PrefsAccount	*ac_prefs);
 
 PrefsAccount *prefs_account_open	(PrefsAccount	*ac_prefs, gboolean *dirty);
 
-const gchar *prefs_account_get_privacy_prefs(PrefsAccount *account, gchar *id);
-void prefs_account_set_privacy_prefs(PrefsAccount *account, gchar *id, gchar *new_value);
 gchar *prefs_account_generate_msgid(PrefsAccount *account);
 
 void prefs_account_register_page	(PrefsPage 	*page);

@@ -55,7 +55,6 @@
 #include "combobox.h"
 #include "setup.h"
 #include "hooks.h"
-#include "privacy.h"
 #include "inputdialog.h"
 #include "common/ssl_certificate.h"
 #include "passwordstore.h"
@@ -197,21 +196,6 @@ typedef struct ComposePage
 	GtkWidget *autoreplyto_entry;
 } ComposePage;
 
-typedef struct PrivacyPage
-{
-    PrefsPage page;
-
-    GtkWidget *vbox;
-
-	GtkWidget *default_privacy_system;
-	GtkWidget *default_encrypt_checkbtn;
-	GtkWidget *default_encrypt_reply_checkbtn;
-	GtkWidget *default_sign_checkbtn;
-	GtkWidget *default_sign_reply_checkbtn;
-	GtkWidget *save_clear_text_checkbtn;
-	GtkWidget *encrypt_to_self_checkbtn;
-} PrivacyPage;
-
 typedef struct SSLPage
 {
     PrefsPage page;
@@ -275,7 +259,6 @@ static BasicPage basic_page;
 static ReceivePage receive_page;
 static SendPage send_page;
 static ComposePage compose_page;
-static PrivacyPage privacy_page;
 static SSLPage ssl_page;
 static AdvancedPage advanced_page;
 
@@ -299,7 +282,6 @@ static void prefs_account_protocol_set_optmenu		(PrefParam *pparam);
 static void prefs_account_protocol_changed		(GtkComboBox *combobox, gpointer data);
 
 static void prefs_account_set_string_from_combobox (PrefParam *pparam);
-static void prefs_account_set_privacy_combobox_from_string (PrefParam *pparam);
 
 static void prefs_account_imap_auth_type_set_data_from_optmenu	(PrefParam *pparam);
 static void prefs_account_imap_auth_type_set_optmenu	(PrefParam *pparam);
@@ -316,8 +298,6 @@ static void prefs_account_enum_set_radiobtn		(PrefParam *pparam);
 
 static void prefs_account_mailcmd_toggled(GtkToggleButton *button,  gpointer user_data);
 static void prefs_account_showpwd_toggled(GtkEntry *entry, gpointer user_data);
-
-static gchar *privacy_prefs;
 
 static PrefParam basic_param[] = {
 	{"account_name", NULL, &tmp_ac_prefs.account_name, P_STRING,
@@ -504,47 +484,6 @@ static PrefParam compose_param[] = {
 	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
 };
 
-static PrefParam privacy_param[] = {
-	{"default_privacy_system", "", &tmp_ac_prefs.default_privacy_system, P_STRING,
-	 &privacy_page.default_privacy_system,
-	 prefs_account_set_string_from_combobox,
-	 prefs_account_set_privacy_combobox_from_string},
-
-	{"default_encrypt", "FALSE", &tmp_ac_prefs.default_encrypt, P_BOOL,
-	 &privacy_page.default_encrypt_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"default_encrypt_reply", "TRUE", &tmp_ac_prefs.default_encrypt_reply, P_BOOL,
-	 &privacy_page.default_encrypt_reply_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"default_sign", "FALSE", &tmp_ac_prefs.default_sign, P_BOOL,
-	 &privacy_page.default_sign_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-#ifdef G_OS_UNIX
-	{"default_sign_reply", "TRUE", &tmp_ac_prefs.default_sign_reply, P_BOOL,
-	 &privacy_page.default_sign_reply_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-#else
-	/* Bug 2367: disturbing for Win32 users with no keypair */
-	{"default_sign_reply", "FALSE", &tmp_ac_prefs.default_sign_reply, P_BOOL,
-	 &privacy_page.default_sign_reply_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-#endif
-	{"save_clear_text", "FALSE", &tmp_ac_prefs.save_encrypted_as_clear_text, P_BOOL,
-	 &privacy_page.save_clear_text_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"encrypt_to_self", "FALSE", &tmp_ac_prefs.encrypt_to_self, P_BOOL,
-	 &privacy_page.encrypt_to_self_checkbtn,
-	 prefs_set_data_from_toggle, prefs_set_toggle},
-
-	{"privacy_prefs", "", &privacy_prefs, P_STRING,
-	 NULL, NULL, NULL},
-
-	{NULL, NULL, NULL, P_OTHER, NULL, NULL, NULL}
-};
-
 static PrefParam ssl_param[] = {
 	{"ssl_pop", "1", &tmp_ac_prefs.ssl_pop, P_ENUM,
 	 &ssl_page.pop_nossl_radiobtn,
@@ -685,54 +624,6 @@ static void prefs_account_edit_custom_header	(void);
 static void prefs_account_receive_itv_spinbutton_value_changed_cb(GtkWidget *w, gpointer data);
 
 #define COMBOBOX_PRIVACY_PLUGIN_ID 3
-
-/* Enable/disable necessary preference widgets based on current privacy
- * system choice. */
-static void privacy_system_activated(GtkWidget *combobox)
-{
-	gtk_widget_set_sensitive (privacy_page.save_clear_text_checkbtn,
-		!gtk_toggle_button_get_active(
-				GTK_TOGGLE_BUTTON(privacy_page.encrypt_to_self_checkbtn)));
-}
-
-/* Populate the privacy system choice combobox with valid choices */
-static void update_privacy_system_menu() {
-	GtkListStore *menu;
-	GtkTreeIter iter;
-	GSList *system_ids, *cur;
-
-	menu = GTK_LIST_STORE(gtk_combo_box_get_model(
-			GTK_COMBO_BOX(privacy_page.default_privacy_system)));
-
-	/* First add "None", as that one is always available. :) */
-	gtk_list_store_append(menu, &iter);
-	gtk_list_store_set(menu, &iter,
-			COMBOBOX_TEXT, _("None"),
-			COMBOBOX_DATA, 0,
-			COMBOBOX_SENS, TRUE,
-			COMBOBOX_PRIVACY_PLUGIN_ID, "",
-			-1);
-
-	/* Now go through list of available privacy systems and add an entry
-	 * for each. */
-	system_ids = privacy_get_system_ids();
-	for (cur = system_ids; cur != NULL; cur = g_slist_next(cur)) {
-		gchar *id = (gchar *) cur->data;
-		const gchar *name;
-
-		name = privacy_system_get_name(id);
-		gtk_list_store_append(menu, &iter);
-		gtk_list_store_set(menu, &iter,
-				COMBOBOX_TEXT, name,
-				COMBOBOX_DATA, 1,
-				COMBOBOX_SENS, TRUE,
-				COMBOBOX_PRIVACY_PLUGIN_ID, id,
-				-1);
-		g_free(id);
-	}
-	g_slist_free(system_ids);
-
-}
 
 #define TABLE_YPAD 2
 
@@ -1639,8 +1530,6 @@ static void compose_create_widget_func(PrefsPage * _page,
 	PrefsAccount *ac_prefs = (PrefsAccount *) data;
 
 	GtkWidget *vbox1;
-	GtkWidget *hbox1;
-	GtkWidget *hbox2;
 	GtkWidget *frame;
 	GtkWidget *table;
 	GtkWidget *autocc_checkbtn;
@@ -1712,107 +1601,6 @@ static void compose_create_widget_func(PrefsPage * _page,
 		prefs_set_dialog_to_default(compose_param);
 	} else
 		prefs_set_dialog(compose_param);
-
-	page->vbox = vbox1;
-
-	page->page.widget = vbox1;
-}
-
-static void privacy_create_widget_func(PrefsPage * _page,
-                                           GtkWindow * window,
-                                           gpointer data)
-{
-	PrivacyPage *page = (PrivacyPage *) _page;
-	PrefsAccount *ac_prefs = (PrefsAccount *) data;
-
-	GtkWidget *vbox1;
-	GtkWidget *vbox2;
-	GtkWidget *hbox1;
-	GtkWidget *label;
-	GtkWidget *default_privacy_system;
-	GtkListStore *menu;
-	GtkCellRenderer *rend;
-	GtkWidget *default_encrypt_checkbtn;
-	GtkWidget *default_encrypt_reply_checkbtn;
-	GtkWidget *default_sign_checkbtn;
-	GtkWidget *default_sign_reply_checkbtn;
-	GtkWidget *save_clear_text_checkbtn;
-	GtkWidget *encrypt_to_self_checkbtn;
-
-	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	gtk_widget_show (vbox1);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
-
-	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_widget_show (vbox2);
-	gtk_box_pack_start (GTK_BOX (vbox1), vbox2, FALSE, FALSE, 0);
-
-	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox1);
-	gtk_container_add (GTK_CONTAINER(vbox2), hbox1);
-
-	label = gtk_label_new(_("Default privacy system"));
-	gtk_widget_show(label);
-	gtk_box_pack_start (GTK_BOX (hbox1), label, FALSE, FALSE, 0);
-
-	/* Can't use gtkut_sc_combobox_create() here, because model for this
-	 * combobox needs an extra string column to store privacy plugin id. */
-	menu = gtk_list_store_new(4,
-			G_TYPE_STRING,
-			G_TYPE_INT,
-			G_TYPE_BOOLEAN,
-			G_TYPE_STRING);	/* This is where we store the privacy plugin id. */
-	default_privacy_system = gtk_combo_box_new_with_model(GTK_TREE_MODEL(menu));
-
-	rend = gtk_cell_renderer_text_new();
-	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(default_privacy_system), rend, TRUE);
-	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(default_privacy_system), rend,
-			"text", COMBOBOX_TEXT,
-			"sensitive", COMBOBOX_SENS,
-			NULL);
-	gtk_widget_set_focus_on_click(GTK_WIDGET(default_privacy_system), FALSE);
-
-	gtk_widget_show (default_privacy_system);
-	gtk_box_pack_start (GTK_BOX(hbox1), default_privacy_system, FALSE, TRUE, 0);
-
-	g_signal_connect(G_OBJECT(default_privacy_system), "changed",
-			 G_CALLBACK(privacy_system_activated),
-			 NULL);
-
-	PACK_CHECK_BUTTON (vbox2, default_sign_checkbtn,
-			   _("Always sign messages"));
-	PACK_CHECK_BUTTON (vbox2, default_encrypt_checkbtn,
-			   _("Always encrypt messages"));
-	PACK_CHECK_BUTTON (vbox2, default_sign_reply_checkbtn,
-			   _("Always sign messages when replying to a "
-			     "signed message"));
-	PACK_CHECK_BUTTON (vbox2, default_encrypt_reply_checkbtn,
-			   _("Always encrypt messages when replying to an "
-			     "encrypted message"));
-	PACK_CHECK_BUTTON (vbox2, encrypt_to_self_checkbtn,
-			   _("Encrypt sent messages with your own key in addition to recipient's"));
-	PACK_CHECK_BUTTON (vbox2, save_clear_text_checkbtn,
-			   _("Save sent encrypted messages as clear text"));
-
-	SET_TOGGLE_SENSITIVITY_REVERSE(encrypt_to_self_checkbtn, save_clear_text_checkbtn);
-	SET_TOGGLE_SENSITIVITY_REVERSE(save_clear_text_checkbtn, encrypt_to_self_checkbtn);
-
-	page->default_privacy_system = default_privacy_system;
-	page->default_encrypt_checkbtn = default_encrypt_checkbtn;
-	page->default_encrypt_reply_checkbtn = default_encrypt_reply_checkbtn;
-	page->default_sign_reply_checkbtn = default_sign_reply_checkbtn;
-	page->default_sign_checkbtn    = default_sign_checkbtn;
-	page->save_clear_text_checkbtn = save_clear_text_checkbtn;
-	page->encrypt_to_self_checkbtn = encrypt_to_self_checkbtn;
-
-	update_privacy_system_menu();
-
-	tmp_ac_prefs = *ac_prefs;
-
-	if (new_account) {
-		prefs_set_dialog_to_default(privacy_param);
-	} else
-		prefs_set_dialog(privacy_param);
 
 	page->vbox = vbox1;
 
@@ -2469,12 +2257,6 @@ static gint prefs_compose_apply(void)
 	return 0;
 }
 
-static gint prefs_privacy_apply(void)
-{
-	prefs_set_data_from_dialog(privacy_param);
-	return 0;
-}
-
 static gint prefs_ssl_apply(void)
 {
 	prefs_set_data_from_dialog(ssl_param);
@@ -2544,11 +2326,6 @@ static void compose_destroy_widget_func(PrefsPage *_page)
 	/* ComposePage *page = (ComposePage *) _page; */
 }
 
-static void privacy_destroy_widget_func(PrefsPage *_page)
-{
-	/* PrivacyPage *page = (PrivacyPage *) _page; */
-}
-
 static void ssl_destroy_widget_func(PrefsPage *_page)
 {
 	/* SSLPage *page = (SSLPage *) _page; */
@@ -2597,16 +2374,6 @@ static gboolean compose_can_close_func(PrefsPage *_page)
 		return TRUE;
 
 	return prefs_compose_apply() >= 0;
-}
-
-static gboolean privacy_can_close_func(PrefsPage *_page)
-{
-	PrivacyPage *page = (PrivacyPage *) _page;
-
-	if (!page->page.page_open)
-		return TRUE;
-
-	return prefs_privacy_apply() >= 0;
 }
 
 static gboolean ssl_can_close_func(PrefsPage *_page)
@@ -2670,17 +2437,6 @@ static void compose_save_func(PrefsPage *_page)
 		return;
 
 	if (prefs_compose_apply() >= 0)
-		cancelled = FALSE;
-}
-
-static void privacy_save_func(PrefsPage *_page)
-{
-	PrivacyPage *page = (PrivacyPage *) _page;
-
-	if (!page->page.page_open)
-		return;
-
-	if (prefs_privacy_apply() >= 0)
 		cancelled = FALSE;
 }
 
@@ -2776,24 +2532,6 @@ static void register_compose_page(void)
 	compose_page.page.can_close = compose_can_close_func;
 
 	prefs_account_register_page((PrefsPage *) &compose_page);
-}
-
-static void register_privacy_page(void)
-{
-	static gchar *path[3];
-
-	path[0] = _("Account");
-	path[1] = _("Privacy");
-	path[2] = NULL;
-
-	privacy_page.page.path = path;
-	privacy_page.page.weight = 1000.0;
-	privacy_page.page.create_widget = privacy_create_widget_func;
-	privacy_page.page.destroy_widget = privacy_destroy_widget_func;
-	privacy_page.page.save_page = privacy_save_func;
-	privacy_page.page.can_close = privacy_can_close_func;
-
-	prefs_account_register_page((PrefsPage *) &privacy_page);
 }
 
 static void register_ssl_page(void)
@@ -2902,7 +2640,6 @@ void prefs_account_init()
 	register_receive_page();
 	register_send_page();
 	register_compose_page();
-	register_privacy_page();
 	register_ssl_page();
 	hooks_register_hook(SSLCERT_GET_CLIENT_CERT_HOOKLIST, sslcert_get_client_cert_hook, NULL);
 	hooks_register_hook(SSL_CERT_GET_PASSWORD, sslcert_get_password, NULL);
@@ -2919,14 +2656,10 @@ PrefsAccount *prefs_account_new(void)
 	prefs_set_default(receive_param);
 	prefs_set_default(send_param);
 	prefs_set_default(compose_param);
-	prefs_set_default(privacy_param);
 	prefs_set_default(ssl_param);
 	prefs_set_default(advanced_param);
 	*ac_prefs = tmp_ac_prefs;
 	ac_prefs->account_id = prefs_account_get_new_id();
-
-	ac_prefs->privacy_prefs = g_hash_table_new(g_str_hash, g_str_equal);
-
 	return ac_prefs;
 }
 
@@ -2935,8 +2668,6 @@ PrefsAccount *prefs_account_new_from_config(const gchar *label)
 	const gchar *p = label;
 	gchar *rcpath;
 	gint id;
-	gchar **strv, **cur;
-	gsize len;
 	PrefsAccount *ac_prefs;
 
 	cm_return_val_if_fail(label != NULL, NULL);
@@ -2949,7 +2680,6 @@ PrefsAccount *prefs_account_new_from_config(const gchar *label)
 	prefs_set_default(receive_param);
 	prefs_set_default(send_param);
 	prefs_set_default(compose_param);
-	prefs_set_default(privacy_param);
 	prefs_set_default(ssl_param);
 	prefs_set_default(advanced_param);
 
@@ -2959,7 +2689,6 @@ PrefsAccount *prefs_account_new_from_config(const gchar *label)
 	prefs_read_config(receive_param, label, rcpath, NULL);
 	prefs_read_config(send_param, label, rcpath, NULL);
 	prefs_read_config(compose_param, label, rcpath, NULL);
-	prefs_read_config(privacy_param, label, rcpath, NULL);
 	prefs_read_config(ssl_param, label, rcpath, NULL);
 	prefs_read_config(advanced_param, label, rcpath, NULL);
 	g_free(rcpath);
@@ -2970,30 +2699,6 @@ PrefsAccount *prefs_account_new_from_config(const gchar *label)
 	id = atoi(p);
 	if (id < 0) g_warning("wrong account id: %d", id);
 	ac_prefs->account_id = id;
-
-	/* Now parse privacy_prefs. */
-	ac_prefs->privacy_prefs = g_hash_table_new(g_str_hash, g_str_equal);
-	if (privacy_prefs != NULL) {
-		strv = g_strsplit(privacy_prefs, ",", 0);
-		for (cur = strv; *cur != NULL; cur++) {
-			gchar *encvalue, *tmp;
-
-			encvalue = strchr(*cur, '=');
-			if (encvalue == NULL)
-				continue;
-			encvalue[0] = '\0';
-			encvalue++;
-
-			tmp = g_base64_decode_zero(encvalue, &len);
-			if (len > 0)
-				g_hash_table_insert(ac_prefs->privacy_prefs, g_strdup(*cur), tmp);
-			else
-				g_free(tmp);
-		}
-		g_strfreev(strv);
-		g_free(privacy_prefs);
-		privacy_prefs = NULL;
-	}
 
 	/* For older configurations, move stored passwords into the
 	 * password store. */
@@ -3040,26 +2745,10 @@ PrefsAccount *prefs_account_new_from_config(const gchar *label)
 	return ac_prefs;
 }
 
-static void create_privacy_prefs(gpointer key, gpointer _value, gpointer user_data)
-{
-	GString *str = (GString *) user_data;
-	gchar *encvalue;
-	gchar *value = (gchar *) _value;
-
-	if (str->len > 0)
-		g_string_append_c(str, ',');
-
-	encvalue = g_base64_encode(value, strlen(value));
-	g_string_append_printf(str, "%s=%s", (gchar *) key, encvalue);
-	g_free(encvalue);
-}
-
 #define WRITE_PARAM(PARAM_TABLE) \
 		if (prefs_write_param(PARAM_TABLE, pfile->fp) < 0) { \
 			g_warning("failed to write configuration to file"); \
 			prefs_file_close_revert(pfile); \
-			g_free(privacy_prefs); \
-			privacy_prefs = NULL; \
 			g_free(rcpath); \
 			return; \
  		}
@@ -3077,30 +2766,19 @@ void prefs_account_write_config_all(GList *account_list)
 	}
 
 	for (cur = account_list; cur != NULL; cur = cur->next) {
-		GString *str;
-
 		tmp_ac_prefs = *(PrefsAccount *)cur->data;
-		if (fprintf(pfile->fp, "[Account: %d]\n",
-			    tmp_ac_prefs.account_id) <= 0) {
+		if (fprintf(pfile->fp, "[Account: %d]\n", tmp_ac_prefs.account_id) <= 0) {
 			g_free(pfile);
 			g_free(rcpath);
 			return;
-        }
-
-		str = g_string_sized_new(32);
-		g_hash_table_foreach(tmp_ac_prefs.privacy_prefs, create_privacy_prefs, str);
-		privacy_prefs = g_string_free(str, FALSE);
+		}
 
 		WRITE_PARAM(basic_param)
 		WRITE_PARAM(receive_param)
 		WRITE_PARAM(send_param)
 		WRITE_PARAM(compose_param)
-		WRITE_PARAM(privacy_param)
 		WRITE_PARAM(ssl_param)
 		WRITE_PARAM(advanced_param)
-
-		g_free(privacy_prefs);
-		privacy_prefs = NULL;
 
 		if (cur->next) {
 			if (fputc('\n', pfile->fp) == EOF) {
@@ -3120,48 +2798,17 @@ void prefs_account_write_config_all(GList *account_list)
 }
 #undef WRITE_PARAM
 
-static gboolean free_privacy_prefs(gpointer key, gpointer value, gpointer user_data)
-{
-	g_free(key);
-	g_free(value);
-
-	return TRUE;
-}
-
 void prefs_account_free(PrefsAccount *ac_prefs)
 {
 	if (!ac_prefs) return;
-
-	g_hash_table_foreach_remove(ac_prefs->privacy_prefs, free_privacy_prefs, NULL);
 
 	tmp_ac_prefs = *ac_prefs;
 	prefs_free(basic_param);
 	prefs_free(receive_param);
 	prefs_free(send_param);
 	prefs_free(compose_param);
-	prefs_free(privacy_param);
 	prefs_free(ssl_param);
 	prefs_free(advanced_param);
-}
-
-const gchar *prefs_account_get_privacy_prefs(PrefsAccount *account, gchar *id)
-{
-	return g_hash_table_lookup(account->privacy_prefs, id);
-}
-
-void prefs_account_set_privacy_prefs(PrefsAccount *account, gchar *id, gchar *new_value)
-{
-	gchar *orig_key = NULL, *value;
-
-	if (g_hash_table_lookup_extended(account->privacy_prefs, id, (gpointer *)(gchar *) &orig_key, (gpointer *)(gchar *) &value)) {
-		g_hash_table_remove(account->privacy_prefs, id);
-
-		g_free(orig_key);
-		g_free(value);
-	}
-
-	if (new_value != NULL)
-		g_hash_table_insert(account->privacy_prefs, g_strdup(id), g_strdup(new_value));
 }
 
 static gint prefs_account_get_new_id(void)
@@ -3632,83 +3279,6 @@ static void prefs_account_set_string_from_combobox(PrefParam *pparam)
 	gtk_tree_model_get(GTK_TREE_MODEL(menu), &iter,
 			COMBOBOX_PRIVACY_PLUGIN_ID, &(*str),
 			-1);
-}
-
-/* Context struct and internal function called by gtk_tree_model_foreach().
- * This is used in prefs_account_set_privacy_combobox_from_string() to find
- * correct combobox entry to activate when account preferences are displayed
- * and their values are set according to preferences. */
-typedef struct _privacy_system_set_ctx {
-	GtkWidget *combobox;
-	gchar *prefsid;
-	gboolean found;
-} PrivacySystemSetCtx;
-
-static gboolean _privacy_system_set_func(GtkTreeModel *model, GtkTreePath *path,
-		GtkTreeIter *iter, PrivacySystemSetCtx *ctx)
-{
-	GtkWidget *combobox = ctx->combobox;
-	gchar *prefsid = ctx->prefsid;
-	gchar *curid;
-
-	/* We're searching for correct privacy plugin ID. */
-	gtk_tree_model_get(model, iter, COMBOBOX_PRIVACY_PLUGIN_ID, &curid, -1);
-	if( strcmp(prefsid, curid) == 0 ) {
-		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combobox), iter);
-		g_free(curid);
-		ctx->found = TRUE;
-		return TRUE;
-	}
-
-	g_free(curid);
-	return FALSE;
-}
-
-static void prefs_account_set_privacy_combobox_from_string(PrefParam *pparam)
-{
-	GtkWidget *optionmenu;
-	GtkListStore *menu;
-	GtkTreeIter iter;
-	gboolean found = FALSE;
-	gchar *prefsid;
-	PrivacySystemSetCtx *ctx = NULL;
-
-	cm_return_if_fail(*pparam->widget != NULL);
-
-	prefsid = *((gchar **) pparam->data);
-	if (prefsid == NULL)
-		return;
-
-	optionmenu = *pparam->widget;
-	menu = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(optionmenu)));
-
-	ctx = g_new(PrivacySystemSetCtx, sizeof(PrivacySystemSetCtx));
-	ctx->combobox = optionmenu;
-	ctx->prefsid = prefsid;
-	ctx->found = FALSE;
-
-	gtk_tree_model_foreach(GTK_TREE_MODEL(menu),
-			(GtkTreeModelForeachFunc)_privacy_system_set_func, ctx);
-	found = ctx->found;
-	g_free(ctx);
-
-	/* If chosen privacy system is not available, add a dummy entry with
-	 * "not loaded" note and make it active. */
-	if (!found) {
-		gchar *name;
-
-		name = g_strdup_printf(_("%s (plugin not loaded)"), prefsid);
-		gtk_list_store_append(menu, &iter);
-		gtk_list_store_set(menu, &iter,
-				COMBOBOX_TEXT, name,
-				COMBOBOX_DATA, 0,
-				COMBOBOX_SENS, TRUE,
-				COMBOBOX_PRIVACY_PLUGIN_ID, prefsid,
-				-1);
-		g_free(name);
-
-		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(optionmenu), &iter);
-	}
 }
 
 static void prefs_account_protocol_changed(GtkComboBox *combobox, gpointer data)

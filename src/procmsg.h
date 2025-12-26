@@ -213,9 +213,10 @@ struct _MsgInfo
 	gint score;
 
 	/* used only for encrypted messages */
-	gchar *plaintext_file;
+	// TODO(otl): really?
+	char *plaintext_file;
 
-        gint hidden;
+	gint hidden;
 
 	/* used only for partially received messages */
 	gint total_size;
@@ -248,12 +249,6 @@ struct _MsgInfoExtraData
  	gchar *list_help;
  	gchar *list_archive;
  	gchar *list_owner;
-};
-
-struct _MsgInfoAvatar
-{
-	gint avatar_id;
-	gchar *avatar_src;
 };
 
 struct _MsgFileInfo
@@ -368,6 +363,4 @@ void procmsg_msginfo_commit_tags(GSList *msglist);
 MsgInfo *procmsg_get_msginfo_from_identifier(const gchar *id);
 gchar *procmsg_msginfo_get_identifier(MsgInfo *msginfo);
 
-gchar *procmsg_msginfo_get_avatar(MsgInfo *msginfo, gint type);
-void procmsg_msginfo_add_avatar(MsgInfo *msginfo, gint type, const gchar *data);
 #endif /* __PROCMSG_H__ */
