@@ -590,7 +590,7 @@ static PrefParam param[] = {
 	 P_INT, NULL, NULL, NULL},
 
 	/* Other */
-	{"uri_open_command", DEFAULT_BROWSER_CMD,
+	{"uri_open_command", "firefox '%s'",
 	 &prefs_common.uri_cmd, P_STRING, NULL, NULL, NULL},
 	{"ext_editor_command", DEFAULT_EDITOR_CMD,
 	 &prefs_common.ext_editor_cmd, P_STRING, NULL, NULL, NULL},
@@ -1041,8 +1041,6 @@ static void prefs_common_save_history(const gchar *history, GList *list)
 void prefs_common_write_config(void)
 {
 	prefs_write_config(param, "Common", COMMON_RC);
-
-	prefs_common_save_history(COMMAND_HISTORY, prefs_common.mime_open_cmd_history);
 	prefs_common_save_history(COMPOSE_SAVE_TO_HISTORY, prefs_common.compose_save_to_history);
 }
 

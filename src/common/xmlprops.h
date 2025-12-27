@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 /*
@@ -40,9 +40,6 @@ struct _XmlProperty {
 /* Function prototypes */
 
 XmlProperty *xmlprops_create	( void );
-void xmlprops_free		( XmlProperty *props );
-void xmlprops_set_path		( XmlProperty *props, const gchar *value );
-gint xmlprops_load_file		( XmlProperty *props );
 gint xmlprops_save_file		( XmlProperty *props );
 void xmlprops_set_property	( XmlProperty *props, const gchar *name,
 				  const gchar *value );

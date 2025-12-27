@@ -221,7 +221,6 @@ gint str_case_equal		(gconstpointer	 v,
 guint str_case_hash		(gconstpointer	 key);
 
 /* number-string conversion */
-gint to_number			(const gchar *nstr);
 gchar *itos_buf			(gchar	     *nstr,
 				 gint	      n);
 gchar *itos			(gint	      n);

@@ -27,7 +27,6 @@
 #define RC_DIR			".claws-mail"
 #define COMMON_RC		"clawsrc"
 #define ACCOUNT_RC		"accountrc"
-#define OAUTH2_RC		"oauth2rc"
 #define DISPLAY_HEADER_RC	"dispheaderrc"
 #define FOLDERITEM_RC           "folderitemrc"
 #define MENU_RC			"menurc"
@@ -43,7 +42,6 @@
 #define CACHE_VERSION		24
 #define MARK_VERSION		2
 
-#define ACTIONS_RC		"actionsrc"
 #define COMMAND_HISTORY	"command_history"
 
 #define DEFAULT_BROWSER_CMD	"firefox '%s'"
@@ -65,7 +63,5 @@
 #define VBOX_BORDER			8
 
 #define DEFAULT_PIXMAP_THEME	"INTERNAL_DEFAULT"
-
-#define AVATAR_FACE	2
 
 #endif /* __DEFS_H__ */

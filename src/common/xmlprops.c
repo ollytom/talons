@@ -35,12 +35,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "prefs.h"
-#include "xml.h"
-#include "mgutils.h"
-#include "xmlprops.h"
-#include "utils.h"
 #include "file-utils.h"
+#include "mgutils.h"
+#include "prefs.h"
+#include "utils.h"
+#include "xml.h"
+#include "xmlprops.h"
 
 /* Element tag names */
 #define XMLS_ELTAG_PROP_LIST     "property-list"
@@ -49,8 +49,6 @@
 /* Attribute tag names */
 #define XMLS_ATTAG_NAME          "name"
 #define XMLS_ATTAG_VALUE         "value"
-
-static void xmlprops_clear		( XmlProperty *props );
 
 typedef struct _HashLoopData {
 	FILE *fp;
@@ -69,58 +67,6 @@ XmlProperty *xmlprops_create( void ) {
 	props->propertyTable = g_hash_table_new( g_str_hash, g_str_equal );
 	props->retVal = MGU_SUCCESS;
 	return props;
-}
-
-/*
- * Properties - file path.
- */
-void xmlprops_set_path( XmlProperty *props, const gchar *value ) {
-	cm_return_if_fail( props != NULL );
-	props->path = mgu_replace_string( props->path, value );
-}
-
-/*
- * Free hash table visitor function.
- */
-static gint xmlprops_free_entry_vis( gpointer key, gpointer value, gpointer data ) {
-	g_free( key );
-	g_free( value );
-	key = NULL;
-	value = NULL;
-	return TRUE;
-}
-
-/*
- * Clear all properties.
- * Enter: props Property object.
- */
-static void xmlprops_clear( XmlProperty *props ) {
-	cm_return_if_fail( props != NULL );
-	g_hash_table_foreach_remove(
-		props->propertyTable, xmlprops_free_entry_vis, NULL );
-}
-
-/*
- * Free props.
- * Enter: props Property object.
- */
-void xmlprops_free( XmlProperty *props ) {
-	cm_return_if_fail( props != NULL );
-
-	/* Clear property table */
-	xmlprops_clear( props );
-	g_hash_table_destroy( props->propertyTable );
-
-	/* Free up internal objects */
-	g_free( props->path );
-	g_free( props->encoding );
-
-	props->path = NULL;
-	props->encoding = NULL;
-	props->propertyTable = NULL;
-	props->retVal = 0;
-
-	g_free( props );
 }
 
 static int xmlprops_write_elem_s( FILE *fp, gint lvl, gchar *name ) {

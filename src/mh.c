@@ -232,7 +232,7 @@ static void mh_get_last_num(Folder *folder, FolderItem *item)
 
 	while ((d = g_dir_read_name(dp)) != NULL) {
 		fullpath = g_strconcat(path, G_DIR_SEPARATOR_S, d, NULL);
-		if ((num = to_number(d)) > 0 &&
+		if ((num = atoi(d)) > 0 &&
 		    g_file_test(fullpath, G_FILE_TEST_IS_REGULAR)) {
 			if (max < num)
 				max = num;
@@ -277,7 +277,7 @@ gint mh_get_num_list(Folder *folder, FolderItem *item, GSList **list, gboolean *
 	g_free(path);
 
 	while ((d = g_dir_read_name(dp)) != NULL) {
-		if ((num = to_number(d)) > 0) {
+		if ((num = atoi(d)) > 0) {
 			*list = g_slist_prepend(*list, GINT_TO_POINTER(num));
 		   	nummsgs++;
 		}
@@ -920,8 +920,8 @@ static FolderItem *mh_create_folder(Folder *folder, FolderItem *parent,
 	g_free(real_name);
 	g_free(path);
 
-	if (to_number(name) > 0) {
-		MsgInfo *info = folder_item_get_msginfo(parent, to_number(name));
+	if (atoi(name) > 0) {
+		MsgInfo *info = folder_item_get_msginfo(parent, atoi(name));
 		if (info != NULL) {
 			gboolean ok = mh_renumber_msg(info);
 			procmsg_msginfo_free(&info);

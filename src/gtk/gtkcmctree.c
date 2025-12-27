@@ -32,10 +32,12 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include "gtkcmctree.h"
+
 #include "claws-marshal.h"
+#include "gtkcmctree.h"
+#include "gtkutils.h"
+#include "prefs_common.h"
 #include "utils.h"
-#include "gtkutils.c"
 
 #define PM_SIZE                    8
 #define TAB_SIZE                   (PM_SIZE + 6)

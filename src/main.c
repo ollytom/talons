@@ -50,7 +50,6 @@
 #include "prefs_message.h"
 #include "prefs_receive.h"
 #include "prefs_summaries.h"
-#include "prefs_themes.h"
 #include "prefs_other.h"
 #include "prefs_send.h"
 #include "prefs_compose_writing.h"
@@ -373,7 +372,6 @@ int main(int argc, char *argv[])
 	folder_system_init();
 	prefs_common_read_config();
 
-	prefs_themes_init();
 	prefs_ext_prog_init();
 	prefs_compose_writing_init();
 	prefs_summaries_init();
@@ -658,7 +656,6 @@ static void exit_claws(MainWindow *mainwin)
 	prefs_toolbar_done();
 
 	addressbook_destroy();
-	prefs_themes_done();
 	prefs_ext_prog_done();
 	prefs_compose_writing_done();
 	prefs_summaries_done();

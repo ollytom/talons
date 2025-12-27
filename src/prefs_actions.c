@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <err.h>
 #include <errno.h>
 
 #include "prefs_gtk.h"
@@ -418,20 +419,17 @@ static void prefs_actions_reset_dialog(void)
 
 void prefs_actions_read_config(void)
 {
-	gchar *rcpath;
 	FILE *fp;
 	gchar buf[PREFSBUFSIZE];
 	gchar *act;
 
-	debug_print("Reading actions configurations...\n");
-
-	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, ACTIONS_RC, NULL);
-	if ((fp = g_fopen(rcpath, "rb")) == NULL) {
-		if (ENOENT != errno) FILE_OP_ERROR(rcpath, "g_fopen");
-		g_free(rcpath);
+	char rcpath[PATH_MAX];
+	strlcpy(rcpath, get_rc_dir(), sizeof(rcpath));
+	strlcat(rcpath, "/actionsrc", sizeof(rcpath));
+	if ((fp = fopen(rcpath, "r")) == NULL) {
+		warn("open %s", rcpath);
 		return;
 	}
-	g_free(rcpath);
 
 	while (prefs_common.actions_list != NULL) {
 		act = (gchar *)prefs_common.actions_list->data;
@@ -466,16 +464,16 @@ void prefs_actions_read_config(void)
 
 void prefs_actions_write_config(void)
 {
-	gchar *rcpath;
 	PrefFile *pfile;
 	GSList *cur;
 
 	debug_print("Writing actions configuration...\n");
 
-	rcpath = g_strconcat(get_rc_dir(), G_DIR_SEPARATOR_S, ACTIONS_RC, NULL);
+	char rcpath[PATH_MAX];
+	strlcpy(rcpath, get_rc_dir(), sizeof(rcpath));
+	strlcat(rcpath, "/actionsrc", sizeof(rcpath));
 	if ((pfile= prefs_write_open(rcpath)) == NULL) {
-		g_warning("failed to write configuration to file");
-		g_free(rcpath);
+		warn("write actions configuration file %s", rcpath);
 		return;
 	}
 
@@ -496,18 +494,11 @@ void prefs_actions_write_config(void)
 			FILE_OP_ERROR(rcpath, "fputs || fputc");
 			prefs_file_close_revert(pfile);
 			g_free(act);
-			g_free(rcpath);
 			return;
 		}
 		g_free(act);
 	}
-
-	g_free(rcpath);
-
-	if (prefs_file_close(pfile) < 0) {
-		g_warning("failed to write configuration to file");
-		return;
-	}
+	prefs_file_close(pfile);
 }
 
 static void prefs_actions_clear_list(GtkListStore *list_store)

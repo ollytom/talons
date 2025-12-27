@@ -2561,8 +2561,8 @@ static FolderItem *imap_create_folder(Folder *folder, FolderItem *parent,
 	g_return_val_if_fail(parent != NULL, NULL);
 	g_return_val_if_fail(name != NULL, NULL);
 
-	if (to_number(name) > 0) {
-		gchar *cached_msg = imap_get_cached_filename(parent, to_number(name));
+	if (atoi(name) > 0) {
+		gchar *cached_msg = imap_get_cached_filename(parent, atoi(name));
 		if (is_file_exist(cached_msg)) {
 			if (unlink(cached_msg) != 0) {
 				g_free(cached_msg);

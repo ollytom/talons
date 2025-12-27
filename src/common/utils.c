@@ -105,18 +105,6 @@ guint str_case_hash(gconstpointer key)
 	return h;
 }
 
-gint to_number(const gchar *nstr)
-{
-	register const gchar *p;
-
-	if (*nstr == '\0') return -1;
-
-	for (p = nstr; *p != '\0'; p++)
-		if (!g_ascii_isdigit(*p)) return -1;
-
-	return atoi(nstr);
-}
-
 /* convert integer into string,
    nstr must be not lower than 11 characters length */
 gchar *itos_buf(gchar *nstr, gint n)
@@ -1740,7 +1728,7 @@ gint remove_numbered_files(const gchar *dir, guint first, guint last)
 	}
 
 	while ((dir_name = g_dir_read_name(dp)) != NULL) {
-		file_no = to_number(dir_name);
+		file_no = atoi(dir_name);
 		if (file_no > 0 && first <= file_no && file_no <= last) {
 			if (is_dir_exist(dir_name)) {
 				gchar *dot_file = g_strdup_printf(".%s", dir_name);
@@ -1804,7 +1792,7 @@ gint remove_numbered_files_not_in_list(const gchar *dir, GSList *numberlist)
 	}
 
 	while ((dir_name = g_dir_read_name(dp)) != NULL) {
-		file_no = to_number(dir_name);
+		file_no = atoi(dir_name);
 		if (is_dir_exist(dir_name))
 			continue;
 		if (file_no > 0 && g_hash_table_lookup(wanted_files, GINT_TO_POINTER(file_no)) == NULL) {
