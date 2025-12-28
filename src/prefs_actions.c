@@ -38,7 +38,6 @@
 #include "alertpanel.h"
 #include "prefs_actions.h"
 #include "action.h"
-#include "description_window.h"
 #include "manual.h"
 #include "menu.h"
 #include "prefs_toolbar.h"
@@ -77,9 +76,6 @@ static void prefs_actions_create	(MainWindow *mainwin);
 static void prefs_actions_set_dialog	(void);
 static gint prefs_actions_clist_set_row	(gint row);
 
-/* callback functions */
-static void prefs_actions_info_cb	(GtkWidget	*w,
-					 GtkWidget	*window);
 static void prefs_actions_register_cb	(GtkWidget	*w,
 					 gpointer	 data);
 static void prefs_actions_substitute_cb	(GtkWidget	*w,
@@ -319,14 +315,6 @@ static void prefs_actions_create(MainWindow *mainwin)
 			G_CALLBACK(prefs_actions_clear_cb), NULL);
 	CLAWS_SET_TIP(clear_btn,
 			_("Clear all the input fields in the dialog"));
-
-	info_btn = gtkut_stock_button("dialog-information", _("_Information"));
-	gtk_widget_show(info_btn);
-	gtk_box_pack_end(GTK_BOX(reg_hbox), info_btn, FALSE, FALSE, 0);
-	g_signal_connect(G_OBJECT(info_btn), "clicked",
-			 G_CALLBACK(prefs_actions_info_cb), GTK_WINDOW(window));
-	CLAWS_SET_TIP(info_btn,
-			_("Show information on configuring actions"));
 
 	cond_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show(cond_hbox);
@@ -932,56 +920,6 @@ static void prefs_actions_ok(GtkWidget *widget, gpointer data)
 	gtk_widget_hide(actions.window);
 	gtk_window_set_modal(GTK_WINDOW(actions.window), FALSE);
 	inc_unlock();
-}
-
-/*
- * Strings describing action format strings
- *
- * When adding new lines, remember to put one string for each line
- */
-static gchar *actions_desc_strings[] = {
-	N_("<span weight=\"bold\" underline=\"single\">Menu name:</span>"), NULL,
-	N_("Use / in menu name to make submenus."), NULL,
-	"", NULL,
-	N_("<span weight=\"bold\" underline=\"single\">Command-line:</span>"), NULL,
-	N_("<span weight=\"bold\">Begin with:</span>"), NULL,
-	"     |",   N_("to send message body or selection to command's standard input"),
-	"     &gt;",   N_("to send user provided text to command's standard input"),
-	"     *",   N_("to send user provided hidden text to command's standard input"),
-	N_("<span weight=\"bold\">End with:</span>"), NULL,
-	"     |",   N_("to replace message body or selection with command's standard output"),
-	"     &gt;",   N_("to insert command's standard output without replacing old text"),
-	"     &amp;",   N_("to run command asynchronously"),
-	N_("<span weight=\"bold\">Use:</span>"), NULL,
-	"     %f",  N_("for the file of the selected message in RFC822/2822 format "),
-	"     %F",  N_("for the list of the files of the selected messages in RFC822/2822 format"),
-	"     %p",  N_("for the file of the selected decoded message MIME part"),
-	"     %u",  N_("for a user provided argument"),
-	"     %h",  N_("for a user provided hidden argument (e.g. password)"),
-	"     %s",  N_("for the text selection"),
-	"  %as{}",  N_("apply filtering actions between {} to selected messages"),
-	"     %%",  N_("for a literal %"),
-	NULL, NULL
-};
-
-
-static DescriptionWindow actions_desc_win = {
-	NULL,
-	NULL,
-	TRUE,
-	2,
-	N_("Actions"),
-  	N_("The Actions feature is a way for the user to launch "
-	   "external commands to process a complete message file or just "
-	   "one of its parts."),
-        actions_desc_strings
-};
-
-
-static void prefs_actions_info_cb(GtkWidget *w, GtkWidget *window)
-{
-	actions_desc_win.parent = window;
-	description_window_create(&actions_desc_win);
 }
 
 static GtkListStore* prefs_actions_create_data_store(void)

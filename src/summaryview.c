@@ -62,7 +62,6 @@
 #include "string_match.h"
 #include "toolbar.h"
 #include "hooks.h"
-#include "description_window.h"
 #include "folderutils.h"
 #include "log.h"
 #include "manual.h"
