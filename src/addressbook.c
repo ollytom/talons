@@ -2327,18 +2327,14 @@ static gboolean addressbook_list_button_pressed(GtkWidget *widget,
 		gtk_menu_popup_at_pointer(GTK_MENU(addrbook.list_popup), NULL);
 	} else if (event->button == 1) {
 		if (event->type == GDK_2BUTTON_PRESS) {
-			if (prefs_common.add_address_by_click &&
-			    addrbook.target_compose)
-				addressbook_to_clicked(NULL, GINT_TO_POINTER(COMPOSE_TO));
-			else
-				if (prefs_common.addressbook_use_editaddress_dialog)
+			if (prefs_common.addressbook_use_editaddress_dialog)
+				addressbook_edit_address_cb(NULL, NULL);
+			else {
+				GtkCMCTree *clist = GTK_CMCTREE(addrbook.clist);
+				AddressObject *obj = gtk_cmctree_node_get_row_data( clist, addrbook.listSelected );
+				if( obj && obj->type == ADDR_ITEM_GROUP )
 					addressbook_edit_address_cb(NULL, NULL);
-				else {
-					GtkCMCTree *clist = GTK_CMCTREE(addrbook.clist);
-					AddressObject *obj = gtk_cmctree_node_get_row_data( clist, addrbook.listSelected );
-					if( obj && obj->type == ADDR_ITEM_GROUP )
-						addressbook_edit_address_cb(NULL, NULL);
-				}
+			}
 		}
 	}
 

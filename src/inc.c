@@ -379,8 +379,7 @@ void inc_all_account_mail(MainWindow *mainwin, gboolean autocheck,
 		 * this account, based on whether we're doing global autocheck
 		 * or a check at startup or a manual 'Get all' check. */
 		if (autocheck)
-			condition = prefs_common_get_prefs()->autochk_newmail
-				&& account->autochk_use_default;
+			condition = prefs_common_get_prefs()->autochk_newmail;
 		else if (check_at_startup || (!check_at_startup && !autocheck))
 			condition = account->recv_at_getall;
 
@@ -1424,55 +1423,6 @@ static gint inc_autocheck_func(gpointer data)
 	inc_autocheck_timer_set();
 
 	return FALSE;
-}
-
-static gboolean inc_account_autocheck_func(gpointer data)
-{
-	PrefsAccount *account = (PrefsAccount *)data;
-	GList *list = NULL;
-
-	cm_return_val_if_fail(account != NULL, FALSE);
-
-	debug_print("account %d: inc_account_autocheck_func\n",
-			account->account_id);
-
-	list = g_list_append(list, account);
-	inc_account_list_mail(mainwindow_get_mainwindow(),
-			list, TRUE, prefs_common.newmail_notify_auto);
-	g_list_free(list);
-
-	inc_account_autocheck_timer_set_interval(account);
-
-	return FALSE;
-}
-
-void inc_account_autocheck_timer_remove(PrefsAccount *account)
-{
-	cm_return_if_fail(account != NULL);
-
-	if (account->autocheck_timer != 0) {
-		g_source_remove(account->autocheck_timer);
-		debug_print("INC: account %d: removed inc timer %d\n", account->account_id,
-				account->autocheck_timer);
-		account->autocheck_timer = 0;
-	}
-}
-
-void inc_account_autocheck_timer_set_interval(PrefsAccount *account)
-{
-	cm_return_if_fail(account != NULL);
-
-	inc_account_autocheck_timer_remove(account);
-
-	if (account->autochk_use_default
-			|| !account->autochk_use_custom
-			|| account->autochk_itv == 0)
-		return;
-
-	account->autocheck_timer = g_timeout_add_seconds(
-			account->autochk_itv, inc_account_autocheck_func, account);
-	debug_print("INC: account %d: added inc timer %d at %u seconds\n",
-			account->account_id, account->autocheck_timer, account->autochk_itv);
 }
 
 gboolean inc_offline_should_override(gboolean force_ask, const gchar *msg)

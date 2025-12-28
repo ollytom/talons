@@ -328,7 +328,6 @@ struct _PrefsCommon
 	gchar *mime_textviewer;
 	gchar *mime_open_cmd;
 	gchar *attach_save_dir;
-	gint attach_save_chmod;
 	gchar *attach_load_dir;
 
 	GList *mime_open_cmd_history;
@@ -362,7 +361,6 @@ struct _PrefsCommon
 
 	NextUnreadMsgDialogShow next_unread_msg_dialog;
 	SummaryFromShow summary_from_show;
-	gboolean add_address_by_click;
 	gchar *pixmap_theme_path;
 
 	int hover_timeout; /* msecs mouse hover timeout */
@@ -376,9 +374,7 @@ struct _PrefsCommon
     	gboolean cliplog;
     	guint loglength;
 
-	gboolean confirm_on_exit;
 	gboolean session_passwords;
-	gboolean clean_on_exit;
 	gboolean ask_on_clean;
 	gboolean warn_queued_on_exit;
 

@@ -46,15 +46,11 @@ typedef struct _OtherPage
 
 	GtkWidget *keys_preset_combo;
 	GtkWidget *keys_preset_hbox;
-	GtkWidget *checkbtn_addaddrbyclick;
-	GtkWidget *checkbtn_confonexit;
-	GtkWidget *checkbtn_cleanonexit;
 	GtkWidget *checkbtn_askonclean;
 	GtkWidget *checkbtn_warnqueued;
 	GtkWidget *spinbtn_iotimeout;
 	GtkWidget *checkbtn_gtk_enable_accels;
 	GtkWidget *checkbtn_real_time_sync;
-	GtkWidget *entry_attach_save_chmod;
 } OtherPage;
 
 struct KeyBind {
@@ -316,14 +312,8 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *vbox1;
 	GtkWidget *hbox1;
 
-	GtkWidget *frame_addr;
-	GtkWidget *vbox_addr;
-	GtkWidget *checkbtn_addaddrbyclick;
-
 	GtkWidget *frame_exit;
 	GtkWidget *vbox_exit;
-	GtkWidget *checkbtn_confonexit;
-	GtkWidget *checkbtn_cleanonexit;
 	GtkWidget *checkbtn_warnqueued;
 
 	GtkWidget *frame_keys;
@@ -340,40 +330,19 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *vbox2;
 	GtkWidget *checkbtn_askonclean;
 	GtkWidget *checkbtn_real_time_sync;
-	GtkWidget *label_attach_save_chmod;
-	GtkWidget *entry_attach_save_chmod;
 
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox1);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
 
-	vbox_addr = gtkut_get_options_frame(vbox1, &frame_addr, _("Address book"));
-
-	PACK_CHECK_BUTTON
-		(vbox_addr, checkbtn_addaddrbyclick,
-		 _("Add address to destination when double-clicked"));
-
 	/* On Exit */
 	vbox_exit = gtkut_get_options_frame(vbox1, &frame_exit, _("On exit"));
-
-	PACK_CHECK_BUTTON (vbox_exit, checkbtn_confonexit,
-			   _("Confirm on exit"));
-
-	hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 32);
-	gtk_widget_show (hbox1);
-	gtk_box_pack_start (GTK_BOX (vbox_exit), hbox1, FALSE, FALSE, 0);
-
-	PACK_CHECK_BUTTON (hbox1, checkbtn_cleanonexit,
-			   _("Empty trash on exit"));
-
 	PACK_CHECK_BUTTON (vbox_exit, checkbtn_warnqueued,
 			   _("Warn if there are queued messages"));
 
 	vbox_keys = gtkut_get_options_frame(vbox1, &frame_keys, _("Keyboard shortcuts"));
-
 	PACK_CHECK_BUTTON(vbox_keys, checkbtn_gtk_enable_accels,
 			_("Enable keyboard shortcuts"));
-
 	keys_preset_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (keys_preset_hbox);
 	gtk_box_pack_start (GTK_BOX (vbox_keys), keys_preset_hbox, FALSE, FALSE, 0);
@@ -426,33 +395,6 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 	gtk_widget_show(hbox1);
 	gtk_box_pack_start(GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
 
-	label_attach_save_chmod = gtk_label_new (_("Save attachments with chmod"));
-	gtk_widget_show(label_attach_save_chmod);
-	gtk_box_pack_start(GTK_BOX (hbox1), label_attach_save_chmod, FALSE, FALSE, 0);
-
-	entry_attach_save_chmod = gtk_entry_new();
-	gtk_entry_set_width_chars(GTK_ENTRY(entry_attach_save_chmod), 5);
-	gtk_widget_set_tooltip_text(entry_attach_save_chmod,
-			_("By default attachments are saved with chmod value 600: "
-			  "readable and writeable by the user only. If this is too "
-			  "restrictive for you, set a chmod value here, otherwise leave "
-			  "blank to use the default"));
-	gtk_widget_show(entry_attach_save_chmod);
-	gtk_box_pack_start(GTK_BOX(hbox1), entry_attach_save_chmod, FALSE, FALSE, 0);
-	if (prefs_common.attach_save_chmod) {
-		gchar *buf;
-
-		buf = g_strdup_printf("%o", prefs_common.attach_save_chmod);
-		gtk_entry_set_text(GTK_ENTRY(entry_attach_save_chmod), buf);
-		g_free(buf);
-	}
-
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_addaddrbyclick),
-		prefs_common.add_address_by_click);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_confonexit),
-		prefs_common.confirm_on_exit);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_cleanonexit),
-		prefs_common.clean_on_exit);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_askonclean),
 		prefs_common.ask_on_clean);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_warnqueued),
@@ -469,15 +411,11 @@ static void prefs_other_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	prefs_other->keys_preset_hbox = keys_preset_hbox;
 	prefs_other->keys_preset_combo = keys_preset_combo;
-	prefs_other->checkbtn_addaddrbyclick = checkbtn_addaddrbyclick;
-	prefs_other->checkbtn_confonexit = checkbtn_confonexit;
-	prefs_other->checkbtn_cleanonexit = checkbtn_cleanonexit;
 	prefs_other->checkbtn_askonclean = checkbtn_askonclean;
 	prefs_other->checkbtn_warnqueued = checkbtn_warnqueued;
 	prefs_other->spinbtn_iotimeout = spinbtn_iotimeout;
 	prefs_other->checkbtn_gtk_enable_accels = checkbtn_gtk_enable_accels;
 	prefs_other->checkbtn_real_time_sync = checkbtn_real_time_sync;
-	prefs_other->entry_attach_save_chmod = entry_attach_save_chmod;
 	prefs_other->page.widget = vbox1;
 }
 
@@ -486,14 +424,7 @@ static void prefs_other_save(PrefsPage *_page)
 	OtherPage *page = (OtherPage *) _page;
 	GtkSettings *settings = gtk_settings_get_default();
 	gboolean gtk_enable_accels;
-	gchar *buf;
 
-	prefs_common.add_address_by_click = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_addaddrbyclick));
-	prefs_common.confirm_on_exit = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_confonexit));
-	prefs_common.clean_on_exit = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_cleanonexit));
 	prefs_common.ask_on_clean = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_askonclean));
 	prefs_common.warn_queued_on_exit = gtk_toggle_button_get_active(
@@ -505,10 +436,6 @@ static void prefs_other_save(PrefsPage *_page)
 	prefs_common.real_time_sync =
 		gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_real_time_sync));
-
-	buf = gtk_editable_get_chars(GTK_EDITABLE(page->entry_attach_save_chmod), 0, -1);
-	prefs_common.attach_save_chmod = prefs_chmod_mode(buf);
-	g_free(buf);
 
 	prefs_keybind_preset_changed(GTK_COMBO_BOX(page->keys_preset_combo));
 

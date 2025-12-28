@@ -1490,13 +1490,9 @@ static void lock_socket_input_cb(gpointer data,
 		const gchar *mbox_file = buf + 7;
 		mainwindow_import_mbox(mbox_file);
 	} else if (!STRNCMP(buf, "exit")) {
-		if (prefs_common.clean_on_exit && !prefs_common.ask_on_clean) {
-			procmsg_empty_all_trash();
-                }
 		app_will_exit(NULL, mainwin);
 	}
 	close(sock);
-
 }
 
 static void open_compose_new(const gchar *address, GList *attach_files)

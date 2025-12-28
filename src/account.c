@@ -889,8 +889,6 @@ static void account_delete(GtkWidget *widget, gpointer data)
 		folderview_set_all();
 	}
 
-	inc_account_autocheck_timer_remove(ac_prefs);
-
 	account_destroy(ac_prefs);
 	account_list_view_set();
 
