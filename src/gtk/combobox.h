@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __COMBOBOX_H__
@@ -66,8 +66,6 @@ void combobox_unset_popdown_strings(GtkComboBoxText	*combobox);
 void combobox_set_popdown_strings(GtkComboBoxText	*combobox,
 				 GList       *list);
 
-gboolean combobox_set_value_from_arrow_key(GtkComboBox *combobox,
-				 guint keyval);
 void combobox_set_sensitive	(GtkComboBox *combobox,
 				 const guint index,
 				 const gboolean sensitive);

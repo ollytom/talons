@@ -51,7 +51,6 @@ struct _PrefsAccount
 	/* Personal info */
 	gchar *name;
 	gchar *address;
-	gchar *organization;
 
 	/* Server info */
 	RecvProtocol protocol;

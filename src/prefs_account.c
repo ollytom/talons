@@ -90,7 +90,6 @@ typedef struct BasicPage
 
 	GtkWidget *name_entry;
 	GtkWidget *addr_entry;
-	GtkWidget *org_entry;
 
 	GtkWidget *serv_frame;
 	GtkWidget *serv_table;
@@ -297,9 +296,6 @@ static PrefParam basic_param[] = {
 
 	{"address", NULL, &tmp_ac_prefs.address, P_STRING,
 	 &basic_page.addr_entry, prefs_set_data_from_entry, prefs_set_entry},
-
-	{"organization", NULL, &tmp_ac_prefs.organization, P_STRING,
-	 &basic_page.org_entry, prefs_set_data_from_entry, prefs_set_entry},
 
 	{"protocol", NULL, &tmp_ac_prefs.protocol, P_ENUM,
 	 (GtkWidget **)&basic_page.protocol_optmenu,
@@ -610,7 +606,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 	GtkWidget *table1;
 	GtkWidget *name_entry;
 	GtkWidget *addr_entry;
-	GtkWidget *org_entry;
 
 	GtkWidget *serv_frame;
 	GtkWidget *vbox2;
@@ -682,11 +677,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 	gtk_label_set_xalign(GTK_LABEL (label), 1.0);
 	gtk_grid_attach(GTK_GRID(table1), label, 0, 1, 1, 1);
 
-	label = gtk_label_new (_("Organization"));
-	gtk_widget_show (label);
-	gtk_label_set_xalign(GTK_LABEL (label), 1.0);
-	gtk_grid_attach(GTK_GRID(table1), label, 0, 2, 1, 1);
-
 	name_entry = gtk_entry_new ();
 	gtk_widget_show (name_entry);
 	gtk_grid_attach(GTK_GRID(table1), name_entry, 1, 0, 1, 1);
@@ -698,12 +688,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 	gtk_grid_attach(GTK_GRID(table1), addr_entry, 1, 1, 1, 1);
 	gtk_widget_set_hexpand(addr_entry, TRUE);
 	gtk_widget_set_halign(addr_entry, GTK_ALIGN_FILL);
-
-	org_entry = gtk_entry_new ();
-	gtk_widget_show (org_entry);
-	gtk_grid_attach(GTK_GRID(table1), org_entry, 1, 2, 1, 1);
-	gtk_widget_set_hexpand(org_entry, TRUE);
-	gtk_widget_set_halign(org_entry, GTK_ALIGN_FILL);
 
 	vbox2 = gtkut_get_options_frame(vbox1, &serv_frame, _("Server information"));
 
@@ -867,7 +851,6 @@ static void basic_create_widget_func(PrefsPage * _page,
 
 	page->name_entry = name_entry;
 	page->addr_entry = addr_entry;
-	page->org_entry  = org_entry;
 
 	page->serv_frame       = serv_frame;
 	page->serv_table       = serv_table;

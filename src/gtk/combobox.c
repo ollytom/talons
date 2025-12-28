@@ -177,64 +177,6 @@ void combobox_set_popdown_strings(GtkComboBoxText *combobox,
 						(const gchar*) cur->data);
 }
 
-gboolean combobox_set_value_from_arrow_key(GtkComboBox *combobox,
-				 guint keyval)
-/* used from key_press events upon gtk_combo_box_entry with one text column
-   (gtk_combo_box_text_new() and with GtkComboBoxEntry's for instance),
-   make sure that up and down arrow keys behave the same as old with old
-   gtk_combo widgets:
-    when pressing Up:
-	  if the current text in entry widget is not found in combo list,
-	    get last value from combo list
-	  if the current text in entry widget exists in combo list,
-	    get prev value from combo list
-    when pressing Down:
-	  if the current text in entry widget is not found in combo list,
-	    get first value from combo list
-	  if the current text in entry widget exists in combo list,
-	    get next value from combo list
-*/
-{
-	gboolean valid = FALSE;
-
-	cm_return_val_if_fail(combobox != NULL, FALSE);
-
-	/* reproduce the behaviour of old gtk_combo_box */
-	GtkTreeModel *model = gtk_combo_box_get_model(combobox);
-	GtkTreeIter iter;
-
-	if (gtk_combo_box_get_active_iter(combobox, &iter)) {
-		/* if current text is in list, get prev or next one */
-
-		if (keyval == GDK_KEY_Up) {
-			gchar *text = NULL;
-			gtk_tree_model_get(model, &iter, 0, &text, -1);
-			valid = gtkut_tree_model_text_iter_prev(model, &iter, text);
-			g_free(text);
-		} else
-		if (keyval == GDK_KEY_Down)
-			valid = gtk_tree_model_iter_next(model, &iter);
-
-		if (valid)
-			gtk_combo_box_set_active_iter(combobox, &iter);
-
-	} else {
-		/* current text is not in list, get first or next one */
-
-		if (keyval == GDK_KEY_Up)
-			valid = gtkut_tree_model_get_iter_last(model, &iter);
-		else
-		if (keyval == GDK_KEY_Down)
-			valid = gtk_tree_model_get_iter_first(model, &iter);
-
-		if (valid)
-			gtk_combo_box_set_active_iter(combobox, &iter);
-	}
-
-	/* return TRUE if value could be set */
-	return valid;
-}
-
 static void store_set_sensitive(GtkTreeModel *model, GtkTreeIter *iter,
 				const gboolean sensitive)
 {

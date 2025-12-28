@@ -760,44 +760,6 @@ void label_window_destroy(GtkWidget *window)
 	gtk_widget_destroy(window);
 }
 
-GtkWidget *gtkut_account_menu_new(GList			*ac_list,
-					GCallback		callback,
-				  gpointer		data)
-{
-	GList *cur_ac;
-	GtkWidget *optmenu;
-	GtkListStore *menu;
-	GtkTreeIter iter;
-	PrefsAccount *account;
-	gchar *name;
-
-	cm_return_val_if_fail(ac_list != NULL, NULL);
-
-	optmenu = gtkut_sc_combobox_create(NULL, FALSE);
-	menu = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(optmenu)));
-
-	for (cur_ac = ac_list; cur_ac != NULL; cur_ac = cur_ac->next) {
-		account = (PrefsAccount *) cur_ac->data;
-		if (account->name)
-			name = g_strdup_printf("%s: %s <%s>",
-					       account->account_name,
-					       account->name,
-					       account->address);
-		else
-			name = g_strdup_printf("%s: %s",
-					       account->account_name,
-					       account->address);
-		COMBOBOX_ADD_ESCAPED(menu, name, account->account_id);
-		g_free(name);
-	}
-	gtk_combo_box_set_active(GTK_COMBO_BOX(optmenu), 0);
-
-	if( callback != NULL )
-		g_signal_connect(G_OBJECT(optmenu), "changed", callback, data);
-
-	return optmenu;
-}
-
 /*!
  *\brief	Tries to find a focused child using a lame strategy
  */
@@ -960,51 +922,6 @@ gboolean get_tag_range(GtkTextIter *iter,
 	*end_iter = _end_iter;
 
 	return TRUE;
-}
-
-GtkWidget *face_get_from_header(const gchar *o_face)
-{
-	gchar face[2048];
-	gchar *face_png;
-	gsize pngsize;
-	GdkPixbuf *pixbuf;
-	GError *error = NULL;
-	GdkPixbufLoader *loader = gdk_pixbuf_loader_new ();
-	GtkWidget *image;
-
-	if (o_face == NULL || strlen(o_face) == 0)
-		return NULL;
-
-	strncpy2(face, o_face, sizeof(face));
-
-	unfold_line(face); /* strip all whitespace and linebreaks */
-	remove_space(face);
-
-	face_png = g_base64_decode(face, &pngsize);
-	debug_print("---------------------- loaded face png\n");
-
-	if (!gdk_pixbuf_loader_write (loader, face_png, pngsize, &error) ||
-	    !gdk_pixbuf_loader_close (loader, &error)) {
-		g_warning("loading face failed");
-		g_object_unref(loader);
-		g_free(face_png);
-		return NULL;
-	}
-	g_free(face_png);
-
-	pixbuf = g_object_ref(gdk_pixbuf_loader_get_pixbuf(loader));
-
-	g_object_unref(loader);
-
-	if ((gdk_pixbuf_get_width(pixbuf) != 48) || (gdk_pixbuf_get_height(pixbuf) != 48)) {
-		g_object_unref(pixbuf);
-		g_warning("wrong_size");
-		return NULL;
-	}
-
-	image = gtk_image_new_from_pixbuf(pixbuf);
-	g_object_unref(pixbuf);
-	return image;
 }
 
 static gboolean _combobox_separator_func(GtkTreeModel *model,

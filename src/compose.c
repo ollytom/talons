@@ -5262,13 +5262,10 @@ static gchar *compose_get_header(Compose *compose)
 	g_free(from_name);
 	g_free(from_address);
 
-	/* To */
 	compose_add_headerfield_from_headerlist(compose, header, "To", ", ");
 
-	/* Cc */
 	compose_add_headerfield_from_headerlist(compose, header, "Cc", ", ");
 
-	/* Subject */
 	str = gtk_editable_get_chars(GTK_EDITABLE(compose->subject_entry), 0, -1);
 
 	if (*str != '\0' && !IS_IN_CUSTOM_HEADER("Subject")) {
@@ -5281,37 +5278,20 @@ static gchar *compose_get_header(Compose *compose)
 	}
 	g_free(str);
 
-	/* Message-ID */
 	if (compose->msgid != NULL && strlen(compose->msgid) > 0) {
 		g_string_append_printf(header, "Message-ID: <%s>\n",
 				compose->msgid);
 	}
 
 	if (compose->remove_references == FALSE) {
-		/* In-Reply-To */
 		if (compose->inreplyto && compose->to_list)
 			g_string_append_printf(header, "In-Reply-To: <%s>\n", compose->inreplyto);
-
-		/* References */
 		if (compose->references)
 			g_string_append_printf(header, "References: %s\n", compose->references);
 	}
 
-	/* Followup-To */
 	compose_add_headerfield_from_headerlist(compose, header, "Followup-To", ",");
-
-	/* Reply-To */
 	compose_add_headerfield_from_headerlist(compose, header, "Reply-To", ", ");
-
-	/* Organization */
-	if (compose->account->organization &&
-	    strlen(compose->account->organization) &&
-	    !IS_IN_CUSTOM_HEADER("Organization")) {
-		compose_convert_header(compose, buf, sizeof(buf),
-				       compose->account->organization,
-				       strlen("Organization: "), FALSE);
-		g_string_append_printf(header, "Organization: %s\n", buf);
-	}
 
 	/* Program version and system info */
 	if (compose->account->gen_xmailer &&

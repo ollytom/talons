@@ -152,10 +152,6 @@ void gtkut_widget_init			(void);
 void gtkut_widget_set_app_icon		(GtkWidget	*widget);
 void gtkut_widget_set_composer_icon	(GtkWidget	*widget);
 
-GtkWidget *gtkut_account_menu_new	(GList			*ac_list,
-				  	 GCallback	 	 callback,
-					 gpointer		 data);
-
 PangoFontDescription *default_font(void);
 void gtkut_widget_set_small_font_size(GtkWidget *widget);
 GtkWidget *gtkut_get_focused_child	(GtkContainer 	*parent);
@@ -169,8 +165,6 @@ gboolean get_tag_range(GtkTextIter *iter,
 				       GtkTextTag *tag,
 				       GtkTextIter *start_iter,
 				       GtkTextIter *end_iter);
-
-GtkWidget *face_get_from_header(const gchar *o_face);
 
 GtkWidget *gtkut_sc_combobox_create(GtkWidget *eventbox, gboolean focus_on_click);
 
