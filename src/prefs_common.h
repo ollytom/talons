@@ -145,9 +145,6 @@ struct _PrefsCommon
 	/* Receive */
 	gboolean use_extinc;
 	gchar *extinc_cmd;
-	gboolean autochk_newmail;
-	gint autochk_itv;
-	gboolean chk_on_startup;
  	gboolean newmail_notify_auto;
  	gboolean newmail_notify_manu;
  	gchar   *newmail_notify_cmd;

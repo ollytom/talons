@@ -166,16 +166,10 @@ static gboolean sc_starting = FALSE;
 
 static gboolean defer_check_all(void *data)
 {
-	gboolean autochk = GPOINTER_TO_INT(data);
-
 	if (!sc_starting) {
-		inc_all_account_mail(static_mainwindow, autochk, FALSE,
-			prefs_common.newmail_notify_manu);
-
+		inc_all_account_mail(static_mainwindow, prefs_common.newmail_notify_manu);
 	} else {
-		inc_all_account_mail(static_mainwindow, FALSE,
-				prefs_common.chk_on_startup,
-				prefs_common.newmail_notify_manu);
+		inc_all_account_mail(static_mainwindow, prefs_common.newmail_notify_manu);
 		sc_starting = FALSE;
 		main_window_set_menu_sensitive(static_mainwindow);
 		toolbar_main_set_sensitive(static_mainwindow);
@@ -199,8 +193,6 @@ static gboolean defer_jump(void *data)
 {
 	if (cmd.receive_all) {
 		defer_check_all(GINT_TO_POINTER(FALSE));
-	} else if (prefs_common.chk_on_startup) {
-		defer_check_all(GINT_TO_POINTER(TRUE));
 	} else if (cmd.receive) {
 		defer_check(NULL);
 	}
@@ -292,7 +284,6 @@ int main(int argc, char *argv[])
 	MainWindow *mainwin;
 	FolderView *folderview;
 	GdkPixbuf *icon;
-	guint num_folder_class = 0;
 	gboolean start_done = TRUE;
 	gboolean never_ran = FALSE;
 	gint ret;
@@ -460,7 +451,6 @@ int main(int argc, char *argv[])
 	main_window_cursor_wait(mainwin);
 	folder_func_to_all_folders(initial_processing, (gpointer *)mainwin);
 
-	inc_autocheck_timer_init(mainwin);
 	if (cmd.online_mode == ONLINE_MODE_OFFLINE) {
 		main_window_toggle_work_offline(mainwin, TRUE, FALSE);
 	}
@@ -480,8 +470,6 @@ int main(int argc, char *argv[])
 	claws_register_idle_function(claws_gtk_idle);
 
 	prefs_toolbar_init();
-
-	num_folder_class = g_list_length(folder_get_list());
 
 	if (never_ran) {
 		prefs_common_write_config();
@@ -538,9 +526,6 @@ int main(int argc, char *argv[])
 	if (cmd.receive_all && !cmd.target) {
 		start_done = FALSE;
 		g_timeout_add(1000, defer_check_all, GINT_TO_POINTER(FALSE));
-	} else if (prefs_common.chk_on_startup && !cmd.target) {
-		start_done = FALSE;
-		g_timeout_add(1000, defer_check_all, GINT_TO_POINTER(TRUE));
 	} else if (cmd.receive && !cmd.target) {
 		start_done = FALSE;
 		g_timeout_add(1000, defer_check, NULL);
@@ -612,7 +597,6 @@ static void exit_claws(MainWindow *mainwin)
 	sc_exiting = TRUE;
 
 	debug_print("shutting down\n");
-	inc_autocheck_timer_remove();
 
 	/* save prefs for opened folder */
 	if((item = folderview_get_opened_item(mainwin->folderview)) != NULL) {
@@ -1421,8 +1405,7 @@ static void lock_socket_input_cb(gpointer data,
 		CM_FD_WRITE_ALL(display_name);
 #endif
 	} else if (!STRNCMP(buf, "receive_all")) {
-		inc_all_account_mail(mainwin, FALSE, FALSE,
-				     prefs_common.newmail_notify_manu);
+		inc_all_account_mail(mainwin, prefs_common.newmail_notify_manu);
 	} else if (!STRNCMP(buf, "receive")) {
 		inc_mail(mainwin, prefs_common.newmail_notify_manu);
 	} else if (!STRNCMP(buf, "cancel_receiving")) {

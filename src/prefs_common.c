@@ -82,12 +82,6 @@ static PrefParam param[] = {
 	{"ext_inc_path", "/usr/bin/mh/inc", &prefs_common.extinc_cmd, P_STRING,
 	 NULL, NULL, NULL},
 
-	{"autochk_newmail", "FALSE", &prefs_common.autochk_newmail, P_BOOL,
-	 NULL, NULL, NULL},
-	{"autochk_interval", "600", &prefs_common.autochk_itv, P_INT,
-	 NULL, NULL, NULL},
-	{"check_on_startup", "FALSE", &prefs_common.chk_on_startup, P_BOOL,
-	 NULL, NULL, NULL},
 	{"newmail_notify_manu", "FALSE", &prefs_common.newmail_notify_manu,
 	 P_BOOL, NULL, NULL, NULL},
  	{"newmail_notify_auto", "FALSE", &prefs_common.newmail_notify_auto,

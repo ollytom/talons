@@ -88,15 +88,8 @@ void inc_account_list_mail	(MainWindow	*mainwin,
 				 gboolean	 autocheck,
 				 gboolean 	 notify);
 
-/* This function is used by the global autocheck interval (autocheck TRUE),
- * or check at startup (check_at_startup TRUE)
- * or by the manual 'Receive all' feature (autocheck FALSE). It makes
- * sure correct list of accounts is marked for checking, based on
- * global and account configuration, and calls inc_account_list_mail(). */
-void inc_all_account_mail	(MainWindow	*mainwin,
-				 gboolean	 autocheck,
-			         gboolean	 check_at_startup,
-				 gboolean 	 notify);
+/* Starts mail incorporations for all accounts. */
+void inc_all_account_mail	(MainWindow *mainwin, gboolean notify);
 
 void inc_progress_update	(Pop3Session	*session);
 
@@ -120,13 +113,7 @@ extern guint inc_lock_count;
 void inc_lock_real		(void);
 void inc_unlock_real		(void);
 
-void inc_autocheck_timer_init	(MainWindow	*mainwin);
-void inc_autocheck_timer_set	(void);
-void inc_autocheck_timer_remove	(void);
 gboolean inc_offline_should_override(gboolean force_ask, const gchar *msg);
-
-void inc_account_autocheck_timer_remove(PrefsAccount *account);
-void inc_account_autocheck_timer_set_interval(PrefsAccount *account);
 
 void inc_reset_offline_override_timers();
 

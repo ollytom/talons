@@ -125,8 +125,6 @@ static gint get_spool			(FolderItem	*dest,
 					 PrefsAccount	*account);
 
 static gint inc_spool_account(PrefsAccount *account);
-static void inc_autocheck_timer_set_interval	(guint		 interval);
-static gint inc_autocheck_func			(gpointer	 data);
 
 static void inc_notify_cmd(gint new_msgs, gboolean notify);
 
@@ -144,14 +142,12 @@ void inc_mail(MainWindow *mainwin, gboolean notify)
 		return;
 
 	inc_lock();
-	inc_autocheck_timer_remove();
 	main_window_lock(mainwin);
 
 	if (prefs_common.use_extinc && prefs_common.extinc_cmd) {
 		/* external incorporating program */
 		if (execute_command_line(prefs_common.extinc_cmd, FALSE, NULL) < 0) {
 			main_window_unlock(mainwin);
-			inc_autocheck_timer_set();
 			inc_unlock();
 			return;
 		}
@@ -164,7 +160,6 @@ void inc_mail(MainWindow *mainwin, gboolean notify)
 	statusbar_progress_all(0,0,0);
 	main_window_unlock(mainwin);
  	inc_notify_cmd(new_msgs, notify);
-	inc_autocheck_timer_set();
 	inc_unlock();
 }
 
@@ -249,14 +244,12 @@ gint inc_account_mail(MainWindow *mainwin, PrefsAccount *account)
 		  "to get mails.")))
 		return 0;
 
-	inc_autocheck_timer_remove();
 	main_window_lock(mainwin);
 
 	new_msgs = inc_account_mail_real(mainwin, account);
 
 	statusbar_progress_all(0,0,0);
 	main_window_unlock(mainwin);
-	inc_autocheck_timer_set();
 
 	return new_msgs;
 }
@@ -357,42 +350,22 @@ void inc_account_list_mail(MainWindow *mainwin, GList *account_list, gboolean au
  	inc_notify_cmd(new_msgs, notify);
 }
 
-void inc_all_account_mail(MainWindow *mainwin, gboolean autocheck,
-			  gboolean check_at_startup, gboolean notify)
+void inc_all_account_mail(MainWindow *mainwin, gboolean notify)
 {
 	GList *list, *list2 = NULL;
 	gboolean condition = FALSE;
-	gboolean hide_dialog = FALSE;
 
-	debug_print("INC: inc_all_account_mail(), autocheck: %s\n",
-			autocheck ? "YES" : "NO");
-
-	/* Collect list of accounts which use the global autocheck interval. */
 	for (list = account_get_list(); list != NULL; list = list->next) {
 		PrefsAccount *account = list->data;
-
 		/* Nothing to do for SMTP-only accounts. */
 		if (account->protocol == A_NONE)
 			continue;
-
-		/* Set up condition which decides whether or not to check
-		 * this account, based on whether we're doing global autocheck
-		 * or a check at startup or a manual 'Get all' check. */
-		if (autocheck)
-			condition = prefs_common_get_prefs()->autochk_newmail;
-		else if (check_at_startup || (!check_at_startup && !autocheck))
-			condition = account->recv_at_getall;
-
-		if (condition) {
-			debug_print("INC: will check account %d\n", account->account_id);
-			list2 = g_list_append(list2, account);
-		}
+		list2 = g_list_append(list2, account);
 	}
 
 	/* Do the check on the collected accounts. */
 	if (list2 != NULL) {
-		if (autocheck || check_at_startup)
-			hide_dialog = TRUE;
+		gboolean hide_dialog = TRUE;
 		inc_account_list_mail(mainwin, list2, hide_dialog, notify);
 		g_list_free(list2);
 	}
@@ -1369,69 +1342,10 @@ static void inc_notify_cmd(gint new_msgs, gboolean notify)
 	g_free(buf);
 }
 
-void inc_autocheck_timer_init(MainWindow *mainwin)
-{
-	autocheck_data = mainwin;
-	inc_autocheck_timer_set();
-}
-
-static void inc_autocheck_timer_set_interval(guint _interval)
-{
-	guint interval = _interval;
-
-	/* Convert the interval to seconds if needed. */
-	if (_interval % 1000 == 0)
-		interval /= 1000;
-
-	inc_autocheck_timer_remove();
-	/* last test is to avoid re-enabling auto_check after modifying
-	   the common preferences */
-	if (prefs_common.autochk_newmail && autocheck_data
-	    && prefs_common.work_offline == FALSE) {
-			autocheck_timer =
-				g_timeout_add_seconds(interval, inc_autocheck_func, autocheck_data);
-		debug_print("added global inc timer %d at %u seconds\n",
-				autocheck_timer, interval);
-	}
-}
-
-void inc_autocheck_timer_set(void)
-{
-	inc_autocheck_timer_set_interval(prefs_common.autochk_itv * 1000);
-}
-
-void inc_autocheck_timer_remove(void)
-{
-	if (autocheck_timer) {
-		debug_print("removed global inc timer %d\n", autocheck_timer);
-		g_source_remove(autocheck_timer);
-		autocheck_timer = 0;
-	}
-}
-
-static gint inc_autocheck_func(gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-
-	if (inc_lock_count) {
-		debug_print("global inc: autocheck is locked.\n");
-		inc_autocheck_timer_set_interval(1000);
-		return FALSE;
-	}
-
- 	inc_all_account_mail(mainwin, TRUE, FALSE, prefs_common.newmail_notify_auto);
-	inc_autocheck_timer_set();
-
-	return FALSE;
-}
-
 gboolean inc_offline_should_override(gboolean force_ask, const gchar *msg)
 {
 	gint length = 10; /* seconds */
 	gint answer = G_ALERTDEFAULT;
-
-	if (prefs_common.autochk_newmail)
-		length = prefs_common.autochk_itv; /* seconds */
 
 	if (force_ask) {
 		inc_offline_overridden_no = (time_t)0;

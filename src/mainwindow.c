@@ -3193,8 +3193,6 @@ static void online_switch_clicked (GtkButton *btn, gpointer data)
 		gtk_widget_show (mainwin->offline_switch);
 		cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/File/OfflineMode", TRUE);
 
-		inc_autocheck_timer_remove();
-
 		/* go offline */
 		if (prefs_common.work_offline)
 			return;
@@ -3211,7 +3209,6 @@ static void online_switch_clicked (GtkButton *btn, gpointer data)
 		gtk_widget_show (mainwin->online_switch);
 		cm_toggle_menu_set_active_full(mainwin->ui_manager, "Menu/File/OfflineMode", FALSE);
 		prefs_common.work_offline = FALSE;
-		inc_autocheck_timer_set();
 		hooks_invoke(OFFLINE_SWITCH_HOOKLIST, NULL);
 	}
 }

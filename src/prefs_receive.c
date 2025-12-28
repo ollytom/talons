@@ -46,11 +46,6 @@ typedef struct _ReceivePage
 
 	GtkWidget *checkbtn_incext;
 	GtkWidget *entry_incext;
-	GtkWidget *checkbtn_autochk;
-	GtkWidget *spinbtn_autochk_sec;
-	GtkWidget *spinbtn_autochk_min;
-	GtkWidget *spinbtn_autochk_hour;
-	GtkWidget *checkbtn_chkonstartup;
 	GtkWidget *checkbtn_newmail_auto;
 	GtkWidget *checkbtn_newmail_manu;
 	GtkWidget *entry_newmail_notify_cmd;
@@ -73,22 +68,6 @@ static void prefs_common_recv_dialog_newmail_notify_toggle_cb(GtkWidget *w, gpoi
 	gtk_widget_set_sensitive(prefs_receive->hbox_newmail_notify, toggled);
 }
 
-static void prefs_receive_itv_spinbutton_value_changed_cb(GtkWidget *w, gpointer data)
-{
-	ReceivePage *page = (ReceivePage *)data;
-	gint seconds = gtk_spin_button_get_value_as_int (
-		GTK_SPIN_BUTTON (page->spinbtn_autochk_sec));
-	gint minutes = gtk_spin_button_get_value_as_int (
-		GTK_SPIN_BUTTON (page->spinbtn_autochk_min));
-	gint hours = gtk_spin_button_get_value_as_int (
-		GTK_SPIN_BUTTON(page->spinbtn_autochk_hour));
-	if (seconds < PREFS_RECV_AUTOCHECK_MIN_INTERVAL && minutes == 0 && hours == 0) {
-		gtk_spin_button_set_value (
-			GTK_SPIN_BUTTON (page->spinbtn_autochk_sec),
-				PREFS_RECV_AUTOCHECK_MIN_INTERVAL);
-	}
-}
-
 static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 			       	  gpointer data)
 {
@@ -100,17 +79,6 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *hbox;
 	GtkWidget *label_incext;
 	GtkWidget *entry_incext;
-
-	GtkWidget *hbox_autochk;
-	GtkWidget *checkbtn_autochk;
-	GtkAdjustment *spinbtn_autochk_adj;
-	GtkWidget *spinbtn_autochk_sec;
-	GtkWidget *spinbtn_autochk_min;
-	GtkWidget *spinbtn_autochk_hour;
-	GtkWidget *label_autochk2;
-	GtkWidget *label_autochk1;
-	GtkWidget *label_autochk0;
-	GtkWidget *checkbtn_chkonstartup;
 
 	GtkWidget *frame;
 	GtkWidget *vbox3;
@@ -150,60 +118,6 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	entry_incext = gtk_entry_new ();
 	gtk_widget_show (entry_incext);
 	gtk_box_pack_start (GTK_BOX (hbox), entry_incext, TRUE, TRUE, 0);
-
-	/* Auto-checking */
-	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Automatic checking"));
-
-	hbox_autochk = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox_autochk);
-	gtk_box_pack_start (GTK_BOX (vbox2), hbox_autochk, FALSE, FALSE, 0);
-
-	PACK_CHECK_BUTTON (hbox_autochk, checkbtn_autochk,
-			   _("Check for new mail every"));
-
-	spinbtn_autochk_adj = GTK_ADJUSTMENT(gtk_adjustment_new (5, 0, 99, 1, 10, 0));
-	spinbtn_autochk_hour = gtk_spin_button_new
-		(GTK_ADJUSTMENT (spinbtn_autochk_adj), 1, 0);
-
-	gtk_widget_show (spinbtn_autochk_hour);
-	gtk_box_pack_start (GTK_BOX (hbox_autochk), spinbtn_autochk_hour, FALSE, FALSE, 0);
-
-	label_autochk0 = gtk_label_new (_("hours"));
-	gtk_widget_show (label_autochk0);
-	gtk_box_pack_start (GTK_BOX (hbox_autochk), label_autochk0, FALSE, FALSE, 0);
-
-	spinbtn_autochk_adj = GTK_ADJUSTMENT(gtk_adjustment_new (5, 0, 59, 1, 10, 0));
-	spinbtn_autochk_min = gtk_spin_button_new
-		(GTK_ADJUSTMENT (spinbtn_autochk_adj), 1, 0);
-	gtk_widget_show (spinbtn_autochk_min);
-	gtk_box_pack_start (GTK_BOX (hbox_autochk), spinbtn_autochk_min, FALSE, FALSE, 0);
-
-	label_autochk1 = gtk_label_new (_("minutes"));
-	gtk_widget_show (label_autochk1);
-	gtk_box_pack_start (GTK_BOX (hbox_autochk), label_autochk1, FALSE, FALSE, 0);
-
-	spinbtn_autochk_adj = GTK_ADJUSTMENT(gtk_adjustment_new (5, 0, 59, 1, 10, 0));
-	spinbtn_autochk_sec = gtk_spin_button_new
-		(GTK_ADJUSTMENT (spinbtn_autochk_adj), 1, 0);
-	gtk_widget_show (spinbtn_autochk_sec);
-	gtk_box_pack_start (GTK_BOX (hbox_autochk), spinbtn_autochk_sec, FALSE, FALSE, 0);
-	gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinbtn_autochk_sec), TRUE);
-	gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinbtn_autochk_min), TRUE);
-	gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinbtn_autochk_hour), TRUE);
-
-	label_autochk2 = gtk_label_new (_("seconds"));
-	gtk_widget_show (label_autochk2);
-	gtk_box_pack_start (GTK_BOX (hbox_autochk), label_autochk2, FALSE, FALSE, 0);
-
-	SET_TOGGLE_SENSITIVITY(checkbtn_autochk, spinbtn_autochk_sec);
-	SET_TOGGLE_SENSITIVITY(checkbtn_autochk, spinbtn_autochk_min);
-	SET_TOGGLE_SENSITIVITY(checkbtn_autochk, spinbtn_autochk_hour);
-	SET_TOGGLE_SENSITIVITY(checkbtn_autochk, label_autochk0);
-	SET_TOGGLE_SENSITIVITY(checkbtn_autochk, label_autochk1);
-	SET_TOGGLE_SENSITIVITY(checkbtn_autochk, label_autochk2);
-
-	PACK_CHECK_BUTTON (vbox2, checkbtn_chkonstartup,
-			   _("Check for new mail on start-up"));
 
 	/* receive dialog */
 	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Dialogs"));
@@ -277,36 +191,21 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 		prefs_common.newmail_notify_manu);
 	gtk_entry_set_text(GTK_ENTRY(entry_newmail_notify_cmd),
 		prefs_common.newmail_notify_cmd);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_autochk),
-		prefs_common.autochk_newmail);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_incext),
 		prefs_common.use_extinc);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_show_recv_err_dialog),
 		prefs_common.show_recv_err_dialog);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_close_recv_dialog),
 		prefs_common.close_recv_dialog);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_chkonstartup),
-		prefs_common.chk_on_startup);
 
 	gtk_entry_set_text(GTK_ENTRY(entry_incext),
 		prefs_common.extinc_cmd);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_autochk_hour),
-		prefs_common.autochk_itv / 3600);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_autochk_min),
-		(prefs_common.autochk_itv % 3600) / 60);
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbtn_autochk_sec),
-		(prefs_common.autochk_itv % 3600) % 60);
 	combobox_select_by_data(GTK_COMBO_BOX(optmenu_recvdialog),
 		prefs_common.recv_dialog_mode);
 
 	prefs_receive->window = GTK_WIDGET(window);
 	prefs_receive->checkbtn_incext = checkbtn_incext;
 	prefs_receive->entry_incext = entry_incext;
-	prefs_receive->checkbtn_autochk = checkbtn_autochk;
-	prefs_receive->spinbtn_autochk_sec = spinbtn_autochk_sec;
-	prefs_receive->spinbtn_autochk_min = spinbtn_autochk_min;
-	prefs_receive->spinbtn_autochk_hour = spinbtn_autochk_hour;
-	prefs_receive->checkbtn_chkonstartup = checkbtn_chkonstartup;
 	prefs_receive->checkbtn_newmail_auto = checkbtn_newmail_auto;
 	prefs_receive->checkbtn_newmail_manu = checkbtn_newmail_manu;
 	prefs_receive->entry_newmail_notify_cmd = entry_newmail_notify_cmd;
@@ -323,15 +222,6 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	g_signal_connect(G_OBJECT(checkbtn_newmail_manu), "toggled",
 			 G_CALLBACK(prefs_common_recv_dialog_newmail_notify_toggle_cb),
 			 NULL);
-	g_signal_connect(G_OBJECT(spinbtn_autochk_hour), "value-changed",
-		G_CALLBACK(prefs_receive_itv_spinbutton_value_changed_cb),
-		(gpointer) prefs_receive);
-	g_signal_connect(G_OBJECT(spinbtn_autochk_min), "value-changed",
-		G_CALLBACK(prefs_receive_itv_spinbutton_value_changed_cb),
-		(gpointer) prefs_receive);
-	g_signal_connect(G_OBJECT(spinbtn_autochk_sec), "value-changed",
-		G_CALLBACK(prefs_receive_itv_spinbutton_value_changed_cb),
-		(gpointer) prefs_receive);
 }
 
 static void prefs_receive_save(PrefsPage *_page)
@@ -345,22 +235,11 @@ static void prefs_receive_save(PrefsPage *_page)
 		GTK_TOGGLE_BUTTON(page->checkbtn_show_recv_err_dialog));
 	prefs_common.close_recv_dialog = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_close_recv_dialog));
-	prefs_common.chk_on_startup = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_chkonstartup));
 
 	prefs_common.newmail_notify_auto = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_newmail_auto));
 	prefs_common.newmail_notify_manu = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_newmail_manu));
-	prefs_common.autochk_newmail = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_autochk));
-	prefs_common.autochk_itv =
-		(3600 * gtk_spin_button_get_value_as_int(
-			GTK_SPIN_BUTTON(page->spinbtn_autochk_hour)))
-		+ (60 * gtk_spin_button_get_value_as_int(
-			GTK_SPIN_BUTTON(page->spinbtn_autochk_min)))
-		+ gtk_spin_button_get_value_as_int(
-			GTK_SPIN_BUTTON(page->spinbtn_autochk_sec));
 
 	tmp = gtk_editable_get_chars(GTK_EDITABLE(page->entry_incext), 0, -1);
 	g_free(prefs_common.extinc_cmd);
@@ -371,15 +250,9 @@ static void prefs_receive_save(PrefsPage *_page)
 	prefs_common.newmail_notify_cmd = tmp;
 	prefs_common.recv_dialog_mode =
 		combobox_get_active_data(GTK_COMBO_BOX(page->optmenu_recvdialog));
-
-	inc_autocheck_timer_remove();
-	inc_autocheck_timer_set();
-
 }
 
-static void prefs_receive_destroy_widget(PrefsPage *_page)
-{
-}
+static void prefs_receive_destroy_widget(PrefsPage *_page) {}
 
 void prefs_receive_init(void)
 {
