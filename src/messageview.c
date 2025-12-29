@@ -993,9 +993,6 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 	mimeview_select_mimepart_icon(messageview->mimeview, root);
 done:
 	messageview_set_menu_sensitive(messageview);
-	/* plugins may hook in here to work with the message view */
-	hooks_invoke(MESSAGE_VIEW_SHOW_DONE_HOOKLIST, messageview);
-
 	g_free(file);
 
 	return 0;

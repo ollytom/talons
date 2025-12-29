@@ -502,9 +502,6 @@ void textview_reflect_prefs(TextView *textview)
 
 void textview_show_part(TextView *textview, MimeInfo *mimeinfo, FILE *fp)
 {
-	cm_return_if_fail(mimeinfo != NULL);
-	cm_return_if_fail(fp != NULL);
-
 	textview->loading = TRUE;
 	textview->stop_loading = FALSE;
 
@@ -516,40 +513,31 @@ void textview_show_part(TextView *textview, MimeInfo *mimeinfo, FILE *fp)
 	} else {
 		if (fseek(fp, mimeinfo->offset, SEEK_SET) < 0)
 			perror("fseek");
-
 		textview_write_body(textview, mimeinfo);
 	}
 
 	textview->loading = FALSE;
 	textview->stop_loading = FALSE;
 	textview_set_position(textview, 0);
-
 }
 
 static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 {
-	GtkTextView *text;
-	GtkTextBuffer *buffer;
-	GtkTextIter iter;
+	if (textview->stop_loading)
+		return;
+	if (mimeinfo->type == MIMETYPE_MULTIPART)
+		return;
+
 	gchar buf[BUFFSIZE];
 	GPtrArray *headers = NULL;
 	const gchar *name;
 	gchar *content_type;
-	gint charcount;
 
-
-	cm_return_if_fail(mimeinfo != NULL);
-	text = GTK_TEXT_VIEW(textview->text);
-	buffer = gtk_text_view_get_buffer(text);
-	charcount = gtk_text_buffer_get_char_count(buffer);
+	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer(text);
+	int charcount = gtk_text_buffer_get_char_count(buffer);
+	GtkTextIter iter;
 	gtk_text_buffer_get_end_iter(buffer, &iter);
-
-	if (textview->stop_loading) {
-		return;
-	}
-	if (mimeinfo->type == MIMETYPE_MULTIPART) {
-		return;
-	}
 
 	textview->prev_quote_level = -1;
 
@@ -619,79 +607,53 @@ static void textview_add_part(TextView *textview, MimeInfo *mimeinfo)
 
 static void recursive_add_parts(TextView *textview, GNode *node)
 {
-        GNode * iter;
-	MimeInfo *mimeinfo;
+	MimeInfo *mimeinfo = (MimeInfo *) node->data;
+	textview_add_part(textview, mimeinfo);
+	if (mimeinfo->type != MIMETYPE_MULTIPART && mimeinfo->type != MIMETYPE_MESSAGE) {
+		return;
+	}
 
-        mimeinfo = (MimeInfo *) node->data;
+	GNode *iter;
+	if (g_ascii_strcasecmp(mimeinfo->subtype, "alternative") != 0) {
+		for (iter = g_node_first_child(node); iter != NULL; iter = g_node_next_sibling(iter)) {
+			recursive_add_parts(textview, iter);
+		}
+		return;
+	}
 
-        textview_add_part(textview, mimeinfo);
-        if ((mimeinfo->type != MIMETYPE_MULTIPART) &&
-            (mimeinfo->type != MIMETYPE_MESSAGE)) {
-                return;
-        }
-        if (g_ascii_strcasecmp(mimeinfo->subtype, "alternative") == 0) {
-                GNode * preferred_body;
-                int preferred_score;
+	GNode *preferred_body = NULL;
+	int preferred_score = 0;
+	for (iter = g_node_first_child(node); iter != NULL; iter = g_node_next_sibling(iter)) {
+		int score = 1;
+		MimeInfo *submime = (MimeInfo *) iter->data;
+		if (submime->type == MIMETYPE_TEXT)
+			score++;
+		if (submime->subtype != NULL) {
+			if (g_ascii_strcasecmp(submime->subtype, "plain") == 0)
+				score++;
+		}
+		if (score > preferred_score) {
+			preferred_score = score;
+			preferred_body = iter;
+		}
+	}
 
-                /*
-                  text/plain : score 3
-                  text/ *    : score 2
-                  other      : score 1
-                */
-                preferred_body = NULL;
-                preferred_score = 0;
-
-                for (iter = g_node_first_child(node) ; iter != NULL ;
-                     iter = g_node_next_sibling(iter)) {
-                        int score;
-                        MimeInfo * submime;
-
-                        score = 1;
-                        submime = (MimeInfo *) iter->data;
-                        if (submime->type == MIMETYPE_TEXT)
-                                score = 2;
-
-                        if (submime->subtype != NULL) {
-                                if (g_ascii_strcasecmp(submime->subtype, "plain") == 0)
-                                        score = 3;
-                        }
-
-                        if (score > preferred_score) {
-                                preferred_score = score;
-                                preferred_body = iter;
-                        }
-                }
-
-                if (preferred_body != NULL) {
-                        recursive_add_parts(textview, preferred_body);
-                }
-        }
-        else {
-                for (iter = g_node_first_child(node) ; iter != NULL ;
-                     iter = g_node_next_sibling(iter)) {
-                        recursive_add_parts(textview, iter);
-                }
-        }
+	if (preferred_body != NULL)
+		recursive_add_parts(textview, preferred_body);
 }
 
 static void textview_add_parts(TextView *textview, MimeInfo *mimeinfo)
 {
-	cm_return_if_fail(mimeinfo != NULL);
-	cm_return_if_fail(mimeinfo->node != NULL);
-
 	recursive_add_parts(textview, mimeinfo->node);
 }
 
 void textview_show_error(TextView *textview)
 {
-	GtkTextView *text;
-	GtkTextBuffer *buffer;
-	GtkTextIter iter;
-
 	textview_clear(textview);
 
-	text = GTK_TEXT_VIEW(textview->text);
-	buffer = gtk_text_view_get_buffer(text);
+	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer(text);
+	GtkTextIter iter;
 	gtk_text_buffer_get_start_iter(buffer, &iter);
 
 	TEXTVIEW_INSERT(_("\n"
@@ -706,14 +668,11 @@ void textview_show_error(TextView *textview)
 
 void textview_show_info(TextView *textview, const gchar *info_str)
 {
-	GtkTextView *text;
-	GtkTextBuffer *buffer;
-	GtkTextIter iter;
-
 	textview_clear(textview);
 
-	text = GTK_TEXT_VIEW(textview->text);
-	buffer = gtk_text_view_get_buffer(text);
+	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer(text);
+	GtkTextIter iter;
 	gtk_text_buffer_get_start_iter(buffer, &iter);
 
 	TEXTVIEW_INSERT(info_str);
@@ -723,16 +682,10 @@ void textview_show_info(TextView *textview, const gchar *info_str)
 
 void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 {
-	GtkTextView *text;
-	GtkTextBuffer *buffer;
-	GtkTextIter iter;
-	const gchar *name;
-	gchar *content_type;
+	if (!partinfo)
+		return;
+
 	GtkUIManager *ui_manager;
-	gchar *shortcut;
-
-	if (!partinfo) return;
-
 	if (textview->messageview->window != NULL)
 		ui_manager = textview->messageview->ui_manager;
 	else
@@ -740,17 +693,18 @@ void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 
 	textview_clear(textview);
 
-	text = GTK_TEXT_VIEW(textview->text);
-	buffer = gtk_text_view_get_buffer(text);
+	GtkTextView *text = GTK_TEXT_VIEW(textview->text);
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer(text);
+	GtkTextIter iter;
 	gtk_text_buffer_get_start_iter(buffer, &iter);
 
 	TEXTVIEW_INSERT("\n");
 
-	name = procmime_mimeinfo_get_parameter(partinfo, "filename");
+	const char *name = procmime_mimeinfo_get_parameter(partinfo, "filename");
 	if (name == NULL)
 		name = procmime_mimeinfo_get_parameter(partinfo, "name");
 	if (name != NULL) {
-		content_type = procmime_get_content_type_str(partinfo->type,
+		char *content_type = procmime_get_content_type_str(partinfo->type,
 						     partinfo->subtype);
 		TEXTVIEW_INSERT("  ");
 		TEXTVIEW_INSERT_BOLD(name);
@@ -759,8 +713,7 @@ void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 		TEXTVIEW_INSERT(", ");
 		TEXTVIEW_INSERT(to_human_readable((goffset)partinfo->length));
 		TEXTVIEW_INSERT("):\n\n");
-
-		g_free(content_type);
+		free(content_type);
 	}
 	TEXTVIEW_INSERT(_("  The following can be performed on this part\n"));
 	TEXTVIEW_INSERT(_("  by right-clicking the icon or list item:"));
@@ -768,40 +721,18 @@ void textview_show_mime_part(TextView *textview, MimeInfo *partinfo)
 
 	TEXTVIEW_INSERT(_("     - To save, select "));
 	TEXTVIEW_INSERT_LINK(_("'Save as...'"), "cm://save_as", NULL);
-	TEXTVIEW_INSERT(_(" (Shortcut key: '"));
-	shortcut = cm_menu_item_get_shortcut(ui_manager, "Menu/File/SavePartAs");
-	TEXTVIEW_INSERT(shortcut);
-	g_free(shortcut);
-	TEXTVIEW_INSERT(_("')"));
 	TEXTVIEW_INSERT("\n");
 
 	TEXTVIEW_INSERT(_("     - To display as text, select "));
 	TEXTVIEW_INSERT_LINK(_("'Display as text'"), "cm://display_as_text", NULL);
 
-	TEXTVIEW_INSERT(_(" (Shortcut key: '"));
-	shortcut = cm_menu_item_get_shortcut(ui_manager, "Menu/View/Part/AsText");
-	TEXTVIEW_INSERT(shortcut);
-	g_free(shortcut);
-	TEXTVIEW_INSERT(_("')"));
-	TEXTVIEW_INSERT("\n");
-
 	TEXTVIEW_INSERT(_("     - To open with an external program, select "));
 	TEXTVIEW_INSERT_LINK(_("'Open'"), "cm://open", NULL);
-
-	TEXTVIEW_INSERT(_(" (Shortcut key: '"));
-	shortcut = cm_menu_item_get_shortcut(ui_manager, "Menu/View/Part/Open");
-	TEXTVIEW_INSERT(shortcut);
-	g_free(shortcut);
 	TEXTVIEW_INSERT(_("')\n"));
 	TEXTVIEW_INSERT(_("       (alternately double-click, or click the middle "));
 	TEXTVIEW_INSERT(_("mouse button)\n"));
 	TEXTVIEW_INSERT(_("     - Or use "));
 	TEXTVIEW_INSERT_LINK(_("'Open with...'"), "cm://open_with", NULL);
-	TEXTVIEW_INSERT(_(" (Shortcut key: '"));
-	shortcut = cm_menu_item_get_shortcut(ui_manager, "Menu/View/Part/OpenWith");
-	TEXTVIEW_INSERT(shortcut);
-	g_free(shortcut);
-	TEXTVIEW_INSERT(_("')"));
 	TEXTVIEW_INSERT("\n");
 
 	textview_show_icon(textview, "dialog-information");
@@ -864,69 +795,7 @@ static void textview_write_body(TextView *textview, MimeInfo *mimeinfo)
 			unlink(filename);
 		}
 		g_free(filename);
-	} else if ( g_ascii_strcasecmp(mimeinfo->subtype, "plain") &&
-		   (cmd = prefs_common.mime_textviewer) && *cmd &&
-		   (p = strchr(cmd, '%')) && *(p + 1) == 's') {
-		int pid, pfd[2];
-		const gchar *fname;
-
-		fname  = procmime_get_tmp_file_name(mimeinfo);
-		if (procmime_get_part(fname, mimeinfo)) goto textview_default;
-
-		g_snprintf(buf, sizeof(buf), cmd, fname);
-		debug_print("Viewing text content of type: %s (length: %ld) "
-			"using %s\n", mimeinfo->subtype, mimeinfo->length, buf);
-
-		if (pipe(pfd) < 0) {
-			g_snprintf(buf, sizeof(buf),
-				"pipe failed for textview\n\n%s\n", g_strerror(errno));
-			textview_write_line(textview, buf, conv, TRUE);
-			goto textview_default;
-		}
-		pid = fork();
-		if (pid < 0) {
-			g_snprintf(buf, sizeof(buf),
-				"fork failed for textview\n\n%s\n", g_strerror(errno));
-			textview_write_line(textview, buf, conv, TRUE);
-			close(pfd[0]);
-			close(pfd[1]);
-			goto textview_default;
-		}
-		if (pid == 0) { /* child */
-			int rc;
-			gchar **argv;
-			argv = strsplit_with_quote(buf, " ", 0);
-			close(1);
-			close(pfd[0]);
-			rc = dup(pfd[1]);
-			rc = execvp(argv[0], argv);
-			perror("execvp");
-			close(pfd[1]);
-			g_print(_("The command to view attachment "
-			        "as text failed:\n"
-			        "    %s\n"
-			        "Exit code %d\n"), buf, rc);
-			exit(255);
-		}
-		close(pfd[1]);
-		tmpfp = fdopen(pfd[0], "rb");
-		while (fgets(buf, sizeof(buf), tmpfp)) {
-			textview_write_line(textview, buf, conv, TRUE);
-
-			if (textview->stop_loading) {
-				fclose(tmpfp);
-				waitpid(pid, pfd, 0);
-				g_unlink(fname);
-				conv_code_converter_destroy(conv);
-				return;
-			}
-		}
-
-		fclose(tmpfp);
-		waitpid(pid, pfd, 0);
-		g_unlink(fname);
 	} else {
-textview_default:
 		if (!g_ascii_strcasecmp(mimeinfo->subtype, "x-patch")
 				|| !g_ascii_strcasecmp(mimeinfo->subtype, "x-diff"))
 			textview->is_diff = TRUE;
@@ -1686,8 +1555,6 @@ void textview_show_icon(TextView *textview, const gchar *stock_id)
 		GTK_TEXT_WINDOW_TEXT, wx, wy);
 
 	gtk_widget_show_all(textview->text);
-
-
 	return;
 }
 
@@ -1724,20 +1591,10 @@ static void textview_show_header(TextView *textview, GPtrArray *headers)
 		if (procheader_headername_equal(header->name, "Date") &&
 		    prefs_common.msgview_date_format) {
 			gchar hbody[80];
-
 			procheader_date_parse(hbody, header->body, sizeof(hbody));
 			gtk_text_buffer_get_end_iter (buffer, &iter);
 			gtk_text_buffer_insert_with_tags_by_name
 				(buffer, &iter, hbody, -1, "header", NULL);
-		} else if ((procheader_headername_equal(header->name, "X-Mailer") ||
-				procheader_headername_equal(header->name,
-						 "X-Newsreader")) &&
-				(strstr(header->body, "Claws Mail") != NULL ||
-				strstr(header->body, "Sylpheed-Claws") != NULL)) {
-			gtk_text_buffer_get_end_iter (buffer, &iter);
-			gtk_text_buffer_insert_with_tags_by_name
-				(buffer, &iter, header->body, -1,
-				 "header", "emphasis", NULL);
 		} else {
 			gboolean hdr =
 			  procheader_headername_equal(header->name, "From") ||

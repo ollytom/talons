@@ -28,8 +28,6 @@
 #include "procmime.h"
 #include "toolbar.h"
 
-#define MESSAGE_VIEW_SHOW_DONE_HOOKLIST "message_view_show_done_hooklist"
-
 struct _MessageView
 {
 	GtkWidget *vbox;
@@ -84,7 +82,7 @@ typedef struct _MimeInfoSearch MimeInfoSearch;
 MessageView *messageview_create			(MainWindow	*mainwin);
 MessageView *messageview_create_with_new_window	(MainWindow	*mainwin);
 
-void messageview_init				(MessageView	*messageview);
+void messageview_init(MessageView *messageview);
 gint messageview_show				(MessageView	*messageview,
 						 MsgInfo	*msginfo,
 						 gboolean	 all_headers);

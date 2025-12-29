@@ -76,13 +76,6 @@ static gint mimeview_button_pressed	(GtkWidget	*widget,
 					 GdkEventButton	*event,
 					 MimeView	*mimeview);
 
-static void mimeview_drag_data_get      (GtkWidget	  *widget,
-					 GdkDragContext   *drag_context,
-					 GtkSelectionData *selection_data,
-					 guint		   info,
-					 guint		   time,
-					 MimeView	  *mimeview);
-
 static gboolean mimeview_scrolled	(GtkWidget	*widget,
 					 GdkEventScroll	*event,
 					 MimeView	*mimeview);
@@ -251,7 +244,6 @@ MimeView *mimeview_create(MainWindow *mainwin)
 	gchar *titles[N_MIMEVIEW_COLS];
 	gint cols;
 
-	debug_print("Creating MIME view...\n");
 	mimeview = g_new0(MimeView, 1);
 
 	titles[COL_MIMETYPE] = _("MIME Type");
@@ -302,15 +294,11 @@ MimeView *mimeview_create(MainWindow *mainwin)
 
 	gtk_widget_show(ctree);
 	gtk_container_add(GTK_CONTAINER(scrolledwin), ctree);
-	gtk_drag_source_set(ctree, GDK_BUTTON1_MASK|GDK_BUTTON3_MASK,
-			    mimeview_mime_types, 1, GDK_ACTION_COPY);
 
 	g_signal_connect(G_OBJECT(selection), "changed",
 			 G_CALLBACK(mimeview_selected), mimeview);
 	g_signal_connect(G_OBJECT(ctree), "button_release_event",
 			 G_CALLBACK(mimeview_button_pressed), mimeview);
-	g_signal_connect(G_OBJECT(ctree), "drag_data_get",
-			 G_CALLBACK(mimeview_drag_data_get), mimeview);
 
 	mime_notebook = gtk_notebook_new();
 	gtk_widget_set_name(GTK_WIDGET(mime_notebook), "mime_notebook");
@@ -406,6 +394,7 @@ MimeView *mimeview_create(MainWindow *mainwin)
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_show(vbox);
+	gtk_box_pack_start(GTK_BOX(vbox), mime_notebook, TRUE, TRUE, 0);
 
 	paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
 	gtk_widget_show(paned);
@@ -457,23 +446,16 @@ void mimeview_show_message(MimeView *mimeview, MimeInfo *mimeinfo,
 
 	mimeview_clear(mimeview);
 
-	cm_return_if_fail(file != NULL);
-	cm_return_if_fail(mimeinfo != NULL);
-
 	mimeview->mimeinfo = mimeinfo;
+	mimeview->file = strdup(file);
 
-	mimeview->file = g_strdup(file);
-
-	g_signal_handlers_block_by_func(G_OBJECT(ctree), mimeview_selected,
-					mimeview);
+	g_signal_handlers_block_by_func(G_OBJECT(ctree), mimeview_selected, mimeview);
 
 	mimeview_set_multipart_tree(mimeview, mimeinfo, NULL);
 	gtk_tree_view_expand_all(ctree);
-	icon_list_clear(mimeview);
 	icon_list_create(mimeview, mimeinfo);
 
-	g_signal_handlers_unblock_by_func(G_OBJECT(ctree),
-					  mimeview_selected, mimeview);
+	g_signal_handlers_unblock_by_func(G_OBJECT(ctree), mimeview_selected, mimeview);
 }
 
 static void mimeview_free_mimeinfo(MimeView *mimeview)
@@ -720,22 +702,11 @@ static const gchar *get_part_description(MimeInfo *partinfo)
 
 static void mimeview_show_message_part(MimeView *mimeview, MimeInfo *partinfo)
 {
-	FILE *fp;
-	const gchar *fname;
-
 	if (!partinfo) return;
 
-	fname = mimeview->file;
-	if (!fname) return;
-
-	if ((fp = g_fopen(fname, "rb")) == NULL) {
-		FILE_OP_ERROR(fname, "g_fopen");
-		return;
-	}
-
-	if (fseek(fp, partinfo->offset, SEEK_SET) < 0) {
-		FILE_OP_ERROR(mimeview->file, "fseek");
-		fclose(fp);
+	FILE *fp;
+	if ((fp = fopen(mimeview->file, "r")) == NULL) {
+		warn("open %s", mimeview->file);
 		return;
 	}
 
@@ -908,23 +879,6 @@ void mimeview_clear(MimeView *mimeview)
 	mimeview_change_view_type(mimeview, MIMEVIEW_TEXT);
 }
 
-static void redisplay_email(GtkWidget *widget, gpointer user_data)
-{
-	MimeView *mimeview = (MimeView *) user_data;
-	gtk_tree_path_free(mimeview->opened);
-	mimeview->opened = NULL;
-	mimeview_selected(gtk_tree_view_get_selection(
-			GTK_TREE_VIEW(mimeview->ctree)), mimeview);
-}
-
-void mimeview_show_part_as_text(MimeView *mimeview, MimeInfo *partinfo)
-{
-	cm_return_if_fail(mimeview != NULL);
-	cm_return_if_fail(partinfo != NULL);
-
-	mimeview_show_message_part(mimeview, partinfo);
-}
-
 static void mimeview_selected(GtkTreeSelection *selection, MimeView *mimeview)
 {
 	GtkTreeView *ctree = GTK_TREE_VIEW(mimeview->ctree);
@@ -954,7 +908,8 @@ static void mimeview_selected(GtkTreeSelection *selection, MimeView *mimeview)
 	gtk_tree_view_scroll_to_cell(ctree, path, NULL, TRUE, 0.5, 0);
 
 	partinfo = mimeview_get_node_part(mimeview, path);
-	if (!partinfo) return;
+	if (!partinfo)
+		return;
 
 	/* ungrab the mouse event */
 	if (gtk_widget_has_grab(GTK_WIDGET(ctree))) {
@@ -974,7 +929,6 @@ static void mimeview_selected(GtkTreeSelection *selection, MimeView *mimeview)
 		case MIMETYPE_MESSAGE:
 		case MIMETYPE_MULTIPART:
 			mimeview_show_message_part(mimeview, partinfo);
-
 			break;
 		default:
 			mimeview->textview->default_text = TRUE;
@@ -1156,119 +1110,6 @@ skip:
 
 #define BREAK_ON_MODIFIER_KEY() \
 	if ((event->state & (GDK_MOD1_MASK|GDK_CONTROL_MASK)) != 0) break
-
-static void mimeview_drag_data_get(GtkWidget	    *widget,
-				   GdkDragContext   *drag_context,
-				   GtkSelectionData *selection_data,
-				   guint	     info,
-				   guint	     time,
-				   MimeView	    *mimeview)
-{
-	gchar *filename = NULL, *uriname, *tmp = NULL;
-	MimeInfo *partinfo;
-	gint err;
-	gint count = 0;
-
-	if (!mimeview->opened) return;
-	if (!mimeview->file) return;
-
-	partinfo = mimeview_get_selected_part(mimeview);
-	if (!partinfo) return;
-
-	if (strlen(get_part_name(partinfo)) > 0) {
-		filename = g_path_get_basename(get_part_name(partinfo));
-		if (filename) {
-			if (*filename == '\0') {
-				g_free(filename);
-				return;
-			}
-		}
-	} else if (partinfo->type == MIMETYPE_MESSAGE
-		   && !g_ascii_strcasecmp(partinfo->subtype, "rfc822")) {
-		gchar *name = NULL;
-		GPtrArray *headers = NULL;
-		FILE *fp;
-
-		fp = g_fopen(partinfo->data.filename, "rb");
-		if (fp != NULL && fseek(fp, partinfo->offset, SEEK_SET) == 0) {
-			headers = procheader_get_header_array(fp);
-			if (headers) {
-				gint i;
-				for (i = 0; i < headers->len; i++) {
-					Header *header = g_ptr_array_index(headers, i);
-					if (procheader_headername_equal(header->name, "Subject")) {
-						unfold_line(header->body);
-						name = g_strconcat(header->body, ".txt", NULL);
-						subst_for_filename(name);
-					}
-				}
-				procheader_header_array_destroy(headers);
-			}
-		}
-		if (fp != NULL)
-			fclose(fp);
-		if (name)
-			filename = g_path_get_basename(name);
-		g_free(name);
-	}
-	if (filename == NULL)
-		filename = g_path_get_basename("Unnamed part");
-
-	if (!g_utf8_validate(filename, -1, NULL))
-		tmp = conv_codeset_strdup(filename,
-				conv_get_locale_charset_str(),
-				CS_UTF_8);
-
-	if (tmp == NULL) {
-		g_warning("filename not in UTF-8");
-		tmp = g_strdup(filename);
-	}
-	g_free(filename);
-	filename = g_strconcat(get_mime_tmp_dir(), G_DIR_SEPARATOR_S,
-			       tmp, NULL);
-
-check_new_file:
-	if (is_file_exist(filename)) {
-		gchar *ext = NULL;
-		gchar *prefix = NULL;
-		gchar *new_name = NULL;
-		if (strrchr(tmp, '.')) {
-			prefix = g_strdup(tmp);
-			ext = g_strdup(strrchr(tmp, '.'));
-			*(strrchr(prefix, '.')) = '\0';
-		} else {
-			prefix = g_strdup(tmp);
-			ext = g_strdup("");
-		}
-		count++;
-		new_name = g_strdup_printf("%s.%d%s", prefix, count, ext);
-		g_free(prefix);
-		g_free(ext);
-		g_free(filename);
-		filename = g_strconcat(get_mime_tmp_dir(), G_DIR_SEPARATOR_S,
-			       new_name, NULL);
-		g_free(new_name);
-		goto check_new_file;
-	}
-
-	g_free(tmp);
-
-	if ((err = procmime_get_part(filename, partinfo)) < 0)
-		alertpanel_error
-			(_("Couldn't save the part of multipart message: %s"),
-				g_strerror(-err));
-
-	tmp = g_filename_to_uri(filename, NULL, NULL);
-	uriname = g_strconcat(tmp, "\r\n", NULL);
-	g_free(tmp);
-
-	gtk_selection_data_set(selection_data,
-                   gtk_selection_data_get_target(selection_data), 8,
-			       (guchar *)uriname, strlen(uriname));
-
-	g_free(uriname);
-	g_free(filename);
-}
 
 /**
  * Returns a filename (with path) for an attachment
@@ -2017,8 +1858,6 @@ static void icon_list_append_icon (MimeView *mimeview, MimeInfo *mimeinfo)
 	gtk_widget_set_tooltip_markup(button, tip);
 	g_free(tip);
 	gtk_widget_show_all(button);
-	gtk_drag_source_set(button, GDK_BUTTON1_MASK|GDK_BUTTON3_MASK,
-			    mimeview_mime_types, 1, GDK_ACTION_COPY);
 
 	g_signal_connect(G_OBJECT(button), "popup-menu",
 			 G_CALLBACK(icon_popup_menu), mimeview);
@@ -2026,8 +1865,6 @@ static void icon_list_append_icon (MimeView *mimeview, MimeInfo *mimeinfo)
 			 G_CALLBACK(icon_clicked_cb), mimeview);
 	g_signal_connect(G_OBJECT(button), "key_press_event",
 			 G_CALLBACK(icon_key_pressed), mimeview);
-	g_signal_connect(G_OBJECT(button), "drag_data_get",
-			 G_CALLBACK(mimeview_drag_data_get), mimeview);
 	gtk_container_add(GTK_CONTAINER(grid), button);
 }
 
@@ -2075,10 +1912,7 @@ static void icon_scroll_size_allocate_cb(GtkWidget *widget,
 
 static void icon_list_create(MimeView *mimeview, MimeInfo *mimeinfo)
 {
-	gint min_width, width;
-
-	cm_return_if_fail(mimeinfo != NULL);
-
+	icon_list_clear(mimeview);
 	while (mimeinfo != NULL) {
 		if (mimeinfo->type != MIMETYPE_MULTIPART)
 			icon_list_append_icon(mimeview, mimeinfo);
@@ -2089,6 +1923,8 @@ static void icon_list_create(MimeView *mimeview, MimeInfo *mimeinfo)
 			 ? (MimeInfo *) mimeinfo->node->next->data
 			 : NULL;
 	}
+
+	gint min_width, width;
 	gtk_widget_get_preferred_width(mimeview->icon_mainbox, &min_width, &width);
 	if (min_width < width) {
 		gtk_widget_set_size_request(mimeview->icon_mainbox,
@@ -2169,7 +2005,6 @@ static gint mime_toggle_button_cb(GtkWidget *button, GdkEventButton *event,
 void mimeview_update (MimeView *mimeview)
 {
 	if (mimeview && mimeview->mimeinfo) {
-		icon_list_clear(mimeview);
 		icon_list_create(mimeview, mimeview->mimeinfo);
 	}
 }
