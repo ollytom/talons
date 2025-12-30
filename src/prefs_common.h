@@ -96,14 +96,6 @@ typedef enum
 
 typedef enum
 {
-	AVATARS_DISABLE = 0,
-	AVATARS_ENABLE_CAPTURE = 1,
-	AVATARS_ENABLE_RENDER = 2,
-	AVATARS_ENABLE_BOTH = 3
-} EnableAvatars;
-
-typedef enum
-{
 	COL_MISSPELLED,
 	COL_QUOTE_LEVEL1,
 	COL_QUOTE_LEVEL2,

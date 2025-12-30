@@ -34,8 +34,4 @@ typedef struct _TextView	TextView;
 
 struct _MimeView;
 typedef struct _MimeView	MimeView;
-
-struct _NoticeView;
-typedef struct _NoticeView	NoticeView;
-
 #endif

@@ -37,24 +37,17 @@ typedef struct _MsgFileInfo     	MsgFileInfo;
 struct _MsgInfoUpdate;
 typedef struct _MsgInfoUpdate 		MsgInfoUpdate;
 
-struct _AvatarCaptureData;
-typedef struct _AvatarCaptureData	AvatarCaptureData;
-
 struct _MsgInfoExtraData;
 typedef struct _MsgInfoExtraData	MsgInfoExtraData;
 
 typedef GSList MsgInfoList;
 typedef GSList MsgNumberList;
 
-
-
 struct _HeaderEntry;
 typedef struct _HeaderEntry	HeaderEntry;
 
 struct _Header;
 typedef struct _Header		Header;
-
-
 
 struct _MimeType;
 typedef struct _MimeType	MimeType;
@@ -64,7 +57,5 @@ typedef struct _MimeInfo	MimeInfo;
 
 struct _MimeParser;
 typedef struct _MimeParser	MimeParser;
-
-
 
 #endif

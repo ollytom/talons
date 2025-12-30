@@ -2826,10 +2826,10 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
 			prefs_common.mainwin_x,
 			prefs_common.mainwin_y);
 
-	/* CLAWS: previous "gtk_widget_show_all" makes noticeview
-	 * and mimeview icon list/ctree lose track of their visibility states */
-	if (!noticeview_is_visible(mainwin->messageview->noticeview))
-		gtk_widget_hide(GTK_WIDGET_PTR(mainwin->messageview->noticeview));
+	/*
+	 * previous "gtk_widget_show_all" makes mimeview
+	 * icon list/ctree lose track of their visibility states.
+	 */
 	if (mainwin->messageview->mimeview->ctree_mode)
 		gtk_widget_hide(mainwin->messageview->mimeview->icon_mainbox);
 	else

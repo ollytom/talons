@@ -230,8 +230,6 @@ struct _MsgInfo
 
 struct _MsgInfoExtraData
 {
-	GSList *avatars;
-
 	gchar *dispositionnotificationto;
 	gchar *returnreceiptto;
 
@@ -261,13 +259,6 @@ struct _MsgFileInfo
 struct _MsgInfoUpdate {
 	MsgInfo	*msginfo;
 	MsgInfoUpdateFlags flags;
-};
-
-struct	_AvatarCaptureData
-{
-	MsgInfo *msginfo;
-	const gchar *header;
-	const gchar *content;
 };
 
 GSList *procmsg_read_cache		(FolderItem	*item,

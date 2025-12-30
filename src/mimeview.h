@@ -30,7 +30,6 @@ typedef struct _MimeViewer 		MimeViewer;
 #include "textview.h"
 #include "messageview.h"
 #include "procmime.h"
-#include "noticeview.h"
 
 typedef enum
 {

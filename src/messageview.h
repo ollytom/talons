@@ -41,7 +41,6 @@ struct _MessageView
 	GtkWidget *menubar;
 
 	MimeView *mimeview;
-	NoticeView *noticeview;
 	GtkWidget *statusbar;
 	gint statusbar_cid;
 

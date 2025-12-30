@@ -1391,7 +1391,6 @@ void textview_clear(TextView *textview)
 	textview->prev_quote_level = -1;
 
 	textview->body_pos = 0;
-	textview->avatar_type = 0;
 
 	if (textview->messageview->mainwin->cursor_count == 0) {
 		textview_set_cursor(window, text_cursor);

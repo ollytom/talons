@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #ifndef __PROCHEADER_H__
@@ -25,8 +25,6 @@
 #include <time.h>
 
 #include "proctypes.h"
-
-#define AVATAR_HEADER_UPDATE_HOOKLIST "avatar_header_update"
 
 struct _HeaderEntry
 {

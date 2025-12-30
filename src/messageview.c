@@ -317,25 +317,15 @@ static GtkRadioActionEntry msgview_radio_dec_entries[] =
 
 MessageView *messageview_create(MainWindow *mainwin)
 {
-	MessageView *messageview;
-	GtkWidget *vbox;
-	MimeView *mimeview;
-	NoticeView *noticeview;
+	MessageView *messageview = g_new0(MessageView, 1);
 
-	debug_print("Creating message view...\n");
-	messageview = g_new0(MessageView, 1);
-
-	noticeview = noticeview_create(mainwin);
-
-	mimeview = mimeview_create(mainwin);
+	MimeView *mimeview = mimeview_create(mainwin);
 	mimeview->textview = textview_create();
 	mimeview->textview->messageview = messageview;
 	mimeview->messageview = messageview;
 
-	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_widget_set_name(GTK_WIDGET(vbox), "messageview");
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET_PTR(noticeview),
-			   FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox),
                            GTK_WIDGET_PTR(mimeview), TRUE, TRUE, 0);
 	gtk_widget_show(vbox);
@@ -344,7 +334,6 @@ MessageView *messageview_create(MainWindow *mainwin)
 	messageview->new_window  = FALSE;
 	messageview->window      = NULL;
 	messageview->mimeview    = mimeview;
-	messageview->noticeview = noticeview;
 	messageview->mainwin    = mainwin;
 
 	messageview->statusbar     = NULL;
@@ -639,7 +628,6 @@ MessageView *messageview_create_with_new_window(MainWindow *mainwin)
 void messageview_init(MessageView *messageview)
 {
 	mimeview_init(messageview->mimeview);
-	noticeview_hide(messageview->noticeview);
 }
 
 static gboolean find_broken_func(GNode *node, gpointer data)
@@ -826,7 +814,6 @@ static void messageview_find_part_depth_first(MimeInfoSearch *context, MimeMedia
 gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 		      gboolean all_headers)
 {
-	gchar *text = NULL;
 	gchar *file;
 	MimeInfo *mimeinfo, *root;
 	gchar *subject = NULL;
@@ -841,7 +828,6 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 		return 0;
 	}
 
-	noticeview_hide(messageview->noticeview);
 	mimeview_clear(messageview->mimeview);
 	messageview->updating = TRUE;
 
@@ -928,23 +914,10 @@ gint messageview_show(MessageView *messageview, MsgInfo *msginfo,
 	main_create_mailing_list_menu(messageview->mainwin, messageview->msginfo);
 
 	if (find_broken_part(mimeinfo) != NULL) {
-		noticeview_set_icon(messageview->noticeview,
-				    STOCK_PIXMAP_NOTICE_WARN);
-		if (!noticeview_is_visible(messageview->noticeview)) {
-			noticeview_set_text(messageview->noticeview, _("Message doesn't conform to MIME standard. "
-						"It may render wrongly."));
-			gtk_widget_hide(messageview->noticeview->button);
-			gtk_widget_hide(messageview->noticeview->button2);
-		} else {
-			gchar *full = g_strconcat(
-					gtk_label_get_text(GTK_LABEL(messageview->noticeview->text)),
-					"\n",
-					_("Message doesn't conform to MIME standard. "
-					"It may render wrongly."), NULL);
-			noticeview_set_text(messageview->noticeview, full);
-			g_free(full);
-		}
-		noticeview_show(messageview->noticeview);
+		GtkDialogFlags flag = GTK_DIALOG_DESTROY_WITH_PARENT;
+		GtkWidget *dialog = gtk_message_dialog_new(messageview->mainwin, flag, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "Broken MIME part");
+		g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog);
+		gtk_widget_show(dialog);
 	}
 
 	root = mimeinfo;
@@ -1025,7 +998,6 @@ void messageview_clear(MessageView *messageview)
 	}
 
 	mimeview_clear(messageview->mimeview);
-	noticeview_hide(messageview->noticeview);
 }
 
 void messageview_destroy(MessageView *messageview)
@@ -1062,7 +1034,6 @@ void messageview_destroy(MessageView *messageview)
 	}
 
 	mimeview_destroy(messageview->mimeview);
-	noticeview_destroy(messageview->noticeview);
 
 	procmsg_msginfo_free(&(messageview->msginfo));
 	toolbar_clear_list(TOOLBAR_MSGVIEW);

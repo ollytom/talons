@@ -774,18 +774,6 @@ static MsgInfo *parse_stream(void *data, gboolean isstring, MsgFlags flags,
 		default:
 			break;
 		}
-		/* to avoid performance penalty hooklist is invoked only for
-		   headers known to be able to generate avatars */
-		if (hnum == H_FROM || hnum == H_X_FACE || hnum == H_FACE) {
-			AvatarCaptureData *acd = g_new0(AvatarCaptureData, 1);
-			/* no extra memory is wasted, hooks are expected to
-			   take care of copying members when needed */
-			acd->msginfo = msginfo;
-			acd->header  = hentry_full[hnum].name;
-			acd->content = hp;
-			hooks_invoke(AVATAR_HEADER_UPDATE_HOOKLIST, (gpointer)acd);
-			g_free(acd);
-		}
 		g_free(buf);
 		buf = NULL;
 	}
