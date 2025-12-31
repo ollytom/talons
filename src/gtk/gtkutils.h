@@ -46,13 +46,6 @@
 #define GTKUT_CTREE_REFRESH(clist) \
 	GTK_CMCLIST_GET_CLASS(clist)->refresh(clist)
 
-/* String used in color button labels.
- * Instead of hardcoding a size which doesn't look the same on different
- * resolutions, use a space;m-space;space label and let GTK to compute
- * the appropriate button size for current font.
- * This macro is only used in gtkut_set_button_color(). */
-#define GTKUT_COLOR_BUTTON_LABEL "\x20\xE2\x80\x83\x20"
-
 /* Set "color" to the same color as "rgba" */
 #define GTKUT_GDKRGBA_TO_GDKCOLOR(rgba, color) { \
 	color.pixel = 0; \
@@ -60,18 +53,6 @@
 	color.green = (guint16)(rgba.green * 65535); \
 	color.blue  = (guint16)(rgba.blue * 65535); \
 }
-
-/* Set "rgba" to the same color as "color" */
-#define GTKUT_GDKCOLOR_TO_GDKRGBA(color, rgba) { \
-	rgba.red   = (gdouble)color.red / 65535; \
-	rgba.green = (gdouble)color.green / 65535; \
-	rgba.blue  = (gdouble)color.blue / 65535; \
-	rgba.alpha = 1.0; \
-}
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* Since GDK's gdk_rgba_to_string() produces a string
  * representation unsuitable for us, we have to have
@@ -236,10 +217,4 @@ gpointer gtkut_tree_view_get_selected_pointer(GtkTreeView *view,
 		GtkTreeIter *_iter);
 
 void gtkut_gdk_screen_size_changed (GdkScreen* self, gpointer data);
-
-#ifdef __cplusplus
-}
-#endif
-
-
 #endif /* __GTKUTILS_H__ */
