@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<interface>
+  <object id="about" class="GtkAboutDialog">
+    <property name="website">https://git.olowe.co/talons</property>
+    <property name="authors">Jonathan Boeing &lt;jonathan@claws-mail.org&gt;
+Tristan Chabredier &lt;wwp@claws-mail.org&gt;
+Thorsten Maerz &lt;thorsten@claws-mail.org&gt;
+Paul Mangan &lt;paul@claws-mail.org&gt;
+Ricardo Mones Lastra &lt;ricardo@mones.org&gt;
+Salvatore De Paolis &lt;iwkse@claws-mail.org&gt;
+Michael Rasmussen &lt;mir@datanom.net&gt;
+Oliver Lowe &lt;o@olowe.co&gt;
+    </property>
+    <property name="artists">Jesper Schultz &lt;jesper@schultz-net.dk&gt;
+Jakub 'jimmac' Steiner &lt;jimmac@ximian.com&gt;
+Aleksandar Urošević &lt;urke@users.sf.net&gt;
+</property>
+    <property name="license-type">GTK_LICENSE_GPL_3_0</property>
+    <property name="comments">A fork of claws-mail</property>
+  </object>
+</interface>

@@ -60,7 +60,6 @@
 #include "utils.h"
 #include "gtkutils.h"
 #include "codeconv.h"
-#include "about.h"
 #include "manual.h"
 #include "version.h"
 #include "prefs_gtk.h"
@@ -388,7 +387,13 @@ static void mainwindow_nothing_cb	   (GtkAction *action, gpointer data)
 
 static void about_cb(GtkAction *gaction, gpointer data)
 {
-	about_show();
+	char path[PATH_MAX];
+	strlcpy(path, getenv("HOME"), sizeof(path));
+	strlcat(path, "/.local/share/talons/about.ui", sizeof(path));
+
+	GtkBuilder *builder = gtk_builder_new_from_file(path);
+	GtkWidget *about = GTK_WIDGET(gtk_builder_get_object(builder, "about"));
+	gtk_widget_show(about);
 }
 
 static void	mw_inc_mail_cb			(GtkAction *gaction, gpointer data)
