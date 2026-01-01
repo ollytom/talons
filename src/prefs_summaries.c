@@ -46,14 +46,12 @@ typedef struct _SummariesPage
 
 	GtkWidget *window;
 
-	GtkWidget *optmenu_folder_unread;
 	GtkWidget *checkbtn_useaddrbook;
 	GtkWidget *checkbtn_show_tooltips;
 	GtkWidget *checkbtn_threadsubj;
 	GtkWidget *button_datefmt;
 	GtkWidget *entry_datefmt;
 
-	GtkWidget *checkbtn_reopen_last_folder;
 	GtkWidget *checkbtn_startup_folder;
 	GtkWidget *startup_folder_entry;
 	GtkWidget *startup_folder_select;
@@ -104,24 +102,12 @@ static void mark_as_read_toggled		(GtkToggleButton *button,
 static void always_show_msg_toggled		(GtkToggleButton *button,
 						 gpointer user_data);
 
-static void reopen_last_folder_toggled(GtkToggleButton *toggle_btn, GtkWidget *widget)
-{
-	gboolean is_active;
-
-	is_active = gtk_toggle_button_get_active(toggle_btn);
-	gtk_widget_set_sensitive(widget, !is_active);
-	if (is_active)
-		prefs_common.goto_folder_on_startup = FALSE;
-}
-
 static void startup_folder_toggled(GtkToggleButton *toggle_btn, GtkWidget *widget)
 {
 	gboolean is_active;
 
 	is_active = gtk_toggle_button_get_active(toggle_btn);
 	gtk_widget_set_sensitive(widget, !is_active);
-	if (is_active)
-		prefs_common.goto_last_folder_on_startup = FALSE;
 }
 
 static void foldersel_cb(GtkWidget *widget, gpointer data)
@@ -350,7 +336,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *hbox0, *hbox1, *hbox2;
 	GtkWidget *vbox1, *vbox2, *vbox3, *vbox4;
 	GtkWidget *frame_new_folders;
-	GtkWidget *optmenu_folder_unread;
 	GtkWidget *checkbtn_useaddrbook;
 	GtkWidget *checkbtn_show_tooltips;
 	GtkWidget *checkbtn_threadsubj;
@@ -358,7 +343,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *button_datefmt;
 	GtkWidget *entry_datefmt;
 	GtkWidget *button_dispitem;
-	GtkWidget *checkbtn_reopen_last_folder;
 	GtkWidget *checkbtn_startup_folder;
 	GtkWidget *startup_folder_entry;
 	GtkWidget *startup_folder_select;
@@ -392,88 +376,36 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	notebook = gtk_notebook_new();
 	gtk_widget_show(notebook);
 
+	char path[PATH_MAX];
+	strlcpy(path, getenv("HOME"), sizeof(path));
+	strlcat(path, "/.local/share/talons/prefs_summaries.ui", sizeof(path));
+	GtkBuilder *builder = gtk_builder_new_from_file(path);
+
+	button_dispitem = GTK_WIDGET(gtk_builder_get_object(builder, "dispitem"));
+	g_signal_connect(G_OBJECT (button_dispitem), "clicked", G_CALLBACK(prefs_folder_column_open), NULL);
+
+	startup_folder_entry = GTK_WIDGET(gtk_builder_get_object(builder, "startup-folder-entry"));
+	startup_folder_select = GTK_WIDGET(gtk_builder_get_object(builder, "startup-folder-button"));
+	checkbtn_startup_folder = GTK_WIDGET(gtk_builder_get_object(builder, "startup-folder-checkbutton"));
+	g_signal_connect(startup_folder_select, "clicked", G_CALLBACK(foldersel_cb), startup_folder_entry);
+
+	GtkWidget *folderlist = GTK_WIDGET(gtk_builder_get_object(builder, "folder-list"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), folderlist, gtk_label_new("Folder list"));
+	gtk_widget_show_all(folderlist);
+
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox1);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox1,
-				 gtk_label_new(_("Folder list")));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox1, gtk_label_new("Message list"));
 
 	hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
 	gtk_widget_show (hbox0);
 	gtk_box_pack_start(GTK_BOX(vbox1), hbox0, FALSE, TRUE, 0);
 
-	label = gtk_label_new(_("Displayed columns"));
+	label = gtk_label_new("Displayed columns");
 	gtk_widget_show(label);
 	gtk_box_pack_start(GTK_BOX(hbox0), label, FALSE, FALSE, 0);
-	button_dispitem = gtk_button_new_with_mnemonic(_("_Edit"));
-	gtk_widget_show (button_dispitem);
-	gtk_box_pack_start (GTK_BOX (hbox0), button_dispitem, FALSE, FALSE, 0);
-	g_signal_connect (G_OBJECT (button_dispitem), "clicked",
-			  G_CALLBACK (prefs_folder_column_open),
-			  NULL);
-
-	hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox0);
-	gtk_box_pack_start(GTK_BOX (vbox1), hbox0, FALSE, FALSE, 0);
-
-	label = gtk_label_new (_("Display message count next to folder name"));
-	gtk_widget_show (label);
-	gtk_box_pack_start(GTK_BOX(hbox0), label, FALSE, FALSE, 0);
-
-	optmenu_folder_unread = gtkut_sc_combobox_create(NULL, FALSE);
-	menu = GTK_LIST_STORE(gtk_combo_box_get_model(
-				GTK_COMBO_BOX(optmenu_folder_unread)));
-	gtk_widget_show (optmenu_folder_unread);
-
-	COMBOBOX_ADD (menu, _("No"), 0);
-	COMBOBOX_ADD (menu, _("Unread messages"), 1);
-	COMBOBOX_ADD (menu, _("Unread and Total messages"), 2);
-
-	gtk_box_pack_start(GTK_BOX(hbox0), optmenu_folder_unread, FALSE, FALSE, 0);
-
-	PACK_CHECK_BUTTON
-		(vbox1, checkbtn_reopen_last_folder,
-		 _("Open last opened folder at start-up"));
-
-	hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show(hbox0);
-	gtk_box_pack_start(GTK_BOX(vbox1), hbox0, FALSE, FALSE, 0);
-
-	PACK_CHECK_BUTTON
-		(hbox0, checkbtn_startup_folder,
-		 _("Open selected folder at start-up"));
-
-	startup_folder_entry = gtk_entry_new();
-	gtk_widget_show(startup_folder_entry);
-	gtk_box_pack_start(GTK_BOX(hbox0), startup_folder_entry, TRUE, TRUE, 0);
-	startup_folder_select = gtkut_get_browse_directory_btn(_("_Browse"));
-	gtk_widget_show(startup_folder_select);
-	gtk_box_pack_start(GTK_BOX(hbox0), startup_folder_select, FALSE, FALSE, 0);
-
-	SET_TOGGLE_SENSITIVITY(checkbtn_startup_folder, startup_folder_entry)
-	SET_TOGGLE_SENSITIVITY(checkbtn_startup_folder, startup_folder_select)
-
-	g_signal_connect(G_OBJECT(checkbtn_reopen_last_folder), "toggled",
-			 G_CALLBACK(reopen_last_folder_toggled), checkbtn_startup_folder);
-	g_signal_connect(G_OBJECT(checkbtn_startup_folder), "toggled",
-			 G_CALLBACK(startup_folder_toggled), checkbtn_reopen_last_folder);
-	g_signal_connect(G_OBJECT(startup_folder_select), "clicked",
-			 G_CALLBACK(foldersel_cb), startup_folder_entry);
-
-	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
-	gtk_widget_show (vbox1);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox1,
-				 gtk_label_new(_("Message list")));
-
-	hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_widget_show (hbox0);
-	gtk_box_pack_start(GTK_BOX(vbox1), hbox0, FALSE, TRUE, 0);
-
-	label = gtk_label_new(_("Displayed columns"));
-	gtk_widget_show(label);
-	gtk_box_pack_start(GTK_BOX(hbox0), label, FALSE, FALSE, 0);
-	button_dispitem = gtk_button_new_with_mnemonic(_("_Edit"));
+	button_dispitem = gtk_button_new_with_mnemonic("Edit");
 	gtk_widget_show (button_dispitem);
 	gtk_box_pack_start (GTK_BOX (hbox0), button_dispitem, FALSE, FALSE, 0);
 	g_signal_connect (G_OBJECT (button_dispitem), "clicked",
@@ -690,12 +622,10 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 		(vbox2, checkbtn_folder_default_hide_del_msgs,
 		 _("Hide deleted messages"));
 
-	prefs_summaries->optmenu_folder_unread = optmenu_folder_unread;
 	prefs_summaries->checkbtn_useaddrbook = checkbtn_useaddrbook;
 	prefs_summaries->checkbtn_show_tooltips = checkbtn_show_tooltips;
 	prefs_summaries->checkbtn_threadsubj = checkbtn_threadsubj;
 	prefs_summaries->entry_datefmt = entry_datefmt;
-	prefs_summaries->checkbtn_reopen_last_folder = checkbtn_reopen_last_folder;
 	prefs_summaries->checkbtn_startup_folder = checkbtn_startup_folder;
 	prefs_summaries->startup_folder_entry = startup_folder_entry;
 
@@ -732,8 +662,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 
 	prefs_summaries->window			= GTK_WIDGET(window);
 
-	combobox_select_by_data(GTK_COMBO_BOX(optmenu_folder_unread),
-			prefs_common.display_folder_unread);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_useaddrbook),
 			prefs_common.use_addr_book);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_show_tooltips),
@@ -742,8 +670,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 			prefs_common.thread_by_subject);
 	gtk_entry_set_text(GTK_ENTRY(entry_datefmt),
 			prefs_common.date_format?prefs_common.date_format:"");
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_reopen_last_folder),
-			prefs_common.goto_last_folder_on_startup);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_startup_folder),
 			prefs_common.goto_folder_on_startup);
 	gtk_entry_set_text(GTK_ENTRY(startup_folder_entry),
@@ -776,9 +702,6 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	combobox_select_by_data(GTK_COMBO_BOX(optmenu_sort_type),
 			prefs_common.default_sort_type);
 
-	combobox_select_by_data(GTK_COMBO_BOX(optmenu_summaryfromshow),
-			prefs_common.summary_from_show);
-
 	combobox_select_by_data(GTK_COMBO_BOX(optmenu_nextunreadmsgdialog),
 			prefs_common.next_unread_msg_dialog);
 
@@ -800,12 +723,15 @@ static void prefs_summaries_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_summaries->page.widget = notebook;
 }
 
+#define MESSAGECOUNT_NONE 0
+#define MESSAGECOUNT_UNREAD 1
+#define MESSAGECOUNT_ALL 2
+
 static void prefs_summaries_save(PrefsPage *_page)
 {
 	SummariesPage *page = (SummariesPage *) _page;
 
-	prefs_common.display_folder_unread = combobox_get_active_data(
-			GTK_COMBO_BOX(page->optmenu_folder_unread));
+	prefs_common.display_folder_unread = MESSAGECOUNT_NONE;
 
 	prefs_common.use_addr_book = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_useaddrbook));
@@ -814,12 +740,10 @@ static void prefs_summaries_save(PrefsPage *_page)
 	prefs_common.thread_by_subject = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(page->checkbtn_threadsubj));
 
-	g_free(prefs_common.date_format);
+	free(prefs_common.date_format);
 	prefs_common.date_format = gtk_editable_get_chars(
 			GTK_EDITABLE(page->entry_datefmt), 0, -1);
 
-	prefs_common.goto_last_folder_on_startup = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_reopen_last_folder));
 	prefs_common.goto_folder_on_startup = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_startup_folder));
 	prefs_common.startup_folder = gtk_editable_get_chars(

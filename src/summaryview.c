@@ -6631,26 +6631,6 @@ static gboolean summary_update_folder_hook(gpointer source, gpointer data)
 	return FALSE;
 }
 
-gint summaryview_export_mbox_list(SummaryView *summaryview)
-/* return values: -2 skipped, -1 error, 0 OK */
-{
-	GSList *list = summary_get_selected_msg_list(summaryview);
-	gchar *mbox = filesel_select_file_save("Export to mbox file", NULL);
-	gint ret;
-
-	if (mbox == NULL)
-		return -2;
-	if (list == NULL)
-		return -1;
-
-	ret = export_list_to_mbox(list, mbox);
-
-	g_slist_free(list);
-	g_free(mbox);
-
-	return ret;
-}
-
 static void summary_reedit_cb(GtkAction *gaction, gpointer data)
 {
 	SummaryView *summaryview = (SummaryView *)data;

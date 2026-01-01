@@ -305,7 +305,6 @@ void summary_set_prefs_from_folderitem
                                   (SummaryView *summaryview, FolderItem *item);
 void summary_save_prefs_to_folderitem
                                   (SummaryView *summaryview, FolderItem *item);
-gint summaryview_export_mbox_list (SummaryView *summaryview);
 void summary_set_menu_sensitive	(SummaryView		*summaryview);
 void summary_relayout(SummaryView *summaryview);
 void summary_update_unread(SummaryView *summaryview, FolderItem *removed_item);

@@ -417,13 +417,6 @@ static IncProgressDialog *inc_progress_dialog_create(gboolean autocheck)
 	gtk_widget_set_size_request(progress->window, prefs_common.receivewin_width,
 				    prefs_common.receivewin_height);
 
-	if (prefs_common.recv_dialog_mode == RECV_DIALOG_ALWAYS ||
-	    (prefs_common.recv_dialog_mode == RECV_DIALOG_MANUAL &&
-	     !autocheck)) {
-		dialog->show_dialog = TRUE;
-		gtk_widget_show_now(progress->window);
-	}
-
 	dialog->dialog = progress;
 	dialog->progress_tv = g_date_time_new_now_local();
 	dialog->folder_tv = g_date_time_new_now_local();
@@ -644,14 +637,6 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 			break;
 		}
 
-		if (pop3_session->error_val == PS_AUTHFAIL) {
-			if(prefs_common.show_recv_err_dialog) {
-				if((prefs_common.recv_dialog_mode == RECV_DIALOG_ALWAYS) ||
-				    ((prefs_common.recv_dialog_mode == RECV_DIALOG_MANUAL) && focus_window))
-					manage_window_focus_in(inc_dialog->dialog->window, NULL, NULL);
-			}
-		}
-
 		/* CLAWS: perform filtering actions on dropped message */
 		/* CLAWS: get default inbox (perhaps per account) */
 		if (pop3_session->ac_prefs->inbox) {
@@ -710,16 +695,7 @@ static gint inc_start(IncProgressDialog *inc_dialog)
 		inc_session_destroy(session);
 		inc_dialog->queue_list = g_list_remove(inc_dialog->queue_list, session);
 	}
-
-	if (prefs_common.close_recv_dialog || !inc_dialog->show_dialog) {
-		inc_progress_dialog_destroy(inc_dialog);
-	} else {
-		gtk_window_set_title(GTK_WINDOW(inc_dialog->dialog->window), fin_msg);
-		gtk_button_set_label(GTK_BUTTON(inc_dialog->dialog->cancel_btn), "_Close");
-		gtk_button_set_image(GTK_BUTTON(inc_dialog->dialog->cancel_btn),
-			gtk_image_new_from_icon_name("window-close-symbolic", GTK_ICON_SIZE_BUTTON));
-	}
-
+	inc_progress_dialog_destroy(inc_dialog);
 	return new_msgs;
 }
 
@@ -766,18 +742,11 @@ static IncState inc_pop3_session_do(IncSession *session)
 			    prefs_common.io_timeout_secs * 1000);
 
 	if (session_connect(SESSION(pop3_session), server, port) < 0) {
-		if(prefs_common.show_recv_err_dialog) {
-			if((prefs_common.recv_dialog_mode == RECV_DIALOG_ALWAYS) ||
-			    ((prefs_common.recv_dialog_mode == RECV_DIALOG_MANUAL) && focus_window)) {
-				manage_window_focus_in(inc_dialog->dialog->window, NULL, NULL);
-			}
-			alertpanel_error(_("Can't connect to POP3 server: %s:%d"),
-					 server, port);
-			manage_window_focus_out(inc_dialog->dialog->window, NULL, NULL);
-		} else {
-			log_error(LOG_PROTOCOL, _("Can't connect to POP3 server: %s:%d\n"),
-			    server, port);
-		}
+		char msg[BUFSIZ];
+		snprintf(msg, sizeof(msg), "Cannot connect to POP3 server at %s:%d", server, port);
+		alertpanel_error(msg);
+		manage_window_focus_out(inc_dialog->dialog->window, NULL, NULL);
+		log_error(LOG_PROTOCOL, msg);
 		session->inc_state = INC_CONNECT_ERROR;
 		statusbar_pop_all();
 		return INC_CONNECT_ERROR;
@@ -1066,8 +1035,6 @@ static void inc_put_error(IncState istate, Pop3Session *session)
 	switch (istate) {
 	case INC_CONNECT_ERROR:
 		fatal_error = TRUE;
-		if (!prefs_common.show_recv_err_dialog)
-			break;
 		err_msg = g_strdup_printf(_("Connection to %s:%d failed."),
 					  SESSION(session)->server,
 					  SESSION(session)->port);
@@ -1075,8 +1042,6 @@ static void inc_put_error(IncState istate, Pop3Session *session)
 	case INC_ERROR:
 		log_msg = _("Error occurred while processing mail.");
 		fatal_error = TRUE;
-		if (!prefs_common.show_recv_err_dialog)
-			break;
 		if (session->error_msg)
 			err_msg = g_strdup_printf
 				(_("Error occurred while processing mail:\n%s"),
@@ -1096,24 +1061,18 @@ static void inc_put_error(IncState istate, Pop3Session *session)
 		break;
 	case INC_SOCKET_ERROR:
 		log_msg = _("Socket error.");
-		if (!prefs_common.show_recv_err_dialog)
-			break;
 		err_msg = g_strdup_printf(_("Socket error on connection to %s:%d."),
 					  SESSION(session)->server,
 					  SESSION(session)->port);
 		break;
 	case INC_EOF:
 		log_msg = _("Connection closed by the remote host.");
-		if (!prefs_common.show_recv_err_dialog)
-			break;
 		err_msg = g_strdup_printf(_("Connection to %s:%d closed by the remote host."),
 					  SESSION(session)->server,
 					  SESSION(session)->port);
 		break;
 	case INC_LOCKED:
 		log_msg = _("Mailbox is locked.");
-		if (!prefs_common.show_recv_err_dialog)
-			break;
 		if (session->error_msg)
 			err_msg = g_strdup_printf(_("Mailbox is locked:\n%s"),
 						  session->error_msg);
@@ -1123,8 +1082,6 @@ static void inc_put_error(IncState istate, Pop3Session *session)
 	case INC_AUTH_FAILED:
 		log_msg = _("Authentication failed.");
 		fatal_error = TRUE;
-		if (!prefs_common.show_recv_err_dialog)
-			break;
 		if (session->error_msg)
 			err_msg = g_strdup_printf
 				(_("Authentication failed:\n%s"), session->error_msg);
@@ -1135,8 +1092,6 @@ static void inc_put_error(IncState istate, Pop3Session *session)
 		log_msg = _("Session timed out. You may be able to "
 			    "recover by increasing the timeout value in "
 			    "Preferences/Other/Miscellaneous.");
-		if (!prefs_common.show_recv_err_dialog)
-			break;
 		err_msg = g_strdup_printf(_("Connection to %s:%d timed out."),
 					  SESSION(session)->server,
 					  SESSION(session)->port);
@@ -1151,8 +1106,6 @@ static void inc_put_error(IncState istate, Pop3Session *session)
 		else
 			log_warning(LOG_PROTOCOL, "%s\n", log_msg);
 	}
-	if (!prefs_common.show_recv_err_dialog && fatal_error)
-		mainwindow_show_error();
 
 	if (err_msg) {
 		alertpanel_error_log("%s", err_msg);

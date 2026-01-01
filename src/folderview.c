@@ -2471,7 +2471,6 @@ static void folderview_startup_folder_cb(GtkAction *action, gpointer data)
 
 	item = folderview_get_selected_item(folderview);
 
-	prefs_common.goto_last_folder_on_startup = FALSE;
 	prefs_common.startup_folder = folder_item_get_identifier(item);
 	prefs_common.goto_folder_on_startup = prefs_common.startup_folder? TRUE : FALSE;
 }

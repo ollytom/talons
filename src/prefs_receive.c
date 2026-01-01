@@ -50,9 +50,6 @@ typedef struct _ReceivePage
 	GtkWidget *checkbtn_newmail_manu;
 	GtkWidget *entry_newmail_notify_cmd;
 	GtkWidget *hbox_newmail_notify;
-	GtkWidget *optmenu_recvdialog;
-	GtkWidget *checkbtn_show_recv_err_dialog;
-	GtkWidget *checkbtn_close_recv_dialog;
 } ReceivePage;
 
 ReceivePage *prefs_receive;
@@ -89,13 +86,6 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	GtkWidget *label_newmail_notify_cmd;
 	GtkWidget *label_newmail_notify_cmd_syntax;
 
-	GtkWidget *label_recvdialog;
-	GtkListStore *menu;
-	GtkTreeIter iter;
-	GtkWidget *optmenu_recvdialog;
-	GtkWidget *checkbtn_show_recv_err_dialog;
-	GtkWidget *checkbtn_close_recv_dialog;
-
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, VSPACING);
 	gtk_widget_show (vbox1);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), VBOX_BORDER);
@@ -118,35 +108,6 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	entry_incext = gtk_entry_new ();
 	gtk_widget_show (entry_incext);
 	gtk_box_pack_start (GTK_BOX (hbox), entry_incext, TRUE, TRUE, 0);
-
-	/* receive dialog */
-	vbox2 = gtkut_get_options_frame(vbox1, &frame, _("Dialogs"));
-
-	label_recvdialog = gtk_label_new (_("Show receive dialog"));
-	gtk_label_set_xalign(GTK_LABEL(label_recvdialog), 0.0);
-	gtk_widget_show (label_recvdialog);
-
-	optmenu_recvdialog = gtkut_sc_combobox_create(NULL, FALSE);
-	gtk_widget_show (optmenu_recvdialog);
-
-	menu = GTK_LIST_STORE(gtk_combo_box_get_model(
-				GTK_COMBO_BOX(optmenu_recvdialog)));
-	COMBOBOX_ADD (menu, _("Always"), RECV_DIALOG_ALWAYS);
-	COMBOBOX_ADD (menu, _("Only on manual receiving"), RECV_DIALOG_MANUAL);
-	COMBOBOX_ADD (menu, _("Never"), RECV_DIALOG_NEVER);
-
-	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
-	gtk_widget_show(hbox);
-	gtk_box_pack_start(GTK_BOX(hbox), label_recvdialog, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), optmenu_recvdialog, FALSE, FALSE, 0);
-
-	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, FALSE, 0);
-
-	PACK_CHECK_BUTTON (vbox2, checkbtn_close_recv_dialog,
-			   _("Close receive dialog when finished"));
-
-	PACK_CHECK_BUTTON (vbox2, checkbtn_show_recv_err_dialog,
-			   _("Show error dialog on receive error"));
 
  	vbox3 = gtkut_get_options_frame(vbox1, &frame, _("Run command after receiving new mail"));
 
@@ -193,15 +154,9 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 		prefs_common.newmail_notify_cmd);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_incext),
 		prefs_common.use_extinc);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_show_recv_err_dialog),
-		prefs_common.show_recv_err_dialog);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbtn_close_recv_dialog),
-		prefs_common.close_recv_dialog);
 
 	gtk_entry_set_text(GTK_ENTRY(entry_incext),
 		prefs_common.extinc_cmd);
-	combobox_select_by_data(GTK_COMBO_BOX(optmenu_recvdialog),
-		prefs_common.recv_dialog_mode);
 
 	prefs_receive->window = GTK_WIDGET(window);
 	prefs_receive->checkbtn_incext = checkbtn_incext;
@@ -211,9 +166,6 @@ static void prefs_receive_create_widget(PrefsPage *_page, GtkWindow *window,
 	prefs_receive->entry_newmail_notify_cmd = entry_newmail_notify_cmd;
 	prefs_receive->hbox_newmail_notify = hbox_newmail_notify;
 
-	prefs_receive->optmenu_recvdialog = optmenu_recvdialog;
-	prefs_receive->checkbtn_show_recv_err_dialog = checkbtn_show_recv_err_dialog;
-	prefs_receive->checkbtn_close_recv_dialog = checkbtn_close_recv_dialog;
 	prefs_receive->page.widget = vbox1;
 
 	g_signal_connect(G_OBJECT(checkbtn_newmail_auto), "toggled",
@@ -231,11 +183,6 @@ static void prefs_receive_save(PrefsPage *_page)
 
 	prefs_common.use_extinc = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_incext));
-	prefs_common.show_recv_err_dialog = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_show_recv_err_dialog));
-	prefs_common.close_recv_dialog = gtk_toggle_button_get_active(
-		GTK_TOGGLE_BUTTON(page->checkbtn_close_recv_dialog));
-
 	prefs_common.newmail_notify_auto = gtk_toggle_button_get_active(
 		GTK_TOGGLE_BUTTON(page->checkbtn_newmail_auto));
 	prefs_common.newmail_notify_manu = gtk_toggle_button_get_active(
@@ -248,8 +195,6 @@ static void prefs_receive_save(PrefsPage *_page)
 	tmp = gtk_editable_get_chars(GTK_EDITABLE(page->entry_newmail_notify_cmd), 0, -1);
 	g_free(prefs_common.newmail_notify_cmd);
 	prefs_common.newmail_notify_cmd = tmp;
-	prefs_common.recv_dialog_mode =
-		combobox_get_active_data(GTK_COMBO_BOX(page->optmenu_recvdialog));
 }
 
 static void prefs_receive_destroy_widget(PrefsPage *_page) {}

@@ -59,7 +59,6 @@
 #include "inc.h"
 #include "imap.h"
 #include "send_message.h"
-#include "import.h"
 #include "manage_window.h"
 #include "alertpanel.h"
 #include "statusbar.h"
@@ -124,7 +123,6 @@ static struct RemoteCmd {
 	const gchar *target;
 	gboolean debug;
 	const gchar *geometry;
-	const gchar *import_mbox;
 } cmd;
 
 static void parse_cmd_opt(int argc, char *argv[]);
@@ -511,16 +509,9 @@ int main(int argc, char *argv[])
 	folderview_thaw(mainwin->folderview);
 	main_window_cursor_normal(mainwin);
 
-	if (cmd.import_mbox) {
-		mainwindow_import_mbox(cmd.import_mbox);
-	}
-
 	if (!cmd.target && prefs_common.goto_folder_on_startup &&
 	    folder_find_item_from_identifier(prefs_common.startup_folder) != NULL) {
 		cmd.target = prefs_common.startup_folder;
-	} else if (!cmd.target && prefs_common.goto_last_folder_on_startup &&
-	    folder_find_item_from_identifier(prefs_common.last_opened_folder) != NULL) {
-		cmd.target = prefs_common.last_opened_folder;
 	}
 
 	if (cmd.receive_all && !cmd.target) {
@@ -602,11 +593,6 @@ static void exit_claws(MainWindow *mainwin)
 	if((item = folderview_get_opened_item(mainwin->folderview)) != NULL) {
 		summary_save_prefs_to_folderitem(
 			mainwin->summaryview, item);
-		if (prefs_common.last_opened_folder != NULL)
-			g_free(prefs_common.last_opened_folder);
-		prefs_common.last_opened_folder =
-			!prefs_common.goto_last_folder_on_startup ? NULL :
-			folder_item_get_identifier(item);
 	}
 
 	/* save all state before exiting */
@@ -933,7 +919,6 @@ static void parse_cmd_opt(int argc, char *argv[])
  			                  "                         show the status of each folder"));
 			g_print("%s\n", _("  --select folder[/msg]  jump to the specified folder/message\n"
 					  "                         folder is a folder id like 'folder/subfolder', a file:// uri or an absolute path"));
-			g_print("%s\n", _("  --import-mbox file     import the specified mbox file\n"));
 			g_print("%s\n", _("  --online               switch to online mode"));
 			g_print("%s\n", _("  --offline              switch to offline mode"));
 			g_print("%s\n", _("  --exit --quit -q       exit Claws Mail"));
@@ -974,13 +959,6 @@ static void parse_cmd_opt(int argc, char *argv[])
                 i++;
 		    } else {
                 parse_cmd_opt_error(_("Missing folder argument for option %s"), argv[i]);
-			}
-		} else if (!strcmp(argv[i], "--import-mbox")) {
-			if (i+1 < argc) {
-				cmd.import_mbox = argv[i+1];
-				i++;
-			} else {
-				parse_cmd_opt_error(_("Missing file argument for option %s"), argv[i]);
 			}
 		} else if (i == 1 && argc == 2) {
 			/* only one parameter. Do something intelligent about it */
@@ -1283,10 +1261,6 @@ static gint prohibit_duplicate_launch(int *argc, char ***argv)
 		gchar *str = g_strdup_printf("select %s\n", cmd.target);
 		CM_FD_WRITE_ALL(str);
 		g_free(str);
-	} else if (cmd.import_mbox) {
-		gchar *str = g_strdup_printf("import %s\n", cmd.import_mbox);
-		CM_FD_WRITE_ALL(str);
-		g_free(str);
 	} else if (cmd.search) {
 		gchar buf[BUFFSIZE];
 		gchar *str =
@@ -1469,9 +1443,6 @@ static void lock_socket_input_cb(gpointer data,
 	} else if (!STRNCMP(buf, "select ")) {
 		const gchar *target = buf+7;
 		mainwindow_jump_to(target, TRUE);
-	} else if (!STRNCMP(buf, "import ")) {
-		const gchar *mbox_file = buf + 7;
-		mainwindow_import_mbox(mbox_file);
 	} else if (!STRNCMP(buf, "exit")) {
 		app_will_exit(NULL, mainwin);
 	}

@@ -34,12 +34,6 @@
 typedef struct _PrefsCommon	PrefsCommon;
 
 typedef enum {
-	RECV_DIALOG_ALWAYS,
-	RECV_DIALOG_MANUAL,
-	RECV_DIALOG_NEVER
-} RecvDialogMode;
-
-typedef enum {
 	COMPOSE_DND_ASK,
 	COMPOSE_DND_INSERT,
 	COMPOSE_DND_ATTACH
@@ -140,12 +134,8 @@ struct _PrefsCommon
  	gboolean newmail_notify_auto;
  	gboolean newmail_notify_manu;
  	gchar   *newmail_notify_cmd;
-	RecvDialogMode recv_dialog_mode;
 	gint receivewin_width;
 	gint receivewin_height;
-	gboolean close_recv_dialog;
-	gboolean no_recv_err_panel;
-	gboolean show_recv_err_dialog;
 
 	/* Send */
 	gboolean savemsg;
@@ -223,8 +213,6 @@ struct _PrefsCommon
 	gboolean folder_default_hide_read_msgs;
 	gboolean folder_default_hide_del_msgs;
 
-	gchar *last_opened_folder;
-	gboolean goto_last_folder_on_startup;
 	gchar *startup_folder;
 	gboolean goto_folder_on_startup;
 

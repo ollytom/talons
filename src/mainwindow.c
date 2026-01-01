@@ -41,8 +41,6 @@
 #include "log.h"
 #include "compose.h"
 #include "procmsg.h"
-#include "import.h"
-#include "export.h"
 #include "password.h"
 #include "prefs_common.h"
 #include "prefs_actions.h"
@@ -122,12 +120,6 @@ static void update_folderview_cb (GtkAction	*action,
 static void add_mailbox_cb	 (GtkAction	*action,
 				  gpointer	 data);
 static void foldersort_cb	 (GtkAction	*action,
-				  gpointer	 data);
-static void import_mbox_cb	 (GtkAction	*action,
-				  gpointer	 data);
-static void export_mbox_cb	 (GtkAction	*action,
-				  gpointer	 data);
-static void export_list_mbox_cb  (GtkAction	*action,
 				  gpointer	 data);
 static void empty_trash_cb	 (GtkAction	*action,
 				  gpointer	 data);
@@ -433,11 +425,6 @@ static GtkActionEntry mainwin_entries[] =
 
 	{"File/SortMailboxes",          NULL, N_("Change mailbox order..."), NULL, NULL, G_CALLBACK(foldersort_cb) },
 
-	/* {"File/---",                 NULL, "---", NULL, NULL, NULL }, */
-	{"File/ImportMbox",             NULL, N_("_Import mbox file..."), NULL, NULL, G_CALLBACK(import_mbox_cb) },
-	{"File/ExportMbox",             NULL, N_("_Export to mbox file..."), NULL, NULL, G_CALLBACK(export_mbox_cb) },
-	{"File/ExportSelMbox",          NULL, N_("_Export selected to mbox file..."), NULL, NULL, G_CALLBACK(export_list_mbox_cb) },
-	/* {"File/---",                 NULL, "---", NULL, NULL, NULL }, */
 	{"File/EmptyTrashes",           NULL, N_("Empty all _Trash folders"), "<shift>D", NULL, G_CALLBACK(empty_trash_cb) },
 	/* {"File/---",                 NULL, "---", NULL, NULL, NULL }, */
 
@@ -959,10 +946,6 @@ MainWindow *main_window_create()
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File/AddMailbox", "MH", "File/AddMailbox/MH", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "Separator1", "File/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "SortMailboxes", "File/SortMailboxes", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "Separator2", "File/---", GTK_UI_MANAGER_SEPARATOR)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "ImportMbox", "File/ImportMbox", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "ExportMbox", "File/ExportMbox", GTK_UI_MANAGER_MENUITEM)
-	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "ExportSelMbox", "File/ExportSelMbox", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "Separator3", "File/---", GTK_UI_MANAGER_SEPARATOR)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "EmptyTrashes", "File/EmptyTrashes", GTK_UI_MANAGER_MENUITEM)
 	MENUITEM_ADDUI_MANAGER(mainwin->ui_manager, "/Menu/File", "Separator4", "File/---", GTK_UI_MANAGER_SEPARATOR)
@@ -2967,33 +2950,6 @@ static void foldersort_cb(GtkAction *action, gpointer data)
 	foldersort_open();
 }
 
-static void import_mbox_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	/* only notify if import has failed */
-	if (import_mbox(mainwin->summaryview->folder_item, NULL) == -1) {
-		alertpanel_error(_("Mbox import has failed."));
-	}
-}
-
-static void export_mbox_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	/* only notify if export has failed */
-	if (export_mbox(mainwin->summaryview->folder_item) == -1) {
-		alertpanel_error(_("Export to mbox has failed."));
-	}
-}
-
-static void export_list_mbox_cb(GtkAction *action, gpointer data)
-{
-	MainWindow *mainwin = (MainWindow *)data;
-	/* only notify if export has failed */
-	if (summaryview_export_mbox_list(mainwin->summaryview) == -1) {
-		alertpanel_error(_("Export to mbox has failed."));
-	}
-}
-
 static void empty_trash_cb(GtkAction *action, gpointer data)
 {
 	MainWindow *mainwin = (MainWindow *)data;
@@ -4164,15 +4120,4 @@ static void goto_prev_part_cb(GtkAction *action, gpointer data)
 	if (mainwin->messageview
 	&&  mainwin->messageview->mimeview)
 		mimeview_select_prev_part(mainwin->messageview->mimeview);
-}
-
-void mainwindow_import_mbox(const gchar* mbox_file)
-{
-	MainWindow *mainwin = mainwindow_get_mainwindow();
-
-	strcrlftrunc((gchar *) mbox_file);
-	/* only notify if import has failed */
-	if (import_mbox(mainwin->summaryview->folder_item, mbox_file) == -1) {
-		alertpanel_error(_("Mbox import has failed."));
-	}
 }
