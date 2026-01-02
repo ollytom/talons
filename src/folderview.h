@@ -69,7 +69,6 @@ struct _FolderView
 	gint folder_update_callback_id;
 	gint folder_item_update_callback_id;
 
-	GtkTargetList *target_list; /* DnD */
 	FolderColumnState col_state[N_FOLDER_COLS];
 	gint col_pos[N_FOLDER_COLS];
 	Folder *scanning_folder;
@@ -128,9 +127,6 @@ void folderview_move_folder		(FolderView 	*folderview,
 					 FolderItem 	*to_folder,
 					 gboolean	 copy);
 
-void folderview_unregister_popup	(FolderViewPopup	*fpopup);
-void folderview_update_search_icon	(FolderItem 		*item,
-					 gboolean 		 matches);
 void folderview_set_column_order	(FolderView		*folderview);
 
 void folderview_close_opened		(FolderView 		*folderview,

@@ -1602,27 +1602,6 @@ static void folderview_update_node(FolderView *folderview, GtkCMCTreeNode *node)
 		folderview_update_node(folderview, node);
 }
 
-void folderview_update_search_icon(FolderItem *item, gboolean matches)
-{
-	GList *list;
-	FolderView *folderview;
-	GtkCMCTree *ctree;
-	GtkCMCTreeNode *node;
-
-	cm_return_if_fail(item != NULL);
-
-	for (list = folderview_list; list != NULL; list = list->next) {
-		folderview = (FolderView *)list->data;
-		ctree = GTK_CMCTREE(folderview->ctree);
-
-		node = gtk_cmctree_find_by_row_data(ctree, NULL, item);
-		if (node && item->search_match != matches) {
-			item->search_match = matches;
-			folderview_update_node(folderview, node);
-		}
-	}
-}
-
 static gboolean folderview_update_item_claws(gpointer source, gpointer data)
 {
 	FolderItemUpdateData *update_info = (FolderItemUpdateData *)source;
@@ -2577,19 +2556,6 @@ static gboolean folderview_dnd_scroll_cb(gpointer data)
 }
 
 static void free_info(gpointer stuff, gpointer data) { g_free(stuff); }
-
-void folderview_unregister_popup(FolderViewPopup *fpopup)
-{
-	GList *folderviews;
-
-
-	for (folderviews = folderview_list; folderviews != NULL; folderviews = g_list_next(folderviews)) {
-		FolderView *folderview = folderviews->data;
-
-		g_hash_table_remove(folderview->popups, fpopup->klass);
-	}
-	g_hash_table_remove(folderview_popups, fpopup->klass);
-}
 
 void folderview_remove_item(FolderView *folderview, FolderItem *item)
 {

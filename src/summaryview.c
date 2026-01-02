@@ -821,19 +821,6 @@ static void summary_switch_from_to(SummaryView *summaryview, FolderItem *item)
 	summary_set_column_titles(summaryview);
 }
 
-static void summaryview_reset_recursive_folder_match(SummaryView *summaryview)
-{
-	GSList *cur;
-
-	for (cur = summaryview->recursive_matched_folders; cur != NULL; cur = cur->next) {
-		folderview_update_search_icon(cur->data, FALSE);
-	}
-
-	g_slist_free(summaryview->recursive_matched_folders);
-	summaryview->recursive_matched_folders = NULL;
-	summaryview->search_root_folder = NULL;
-}
-
 static gboolean summary_check_consistency(FolderItem *item, GSList *mlist)
 {
 	int u = 0, n = 0, m = 0, t = 0, r = 0, f = 0, l = 0, i = 0, w = 0;
