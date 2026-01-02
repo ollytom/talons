@@ -69,8 +69,6 @@ typedef enum
 #include "folder.h"
 #include "gtk/gtksctree.h"
 
-extern GtkTargetEntry summary_drag_types[3];
-
 struct _SummaryColumnState
 {
 	SummaryColumnType type;

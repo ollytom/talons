@@ -69,12 +69,6 @@ struct _FolderView
 	gint folder_update_callback_id;
 	gint folder_item_update_callback_id;
 
-	/* DND states */
-	GSList *nodes_to_recollapse;
-	guint   drag_timer_id;		/* timer id */
-	FolderItem *drag_item;		/* dragged item */
-	GtkCMCTreeNode *drag_node;	/* drag node */
-
 	GtkTargetList *target_list; /* DnD */
 	FolderColumnState col_state[N_FOLDER_COLS];
 	gint col_pos[N_FOLDER_COLS];
@@ -134,15 +128,11 @@ void folderview_move_folder		(FolderView 	*folderview,
 					 FolderItem 	*to_folder,
 					 gboolean	 copy);
 
-void folderview_register_popup		(FolderViewPopup	*fpopup);
 void folderview_unregister_popup	(FolderViewPopup	*fpopup);
 void folderview_update_search_icon	(FolderItem 		*item,
 					 gboolean 		 matches);
 void folderview_set_column_order	(FolderView		*folderview);
-void folderview_finish_dnd		(const gchar 		*data,
-					 GdkDragContext 	*drag_context,
-			   		 guint 			 time,
-					 FolderItem 		*item);
+
 void folderview_close_opened		(FolderView 		*folderview,
 					 gboolean		 dirty);
 void folderview_remove_item(FolderView *folderview,

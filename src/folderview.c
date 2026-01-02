@@ -184,36 +184,6 @@ static void folderview_startup_folder_cb(GtkAction	*action,
 static void folderview_property_cb	(GtkAction 	*action,
 					 gpointer	 data);
 
-static gboolean folderview_drag_motion_cb(GtkWidget      *widget,
-					  GdkDragContext *context,
-					  gint            x,
-					  gint            y,
-					  guint           time,
-					  FolderView     *folderview);
-static void folderview_drag_leave_cb     (GtkWidget        *widget,
-					  GdkDragContext   *context,
-					  guint             time,
-					  FolderView       *folderview);
-static void folderview_drag_received_cb  (GtkWidget        *widget,
-					  GdkDragContext   *drag_context,
-					  gint              x,
-					  gint              y,
-					  GtkSelectionData *data,
-					  guint             info,
-					  guint             time,
-					  FolderView       *folderview);
-static void folderview_start_drag	 (GtkWidget *widget, gint button, GdkEvent *event,
-			                  FolderView       *folderview);
-static void folderview_drag_data_get     (GtkWidget        *widget,
-					  GdkDragContext   *drag_context,
-					  GtkSelectionData *selection_data,
-					  guint             info,
-					  guint             time,
-					  FolderView       *folderview);
-static void folderview_drag_end_cb	 (GtkWidget	   *widget,
-					  GdkDragContext   *drag_context,
-					  FolderView	   *folderview);
-
 static void folderview_create_folder_node       (FolderView       *folderview,
 					  FolderItem       *item);
 static gboolean folderview_update_folder	 (gpointer 	    source,
@@ -249,12 +219,6 @@ static GtkActionEntry folderview_header_popup_entries[] =
 {
 	{"FolderViewHeaderPopup",                     NULL, "FolderViewHeaderPopup", NULL, NULL, NULL },
 	{"FolderViewHeaderPopup/SetDisplayedColumns", NULL, N_("Set Displayed columns"), NULL, NULL, G_CALLBACK(folderview_header_set_displayed_columns_cb) }
-};
-
-GtkTargetEntry folderview_drag_types[] =
-{
-	{"claws-mail/internal", GTK_TARGET_SAME_APP, TARGET_DUMMY},
-	{"text/uri-list", 0, TARGET_MAIL_URI_LIST}
 };
 
 void folderview_initialize(void)
@@ -483,11 +447,6 @@ static GtkWidget *folderview_ctree_create(FolderView *folderview)
 			 folderview);
 	g_signal_connect(G_OBJECT(ctree), "tree_select_row",
 			 G_CALLBACK(folderview_selected), folderview);
-	g_signal_connect(G_OBJECT(ctree), "start_drag",
-			 G_CALLBACK(folderview_start_drag), folderview);
-	g_signal_connect(G_OBJECT(ctree), "drag_data_get",
-			 G_CALLBACK(folderview_drag_data_get),
-			 folderview);
 
 	g_signal_connect_after(G_OBJECT(ctree), "tree_expand",
 			       G_CALLBACK(folderview_tree_expanded),
@@ -498,23 +457,6 @@ static GtkWidget *folderview_ctree_create(FolderView *folderview)
 
 	g_signal_connect(G_OBJECT(ctree), "resize_column",
 			 G_CALLBACK(folderview_col_resized),
-			 folderview);
-
-        /* drop callback */
-	gtk_drag_dest_set(ctree, GTK_DEST_DEFAULT_ALL & ~GTK_DEST_DEFAULT_HIGHLIGHT,
-			  folderview_drag_types, 2,
-			  GDK_ACTION_MOVE | GDK_ACTION_COPY | GDK_ACTION_DEFAULT);
-	g_signal_connect(G_OBJECT(ctree), "drag_motion",
-			 G_CALLBACK(folderview_drag_motion_cb),
-			 folderview);
-	g_signal_connect(G_OBJECT(ctree), "drag_leave",
-			 G_CALLBACK(folderview_drag_leave_cb),
-			 folderview);
-	g_signal_connect(G_OBJECT(ctree), "drag_data_received",
-			 G_CALLBACK(folderview_drag_received_cb),
-			 folderview);
-	g_signal_connect(G_OBJECT(ctree), "drag_end",
-			 G_CALLBACK(folderview_drag_end_cb),
 			 folderview);
 
 	gtk_container_add(GTK_CONTAINER(scrolledwin), ctree);
@@ -528,23 +470,6 @@ void folderview_set_column_order(FolderView *folderview)
 	FolderItem *item = folderview_get_selected_item(folderview);
 	FolderItem *sel_item = NULL, *op_item = NULL;
 	GtkWidget *scrolledwin = folderview->scrolledwin;
-
-	if (folderview->drag_timer_id != 0) {
-		g_source_remove(folderview->drag_timer_id);
-		folderview->drag_timer_id = 0;
-	}
-	if (folderview->deferred_refresh_id != 0) {
-		g_source_remove(folderview->deferred_refresh_id);
-		folderview->deferred_refresh_id = 0;
-	}
-	if (folderview->scroll_timeout_id != 0) {
-		g_source_remove(folderview->scroll_timeout_id);
-		folderview->scroll_timeout_id = 0;
-	}
-	if (folderview->postpone_select_id != 0) {
-		g_source_remove(folderview->postpone_select_id);
-		folderview->postpone_select_id = 0;
-	}
 
 	if (folderview->selected)
 		sel_item = folderview_get_selected_item(folderview);
@@ -618,14 +543,7 @@ FolderView *folderview_create(MainWindow *mainwin)
 
 	gtk_widget_show_all(scrolledwin);
 
-	folderview->target_list = gtk_target_list_new(folderview_drag_types, 2);
 	folderview_list = g_list_append(folderview_list, folderview);
-
-	folderview->drag_timer_id       = 0;
-	folderview->deferred_refresh_id = 0;
-	folderview->scroll_timeout_id   = 0;
-	folderview->postpone_select_id  = 0;
-
 	return folderview;
 }
 
@@ -1443,7 +1361,6 @@ static void folderview_update_node(FolderView *folderview, GtkCMCTreeNode *node)
 	GtkCMCTree *ctree = GTK_CMCTREE(folderview->ctree);
 	GtkStyle *style = NULL, *prev_style;
 	FolderItem *item;
-	GdkRGBA black = { 0, 0, 0, 1 };
 	GdkPixbuf *xpm, *openxpm;
 	static GdkPixbuf *searchicon;
 	gboolean mark = FALSE;
@@ -2489,26 +2406,6 @@ static void folderview_property_cb(GtkAction *action, gpointer data)
 	prefs_folder_item_open(item);
 }
 
-static void folderview_recollapse_nodes(FolderView *folderview, GtkCMCTreeNode *node)
-{
-	GSList *list = NULL;
-	GSList *done = NULL;
-	GtkCMCTree *ctree = GTK_CMCTREE(folderview->ctree);
-
-	for (list = folderview->nodes_to_recollapse; list != NULL; list = g_slist_next(list)) {
-		if (!gtkut_ctree_node_is_parent(GTK_CMCTREE_NODE(list->data), node)
-		&&  list->data != node) {
-			gtk_cmctree_collapse(ctree, GTK_CMCTREE_NODE(list->data));
-			done = g_slist_append(done, GTK_CMCTREE_NODE(list->data));
-		}
-	}
-	for (list = done; list != NULL; list = g_slist_next(list)) {
-		folderview->nodes_to_recollapse = g_slist_remove(folderview->nodes_to_recollapse,
-								 list->data);
-	}
-	g_slist_free(done);
-}
-
 void folderview_move_folder(FolderView *folderview, FolderItem *from_folder,
 		            FolderItem *to_folder, gboolean copy)
 {
@@ -2616,92 +2513,6 @@ static gint folderview_clist_compare(GtkCMCList *clist,
 	return g_utf8_collate(item1->name, item2->name);
 }
 
-static void drag_state_stop(FolderView *folderview)
-{
-	if (folderview->drag_timer_id)
-		g_source_remove(folderview->drag_timer_id);
-	folderview->drag_timer_id = 0;
-	folderview->drag_node = NULL;
-}
-
-static gboolean folderview_defer_expand(FolderView *folderview)
-{
-	if (folderview->drag_node) {
-		folderview_recollapse_nodes(folderview, folderview->drag_node);
-		if (folderview->drag_item->collapsed) {
-			gtk_cmctree_expand(GTK_CMCTREE(folderview->ctree), folderview->drag_node);
-			folderview->nodes_to_recollapse = g_slist_append
-				(folderview->nodes_to_recollapse, folderview->drag_node);
-		}
-	}
-	folderview->drag_item  = NULL;
-	folderview->drag_timer_id = 0;
-	return FALSE;
-}
-
-static void drag_state_start(FolderView *folderview, GtkCMCTreeNode *node, FolderItem *item)
-{
-	/* the idea is that we call drag_state_start() whenever we want expansion to
-	 * start after 'prefs_common.hover_time' msecs. if we want to cancel expansion,
-	 * we need to call drag_state_stop() */
-	drag_state_stop(folderview);
-	/* request expansion */
-	if (0 != (folderview->drag_timer_id = g_timeout_add
-			(prefs_common.hover_timeout,
-			 (GSourceFunc)folderview_defer_expand,
-			 folderview))) {
-		folderview->drag_node = node;
-		folderview->drag_item = item;
-	}
-}
-
-static void folderview_start_drag(GtkWidget *widget, gint button, GdkEvent *event,
-			          FolderView       *folderview)
-{
-	GdkDragContext *context;
-
-	cm_return_if_fail(folderview != NULL);
-	if (folderview->selected == NULL) return;
-	if (folderview->nodes_to_recollapse)
-		g_slist_free(folderview->nodes_to_recollapse);
-	folderview->nodes_to_recollapse = NULL;
-	context = gtk_drag_begin_with_coordinates(widget, folderview->target_list,
-				 GDK_ACTION_MOVE|GDK_ACTION_COPY|GDK_ACTION_DEFAULT, button, event,
-				 -1, -1);
-	gtk_drag_set_icon_default(context);
-}
-
-static void folderview_drag_data_get(GtkWidget        *widget,
-				     GdkDragContext   *drag_context,
-				     GtkSelectionData *selection_data,
-				     guint             info,
-				     guint             time,
-				     FolderView       *folderview)
-{
-	FolderItem *item;
-	GList *sel;
-	if (info == TARGET_DUMMY) {
-		sel = GTK_CMCLIST(folderview->ctree)->selection;
-		if (!sel)
-			return;
-
-		item = gtk_cmctree_node_get_row_data
-			(GTK_CMCTREE(folderview->ctree),
-			 GTK_CMCTREE_NODE(sel->data));
-		if (item) {
-			gchar *source = NULL;
-			gchar *name = folder_item_get_identifier(item);
-			source = g_strdup_printf ("FROM_OTHER_FOLDER%s", name);
-			g_free(name);
-			gtk_selection_data_set(selection_data,
-					       gtk_selection_data_get_target(selection_data), 8,
-					       source, strlen(source));
-		}
-	} else {
-		g_warning("unknown info %d", info);
-	}
-}
-
 static gboolean folderview_update_folder(gpointer source, gpointer userdata)
 {
 	FolderUpdateData *hookdata;
@@ -2765,292 +2576,7 @@ static gboolean folderview_dnd_scroll_cb(gpointer data)
 	return TRUE;
 }
 
-static gboolean folderview_drag_motion_cb(GtkWidget      *widget,
-					  GdkDragContext *context,
-					  gint            x,
-					  gint            y,
-					  guint           time,
-					  FolderView     *folderview)
-{
-	gint row, column;
-	FolderItem *item = NULL, *src_item = NULL;
-	GtkCMCTreeNode *node = NULL;
-	gboolean acceptable = FALSE;
-	GtkAdjustment *pos = gtk_scrolled_window_get_vadjustment(
-				GTK_SCROLLED_WINDOW(folderview->scrolledwin));
-	int height = (int)gtk_adjustment_get_page_size(pos);
-	int total_height = (int)gtk_adjustment_get_upper(pos);
-	int vpos = (int)gtk_adjustment_get_value(pos);
-	int offset = prefs_common.show_col_headers ? 24:0;
-	int dist;
-
-	if (gtk_cmclist_get_selection_info
-		(GTK_CMCLIST(widget), x - offset, y - offset, &row, &column)) {
-		GtkWidget *srcwidget;
-
-		if (y > height - (48 - offset) && height + vpos < total_height) {
-			dist = -(height - (48 - offset) - y);
-			folderview->scroll_value = 1.41f * (1+(dist / 6));
-		} else if (y < 72 - (24 - offset) && y >= 0) {
-			dist = 72 - (24 - offset) - y;
-			folderview->scroll_value = -1.41f * (1+(dist / 6));
-		} else {
-			folderview->scroll_value = 0;
-		}
-		if (folderview->scroll_value != 0 && folderview->scroll_timeout_id == 0) {
-			folderview->scroll_timeout_id =
-				g_timeout_add(30, folderview_dnd_scroll_cb,
-					      folderview);
-		}
-
-		node = gtk_cmctree_node_nth(GTK_CMCTREE(widget), row);
-		item = gtk_cmctree_node_get_row_data(GTK_CMCTREE(widget), node);
-		src_item = folderview->summaryview->folder_item;
-
-		srcwidget = gtk_drag_get_source_widget(context);
-		if (srcwidget == summary_get_main_widget(folderview->summaryview)) {
-			/* comes from summaryview */
-			/* we are copying messages, so only accept folder items that are not
-			   the source item, are no root items and can copy messages */
-			if (item && item->folder && folder_item_parent(item) != NULL && src_item &&
-			    src_item != item && FOLDER_CLASS(item->folder)->copy_msg != NULL &&
-			    FOLDER_TYPE(item->folder) != F_UNKNOWN)
-				acceptable = TRUE;
-		} else if (srcwidget == folderview->ctree) {
-			/* comes from folderview */
-			/* we are moving folder items, only accept folders that are not
-                           the source items and can copy messages and create folder items */
-			if (item && item->folder && src_item && src_item != item &&
-			    FOLDER_CLASS(item->folder)->copy_msg != NULL &&
-			    FOLDER_CLASS(item->folder)->create_folder != NULL &&
-			    ((FOLDER_TYPE(item->folder) != F_UNKNOWN &&  FOLDER_TYPE(src_item->folder) != F_UNKNOWN)
-			     || item->folder == src_item->folder))
-				acceptable = TRUE;
-		} else {
-			/* comes from another app */
-			/* we are adding messages, so only accept folder items that are
-			   no root items and can copy messages */
-			if (item && item->folder && folder_item_parent(item) != NULL
-			    && FOLDER_CLASS(item->folder)->add_msg != NULL &&
-			    FOLDER_TYPE(item->folder) != F_UNKNOWN)
-				acceptable = TRUE;
-		}
-	}
-
-	if (acceptable || (src_item && src_item == item))
-		drag_state_start(folderview, node, item);
-
-	if (acceptable) {
-		g_signal_handlers_block_by_func
-			(G_OBJECT(widget),
-			 G_CALLBACK(folderview_selected), folderview);
-		gtk_cmctree_select(GTK_CMCTREE(widget), node);
-		g_signal_handlers_unblock_by_func
-			(G_OBJECT(widget),
-			 G_CALLBACK(folderview_selected), folderview);
-		gdk_drag_status(context,
-					(gdk_drag_context_get_actions(context) == GDK_ACTION_COPY ?
-					GDK_ACTION_COPY : GDK_ACTION_MOVE) , time);
-	} else {
-		if (folderview->opened)
-			gtk_cmctree_select(GTK_CMCTREE(widget), folderview->opened);
-		gdk_drag_status(context, 0, time);
-	}
-
-	return acceptable;
-}
-
-static void folderview_drag_leave_cb(GtkWidget      *widget,
-				     GdkDragContext *context,
-				     guint           time,
-				     FolderView     *folderview)
-{
-	drag_state_stop(folderview);
-	folderview->scroll_value = 0;
-	gtk_cmctree_select(GTK_CMCTREE(widget), folderview->opened);
-}
-
-static void free_info (gpointer stuff, gpointer data)
-{
-	g_free(stuff);
-}
-
-void folderview_finish_dnd(const gchar *data, GdkDragContext *drag_context,
-			   guint time, FolderItem *item)
-{
-	GList *list, *tmp;
-	GSList *msglist = NULL;
-	list = uri_list_extract_filenames(data);
-	if (!(item && item->folder && folder_item_parent(item) != NULL
-		    && FOLDER_CLASS(item->folder)->add_msg != NULL))
-	{
-		gtk_drag_finish(drag_context, FALSE, FALSE, time);
-		debug_print("item doesn't fit\n");
-		return;
-	}
-	if (!list) {
-		gtk_drag_finish(drag_context, FALSE, FALSE, time);
-		debug_print("list is empty\n");
-		return;
-	}
-	for (tmp = list; tmp != NULL; tmp = tmp->next) {
-		MsgFileInfo *info = NULL;
-
-		if (file_is_email((gchar *)tmp->data)) {
-			info = g_new0(MsgFileInfo, 1);
-			info->msginfo = NULL;
-			info->file = (gchar *)tmp->data;
-			msglist = g_slist_prepend(msglist, info);
-			debug_print("file is a mail\n");
-		} else {
-			debug_print("file isn't a mail\n");
-		}
-	}
-	if (msglist) {
-		msglist = g_slist_reverse(msglist);
-		folder_item_add_msgs(item, msglist, FALSE);
-		g_slist_foreach(msglist, free_info, NULL);
-		g_slist_free(msglist);
-		gtk_drag_finish(drag_context, TRUE, FALSE, time);
-	} else {
-		gtk_drag_finish(drag_context, FALSE, FALSE, time);
-	}
-	list_free_strings_full(list);
-}
-
-static void folderview_drag_received_cb(GtkWidget        *widget,
-					GdkDragContext   *drag_context,
-					gint              x,
-					gint              y,
-					GtkSelectionData *data,
-					guint             info,
-					guint             time,
-					FolderView       *folderview)
-{
-	gint row, column;
-	FolderItem *item = NULL, *src_item;
-	GtkCMCTreeNode *node;
-	int offset = prefs_common.show_col_headers ? 24:0;
-
-	folderview->scroll_value = 0;
-
-	if (info == TARGET_DUMMY) {
-		drag_state_stop(folderview);
-		const gchar *ddata = (const gchar *)gtk_selection_data_get_data(data);
-		if ((gchar *)strstr(ddata, "FROM_OTHER_FOLDER") != ddata) {
-			/* comes from summaryview */
-			if (gtk_cmclist_get_selection_info
-				(GTK_CMCLIST(widget), x - offset, y - offset, &row, &column) == 0)
-				return;
-
-			node = gtk_cmctree_node_nth(GTK_CMCTREE(widget), row);
-			item = gtk_cmctree_node_get_row_data(GTK_CMCTREE(widget), node);
-			src_item = folderview->summaryview->folder_item;
-
-			if (item && item->no_select) {
-				alertpanel_error(_("The destination folder can only be used to "
-						   "store subfolders."));
-				return;
-			}
-			/* re-check (due to acceptable possibly set for folder moves */
-			if (!(item && item->folder && item->path && !item->no_select &&
-			      src_item && src_item != item && FOLDER_CLASS(item->folder)->copy_msg != NULL)) {
-				return;
-			}
-
-			switch (gdk_drag_context_get_selected_action(drag_context)) {
-			case GDK_ACTION_COPY:
-				summary_copy_selected_to(folderview->summaryview, item);
-				gtk_drag_finish(drag_context, TRUE, FALSE, time);
-				break;
-			case GDK_ACTION_MOVE:
-			case GDK_ACTION_DEFAULT:
-			default:
-				if (FOLDER_CLASS(src_item->folder)->remove_msg == NULL)
-					summary_copy_selected_to(folderview->summaryview, item);
-				else
-					summary_move_selected_to(folderview->summaryview, item);
-				gtk_drag_finish(drag_context, TRUE, TRUE, time);
-			}
-		} else {
-			/* comes from folderview */
-			char *source;
-			gboolean folder_is_normal = TRUE;
-			gboolean copy = (GDK_ACTION_COPY ==
-				gdk_drag_context_get_selected_action(drag_context));
-
-			source = (char *)gtk_selection_data_get_data(data) + 17;
-			if (gtk_cmclist_get_selection_info
-			    (GTK_CMCLIST(widget), x - offset, y - offset, &row, &column) == 0
-			    || *source == 0) {
-				gtk_drag_finish(drag_context, FALSE, FALSE, time);
-				return;
-			}
-			node = gtk_cmctree_node_nth(GTK_CMCTREE(widget), row);
-			item = gtk_cmctree_node_get_row_data(GTK_CMCTREE(widget), node);
-			src_item = folder_find_item_from_identifier(source);
-
-			folder_is_normal =
-				src_item != NULL &&
-				src_item->stype == F_NORMAL &&
-				!folder_has_parent_of_type(src_item, F_OUTBOX) &&
-				!folder_has_parent_of_type(src_item, F_DRAFT) &&
-				!folder_has_parent_of_type(src_item, F_QUEUE) &&
-				!folder_has_parent_of_type(src_item, F_TRASH);
-			if (!item || !src_item || !folder_is_normal) {
-				gtk_drag_finish(drag_context, FALSE, FALSE, time);
-				return;
-			}
-
-			folderview_move_folder(folderview, src_item, item, copy);
-			gtk_drag_finish(drag_context, TRUE, TRUE, time);
-		}
-		folderview->nodes_to_recollapse = NULL;
-	} else if (info == TARGET_MAIL_URI_LIST) {
-		if (gtk_cmclist_get_selection_info
-			(GTK_CMCLIST(widget), x - offset, y - offset, &row, &column) == 0)
-			return;
-
-		node = gtk_cmctree_node_nth(GTK_CMCTREE(widget), row);
-		if (!node) {
-			gtk_drag_finish(drag_context, FALSE, FALSE, time);
-			debug_print("no node\n");
-			return;
-		}
-		item = gtk_cmctree_node_get_row_data(GTK_CMCTREE(widget), node);
-		if (!item) {
-			gtk_drag_finish(drag_context, FALSE, FALSE, time);
-			debug_print("no item\n");
-			return;
-		}
-		folderview_finish_dnd(gtk_selection_data_get_data(data),
-			drag_context, time, item);
-	}
-}
-
-static void folderview_drag_end_cb(GtkWidget	    *widget,
-				   GdkDragContext   *drag_context,
-                                   FolderView	    *folderview)
-{
-	drag_state_stop(folderview);
-	folderview->scroll_value = 0;
-	g_slist_free(folderview->nodes_to_recollapse);
-	folderview->nodes_to_recollapse = NULL;
-}
-
-void folderview_register_popup(FolderViewPopup *fpopup)
-{
-	GList *folderviews;
-
-	for (folderviews = folderview_list; folderviews != NULL; folderviews = g_list_next(folderviews)) {
-		FolderView *folderview = folderviews->data;
-		GtkActionGroup *factory;
-
-		factory = create_action_group(folderview, fpopup);
-		g_hash_table_insert(folderview->popups, fpopup->klass, factory);
-	}
-	g_hash_table_insert(folderview_popups, fpopup->klass, fpopup);
-}
+static void free_info(gpointer stuff, gpointer data) { g_free(stuff); }
 
 void folderview_unregister_popup(FolderViewPopup *fpopup)
 {

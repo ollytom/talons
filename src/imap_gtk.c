@@ -99,9 +99,7 @@ static FolderViewPopup imap_popup =
 };
 
 void imap_gtk_init(void)
-{
-	folderview_register_popup(&imap_popup);
-}
+{ }
 
 static void add_menuitems(GtkUIManager *ui_manager, FolderItem *item)
 {

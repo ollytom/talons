@@ -73,9 +73,7 @@ static FolderViewPopup mh_popup =
 };
 
 void mh_gtk_init(void)
-{
-	folderview_register_popup(&mh_popup);
-}
+{ }
 
 static void add_menuitems(GtkUIManager *ui_manager, FolderItem *item)
 {
